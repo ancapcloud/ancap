@@ -58,9 +58,12 @@ Capital-layer follow-on: accept securities, promissory notes, and equity shares 
 Full plan: [docs/SECURITIES_INTAKE_ROADMAP.md](SECURITIES_INTAKE_ROADMAP.md) (Master priority **R9**, phases S0–S5).
 
 
-## Beyond 90 days - SpaceX encrypted satellites
+## Beyond 90 days - Orbital datacenters + full decentralization
 
-Long-horizon infra: launch satellites with **encrypted ANCAP edge servers** via **SpaceX** (rideshare/manifest), sealed storage, ground HSM control plane, then ACP orbital-edge productization.
+Long-horizon infra:
 
-Full plan: [docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md](SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md) (Master priority **R11**, phases X0-X5).
+1. **R11 — Orbital ANCAP datacenters:** SpaceX-path encrypted satellite edge servers → future **ANCAP datacenters in space** (sealed constellation). Plan: [docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md](SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md) (phases X0–X7).
+2. **R14 — Full decentralization:** multi-operator ACP mesh, federated APIs, attested edge, sovereignty exit. Plan: [docs/FULL_DECENTRALIZATION_ROADMAP.md](FULL_DECENTRALIZATION_ROADMAP.md) (phases D0–D5).
+
+Neither blocks near-term commerce polish or Phase 6 mobile.
 

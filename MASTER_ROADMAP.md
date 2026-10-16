@@ -1222,19 +1222,20 @@ Security and ops hardening completed in this audit:
 | R8 | **ACP Lean chain** | Fee-packed mining, 5s cadence, hybrid PQC signatures, experimental X-Wing draft-10 envelopes, throttled heartbeat | `docs/ACP_LEAN_CHAIN.md` + `docs/ACP_PQC_ENCRYPTION.md` — security/speed/energy |
 | R9 | **Securities intake** | Accept securities, promissory notes (векселя), and shares (акции) into org treasury / collateral rails | Expand capital layer beyond ACP cash; see `docs/SECURITIES_INTAKE_ROADMAP.md` |
 | R10 | **Apple Watch HR fleet** | 3 watches/employee (distinct bands), continuous heart-rate sync, charge/rotation schedule | Workplace safety + shift presence; see `docs/mobile/APPLE_WATCH_EMPLOYEE_FLEET.md` |
-| R11 | **SpaceX encrypted sats** | Launch satellites with encrypted ANCAP edge servers via SpaceX rideshare/manifest | Sovereign sealed orbital compute; see docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md |
+| R11 | **Orbital ANCAP datacenters** | SpaceX-path encrypted satellite edge → future **ANCAP datacenters in space** (sealed compute/storage constellation) | Sovereign hard-to-seize infra; see `docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md` |
 | R12 | **AETERNA longevity** | DNA vault + ACP-paid genomic/longevity workflows + licensed partner rails (Sequencing.com import) | Eternal-life division; see `docs/AETERNA_LONGEVITY_MARKETPLACE_ROADMAP.md` |
 | R13 | **Lunar land trading** | Science-tagged lunar parcel registry + ACP interest desk (NASA–IBM LFM themes) | Speculative registry claims only; see `docs/LUNAR_LAND_TRADING_ROADMAP.md` |
+| R14 | **Full decentralization** | Multi-region / multi-operator / peer mesh so no single host or company is a single point of failure for ACP + product APIs | Long-horizon sovereignty; see `docs/FULL_DECENTRALIZATION_ROADMAP.md` |
 
 **ACP chain note:** Lean v1.4 packs fee-prioritized mempool txs (up to 512 / 2 MB) on a 5s miner interval. The assembler never mints; validator rewards are signed spends from the 105M genesis reserve. Hard cap is exactly 210,000,000 ACP. Recovery from the 2026-10-02 double-spend inflation: `docs/ACP_SUPPLY_INCIDENT_2026-10-02.md`. See `docs/ACP_LEAN_CHAIN.md`.
 
 ---
 
-## SpaceX Encrypted Satellite Servers Track (2027+) - NEW
+## Orbital ANCAP Datacenters / SpaceX Encrypted Satellites Track (2027+) — R11
 
 Execution detail: **docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md**.
 
-Launch **encrypted ANCAP edge servers** as satellite payloads using **SpaceX** (rideshare / Transporter-class or dedicated as required): sealed storage, authenticated uplink, ground HSM key ceremony, then ACP orbital-edge productization.
+Near-term: launch **encrypted ANCAP edge servers** as satellite payloads via **SpaceX** (rideshare / Transporter-class or dedicated). Long-term: place **ANCAP datacenters in space** — sealed multi-node orbital compute/storage constellation for attestation, sealed workflow offload, and disaster-recovery shards that are hard to seize or unilaterally shut down. Complements **R14** full decentralization (ground + space peer mesh).
 
 | Phase | Status | Deliverables |
 |-------|--------|--------------|
@@ -1242,11 +1243,33 @@ Launch **encrypted ANCAP edge servers** as satellite payloads using **SpaceX** (
 | X1 Payload crypto arch | [~] | Encrypted server block diagram, threat model, sealed boot; attestation tables + API (FF_ORBITAL_EDGE) |
 | X2 Ground & keys | [ ] | Ground segment, dual-control HSM ceremony, ops runbooks |
 | X3 SpaceX program | [ ] | ICD/manifest path, env test plan, insurance/license with counsel |
-| X4 First flight | [ ] | FlatSat -> launch -> LEOP encrypted round-trip demo |
-| X5 ACP orbital edge | [ ] | Feature-flagged product: attestation/sealed offload; fleet cadence |
+| X4 First flight | [ ] | FlatSat → launch → LEOP encrypted round-trip demo |
+| X5 ACP orbital edge | [ ] | Feature-flagged product: attestation/sealed offload; small fleet cadence |
+| X6 Orbital datacenter class | [ ] | Power/thermal/storage class beyond demo edge; rack-equivalent sealed modules; optical/RF backhaul plan |
+| X7 Constellation ops | [ ] | Multi-bird redundancy, inter-sat mesh, EOL/replacement; ACP capacity reservation UX |
 
 **Depends on:** ACP ledger stability + org authorization model + compliance review before public claims.
-**Does not block:** Phase 6 mobile, R9 securities, R10 Watch fleet.
+**Does not block:** Phase 6 mobile, R9 securities, R10 Watch fleet, R14 ground decentralization workstreams.
+
+---
+
+## Full Decentralization Track (2027+) — R14
+
+Execution detail: **docs/FULL_DECENTRALIZATION_ROADMAP.md**.
+
+Goal: **full decentralization of the ANCAP project** so product APIs, ACP peer mesh, indexer, and sealed edge capacity do not depend on a single company host, region, or control plane. Ground federation first; orbital datacenters (R11) as the hard-to-seize outer tier.
+
+| Phase | Status | Deliverables |
+|-------|--------|--------------|
+| D0 Threat model & boundaries | [ ] | What must stay decentralized vs what may remain operator-hosted; honest public claims |
+| D1 Multi-operator ACP mesh | [ ] | Documented peer join, tip family health, no single RPC SPOF (builds on existing multi-node tip family) |
+| D2 Federated API / read replicas | [ ] | Multi-region API + DB strategy; signed public mirrors; failover without silent data fork |
+| D3 Permissionless edge participation | [ ] | Attested edge nodes (ground, then orbital) can serve sealed jobs under org policy |
+| D4 Governance & keys | [ ] | Dual-control / threshold ops for destructive actions; open contribution path for infra adapters |
+| D5 Sovereignty exit | [ ] | Users/orgs can exit to self-hosted or third-party operators with portable identity + ledger proofs |
+
+**Depends on:** stable ACP Lean chain, open-source transparency track, R11 for space tier.
+**Does not block:** Phase 6 mobile MVP or near-term commerce polish.
 
 
 ## Apple Watch Employee Fleet Track (2026-Q4+) — NEW

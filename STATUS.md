@@ -9,6 +9,8 @@
 
 **Payment Scanner photo upload (2026-10-16):** `/payment-scanner` accepts photo/image upload (client QR decode when available + `POST /v1/payment-scanner/parse-image` AI OCR); text paste/file import unchanged; manual confirm still required.
 
+**Long-horizon infra roadmap (2026-10-16):** Master **R11** expanded to future **ANCAP datacenters in space** (X6–X7) · **R14 Full decentralization** added (D0–D5). Docs: `docs/SPACEX_SATELLITE_ENCRYPTED_SERVERS_ROADMAP.md`, `docs/FULL_DECENTRALIZATION_ROADMAP.md`. Does not block Phase 6.
+
 **People + AI Project Economy (2026-10-16):** Showcase + catalog foundation — tables/API `/economy/*`, UI `/economy`, five demo cards owned by **3n3rgy**. Migrations `088_project_economy` + `089_economy_seed_owner`. Payout/acceptance not started.
 
 Workflow discovery release deployed and live-verified (2026-10-14), build `426bc5c`: task matching, local shortlist, comparison of three workflows, exact run-cost planning and JSON export; investor page links immutable local-demo evidence. Frontend 46 unit tests, mobile 281 tests, full Linux backend 883 passed / 34 skipped, browser CI 25 passed / 1 skipped. Rust/contract CI and Docker build passed. Live API ready, catalog source live, browser runtime errors 0. Historical local presentation work below is included in this deployment. Scope/remaining audit items: `docs/WORKFLOW_DISCOVERY_RELEASE_2026-10-14.md`; durable production evidence: `docs/investors/evidence/2026-10-14-workflow-release/`.
