@@ -8,6 +8,26 @@ import { ApiError, paymentScanner } from "@/lib/api";
 
 type ParseSource = "paste" | "qr" | "ocr";
 
+async function decodeQrFromImageFile(file: File): Promise<string | null> {
+  const Detector = (typeof window !== "undefined" ? (window as any).BarcodeDetector : null) as
+    | (new (options?: { formats?: string[] }) => { detect: (source: ImageBitmap) => Promise<Array<{ rawValue?: string }>> })
+    | undefined;
+  if (!Detector || typeof createImageBitmap !== "function") return null;
+  try {
+    const detector = new Detector({ formats: ["qr_code"] });
+    const bitmap = await createImageBitmap(file);
+    try {
+      const codes = await detector.detect(bitmap);
+      const value = codes.find((item) => typeof item.rawValue === "string" && item.rawValue.trim())?.rawValue;
+      return value?.trim() || null;
+    } finally {
+      bitmap.close?.();
+    }
+  } catch {
+    return null;
+  }
+}
+
 export default function PaymentScannerPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [raw, setRaw] = useState("");
@@ -16,7 +36,18 @@ export default function PaymentScannerPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [photoName, setPhotoName] = useState("");
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const textInputRef = useRef<HTMLInputElement | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+
+  function clearPhotoPreview() {
+    setPhotoName("");
+    setPhotoPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }
 
   async function onParse(event: FormEvent) {
     event.preventDefault();
@@ -32,6 +63,30 @@ export default function PaymentScannerPage() {
     }
   }
 
+  async function onTextFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    setConfirmed(false);
+    clearPhotoPreview();
+    try {
+      const text = await file.text().catch(() => "");
+      if (!text.trim()) {
+        setError("Selected file is empty or not plain text.");
+        return;
+      }
+      setSource("ocr");
+      setRaw(text.trim());
+      setPreview(await paymentScanner.parse(text.trim(), "ocr"));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Text import failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onPhotoSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -39,19 +94,38 @@ export default function PaymentScannerPage() {
     setBusy(true);
     setError("");
     setConfirmed(false);
+    clearPhotoPreview();
+    setPhotoName(file.name);
+    setPhotoPreviewUrl(URL.createObjectURL(file));
     try {
-      const text = await file.text().catch(() => "");
-      if (text.trim()) {
-        setSource("ocr");
-        setRaw(text.trim());
-        setPreview(await paymentScanner.parse(text.trim(), "ocr"));
+      const qrPayload = await decodeQrFromImageFile(file);
+      if (qrPayload) {
+        setSource("paste");
+        setRaw(qrPayload);
+        setPreview(await paymentScanner.parse(qrPayload, "paste"));
         return;
       }
-      setError(
-        "Selected file is not plain text. Paste OCR output from a receipt/invoice photo, or use the mobile wallet camera flow.",
+      const parsed = await paymentScanner.parseImage(file);
+      setSource("ocr");
+      const noteLines = Array.isArray(parsed?.parse_notes) ? parsed.parse_notes.join("\n") : "";
+      setRaw(
+        [
+          parsed?.label ? `Invoice #${parsed.label}` : null,
+          parsed?.address ? `Pay to: ${parsed.address}` : null,
+          parsed?.amount ? `Total due: ${parsed.amount}${parsed.currency ? ` ${parsed.currency}` : ""}` : null,
+          parsed?.detected_network ? `Network: ${parsed.detected_network}` : null,
+          noteLines || null,
+        ]
+          .filter(Boolean)
+          .join("\n") || "(extracted from photo)",
       );
+      setPreview(parsed);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Photo import failed");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Photo import failed. Try a clearer image, paste OCR text, or use a QR photo.",
+      );
     } finally {
       setBusy(false);
     }
@@ -76,7 +150,8 @@ export default function PaymentScannerPage() {
       <main className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-semibold">AI Payment Scanner</h1>
         <p className="mt-2 text-sm text-white/65">
-          Paste a payment URI, invoice/receipt OCR text, or QR payload. Review the preview and manually confirm before executing Smart Pay.
+          Paste a payment URI, invoice/receipt OCR text, or QR payload — or upload a photo/image of the document.
+          Review the preview and manually confirm before executing Smart Pay.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           {(["paste", "ocr"] as ParseSource[]).map((mode) => (
@@ -93,13 +168,41 @@ export default function PaymentScannerPage() {
           ))}
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => textInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
             Import text file
           </button>
-          <input ref={fileInputRef} type="file" accept=".txt,.csv,.md,text/plain" className="hidden" onChange={onPhotoSelected} />
+          <button
+            type="button"
+            onClick={() => photoInputRef.current?.click()}
+            className="rounded-full border border-white/15 px-4 py-2"
+          >
+            Import photo / image
+          </button>
+          <input
+            ref={textInputRef}
+            type="file"
+            accept=".txt,.csv,.md,text/plain"
+            className="hidden"
+            onChange={onTextFileSelected}
+          />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*,.jpg,.jpeg,.png,.webp,.gif"
+            capture="environment"
+            className="hidden"
+            onChange={onPhotoSelected}
+          />
         </div>
+        {photoPreviewUrl ? (
+          <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoPreviewUrl} alt={photoName || "Uploaded payment document"} className="max-h-56 w-full object-contain" />
+            <p className="border-t border-white/10 px-3 py-2 text-xs text-white/55">{photoName || "Uploaded image"}</p>
+          </div>
+        ) : null}
         <form onSubmit={onParse} className="mt-6 space-y-3">
           <textarea
             className="min-h-[140px] w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm"

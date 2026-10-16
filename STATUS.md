@@ -7,6 +7,8 @@
 
 **Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
 
+**Payment Scanner photo upload (2026-10-16):** `/payment-scanner` accepts photo/image upload (client QR decode when available + `POST /v1/payment-scanner/parse-image` AI OCR); text paste/file import unchanged; manual confirm still required.
+
 **People + AI Project Economy (2026-10-16):** Showcase + catalog foundation — tables/API `/economy/*`, UI `/economy`, five demo cards owned by **3n3rgy**. Migrations `088_project_economy` + `089_economy_seed_owner`. Payout/acceptance not started.
 
 Workflow discovery release deployed and live-verified (2026-10-14), build `426bc5c`: task matching, local shortlist, comparison of three workflows, exact run-cost planning and JSON export; investor page links immutable local-demo evidence. Frontend 46 unit tests, mobile 281 tests, full Linux backend 883 passed / 34 skipped, browser CI 25 passed / 1 skipped. Rust/contract CI and Docker build passed. Live API ready, catalog source live, browser runtime errors 0. Historical local presentation work below is included in this deployment. Scope/remaining audit items: `docs/WORKFLOW_DISCOVERY_RELEASE_2026-10-14.md`; durable production evidence: `docs/investors/evidence/2026-10-14-workflow-release/`.

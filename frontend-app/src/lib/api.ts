@@ -131,8 +131,8 @@ async function apiFetchRaw(path: string, options: RequestInit = {}, includeJsonC
   }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const res = await apiFetchRaw(path, options);
+export async function apiFetch(path: string, options: RequestInit = {}, includeJsonContentType = true) {
+  const res = await apiFetchRaw(path, options, includeJsonContentType);
 
   if (!res.ok) {
     let detail = "";
@@ -2182,6 +2182,18 @@ export const paymentScanner = {
       method: "POST",
       body: JSON.stringify({ raw_text, source }),
     });
+  },
+  async parseImage(file: File) {
+    const body = new FormData();
+    body.append("file", file);
+    return apiFetch(
+      "/payment-scanner/parse-image",
+      {
+        method: "POST",
+        body,
+      },
+      false,
+    );
   },
 };
 

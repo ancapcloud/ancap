@@ -73,3 +73,39 @@ def test_payment_scanner_parse_evm_invoice(client, auth_headers):
     assert payload["address"].lower() == addr.lower()
     assert payload["amount"] == "25"
     assert payload["detected_network"] == "bsc"
+
+
+def test_payment_scanner_parse_image_uses_vision_ocr(client, auth_headers, monkeypatch):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+
+    async def _fake_extract(*, image_bytes: bytes, media_type: str) -> str:
+        assert image_bytes == b"fake-image-bytes"
+        assert media_type == "image/png"
+        return f"INVOICE #PHOTO-1\nPay to: {addr}\nTotal due: 9.25 USDT\nNetwork: acp"
+
+    monkeypatch.setattr(
+        "app.services.payment_image_parse.extract_payment_text_from_image",
+        _fake_extract,
+    )
+    res = client.post(
+        "/v1/payment-scanner/parse-image",
+        files={"file": ("receipt.png", b"fake-image-bytes", "image/png")},
+        headers=auth_headers,
+    )
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["address"] == addr
+    assert payload["amount"] == "9.25"
+    assert payload["currency"] == "USDT"
+    assert payload["requires_manual_confirm"] is True
+    assert any("photo" in note.lower() for note in payload["parse_notes"])
+
+
+def test_payment_scanner_parse_image_rejects_unsupported_type(client, auth_headers):
+    res = client.post(
+        "/v1/payment-scanner/parse-image",
+        files={"file": ("notes.pdf", b"%PDF-1.4", "application/pdf")},
+        headers=auth_headers,
+    )
+    assert res.status_code == 400
+    assert "Unsupported image type" in res.json()["detail"]
