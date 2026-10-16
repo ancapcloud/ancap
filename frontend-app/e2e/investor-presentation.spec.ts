@@ -23,18 +23,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("public presentation explains the workflow product in five languages", async ({ page, context }) => {
-  const languages = [
-    ["en", "Turn expertise into paid AI workflows."],
-    ["ru", "Превращайте экспертизу в платные AI-workflow."],
-    ["uk", "Перетворюйте експертизу на платні AI-workflow."],
-    ["de", "Expertise in bezahlte KI-Workflows verwandeln."],
-    ["zh-Hant", "將專業知識轉化為付費 AI 工作流程。"],
-  ] as const;
-  for (const [lang, heading] of languages) {
+  for (const lang of supportedLanguages) {
     await setLanguage(context, lang);
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(positioningByLang[lang].title);
     await expect(page.getByLabel("Локальное время, погода AccuWeather и поддержка")).toHaveCount(0);
+    await expect(page.locator("#people-ai-economy")).toBeVisible();
+    await expect(page.getByRole("link", { name: `${positioningByLang[lang].economyLink} →`, exact: true }).first()).toHaveAttribute("href", "/economy");
   }
 });
 

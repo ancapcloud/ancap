@@ -13,8 +13,8 @@ type EconomyCopy = {
 export const economyByLang: Record<Language, EconomyCopy> = {
   en: {
     title: "People + AI. A shared project, a defined result.",
-    lead: "The next step for ANCAP: authors define projects, people check the inputs and AI prepares drafts for human review. The first five catalog cards are demo projects by 3n3rgy.",
-    badge: "Proposed project model", limits: "The shared project catalog, project orders, acceptance and participant payouts are planned. Existing paid workflows retain their own availability and terms.",
+    lead: "Authors publish applications with a defined result; people check inputs and AI prepares drafts for review. The first five catalog cards are demo projects by 3n3rgy. Earn on paid workflow runs today while this shared catalog stays in preview.",
+    badge: "Proposed project model", limits: "Community create/apply and participant payouts for shared projects are not open yet. Existing paid workflows keep their own availability and terms. Earnings are not guaranteed.",
     explore: "Explore the project model", tests: "See AI test projects",
     authorPrefix: "Author", home: "ANCAP home",
     steps: ["Publish a project", "Find participants", "Agree an order and payment", "Review the result", "Distribute the reward"],
@@ -29,8 +29,8 @@ export const economyByLang: Record<Language, EconomyCopy> = {
   },
   ru: {
     title: "Люди + ИИ. Общий проект, понятный результат.",
-    lead: "Следующий этап ANCAP: автор задаёт проект, люди проверяют исходные данные, ИИ готовит черновик для проверки человеком. Первые пять карточек каталога — демо-проекты пользователя 3n3rgy.",
-    badge: "Предлагаемая модель проектов", limits: "Совместный каталог, проектные заказы, приёмка и выплаты участникам запланированы. Доступность и условия существующих платных workflow определяются отдельно.",
+    lead: "Автор публикует применение с понятным результатом; люди проверяют исходные данные, ИИ готовит черновик. Первые пять карточек — демо-проекты 3n3rgy. Заработок сегодня — через оплаченные запуски workflow; этот совместный каталог пока в предпросмотре.",
+    badge: "Предлагаемая модель проектов", limits: "Создание и заявки сообщества, а также выплаты участникам по совместным проектам ещё закрыты. Условия платных workflow определяются отдельно. Доход не гарантирован.",
     explore: "Изучить модель проектов", tests: "Посмотреть тестовые AI-проекты",
     authorPrefix: "Автор", home: "Главная ANCAP",
     steps: ["Опубликовать проект", "Подобрать участников", "Согласовать заказ и оплату", "Принять результат", "Распределить вознаграждение"],
@@ -45,8 +45,8 @@ export const economyByLang: Record<Language, EconomyCopy> = {
   },
   uk: {
     title: "Люди + ШІ. Спільний проєкт, визначений результат.",
-    lead: "Наступний етап ANCAP: автор визначає проєкт, люди перевіряють вхідні дані, ШІ готує чернетку для перевірки людиною. Перші п’ять карток каталогу — демо-проєкти користувача 3n3rgy.",
-    badge: "Запропонована модель проєктів", limits: "Спільний каталог, проєктні замовлення, приймання та виплати учасникам заплановані. Доступність і умови чинних платних workflow визначаються окремо.",
+    lead: "Автор публікує застосування з чітким результатом; люди перевіряють вхідні дані, ШІ готує чернетку. Перші п’ять карток — демо-проєкти 3n3rgy. Заробіток сьогодні — через оплачені запуски workflow; цей спільний каталог поки в попередньому перегляді.",
+    badge: "Запропонована модель проєктів", limits: "Створення й заявки спільноти, а також виплати учасникам за спільними проєктами ще закриті. Умови платних workflow визначаються окремо. Дохід не гарантовано.",
     explore: "Дослідити модель проєктів", tests: "Переглянути тестові AI-проєкти",
     authorPrefix: "Автор", home: "Головна ANCAP",
     steps: ["Опублікувати проєкт", "Знайти учасників", "Узгодити замовлення й оплату", "Прийняти результат", "Розподілити винагороду"],
@@ -61,8 +61,8 @@ export const economyByLang: Record<Language, EconomyCopy> = {
   },
   de: {
     title: "Menschen + KI. Ein gemeinsames Projekt, ein klares Ergebnis.",
-    lead: "Der nächste Schritt für ANCAP: Autoren beschreiben Projekte, Menschen prüfen die Eingaben und KI erstellt Entwürfe zur menschlichen Prüfung. Die ersten fünf Katalogkarten sind Demoprojekte von 3n3rgy.",
-    badge: "Vorgeschlagenes Projektmodell", limits: "Gemeinsamer Katalog, Projektaufträge, Abnahme und Auszahlungen an Beteiligte sind geplant. Für bestehende bezahlte Workflows gelten die jeweiligen Verfügbarkeiten und Bedingungen.",
+    lead: "Autoren veröffentlichen Anwendungen mit klarem Ergebnis; Menschen prüfen Eingaben, KI erstellt Entwürfe. Die ersten fünf Karten sind Demoprojekte von 3n3rgy. Verdienen Sie heute über bezahlte Workflow-Läufe; dieser gemeinsame Katalog bleibt in der Vorschau.",
+    badge: "Vorgeschlagenes Projektmodell", limits: "Community-Erstellung/Bewerbungen und Auszahlungen für gemeinsame Projekte sind noch geschlossen. Für bestehende bezahlte Workflows gelten eigene Bedingungen. Einnahmen sind nicht garantiert.",
     explore: "Projektmodell ansehen", tests: "KI-Testprojekte ansehen",
     authorPrefix: "Autor", home: "ANCAP-Startseite",
     steps: ["Projekt veröffentlichen", "Mitwirkende finden", "Auftrag und Zahlung vereinbaren", "Ergebnis abnehmen", "Vergütung verteilen"],
@@ -77,8 +77,8 @@ export const economyByLang: Record<Language, EconomyCopy> = {
   },
   "zh-Hant": {
     title: "人類 + AI：共同專案，明確成果。",
-    lead: "ANCAP 的下一步：作者定義專案，由人員核對輸入資料，AI 產生草稿，再由人員審核。目錄前五張卡片是使用者 3n3rgy 的示範專案。",
-    badge: "擬議專案模式", limits: "共同專案目錄、專案訂單、驗收與參與者付款尚在規劃中。現有付費工作流程各有其可用狀態與條款。",
+    lead: "作者發布具有明確成果的應用；人員核對輸入，AI 產生草稿供審核。前五張卡片是 3n3rgy 的示範專案。今日可透過付費工作流程執行獲得收益；此共同目錄仍為預覽。",
+    badge: "擬議專案模式", limits: "社群建立／申請與共同專案參與者付款尚未開放。現有付費工作流程各有條款。收益不作保證。",
     explore: "了解專案模式", tests: "查看 AI 測試專案",
     authorPrefix: "作者", home: "ANCAP 首頁",
     steps: ["發布專案", "尋找參與者", "議定訂單與付款", "驗收成果", "分配報酬"],
