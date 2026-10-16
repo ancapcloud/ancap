@@ -855,13 +855,13 @@ def _parse_recovery_locator_url(value: str):
 
 
 def _infer_recovery_locator_network(parsed_url) -> str | None:
-    hostname = parsed_url.netloc.lower()
+    hostname = (parsed_url.hostname or "").lower()
     pathname = parsed_url.path.lower()
 
-    if "bscscan.com" in hostname:
+    if (hostname == "bscscan.com" or hostname.endswith(".bscscan.com")):
         return "bsc"
 
-    if "ancap.cloud" in hostname and (
+    if (hostname == "ancap.cloud" or hostname.endswith(".ancap.cloud")) and (
         "/acp/tx" in pathname
         or "/acp/transactions" in pathname
         or "/explorer/tx" in pathname

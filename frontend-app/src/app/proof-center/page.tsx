@@ -86,7 +86,7 @@ export default function ProofCenterPage() {
                 {loading ? t("proofCenterPage.loading") : t("proofCenterPage.loadBundle")}
               </button>
               {runId && (
-                <Link href={`/ai/runs/${runId}`} className="rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
+                <Link href={`/ai/runs/${encodeURIComponent(runId)}`} className="rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
                   {t("proofCenterPage.openRun")}
                 </Link>
               )}

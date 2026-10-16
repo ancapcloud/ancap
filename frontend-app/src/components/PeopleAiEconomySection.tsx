@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useLanguage } from "./LanguageProvider";
 import { economyByLang } from "@/locales/economy";
+import { testProjectsByLang } from "@/locales/testProjects";
 import { presentationStyles as s } from "./WorkflowPresentation";
 
 export function PeopleAiEconomySection({ compact = false }: { compact?: boolean }) {
@@ -14,7 +15,7 @@ export function PeopleAiEconomySection({ compact = false }: { compact?: boolean 
     <div className={s.actions}>
       {compact && <Link className={s.secondary} href="/projects#people-ai-economy">{c.explore}</Link>}
       <Link className={s.secondary} href="/economy">{c.tests} →</Link>
-      <Link className={s.secondary} href="/projects#test-projects">{lang === "ru" ? "Песочница AI" : "AI sandbox"} →</Link>
+      <Link className={s.secondary} href="/projects#test-projects">{testProjectsByLang[lang].title} →</Link>
       <Link className={s.secondary} href="/ai/workflows">{c.browse}</Link>
       {!compact && <Link className={s.secondary} href="/">{c.home} →</Link>}
     </div>

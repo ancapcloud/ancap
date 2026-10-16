@@ -10,6 +10,14 @@ import {
 } from "./smart-pay-recovery";
 
 describe("smart pay recovery helpers", () => {
+  it("does not infer trusted networks from lookalike explorer domains", () => {
+    for (const hostname of ["bscscan.com.evil.example", "fakebasescan.org", "ancap.cloud.evil.example"]) {
+      const ref = normalizeSmartPayRecoveryRef(`https://${hostname}/acp/tx/fixture-tx-alpha`);
+      expect(ref?.network).toBeNull();
+    }
+    expect(normalizeSmartPayRecoveryRef("https://testnet.bscscan.com/tx/fixture-tx-alpha")?.network).toBe("bsc");
+  });
+
   it("parses explorer links into structured recovery refs with inferred network", () => {
     expect(
       normalizeSmartPayRecoveryRef("https://bscscan.com/tx/fixture-tx-alpha")

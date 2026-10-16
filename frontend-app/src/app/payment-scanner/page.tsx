@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { ApiError, paymentScanner } from "@/lib/api";
@@ -41,12 +41,13 @@ export default function PaymentScannerPage() {
   const textInputRef = useRef<HTMLInputElement | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+  }, [photoPreviewUrl]);
+
   function clearPhotoPreview() {
     setPhotoName("");
-    setPhotoPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
+    setPhotoPreviewUrl(null);
   }
 
   async function onParse(event: FormEvent) {
@@ -54,6 +55,7 @@ export default function PaymentScannerPage() {
     setBusy(true);
     setError("");
     setConfirmed(false);
+    setPreview(null);
     try {
       setPreview(await paymentScanner.parse(raw, source));
     } catch (err) {
@@ -70,6 +72,7 @@ export default function PaymentScannerPage() {
     setBusy(true);
     setError("");
     setConfirmed(false);
+    setPreview(null);
     clearPhotoPreview();
     try {
       const text = await file.text().catch(() => "");
@@ -94,7 +97,13 @@ export default function PaymentScannerPage() {
     setBusy(true);
     setError("");
     setConfirmed(false);
+    setPreview(null);
     clearPhotoPreview();
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      setError("Choose a JPEG, PNG, WebP or GIF image up to 10 MB.");
+      setBusy(false);
+      return;
+    }
     setPhotoName(file.name);
     setPhotoPreviewUrl(URL.createObjectURL(file));
     try {
@@ -158,6 +167,7 @@ export default function PaymentScannerPage() {
             <button
               key={mode}
               type="button"
+              disabled={busy}
               onClick={() => setSource(mode)}
               className={`rounded-full px-4 py-2 ${
                 source === mode ? "bg-emerald-400 text-slate-950" : "border border-white/15"
@@ -168,6 +178,7 @@ export default function PaymentScannerPage() {
           ))}
           <button
             type="button"
+            disabled={busy}
             onClick={() => textInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
@@ -175,6 +186,7 @@ export default function PaymentScannerPage() {
           </button>
           <button
             type="button"
+            disabled={busy}
             onClick={() => photoInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
@@ -190,7 +202,7 @@ export default function PaymentScannerPage() {
           <input
             ref={photoInputRef}
             type="file"
-            accept="image/*,.jpg,.jpeg,.png,.webp,.gif"
+            accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
             capture="environment"
             className="hidden"
             onChange={onPhotoSelected}
@@ -212,7 +224,12 @@ export default function PaymentScannerPage() {
                 : "acp:address?amount=10 or invoice text..."
             }
             value={raw}
-            onChange={(e) => setRaw(e.target.value)}
+            disabled={busy}
+            onChange={(e) => {
+              setRaw(e.target.value);
+              setPreview(null);
+              setConfirmed(false);
+            }}
           />
           <button
             type="submit"

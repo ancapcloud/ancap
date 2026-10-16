@@ -44,11 +44,11 @@ function inferRecoveryNetworkFromUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
   const pathname = url.pathname.toLowerCase();
 
-  if (hostname.includes("bscscan.com")) {
+  if ((hostname === "bscscan.com" || hostname.endsWith(".bscscan.com"))) {
     return "bsc";
   }
 
-  if (hostname.includes("basescan.org")) {
+  if ((hostname === "basescan.org" || hostname.endsWith(".basescan.org"))) {
     return "base";
   }
 
@@ -57,7 +57,7 @@ function inferRecoveryNetworkFromUrl(url: URL): string | null {
   }
 
   if (
-    hostname.includes("ancap.cloud")
+    (hostname === "ancap.cloud" || hostname.endsWith(".ancap.cloud"))
     && (pathname.includes("/acp/tx") || pathname.includes("/acp/transactions"))
   ) {
     return "acp";

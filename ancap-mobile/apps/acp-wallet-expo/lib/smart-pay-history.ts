@@ -434,16 +434,16 @@ function inferSmartPayNetworkFromExplorerUrl(value: string): string | null {
     const hostname = url.hostname.toLowerCase();
     const pathname = url.pathname.toLowerCase();
 
-    if (hostname.includes("bscscan.com")) {
+    if ((hostname === "bscscan.com" || hostname.endsWith(".bscscan.com"))) {
       return "bsc";
     }
-    if (hostname.includes("basescan.org")) {
+    if ((hostname === "basescan.org" || hostname.endsWith(".basescan.org"))) {
       return "base";
     }
     if (hostname === "etherscan.io" || hostname.endsWith(".etherscan.io")) {
       return "ethereum";
     }
-    if (hostname.includes("ancap.cloud") && (pathname.includes("/acp/tx") || pathname.includes("/acp/transactions"))) {
+    if ((hostname === "ancap.cloud" || hostname.endsWith(".ancap.cloud")) && (pathname.includes("/acp/tx") || pathname.includes("/acp/transactions"))) {
       return "acp";
     }
   } catch {
