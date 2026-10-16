@@ -373,6 +373,8 @@ class Settings(BaseSettings):
     ff_orbital_edge: bool = False
     ff_aeterna: bool = True
     ff_lunar_land: bool = True
+    # People + AI project economy: mutations (create/publish/apply). Platform seed catalog stays readable.
+    ff_project_economy: bool = False
     # Embodied / humanoid model adapters (UnifoLM etc.) — off until digest + review
     ff_embodied_adapter: bool = False
 

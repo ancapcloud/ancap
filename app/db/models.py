@@ -3527,3 +3527,85 @@ class WorkflowOperationRun(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     expires_at = Column(DateTime(timezone=True), nullable=True)
     __table_args__ = (Index("uq_workflow_ops_owner_request", "owner_user_id", "request_key", unique=True),)
+
+
+class EconomyProjectStatusEnum(str, enum.Enum):
+    draft = "draft"
+    published = "published"
+    archived = "archived"
+
+
+class EconomyProjectKindEnum(str, enum.Enum):
+    concept = "concept"
+    demo = "demo"
+    community = "community"
+
+
+class EconomyTaskAssigneeTypeEnum(str, enum.Enum):
+    human = "human"
+    agent = "agent"
+    either = "either"
+
+
+class EconomyApplicationStatusEnum(str, enum.Enum):
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+
+
+class EconomyProject(Base):
+    """People + AI project-economy catalog entry (Wave 1)."""
+
+    __tablename__ = "economy_projects"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    slug = Column(String(80), unique=True, nullable=False, index=True)
+    title = Column(String(160), nullable=False)
+    summary = Column(Text, nullable=False)
+    result_promise = Column(Text, nullable=False)
+    earning_model = Column(Text, nullable=True)
+    status = Column(String(24), nullable=False, default=EconomyProjectStatusEnum.draft.value, index=True)
+    kind = Column(String(24), nullable=False, default=EconomyProjectKindEnum.community.value)
+    seed_key = Column(String(40), nullable=True, unique=True, index=True)
+    is_platform_seed = Column(Boolean, nullable=False, default=False)
+    background_href = Column(String(200), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    tasks = relationship("EconomyTask", back_populates="project", cascade="all, delete-orphan")
+    owner = relationship("User", foreign_keys=[owner_user_id], lazy="select")
+
+
+class EconomyTask(Base):
+    __tablename__ = "economy_tasks"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    project_id = Column(UUID(as_uuid=False), ForeignKey("economy_projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(160), nullable=False)
+    acceptance_criteria = Column(Text, nullable=False)
+    stage_order = Column(Integer, nullable=False, default=0)
+    price_acp = Column(Numeric(36, 18), nullable=True)
+    assignee_type = Column(String(16), nullable=False, default=EconomyTaskAssigneeTypeEnum.human.value)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    project = relationship("EconomyProject", back_populates="tasks")
+    applications = relationship("EconomyApplication", back_populates="task", cascade="all, delete-orphan")
+
+
+class EconomyApplication(Base):
+    __tablename__ = "economy_applications"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    task_id = Column(UUID(as_uuid=False), ForeignKey("economy_tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    applicant_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(24), nullable=False, default=EconomyApplicationStatusEnum.pending.value)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    task = relationship("EconomyTask", back_populates="applications")
+
+    __table_args__ = (
+        Index("ix_economy_applications_task_user", "task_id", "applicant_user_id", unique=True),
+    )

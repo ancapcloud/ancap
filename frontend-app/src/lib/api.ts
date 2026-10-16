@@ -2536,6 +2536,56 @@ export const autonomy = {
   },
 };
 
+export type EconomyProject = {
+  id: string;
+  owner_user_id: string | null;
+  owner_display_name: string | null;
+  slug: string;
+  title: string;
+  summary: string;
+  result_promise: string;
+  earning_model: string | null;
+  status: "draft" | "published" | "archived";
+  kind: "concept" | "demo" | "community";
+  seed_key: string | null;
+  is_platform_seed: boolean;
+  background_href: string | null;
+  metadata_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  tasks: Array<{
+    id: string;
+    project_id: string;
+    title: string;
+    acceptance_criteria: string;
+    stage_order: number;
+    price_acp: string | null;
+    assignee_type: "human" | "agent" | "either";
+    created_at: string;
+  }>;
+};
+
+export type EconomyProjectList = {
+  items: EconomyProject[];
+  total: number;
+  mutations_enabled: boolean;
+  preview_only: boolean;
+};
+
+export const economy = {
+  async listProjects(params?: { mine?: boolean; limit?: number; offset?: number }) {
+    const search = new URLSearchParams();
+    if (params?.mine) search.set("mine", "true");
+    if (params?.limit != null) search.set("limit", String(params.limit));
+    if (params?.offset != null) search.set("offset", String(params.offset));
+    const query = search.toString();
+    return apiFetch(`/economy/projects${query ? `?${query}` : ""}`) as Promise<EconomyProjectList>;
+  },
+  async getProject(slug: string) {
+    return apiFetch(`/economy/projects/${encodeURIComponent(slug)}`) as Promise<EconomyProject>;
+  },
+};
+
 // Convenience aggregate export
 export const api = {
   auth,
@@ -2591,4 +2641,5 @@ export const api = {
   aeterna,
   settlements,
   autonomy,
+  economy,
 };

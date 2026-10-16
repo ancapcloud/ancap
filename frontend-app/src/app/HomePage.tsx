@@ -4,6 +4,9 @@ import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SolutionAreas, WorkflowFooter, presentationStyles as s } from "@/components/WorkflowPresentation";
 import { positioningByLang } from "@/locales/positioning";
+import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
+import { CreatorEarningsSection } from "@/components/CreatorEarningsSection";
+import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -22,6 +25,8 @@ export function HomePage() {
         {[[c.step1, c.step1Body], [c.step2, c.step2Body], [c.step3, c.step3Body], [c.step4, c.step4Body]].map(([title, body]) => <div className={s.flowRow} key={title}><strong>{title}</strong><p>{body}</p></div>)}
       </div>
     </section>
+    <ReviewTrustSection />
+    <PeopleAiEconomySection compact />
     <section className={s.section}><h2 className={s.heading}>{c.examples}</h2><p className={s.lead}>{c.examplesLead}</p>
       <div className={s.grid}>{examples.map((item) => <article key={item.href} className={s.card}><h3>{item.title}</h3><p>{item.body}</p><Link className={s.secondary} href={item.href}>{c.open} →</Link></article>)}</div>
     </section>
@@ -30,6 +35,7 @@ export function HomePage() {
       <div><p className={s.eyebrow}>{c.creators}</p><h2 className={s.heading}>{c.earn}</h2><p className={s.lead}>{c.earnBody}</p><div className={s.actions}><Link href="/dashboard/seller" className={s.primary}>{c.seller} →</Link></div></div>
       <div className={s.card}><h3>{c.api}</h3><p>{c.apiBody}</p><div className={s.actions}><Link className={s.secondary} href="/developers">API</Link><Link className={s.secondary} href="/mcp">MCP</Link><Link className={s.secondary} href="/proof-center">{c.trust}</Link></div></div>
     </div></section>
+    <CreatorEarningsSection />
     <section className={s.section} id="vision"><p className={s.eyebrow}>{c.investors}</p><h2 className={s.heading}>{c.investmentTitle}</h2><p className={s.lead}>{c.investmentLead}</p><div className={s.actions}><Link className={s.secondary} href="/investors">{c.investors} →</Link></div></section>
   </main><WorkflowFooter /></div>;
 }

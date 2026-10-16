@@ -6,6 +6,7 @@ import { WorkflowFooter, presentationStyles as s } from "@/components/WorkflowPr
 import { positioningByLang } from "@/locales/positioning";
 import { workflowOpsCopy } from "@/locales/workflowOps";
 import { DemoEvidencePanel } from "@/components/workflow/DemoEvidencePanel";
+import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
 
 export function InvestorOverview() {
   const { lang } = useLanguage();
@@ -19,6 +20,7 @@ export function InvestorOverview() {
     <section className={s.section}><h2 className={s.heading}>{c.model}</h2><p className={s.lead}>{c.modelBody}</p>
       <div className={s.actions}><Link href="/pricing" className={s.secondary}>{c.workflows}</Link><Link href="/dashboard/seller" className={s.secondary}>{c.creators}</Link><Link href="/projects" className={s.secondary}>{c.solutions}</Link></div>
     </section>
+    <PeopleAiEconomySection compact />
     <section className={s.section}><h2 className={s.heading}>{c.evidence}</h2><p className={s.lead}>{c.evidenceBody}</p>
       <section className={s.section}><h2 className={s.heading}>{workflowOpsCopy[lang].title}</h2><p className={s.lead}>{workflowOpsCopy[lang].lead}</p><div className={s.actions}><Link href="/ai/studio" className={s.primary}>{workflowOpsCopy[lang].trial}</Link><Link href="/docs/workflow-operations" className={s.secondary}>API / n8n</Link></div></section>
       <DemoEvidencePanel />

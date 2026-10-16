@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useLanguage } from "./LanguageProvider";
 import { portfolioByLang, solutionPortfolio } from "@/lib/solutionPortfolio";
 import { positioningByLang } from "@/locales/positioning";
+import { isTestProjectRoute } from "@/lib/testProjects";
+import { testProjectsByLang } from "@/locales/testProjects";
 import s from "./WorkflowPresentation.module.css";
 export { default as presentationStyles } from "./WorkflowPresentation.module.css";
 
@@ -19,7 +21,8 @@ export function SolutionAreas({ compact = false }: { compact?: boolean }) {
         <div className={s.deliverable}><strong>{c.output}</strong><p>{copy.deliverable}</p></div>
         {compact ? <Link className={s.projectLink} href={`/projects#${area.id}`}>{c.open} →</Link> : <>
           <strong className={s.eyebrow}>{c.projects}</strong>
-          <div className={s.projects}>{area.routes.map(([href, name]) => <Link key={href} href={href} className={s.projectLink}>{name}</Link>)}</div>
+          <div className={s.projects}>{area.routes.filter(([href]) => !isTestProjectRoute(href)).map(([href, name]) => <Link key={href} href={href} className={s.projectLink}>{name}</Link>)}</div>
+          {area.routes.some(([href]) => isTestProjectRoute(href)) && <div className={s.projects}><Link href="/projects#test-projects" className={s.projectLink}>{testProjectsByLang[lang].title} →</Link></div>}
         </>}
       </article>;
     })}
