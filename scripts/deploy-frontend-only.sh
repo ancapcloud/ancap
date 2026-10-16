@@ -44,10 +44,13 @@ def get(path):
         return response.read().decode()
 
 try:
-    assert 'id="smart-pay"' in get("/"), "homepage missing Smart Pay"
-    assert json.loads(get("/api/v1/system/ready"))["status"] == "ready", "API not ready"
+    if 'id="smart-pay"' not in get("/"):
+        raise ValueError("homepage missing Smart Pay")
+    if json.loads(get("/api/v1/system/ready"))["status"] != "ready":
+        raise ValueError("API not ready")
     build = json.loads(get("/internal/frontend-build"))["NEXT_PUBLIC_APP_BUILD_ID"]
-    assert build == sys.argv[1], f"build mismatch: {build} != {sys.argv[1]}"
+    if build != sys.argv[1]:
+        raise ValueError(f"build mismatch: {build} != {sys.argv[1]}")
 except Exception as error:
     print(f"Verification failed: {error}", file=sys.stderr)
     sys.exit(1)

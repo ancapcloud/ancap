@@ -93,6 +93,28 @@ CI is not a claim that every open security alert or roadmap item is complete.
 
 ## Release completion evidence
 
-Record final CI links, deployment SHA, post-deploy health and three-peer check
-results here once those operations finish. Local full-suite progress alone does
-not count as a completed test run.
+- First release `cb318c4`: [backend CI](https://github.com/ancapcloud/ancap/actions/runs/38926121481)
+  passed 934 tests (37 skipped), docs regressions, Bandit and Docker build.
+  [Frontend CI](https://github.com/ancapcloud/ancap/actions/runs/38926121628)
+  passed frontend/mobile SDK jobs and 43 browser scenarios.
+  [Deployment](https://github.com/ancapcloud/ancap/actions/runs/38926121813),
+  CodeQL, Docs CI and Secret Hygiene passed.
+- Rebuilt local node supports supply RPC and HTTPS sync. The legacy data directory
+  was retained as `Sicret/acp-node-data-host-legacy-20261016`; the default data
+  directory now holds independently synchronized and validated chain state.
+  All three peers passed the new supply/tip acceptance check.
+- Dependency follow-up updates eight Python packages (aiohttp, mako, multidict,
+  python-multipart, starlette, urllib3, web3, yarl), with Linux-resolved pins and
+  PyPI artifact hashes. Local `pip check`, 108 targeted backend tests and 39 unit
+  tests passed after the upgrade.
+- Mobile security patch refreshes compatible XML, URI, brace-expansion, HTTP,
+  YAML, CSS, source-map and test-runner dependencies. Existing Expo/RN major
+  versions and the uncommitted native-wallet manifest change remain separate.
+  Updated mobile/SDK tests (295), typecheck and SDK build passed locally.
+- Remaining npm advisories involving Expo/RN/tooling need separate compatibility
+  work, including advisories without an upstream patch. They are not all fixed
+  by this release. Physical device/store-release gates also remain open.
+
+Record final dependency-release CI links, deployment SHA and post-deploy checks
+after those operations finish. Interrupted local full-suite runs are not counted
+as completed test runs; the clean GitHub full run above is the completed evidence.

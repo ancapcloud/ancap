@@ -112,7 +112,7 @@ def test_mobile_workspace_tooling_is_consolidated_at_root():
     root_dev_dependencies = mobile_manifest["devDependencies"]
 
     assert root_dev_dependencies["typescript"] == "^5.7.2"
-    assert root_dev_dependencies["vitest"] == "^4.1.9"
+    assert root_dev_dependencies["vitest"] == "^4.1.11"
 
     for manifest_path in ANCAP_MOBILE_WORKSPACE_MANIFESTS:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
