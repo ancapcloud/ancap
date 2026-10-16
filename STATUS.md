@@ -5,7 +5,7 @@
 
 ## Current truth
 
-**Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; People + AI section full; six areas positioned as today’s map, not a closed list. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos). Plan: `docs/PLAN_PEOPLE_AI_IMPLEMENTATION_RU.md`.
+**Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
 
 **People + AI Project Economy (2026-10-16):** Showcase + catalog foundation — tables/API `/economy/*`, UI `/economy`, five demo cards owned by **3n3rgy**. Migrations `088_project_economy` + `089_economy_seed_owner`. Payout/acceptance not started.
 

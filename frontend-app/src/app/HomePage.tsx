@@ -42,6 +42,31 @@ export function HomePage() {
           </div>
         </section>
 
+        <section className={s.section} id="smart-pay" aria-labelledby="smart-pay-title">
+          <p className={s.eyebrow}>ANCAP / {c.smartPay}</p>
+          <h2 id="smart-pay-title" className={s.heading}>{c.smartPay}</h2>
+          <p className={s.lead}>{c.smartPayLead}</p>
+          <p className={s.note}>{c.smartPayLimits}</p>
+          <ol className={s.grid} style={{ padding: 0, listStyle: "none" }}>
+            {[
+              [c.smartPayStep1, c.smartPayStep1Body],
+              [c.smartPayStep2, c.smartPayStep2Body],
+              [c.smartPayStep3, c.smartPayStep3Body],
+              [c.smartPayStep4, c.smartPayStep4Body],
+            ].map(([title, body]) => (
+              <li className={s.card} key={title}>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className={s.actions}>
+            <Link className={s.primary} href="/payment-scanner">{c.smartPayCta} →</Link>
+            <Link className={s.secondary} href="/ai/workflows">{c.browse} →</Link>
+          </div>
+          <p className={s.note}>{c.smartPayMobile}</p>
+        </section>
+
         <PeopleAiEconomySection />
         <CreatorEarningsSection />
 

@@ -4,7 +4,7 @@ import type { Language } from "@/locales/translations";
 export const solutionPortfolio = [
   { id: "crypto", kind: "core", routes: [["/markets", "Markets"], ["/business", "Business"], ["/growth", "Growth"], ["/agency", "Agency"]] },
   { id: "business", kind: "partner", routes: [["/startups", "Startups"], ["/counsel", "Counsel"], ["/insurance", "Insurance"], ["/compliance", "Compliance"], ["/careers", "Careers"]] },
-  { id: "commerce", kind: "partner", routes: [["/flora", "FLORA"], ["/literary", "Literary"], ["/marketplace", "Marketplace"], ["/field-services", "Field services"], ["/starlink-install", "Starlink"], ["/antique-fire-restore", "Antique conservation"], ["/humanitarian", "Humanitarian"]] },
+  { id: "commerce", kind: "partner", routes: [["/payment-scanner", "Smart Pay"], ["/flora", "FLORA"], ["/literary", "Literary"], ["/marketplace", "Marketplace"], ["/field-services", "Field services"], ["/starlink-install", "Starlink"], ["/antique-fire-restore", "Antique conservation"], ["/humanitarian", "Humanitarian"]] },
   { id: "life", kind: "research", routes: [["/aeterna", "AETERNA"], ["/dna-bank", "DNA bank"], ["/cryo", "Cryo"], ["/saliva-rx", "Saliva Rx"], ["/fauna", "FAUNA"]] },
   { id: "infrastructure", kind: "research", routes: [["/tech", "Technology"], ["/perimeter", "Perimeter"], ["/galaxy", "Galaxy"], ["/lunar", "Lunar"], ["/stardust", "Stardust"], ["/quantum-sim", "Quantum SIM"]] },
   { id: "community", kind: "pilot", routes: [["/nexus", "Nexus"], ["/dating", "Dating"], ["/entertainment", "Entertainment"], ["/arena", "Arena"], ["/feed", "Feed"]] },

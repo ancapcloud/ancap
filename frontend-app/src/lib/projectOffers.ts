@@ -36,6 +36,7 @@ export const projectOfferDefs: OfferDef[] = [
   { href: "/insurance", offerKind: "concept", workflowSlugs: [] },
   { href: "/compliance", offerKind: "executable", workflowSlugs: ["ai-iso-governance-readiness-pack", "compliance-pack"] },
   { href: "/careers", offerKind: "concept", workflowSlugs: [] },
+  { href: "/payment-scanner", offerKind: "executable", workflowSlugs: [] },
   { href: "/flora", offerKind: "desk", workflowSlugs: [] },
   { href: "/literary", offerKind: "desk", workflowSlugs: [] },
   { href: "/marketplace", offerKind: "desk", workflowSlugs: [] },

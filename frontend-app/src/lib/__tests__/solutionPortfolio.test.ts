@@ -62,9 +62,9 @@ describe("public workflow presentation", () => {
       expect(localized!.receipt.trim()).not.toBe("");
     }
   });
-  it("has complete localized copy for all 32 offers without English fallback", () => {
+  it("has complete localized copy for all 33 offers without English fallback", () => {
     const routes = projectOffers.map(offer => offer.href).sort();
-    expect(routes).toHaveLength(32);
+    expect(routes).toHaveLength(33);
     for (const lang of ["en", "ru", "uk", "de", "zh-Hant"] as const) {
       expect(Object.keys(offerCopyByLang[lang]).sort(), lang).toEqual(routes);
       for (const href of routes) {

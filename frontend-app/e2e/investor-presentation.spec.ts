@@ -29,6 +29,8 @@ test("public presentation explains the workflow product in five languages", asyn
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(positioningByLang[lang].title);
     await expect(page.getByLabel("Локальное время, погода AccuWeather и поддержка")).toHaveCount(0);
     await expect(page.locator("#people-ai-economy")).toBeVisible();
+    await expect(page.locator("#smart-pay")).toBeVisible();
+    await expect(page.getByRole("link", { name: `${positioningByLang[lang].smartPayCta} →`, exact: true }).first()).toHaveAttribute("href", "/payment-scanner");
     await expect(page.getByRole("link", { name: `${positioningByLang[lang].economyLink} →`, exact: true }).first()).toHaveAttribute("href", "/economy");
   }
 });
