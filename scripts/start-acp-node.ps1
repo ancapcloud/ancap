@@ -46,6 +46,8 @@ elseif (-not (Test-Path -LiteralPath $nodeBin)) { $needsBuild = $true }
 elseif (-not $SkipBuild) {
     $srcRoot = Join-Path $crateDir "src"
     $man = @((Join-Path $crateDir "Cargo.toml"), (Join-Path $srcRoot "main.rs"), (Join-Path $srcRoot "vesting.rs"), (Join-Path $srcRoot "enforced_vesting.rs"))
+    $workspaceRoot = Split-Path $crateDir -Parent
+    $man += (Join-Path $workspaceRoot "Cargo.lock"), (Join-Path $workspaceRoot "Cargo.toml"), (Join-Path $workspaceRoot "acp-crypto\Cargo.toml")
     $stale = $false
     if (Test-Path -LiteralPath $nodeBin) {
         $exeT = (Get-Item -LiteralPath $nodeBin).LastWriteTimeUtc
@@ -53,7 +55,7 @@ elseif (-not $SkipBuild) {
             if ((Test-Path -LiteralPath $p) -and ((Get-Item -LiteralPath $p).LastWriteTimeUtc -gt $exeT)) { $stale = $true; break }
         }
         if (-not $stale) {
-            $allRs = Get-ChildItem -Path $srcRoot -Recurse -File -Filter "*.rs" -ErrorAction SilentlyContinue
+            $allRs = Get-ChildItem -Path $srcRoot, (Join-Path $workspaceRoot "acp-crypto\src") -Recurse -File -Filter "*.rs" -ErrorAction SilentlyContinue
             if ($allRs) {
                 $newest = ($allRs | Measure-Object -Property LastWriteTimeUtc -Maximum).Maximum
                 if ($newest -and $newest -gt $exeT) { $stale = $true }
@@ -74,10 +76,11 @@ if ($needsBuild -and -not $SkipBuild) {
     Push-Location $crateDir
     try {
         if ($MainnetVestingBuild) {
-            cargo build --release --features enforced-creator-vesting
+            cargo build --release -p acp-node --target-dir (Join-Path $crateDir "target") --features enforced-creator-vesting
         } else {
-            cargo build --release
+            cargo build --release -p acp-node --target-dir (Join-Path $crateDir "target")
         }
+        if ($LASTEXITCODE -ne 0) { throw "acp-node build failed (exit $LASTEXITCODE); refusing to start a stale binary" }
     } finally {
         Pop-Location
     }
@@ -160,8 +163,19 @@ if ($Background) {
         }
     }
     if (-not $launched) { throw "Could not start background shell for acp-node (no pwsh/powershell in PATH). Run without -Background or add PowerShell 7+ to PATH." }
-    Start-Sleep -Seconds 2
+    $probeHost = ($RpcListen -split ':')[0]
+    if ($probeHost -eq '0.0.0.0') { $probeHost = '127.0.0.1' }
+    $probePort = ($RpcListen -split ':')[-1]
+    $rpcReady = $false
+    for ($attempt = 0; $attempt -lt 10; $attempt++) {
+        Start-Sleep -Seconds 1
+        try {
+            $probe = Invoke-RestMethod -Uri "http://${probeHost}:${probePort}/rpc" -Method Post -ContentType 'application/json' -Body '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' -TimeoutSec 2
+            if ($null -ne $probe.result -and $null -eq $probe.error) { $rpcReady = $true; break }
+        } catch { }
+    }
     if (Test-Path $logFile) { Get-Content -Path $logFile -Tail 15 }
+    if (-not $rpcReady) { throw "acp-node did not become ready; inspect $logFile" }
 }
 else {
     Write-Host "Starting in foreground (Ctrl+C to stop)..." -ForegroundColor Cyan

@@ -20,10 +20,11 @@ Push-Location $crateDir
 try {
     if ($MainnetVesting) {
         Write-Host "Building with --features enforced-creator-vesting" -ForegroundColor Yellow
-        cargo build --release --features enforced-creator-vesting
+        cargo build --release -p acp-node --target-dir (Join-Path $crateDir "target") --features enforced-creator-vesting
     } else {
-        cargo build --release
+        cargo build --release -p acp-node --target-dir (Join-Path $crateDir "target")
     }
+    if ($LASTEXITCODE -ne 0) { throw "acp-node build failed (exit $LASTEXITCODE)" }
 } finally {
     Pop-Location
 }

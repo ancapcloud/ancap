@@ -3,13 +3,21 @@ set -euo pipefail
 cd /opt/ancap-migration/current
 COMPOSE="docker compose -f docker-compose.prod.yml"
 
+fetched=0
 for attempt in 1 2 3 4 5; do
-  if timeout 120 git fetch origin master && git reset --hard origin/master; then
+  if timeout 120 git fetch origin master; then
+    fetched=1
     break
   fi
   echo "git fetch failed (attempt ${attempt}/5)"
   sleep 10
 done
+if [[ "$fetched" -ne 1 ]]; then
+  echo "Failed to fetch master; refusing to deploy an old checkout." >&2
+  exit 1
+fi
+git reset --hard origin/master
+docker compose -f docker-compose.prod.yml config --quiet
 
 export APP_BUILD_ID="$(git rev-parse --short HEAD)"
 echo "APP_BUILD_ID=$APP_BUILD_ID"
@@ -20,14 +28,38 @@ timeout 900 $COMPOSE build frontend
 echo "== restart frontend + proxy"
 timeout 120 $COMPOSE up -d frontend proxy
 
-echo "== verify homepage has MCP section"
-sleep 8
-html="$(timeout 30 curl -sf http://127.0.0.1/ 2>/dev/null || timeout 30 curl -sf -H 'Host: ancap.cloud' http://127.0.0.1/ || true)"
-if echo "$html" | grep -q 'id="mcp"'; then
-  echo "OK homepage contains #mcp"
-else
-  echo "WARN #mcp not found in homepage HTML yet (may need cache warm)"
-fi
+echo "== verify homepage, readiness and deployed build through compose proxy"
+verified=0
+for attempt in 1 2 3 4 5 6; do
+  if python3 - "$APP_BUILD_ID" <<'PY'
+import json
+import sys
+import urllib.request
 
-echo "== frontend build id"
-timeout 15 curl -sf -H 'Host: ancap.cloud' http://127.0.0.1/internal/frontend-build || true
+def get(path):
+    request = urllib.request.Request(
+        "http://127.0.0.1:8080" + path, headers={"Host": "ancap.cloud"}
+    )
+    with urllib.request.urlopen(request, timeout=15) as response:
+        return response.read().decode()
+
+try:
+    assert 'id="smart-pay"' in get("/"), "homepage missing Smart Pay"
+    assert json.loads(get("/api/v1/system/ready"))["status"] == "ready", "API not ready"
+    build = json.loads(get("/internal/frontend-build"))["NEXT_PUBLIC_APP_BUILD_ID"]
+    assert build == sys.argv[1], f"build mismatch: {build} != {sys.argv[1]}"
+except Exception as error:
+    print(f"Verification failed: {error}", file=sys.stderr)
+    sys.exit(1)
+PY
+  then
+    verified=1
+    break
+  fi
+  sleep 5
+done
+if [[ "$verified" -ne 1 ]]; then
+  echo "Frontend deployment verification failed." >&2
+  exit 1
+fi
+echo "OK frontend build $APP_BUILD_ID and API readiness verified"

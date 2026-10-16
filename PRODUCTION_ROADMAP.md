@@ -1,5 +1,12 @@
 # ANCAP Production Roadmap
 
+## Stabilization — 2026-10-16
+
+See [verification and the next development plan](docs/PROJECT_STABILIZATION_2026-10-16.md)
+for homepage checks, three-peer acceptance, payment-preview and explorer-hostname
+fixes, deployment gates and remaining security/mobile release work. Release
+completion requires final CI and deployed build verification.
+
 ## Contributor navigation fix — 2026-10-15
 
 PR #93 merged with nested-route section highlighting, including desktop menus and mobile navigation. Current-master frontend tests/build and PR CI passed. Build `5ac4676` is deployed and verified on desktop/mobile. GitHub private vulnerability reporting is enabled; see `SECURITY.md` and [release evidence](docs/NAVIGATION_CONTRIBUTION_RELEASE_2026-10-15.md).

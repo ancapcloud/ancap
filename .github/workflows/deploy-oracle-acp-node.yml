@@ -23,6 +23,9 @@ on:
         default: https://acp1.ancap.cloud/rpc
         type: string
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-oracle-acp-node
   cancel-in-progress: false

@@ -1,5 +1,15 @@
 # ANCAP Master Roadmap
 
+## Stabilization and next development — 2026-10-16
+
+Homepage/mobile presentation and primary/Oracle chain state checked. Payment
+preview invalidation, explorer hostname validation, local node build targeting
+and fail-closed frontend deployment checks are being released. Acceptance and
+the ordered P0–P3 development plan are in
+[the stabilization record](docs/PROJECT_STABILIZATION_2026-10-16.md).
+Existing uncommitted native/bridge/SACP work remains separate; physical mobile
+sign-off and unresolved security findings are not marked complete.
+
 ## Contributor navigation fix — 2026-10-15
 
 [PR #93](https://github.com/ancapcloud/ancap/pull/93) by `dcode333` is merged: nested routes retain the longest matching navigation section on desktop and mobile, with current-page accessibility attributes. Integration with current master passed 60 frontend tests and production build; PR CI passed 38 browser scenarios, SDK, CodeQL and secret checks. Build `5ac4676` is deployed and verified on desktop/mobile. GitHub private vulnerability reporting is enabled and linked from `SECURITY.md`. [Release evidence](docs/NAVIGATION_CONTRIBUTION_RELEASE_2026-10-15.md).
@@ -79,7 +89,7 @@ Active remaining work (not blockers):
 1. ACP mobile wallet — device-ready release (Play/TestFlight, physical sign-off, iOS native). Local Android test env is available (`docs/mobile/ANDROID_TEST_ENV.md`).
 2. Open-source follow-through — GitHub org naming/ownership; `ancap-docs` Discussions pin/category UI; project-board auth. Phase 1 community files (`README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) are **in the repo root** and on the public GitHub repo.
 3. Monetization depth — optional conversion/LTV. The first ACP-first revenue loop is **live**. Stripe 4.1 is operator live verification only.
-4. **Oracle Cloud Always Free ACP node** — secondary Ampere A1 (ARM64) full node / public peer. Account registered; VM + `linux/arm64` image + peer sync open. Plan: [`docs/ORACLE_CLOUD_ACP_NODE_PLAN.md`](docs/ORACLE_CLOUD_ACP_NODE_PLAN.md).
+4. **Oracle Cloud Always Free ACP node** — secondary x86_64 full node is live and agrees with primary at height 18 (verified 2026-10-16). Ampere A1 ARM64 migration and public DNS/TLS remain follow-up. Plan: [`docs/ORACLE_CLOUD_ACP_NODE_PLAN.md`](docs/ORACLE_CLOUD_ACP_NODE_PLAN.md).
 
 Humanitarian aid desk (`/humanitarian`, `/legal/humanitarian`, `GET /v1/humanitarian/catalog`) shipped 2026-09-12: ACP briefs for food, water, nutrition, warm clothing, medical supplies (partner channel), and livelihood matching, with IFRC / national Red Cross listings as **desk handoffs**. **Not** a 135-FZ charity, **not** a signed ICRC/IFRC partnership, **not** an emblem licence, **not** a tax-deductible donation receipt, and **distinct** from the 100 ACP welcome grant.
 
