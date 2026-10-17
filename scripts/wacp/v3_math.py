@@ -154,5 +154,7 @@ def deploy_from_usdt_budget(
 
 
 def acp_smallest_to_wacp_human(acp_smallest: int) -> Decimal:
-    """8-dec ACP smallest → 18-dec wACP human amount."""
-    return Decimal(acp_smallest) / Decimal(10**8)
+    """8-dec ACP smallest → human wACP at bridge ratio 1 ACP = 10 wACP."""
+    from app.services.bridge_decimal import WACP_PER_ACP
+
+    return (Decimal(acp_smallest) / Decimal(10**8)) * Decimal(WACP_PER_ACP)

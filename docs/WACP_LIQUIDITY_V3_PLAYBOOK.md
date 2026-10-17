@@ -39,7 +39,8 @@ Core rules:
 | Bridge conversion | `wacp_wei = acp_smallest × 10^10` |
 | `USDT` (BSC) | `0x55d398326f99059fF775485246999027B3197955` |
 | V2 canonical pair | `0xF391ca2bcBaB93Afa23326ebF1e35DB950841601` |
-| V3 pool | Set via `WACP_V3_POOL` env after deployment |
+| V3 pool (bootstrap) | `0xe626bd3ef516c4f784e5d5fb46e297d9c0d7f5e1` (`WACP_V3_POOL`) |
+| Oracle on V3 | Only when `WACP_ORACLE_USE_V3=true` after quote smoke |
 | Primary fee tier | 2500 (0.25%) unless live pool differs |
 | Default range | ±20% around approved P0 |
 
@@ -95,7 +96,8 @@ When order size exceeds **~25%** of estimated active V3 depth at current price, 
 - Web: [`/buy-acp`](https://ancap.cloud/buy-acp) copy + mobile Exchange tab tickets
 - Mobile foundation: [`docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md`](./mobile/EXCHANGE_OFFICE_FOUNDATION.md)
 
-Platform fee recycling: [`docs/FINANCE_MODEL.md`](./FINANCE_MODEL.md) — wrap approved tranche → V3 top-up on a weekly operator cadence.
+Platform fee recycling: [`docs/FINANCE_MODEL.md`](./FINANCE_MODEL.md) — wrap approved tranche → V3 top-up on a weekly operator cadence.  
+Eligibility check: `python scripts/wacp/fee_recycle_check.py` (or jobs tick `wacp_liquidity.fee_recycle`). Do not recycle until platform ledger revenue meets `WACP_FEE_RECYCLE_MIN_REVENUE_ACP` (default 50 ACP). Spend path: [GOLDEN_PATH_ACP_SPEND.md](./GOLDEN_PATH_ACP_SPEND.md).
 
 ## Infinity evaluation gate (monitoring only)
 
