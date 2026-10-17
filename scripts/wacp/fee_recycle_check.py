@@ -15,7 +15,7 @@ import argparse
 import json
 import sys
 import urllib.request
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -23,16 +23,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.services.market_economy import OFFICIAL_WACP_POOL_V3  # noqa: E402
+from app.services.wacp_fee_recycle import _to_dec, _revenue_from_status  # noqa: E402
 
 DEFAULT_MIN = Decimal("50")
 DEFAULT_POOL = OFFICIAL_WACP_POOL_V3
-
-
-def _dec(raw: object) -> Decimal:
-    try:
-        return Decimal(str(raw or "0"))
-    except (InvalidOperation, ValueError, TypeError):
-        return Decimal("0")
 
 
 def _fetch_treasury(base_url: str) -> dict:
@@ -52,22 +46,20 @@ def main() -> int:
         "--min-revenue-acp",
         type=str,
         default=str(DEFAULT_MIN),
-        help="Minimum ledger revenue_30d (or revenue_total) ACP",
+        help="Minimum ledger revenue_30d ACP (positive finite threshold)",
     )
     parser.add_argument("--v3-pool", default=DEFAULT_POOL)
     args = parser.parse_args()
 
-    min_rev = _dec(args.min_revenue_acp)
     try:
+        min_rev = _to_dec(args.min_revenue_acp)
+        if min_rev <= 0:
+            raise ValueError("Threshold must be positive")
         status = _fetch_treasury(args.base_url)
+        revenue = _revenue_from_status(status)
     except Exception as exc:
         print(json.dumps({"eligible": False, "error": str(exc)[:300]}, indent=2))
         return 1
-
-    ledger = status.get("ledger") or {}
-    revenue = _dec(ledger.get("revenue_30d"))
-    if revenue <= 0:
-        revenue = _dec(ledger.get("revenue_total"))
 
     eligible = revenue >= min_rev
     out = {
@@ -75,7 +67,9 @@ def main() -> int:
         "ledger_revenue_acp": format(revenue, "f"),
         "min_revenue_acp": format(min_rev, "f"),
         "v3_pool": args.v3_pool.lower(),
-        "oracle_use_v3": False,
+        "oracle_use_v3": None,
+        "oracle_status": "not_checked",
+        "revenue_window": "30d",
         "action": (
             "Approve fee tranche → wrap wACP → Add Liquidity on V3 (human-signed). "
             "Do not mint to the pool. Do not wash trade."

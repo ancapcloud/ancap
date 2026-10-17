@@ -10,6 +10,51 @@ import pytest
 from app.services.wacp_fee_recycle import fee_recycle_eligibility
 
 
+def test_operator_cli_preserves_zero_window_and_does_not_invent_oracle_state(monkeypatch, capsys):
+    import json
+    from scripts.wacp import fee_recycle_check as cli
+    monkeypatch.setattr("sys.argv", ["fee_recycle_check.py"])
+    monkeypatch.setattr(cli, "_fetch_treasury", lambda _: {"ledger": {"revenue_30d": "0", "revenue_total": "999"}})
+    assert cli.main() == 2
+    report = json.loads(capsys.readouterr().out)
+    assert report["eligible"] is False
+    assert report["ledger_revenue_acp"] == "0"
+    assert report["oracle_use_v3"] is None
+
+
+@pytest.mark.parametrize("threshold", ["0", "-1", "NaN", "Infinity", "bad"])
+def test_operator_cli_rejects_invalid_threshold_before_network(monkeypatch, capsys, threshold):
+    import json
+    from scripts.wacp import fee_recycle_check as cli
+    monkeypatch.setattr("sys.argv", ["fee_recycle_check.py", "--min-revenue-acp", threshold])
+    def must_not_fetch(_):
+        raise AssertionError("Invalid thresholds must be rejected before network access")
+    monkeypatch.setattr(cli, "_fetch_treasury", must_not_fetch)
+    assert cli.main() == 1
+    assert json.loads(capsys.readouterr().out)["eligible"] is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("revenue", ["0", "NaN", "Infinity", "-1", None, "bad"])
+async def test_no_historical_fallback_or_nonfinite_approval(monkeypatch, revenue):
+    monkeypatch.setattr("app.services.project_treasury.treasury_status", AsyncMock(
+        return_value={"ledger": {"revenue_30d": revenue, "revenue_total": "99999"}}))
+    out = await fee_recycle_eligibility(AsyncMock())
+    assert out["eligible"] is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("threshold", ["0", "-1", "NaN", "Infinity", "bad", ""])
+async def test_invalid_threshold_fails_closed(monkeypatch, threshold):
+    monkeypatch.setattr("app.services.wacp_fee_recycle.get_settings", lambda: SimpleNamespace(
+        wacp_fee_recycle_min_revenue_acp=threshold, wacp_v3_pool="", wacp_oracle_use_v3=False))
+    monkeypatch.setattr("app.services.project_treasury.treasury_status", AsyncMock(
+        return_value={"ledger": {"revenue_30d": "999"}}))
+    out = await fee_recycle_eligibility(AsyncMock())
+    assert out["eligible"] is False
+    assert out["input_valid"] is False
+
+
 @pytest.mark.asyncio
 async def test_fee_recycle_not_eligible_below_threshold(monkeypatch):
     status = SimpleNamespace(

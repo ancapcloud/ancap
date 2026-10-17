@@ -266,7 +266,7 @@ class Settings(BaseSettings):
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
     # Shadow-first Tron USDT deposit watcher for swap desk (no ACP payout automation).
     ff_swap_deposit_watcher: bool = False
-    swap_deposit_watcher_mode: str = "shadow"  # shadow | pending_review
+    swap_deposit_watcher_mode: str = "shadow"  # only shadow accepted until claim reconciliation
     tron_grid_api_url: str = "https://api.trongrid.io"
     tron_grid_api_key: str = ""
     usdt_trc20_contract: str = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
@@ -410,7 +410,7 @@ class Settings(BaseSettings):
     wacp_v3_position_nft: str = ""
     # Keep false until quote_smoke $100/$250/$500 slippage is acceptable.
     wacp_oracle_use_v3: bool = False
-    # Minimum platform ledger revenue (ACP, 7d) before fee→V3 recycle is eligible.
+    # Minimum platform ledger revenue (ACP, 30d) before fee→V3 recycle is eligible.
     wacp_fee_recycle_min_revenue_acp: str = "50"
     bridge_gateway_contract: str = ""
     # Public transparency flags (do not hardcode true in API responses).
