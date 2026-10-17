@@ -76,3 +76,15 @@ def test_summarize_helio_webhook():
     )
     assert meta["transaction_id"] == "tx9"
     assert meta["paylink_id"] == "pl1"
+
+
+def test_webhook_log_tokens_cannot_inject_lines_or_terminal_controls(caplog):
+    import logging
+    malicious = "payment\r\nFORGED\t\x1b[31m\u2028" + "x" * 200
+    with caplog.at_level(logging.INFO, logger=helio.__name__):
+        helio.summarize_helio_webhook({"event": malicious,
+            "transactionObject": {"id": malicious, "paylinkId": malicious, "status": malicious}})
+    assert len(caplog.records) == 1
+    message = caplog.records[0].getMessage()
+    assert all(char not in message for char in "\r\n\t\x1b\u2028")
+    assert len(helio._safe_log_token(malicious)) <= 64

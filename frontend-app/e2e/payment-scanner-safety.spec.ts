@@ -43,3 +43,21 @@ test("unsupported images are rejected before uploading", async ({ page }) => {
   await expect(page.getByText("Choose a JPEG, PNG, WebP or GIF image up to 10 MB.")).toBeVisible();
   expect(uploads).toBe(0);
 });
+
+test("a spoofed raster upload cannot execute script through the blob image preview", async ({ page }) => {
+  const dialogs: string[] = [];
+  page.on("dialog", async dialog => { dialogs.push(dialog.message()); await dialog.dismiss(); });
+  await page.route("**/payment-scanner/parse-image", route => route.fulfill({ json: {
+    detected_network: "acp", address: "acp1fixture", amount: "10", currency: "ACP",
+    confidence: 0.8, parse_notes: ["<img src=x onerror=alert('note-xss')>"],
+    label: "<script>window.__scannerXss = true</script>",
+  } }));
+  await page.locator('input[type="file"]').nth(1).setInputFiles({
+    name: "invoice.png", mimeType: "image/png",
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" onload="window.__scannerXss=true;alert(1)"></svg>'),
+  });
+  await expect(page.getByText("Label: <script>window.__scannerXss = true</script>", { exact: true })).toBeVisible();
+  await expect(page.locator('img[alt="invoice.png"]')).toHaveAttribute("src", /^blob:/);
+  expect(await page.evaluate(() => (window as Window & { __scannerXss?: boolean }).__scannerXss)).toBeUndefined();
+  expect(dialogs).toEqual([]);
+});
