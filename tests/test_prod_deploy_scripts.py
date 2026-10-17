@@ -4,6 +4,8 @@ import os
 import shlex
 import shutil
 import subprocess
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -26,6 +28,21 @@ VALID_PROD_ENV = {
 }
 
 
+@contextmanager
+def _isolated_preflight_repo(env: dict[str, str]):
+    """Never let default-path preflight cases load the developer's real .env."""
+    # WSL can briefly retain a Windows directory handle after its shell exits.
+    with tempfile.TemporaryDirectory(prefix="ancap-preflight-", ignore_cleanup_errors=True) as directory:
+        temp_root = Path(directory).resolve()
+        assert temp_root.is_relative_to(Path(tempfile.gettempdir()).resolve())
+        repo = _stage_minimal_prod_repo(temp_root, script_names=(
+            "deploy-ancap-cloud.ps1", "rebuild-prod.ps1", "deploy-ancap-cloud.sh",
+        ), dotenv_text="", bridge_env_text="")
+        tools, _ = _make_fake_tool_dir(temp_root)
+        isolated_env = {**env, "PATH": str(tools) + os.pathsep + env.get("PATH", "")}
+        yield repo, isolated_env
+
+
 def _prod_env(**overrides: str) -> dict[str, str]:
     env = os.environ.copy()
     env.update(VALID_PROD_ENV)
@@ -39,6 +56,9 @@ def _run_deploy_powershell(
     *,
     skip_post_deploy_checks: bool = True,
 ) -> subprocess.CompletedProcess[str]:
+    if repo_root == REPO_ROOT:
+        with _isolated_preflight_repo(env) as (repo, isolated_env):
+            return _run_deploy_powershell(isolated_env, repo, skip_post_deploy_checks=skip_post_deploy_checks)
     command = [
         "powershell",
         "-NoProfile",
@@ -56,10 +76,14 @@ def _run_deploy_powershell(
         text=True,
         capture_output=True,
         check=False,
+        timeout=60,
     )
 
 
 def _run_rebuild_powershell(env: dict[str, str], repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
+    if repo_root == REPO_ROOT:
+        with _isolated_preflight_repo(env) as (repo, isolated_env):
+            return _run_rebuild_powershell(isolated_env, repo)
     return subprocess.run(
         [
             "powershell",
@@ -72,6 +96,7 @@ def _run_rebuild_powershell(env: dict[str, str], repo_root: Path = REPO_ROOT) ->
         text=True,
         capture_output=True,
         check=False,
+        timeout=60,
     )
 
 
@@ -81,26 +106,50 @@ def _run_deploy_bash(
     *,
     skip_post_deploy_checks: bool = True,
 ) -> subprocess.CompletedProcess[str]:
+    if repo_root == REPO_ROOT:
+        with _isolated_preflight_repo(env) as (repo, isolated_env):
+            return _run_deploy_bash(isolated_env, repo, skip_post_deploy_checks=skip_post_deploy_checks)
+    env = env.copy()
+    env.pop("BASH_ENV", None)
+    env.pop("ENV", None)
+    # WSL does not automatically import arbitrary Windows environment names.
+    # These tests cover deployment orchestration, not a real public RPC probe.
+    env["ANCAP_SKIP_ACP1_DEPLOY_SMOKE"] = "1"
     export_pairs = " ".join(
         f"{name}={shlex.quote(env[name])}"
-        for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN"]
+        for name in ["DATABASE_URL", "POSTGRES_PASSWORD", "SECRET_KEY", "CURSOR_SECRET", "CRON_SECRET", "ACP_RPC_TOKEN", "ANCAP_SKIP_ACP1_DEPLOY_SMOKE"]
         if name in env
     )
     bootstrap = f"export {export_pairs}; " if export_pairs else ""
+    # WSL's login profile may reset the inherited Windows PATH, bypassing the
+    # fake docker/git scripts. Resolve and verify those tools before deployment.
+    tool_dir = Path(env["PATH"].split(os.pathsep)[0])
+    assert (tool_dir / "docker").is_file() and (tool_dir / "git").is_file()
+    bash_tools = tool_dir.as_posix()
+    if len(bash_tools) >= 3 and bash_tools[1:3] == ":/":
+        bash_tools = f"/mnt/{bash_tools[0].lower()}/{bash_tools[3:]}"
+    bootstrap += f'export PATH={shlex.quote(bash_tools)}:"$PATH"; hash -r; '
+    for name in ("docker", "git"):
+        expected = shlex.quote(f"{bash_tools}/{name}")
+        bootstrap += f'test "$(command -v {name})" = {expected} || exit 97; '
     command = "bash scripts/deploy-ancap-cloud.sh --skip-git-pull --skip-migrations"
     if skip_post_deploy_checks:
         command += " --skip-post-deploy-checks"
-    return subprocess.run(
-        [
-            "bash",
-            "-lc",
-            f"{bootstrap}{command}",
-        ],
+    result = subprocess.run(
+        ["bash", "-s"],
+        # Binary stdin preserves LF on Windows; text mode would append CR to
+        # the last flag and silently change the tested deployment behavior.
+        input=f"{bootstrap}{command}\n".encode("utf-8"),
         cwd=repo_root,
         env=env,
-        text=True,
         capture_output=True,
         check=False,
+        timeout=60,
+    )
+    return subprocess.CompletedProcess(
+        result.args, result.returncode,
+        result.stdout.decode("utf-8", errors="replace"),
+        result.stderr.decode("utf-8", errors="replace"),
     )
 
 
@@ -120,6 +169,7 @@ def _run_prod_compose_config_quiet(
         text=True,
         capture_output=True,
         check=False,
+        timeout=60,
     )
 
 
@@ -136,9 +186,12 @@ def _stage_minimal_prod_repo(
     for script_name in script_names:
         shutil.copy2(REPO_ROOT / "scripts" / script_name, repo_root / "scripts" / script_name)
     if "deploy-ancap-cloud.sh" in script_names:
-        ensure = REPO_ROOT / "scripts" / "ensure-acp1-host-proxy.sh"
-        if ensure.is_file():
-            shutil.copy2(ensure, repo_root / "scripts" / "ensure-acp1-host-proxy.sh")
+        # This helper runs host nginx/sudo operations before --skip-post-deploy-checks.
+        # Runtime deploy tests must stub that external operation, not execute it.
+        (repo_root / "scripts" / "ensure-acp1-host-proxy.sh").write_text(
+            '#!/usr/bin/env bash\nprintf "%s\\n" "Host proxy ensure stub (test only)"\n',
+            encoding="utf-8", newline="\n",
+        )
     if dotenv_text is not None:
         (repo_root / ".env").write_text(dotenv_text, encoding="utf-8", newline="")
     if bridge_env_text is not None:

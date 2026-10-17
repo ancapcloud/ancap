@@ -48,8 +48,8 @@ def test_starlink_quote_standard(client):
     assert Decimal(body["total_eur"]) == Decimal("153")
     assert Decimal(body["total_usdt"]) == Decimal("153")
     assert body["payment_currency"] == "ACP"
-    assert float(body["amount_acp"]) > 0
-    assert float(body["amount_wacp"]) == float(body["amount_acp"]) * 10
+    assert Decimal(body["amount_acp"]) > 0
+    assert Decimal(body["amount_wacp"]) == Decimal(body["amount_acp"]) * 10
     assert body["workflow_slug"] == "starlink-standard"
     assert "Germany" in body["provider_location"] or "NRW" in body["provider_location"]
 
