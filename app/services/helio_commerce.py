@@ -69,6 +69,13 @@ def verify_helio_webhook_signature(raw_body: bytes, signature_header: str | None
         return False
 
 
+def _safe_log_token(value: Any, *, max_len: int = 64) -> str:
+    """Strip control chars so webhook fields cannot inject multiline log entries."""
+    raw = "" if value is None else str(value)
+    cleaned = "".join(ch for ch in raw if ch.isprintable() and ch not in "\r\n\t")
+    return cleaned[:max_len]
+
+
 def summarize_helio_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     event = payload.get("event")
     tx = payload.get("transactionObject") or payload.get("transaction") or {}
@@ -83,10 +90,10 @@ def summarize_helio_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     }
     logger.info(
         "helio_webhook event=%s transaction_id=%s paylink_id=%s status=%s",
-        meta.get("event"),
-        meta.get("transaction_id"),
-        meta.get("paylink_id"),
-        meta.get("status"),
+        _safe_log_token(meta.get("event")),
+        _safe_log_token(meta.get("transaction_id")),
+        _safe_log_token(meta.get("paylink_id")),
+        _safe_log_token(meta.get("status")),
     )
     return meta
 

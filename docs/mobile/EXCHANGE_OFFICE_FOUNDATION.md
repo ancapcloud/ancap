@@ -62,11 +62,19 @@ Creating an OTC metal/goods ticket also opens an `acp_otc_intake_orders` row and
 
 ## Out of this foundation
 
-- Automated Tron deposit watcher / ACP payout hot-wallet (still desk-assisted after deposit)
+- ACP payout hot-wallet automation (still desk-assisted / user-signed after deposit)
 - Live metal market feed / DEX router signing
 - Full operator UI beyond admin `POST .../complete`
 - Fiat partner on-ramp execute
 - Full in-app bridge intent create from Exchange tab (handoff text + sync only)
+
+## Deposit watcher (shadow-first)
+
+- Service: `app/services/swap_tron_deposit_watcher.py`
+- Jobs tick key: `swap_deposit_watcher` (behind `FF_SWAP_DEPOSIT_WATCHER`, default off)
+- Modes: `shadow` (audit only) · `pending_review` (sets `tron_txid` + status; **no ACP transfer**)
+- Checkpoint: `bridge_watcher_checkpoints.chain_key=tron_usdt_swap`
+- Replay/idempotency: duplicate `tron_txid` / audit payload skipped; ambiguous same-amount orders logged, not claimed
 
 ## Files
 

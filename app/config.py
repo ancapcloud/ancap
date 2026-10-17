@@ -264,6 +264,12 @@ class Settings(BaseSettings):
     # Wallet swap MVP
     ff_web_usdt_trc20_swap: bool = False
     usdt_trc20_deposit_address: str = "TNAbqPprJmqRa33UoRvYnUsVfDSgrJc3W1"
+    # Shadow-first Tron USDT deposit watcher for swap desk (no ACP payout automation).
+    ff_swap_deposit_watcher: bool = False
+    swap_deposit_watcher_mode: str = "shadow"  # shadow | pending_review
+    tron_grid_api_url: str = "https://api.trongrid.io"
+    tron_grid_api_key: str = ""
+    usdt_trc20_contract: str = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
     # Emergency pin only when wacp_oracle_pin_desk=true; otherwise desk = 1 / wACP oracle.
     usdt_trc20_to_acp_rate: str = "1"
     wacp_oracle_pin_desk: bool = False
