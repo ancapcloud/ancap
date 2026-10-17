@@ -1,9 +1,9 @@
 # ANCAP ACP Wallet — Roadmap
 
-> Status: supporting mobile roadmap | Updated: 2026-07-02
-> Last verified: 2026-07-02
+> Status: supporting mobile roadmap | Updated: 2026-10-14
+> Last verified: 2026-10-14
 > Source of truth for cross-project execution priority: `MASTER_ROADMAP.md`
-> Current reality: the mobile wallet is far along, but it is **not** release-ready yet. Android `.so` artifact emission is now verified on the current Windows host; the main remaining work is Android/iOS runtime verification, iOS macOS-Xcode packaging, real device verification, security checklist completion, and store/release work.
+> Current reality: Android emulator create→save address match verified (`Pixel_10_Pro` + UniFFI `.so`). Keystore must be chunked in SecureStore (Android 2048-byte limit). Stable restore path is **keystore JSON**, not mnemonic alone (Dilithium RNG). Local sign UI added (no broadcast); funded sign still needs operator test ACP. iOS packaging + physical PIN/biometrics still open.
 > Fast status index: `docs/STATUS_MATRIX.md`
 
 Official **non-custodial** mobile wallet for ACP (native) and wACP (BSC).
@@ -49,7 +49,7 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|---------|
 | P2-1 | `@ancap/acp-wallet-sdk` types + interface | [x] | `ancap-mobile/packages/acp-wallet-sdk` |
 | P2-2 | `parseUnits` / `formatUnits` (8 decimals) | [x] | pure TS |
-| P2-3 | Native bridge stub → FFI | [~] | `createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore`, native validate exports wired in SDK; full native app verification still pending |
+| P2-3 | Native bridge stub → FFI | [~] | `createWallet`, `signTransfer`, `estimateFeeDefault`, `addressFromKeystore` wired; Android emulator create/save verified 2026-10-14; funded local-sign + physical-device still pending |
 | P2-4 | `@ancap/acp-api-client` | [x] | config, network status, balance/history/detail, device registration/listing, broadcast + fee flows; build clean, 12 tests passing |
 | P2-5 | `@ancap/acp-bridge-client` | [x] | status, reserve proof, redeem quote, and authenticated intent create/list helpers; build clean, 9 tests passing |
 | P2-6 | `@ancap/acp-bsc-client` | [x] | read-only wACP balance helpers; build clean, 13 tests passing |
@@ -79,15 +79,15 @@ One codebase: **React Native + TypeScript** → iOS + Android builds.
 |----|------|--------|--------|
 | P4-1 | Expo app (`apps/acp-wallet-expo`) | [x] | expo-router |
 | P4-2 | Navigation (onboarding + home) | [x] | |
-| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |
+| P4-3 | Welcome / Create / Import | [~] | Android emulator: create + save address match verified 2026-10-14 (`acp1…` roundtrip on home). Create Copy → document export file + clipboard; Import paste / Load export file with `v:3` validation. Keystore-first restore; mnemonic-only non-stable. iOS still depends on P1-7 |
 | P4-4 | Tabs: Wallet / Exchange / Activity / Send / Bridge / Settings | [x] | Exchange tab = ACP-hub multi-asset desk foundation |
 | P4-5 | Receive + QR | [x] | |
 | P4-6 | Send UI + broadcast API | [x] | sign needs native module |
-| P4-7 | Backup + confirm seed | [x] | backup prompt before save; native FFI still needed for real generation |
+| P4-7 | Backup + confirm seed | [x] | Explicit clipboard + optional document export file on Copy only (no SecureStore stash); wipe deletes export file; mnemonic optional; paste / load-export-file import |
 | P4-8 | PIN + biometrics | [~] | PIN lock + biometric unlock preference wired in Expo app; still needs real device verification |
-| P4-9 | SecureVault (Keychain / Keystore) | [~] | device-only SecureStore wired; enabling biometrics now migrates mnemonic + keystore into biometric-gated secure storage and adds iOS Face ID permission config; real device verification still pending |
+| P4-9 | SecureVault (Keychain / Keystore) | [~] | Chunked SecureStore (1800B) + generation commit-after-verify; wipeVault clears active/incomplete/legacy/stash **and** document-dir `acp-keystore-export.json`; Copy reports clipboard-only when file write unavailable; regenerate deletes stale export; unit tests vault/chunk/export. Physical biometric sign-off still pending |
 | P4-10 | Dashboard (ACP + wACP) | [x] | wACP via BSC RPC (fetchWacpBalanceWei); ACP via ACP API |
-| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] | Send UI has **Sign locally (no broadcast)**; native `signTransfer` linked on Android. Funded local-sign + broadcast still need operator-agreed test network/funds; iOS still depends on P1-7 |
 | P4-12 | Transaction history | [x] | |
 | P4-13 | Bridge flows | [~] | status tab now uses real bridge client for live status, reserve proof, redeem quote, and market links; authenticated intents still v1.1 |
 | P4-14 | Settings + legal links | [x] | Terms, privacy, bridge docs, reserve proof, support |
@@ -156,7 +156,7 @@ Each employee receives **3 Apple Watches** with distinct bands. One is active on
 |----|------|--------|
 | P6-1 | Unit tests (SDK decimals, API client) | [x] | `vitest` across the mobile packages; latest consolidated snapshot: 56 tests across 5 packages |
 | P6-2 | API integration tests | [x] | `tests/api/test_mobile_acp.py` |
-| P6-3 | Device matrix (iOS + Android) | [~] | Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |
+| P6-3 | Device matrix (iOS + Android) | [~] | Android emulator create/save verified 2026-10-14 on `Pixel_10_Pro`; physical PIN/biometrics + iOS matrix rows still open |
 | P6-4 | TestFlight + Play Internal | [~] | local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |
 | P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
 | P6-6 | Production v1.0.0 | [~] | Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |
@@ -218,7 +218,8 @@ Scope truth:
 
 The original 8–12 week estimate is no longer the right way to read this document. The project is now in the late-stage completion zone, where the remaining duration depends mostly on host/tooling blockers and release verification:
 
-- Android real runtime/device verification with the emitted `.so` artifacts (host-side `assembleDebug` is now verified on the current Windows machine)
+- Android physical-device PIN/biometrics/MASVS sign-off (emulator create/save + UniFFI link verified 2026-10-14; funded local-sign still needs test ACP)
+- Android 16 KB page-size ELF alignment warning on API 36 emulator (compat mode; follow-up for store builds)
 - macOS/Xcode packaging for iOS native artifacts
 - real device verification of create/send/lock/unlock/biometric flows
 - MASVS/security checklist closure

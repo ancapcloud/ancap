@@ -307,6 +307,28 @@ pub fn acp_import_mnemonic(mnemonic: String) -> Result<String, AcpWalletExceptio
     })
 }
 
+/// Rebuild from mnemonic only — NOT a stable restore path.
+/// Dilithium keygen uses OsRng at create time; only keystore v3 roundtrips the address.
+/// Kept for smoke tests that assert mnemonic ≠ original address.
+pub fn acp_import_wallet(mnemonic: String) -> Result<CreatedWallet, AcpWalletException> {
+    let words = mnemonic.split_whitespace().collect::<Vec<_>>().join(" ");
+    let (id, seed) = identity_from_mnemonic(&words)?;
+    let address = id.receive_address_v0().map_err(|e| AcpWalletException::Internal {
+        message: e.to_string(),
+    })?;
+    let keystore = id.to_keystore_v3(&seed).map_err(|e| AcpWalletException::Internal {
+        message: e.to_string(),
+    })?;
+    let keystore_json = serde_json::to_string(&keystore).map_err(|e| AcpWalletException::Internal {
+        message: e.to_string(),
+    })?;
+    Ok(CreatedWallet {
+        address,
+        mnemonic: words,
+        keystore_json,
+    })
+}
+
 pub fn acp_address_from_keystore(keystore_json: String) -> Result<String, AcpWalletException> {
     let id = identity_from_keystore_json(&keystore_json)?;
     id.receive_address_v0().map_err(|e| AcpWalletException::Internal {

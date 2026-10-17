@@ -43,6 +43,37 @@ export default function SendScreen() {
     }
   };
 
+  const onSignLocal = async () => {
+    setBusy(true);
+    setPreview("");
+    try {
+      const vault = await loadVault();
+      if (!vault) throw new Error(t("send.noWalletOnDevice"));
+
+      const signed = await signAndPrepareTransfer(RPC_URL, vault.keystoreJson, {
+        from: vault.address,
+        to: to.trim(),
+        amountAcp: amount.trim(),
+        feeAcp: fee.trim() || undefined,
+      });
+
+      setPreview(t("send.signedLocalPreview", { txid: signed.txid }));
+      Alert.alert(
+        t("send.signedLocalTitle"),
+        t("send.signedLocalBody", { txid: signed.txid })
+      );
+    } catch (e) {
+      const msg = safeErrorMessage(e, t("send.signFailedTitle"));
+      if (msg.includes("native module")) {
+        Alert.alert(t("send.nativeSigningRequiredTitle"), t("send.nativeSigningRequiredBody"));
+      } else {
+        Alert.alert(t("send.signFailedTitle"), msg);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onSend = async () => {
     setBusy(true);
     setPreview("");
@@ -115,7 +146,11 @@ export default function SendScreen() {
         <Text style={styles.secondaryText}>{t("send.estimateFee")}</Text>
       </Pressable>
 
-      <Pressable style={styles.primary} onPress={onSend} disabled={busy}>
+      <Pressable style={styles.secondary} onPress={() => void onSignLocal()} disabled={busy}>
+        <Text style={styles.secondaryText}>{t("send.signLocalOnly")}</Text>
+      </Pressable>
+
+      <Pressable style={styles.primary} onPress={() => void onSend()} disabled={busy}>
         {busy ? (
           <ActivityIndicator color="#042f1a" />
         ) : (

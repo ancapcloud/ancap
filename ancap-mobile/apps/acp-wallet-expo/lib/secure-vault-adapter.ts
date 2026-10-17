@@ -23,12 +23,16 @@ export const expoSecureVault: SecureVault = {
   },
   async loadMnemonic(): Promise<string> {
     const vault = await loadVault();
-    if (!vault?.mnemonic) {
-      throw new Error("No wallet mnemonic in secure vault.");
+    const mnemonic = vault?.mnemonic?.trim();
+    if (!mnemonic) {
+      throw new Error(
+        "No wallet mnemonic in secure vault. Restore used keystore-only import; seed notes were not stored."
+      );
     }
-    return vault.mnemonic;
+    return mnemonic;
   },
   async wipe(): Promise<void> {
+    // wipeVault also deletes the document-dir keystore export file.
     await wipeVault();
   },
 };

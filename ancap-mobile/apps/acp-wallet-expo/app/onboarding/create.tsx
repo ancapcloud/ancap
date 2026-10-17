@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { createWallet, safeErrorMessage } from "@ancap/acp-wallet-sdk";
+import { deleteKeystoreExportFile, writeKeystoreExportFile } from "@/lib/keystore-export";
 import { saveVault } from "@/lib/vault";
 
 // P5-2: block screenshots while seed phrase is visible
@@ -37,6 +39,8 @@ export default function CreateWalletScreen() {
   const onGenerate = async () => {
     setBusy(true);
     try {
+      // Drop any prior Copy export so regenerate cannot leave a stale backup file.
+      await deleteKeystoreExportFile();
       const w = await createWallet();
       const wordsList = w.mnemonic.split(/\s+/).filter(Boolean);
       setWords(wordsList);
@@ -71,6 +75,28 @@ export default function CreateWalletScreen() {
         { text: t("createWallet.backupDone"), style: "cancel" },
         { text: t("createWallet.backupReview"), style: "destructive" },
       ]
+    );
+  };
+
+  const onCopyKeystore = async () => {
+    if (!keystoreJson) {
+      Alert.alert(t("createWallet.generateFirst"));
+      return;
+    }
+    // Explicit external export only: clipboard + optional document-dir file for the user to pull.
+    // Never write a hidden SecureStore stash copy.
+    await Clipboard.setStringAsync(keystoreJson);
+    let fileWritten = false;
+    try {
+      fileWritten = await writeKeystoreExportFile(keystoreJson);
+    } catch {
+      fileWritten = false;
+    }
+    Alert.alert(
+      t("createWallet.keystoreCopiedTitle"),
+      fileWritten
+        ? t("createWallet.keystoreCopiedBody")
+        : t("createWallet.keystoreCopiedClipboardOnlyBody")
     );
   };
 
@@ -120,6 +146,11 @@ export default function CreateWalletScreen() {
 
       {words.length > 0 ? (
         <>
+          <Text style={styles.keystoreNote}>{t("createWallet.keystoreNote")}</Text>
+          <Pressable style={styles.secondary} onPress={() => void onCopyKeystore()}>
+            <Text style={styles.secondaryText}>{t("createWallet.copyKeystore")}</Text>
+          </Pressable>
+
           <Pressable style={styles.warning} onPress={onBackupConfirm}>
             <Text style={styles.warningText}>{t("createWallet.readBeforeContinuing")}</Text>
           </Pressable>
@@ -147,6 +178,7 @@ const styles = StyleSheet.create({
   },
   word: { color: "#f5f7ff", marginBottom: 6, fontSize: 16 },
   addr: { color: "#6ee7b7", marginBottom: 20, fontSize: 13 },
+  keystoreNote: { color: "#fbbf24", marginBottom: 12, lineHeight: 20, fontSize: 13 },
   primary: {
     backgroundColor: "#10b981",
     paddingVertical: 16,
@@ -161,6 +193,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 12,
+    marginTop: 12,
   },
   warningText: { color: "#fecaca", textAlign: "center", fontWeight: "600" },
   secondary: {
@@ -168,6 +201,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 14,
     borderRadius: 12,
+    marginBottom: 12,
   },
   secondaryText: { color: "#f5f7ff", textAlign: "center" },
 });

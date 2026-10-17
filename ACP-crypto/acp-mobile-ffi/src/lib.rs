@@ -4,8 +4,8 @@ mod wallet_core;
 
 pub use wallet_core::{
     acp_address_from_keystore, acp_address_from_mnemonic, acp_create_wallet, acp_estimate_fee_default,
-    acp_import_mnemonic, acp_sign_transfer, acp_validate_address, AcpWalletException, CreatedWallet,
-    FeeEstimate, SignedTransfer,
+    acp_import_mnemonic, acp_import_wallet, acp_sign_transfer, acp_validate_address, AcpWalletException,
+    CreatedWallet, FeeEstimate, SignedTransfer,
 };
 
 #[uniffi::export]
