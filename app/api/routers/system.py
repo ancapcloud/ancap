@@ -514,7 +514,9 @@ async def _run_all_jobs(session: DbSession) -> dict:
     try:
         from app.services.swap_tron_deposit_watcher import tick_swap_tron_deposits
 
-        swap_deposit_watcher = await tick_swap_tron_deposits(session)
+        # A watcher DB failure must not poison the shared jobs transaction.
+        async with session.begin_nested():
+            swap_deposit_watcher = await tick_swap_tron_deposits(session)
     except Exception as exc:
         swap_deposit_watcher = {"ok": False, "error": str(exc)[:200]}
     mobile_indexer = await mobile_acp_indexer_tick(session)

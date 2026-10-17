@@ -86,6 +86,76 @@ def test_match_wrong_address_ignored():
     assert match_transfer_to_order(transfer, orders, DEPOSIT) is None
 
 
+@pytest.mark.parametrize("changes", [
+    {"deposit_trc20_address": "TOther"},
+    {"deposit_trc20_address": DEPOSIT.lower()},
+    {"tron_txid": "already-used-elsewhere"},
+    {"usdt_trc20_amount": Decimal("NaN")},
+    {"usdt_trc20_amount": Decimal("25.000001")},
+])
+def test_match_rejects_wrong_order_address_claim_or_amount(changes):
+    transfer = ObservedTronTransfer("new-tx", Decimal("25"), DEPOSIT, 1000)
+    assert match_transfer_to_order(transfer, [_order(**changes)], DEPOSIT) is None
+
+
+def test_existing_txid_does_not_bypass_amount_validation():
+    transfer = ObservedTronTransfer("existing", Decimal("1"), DEPOSIT, 1000)
+    assert match_transfer_to_order(transfer, [_order(tron_txid="existing")], DEPOSIT) is None
+
+
+def test_fetch_paginates_confirmed_transfers_with_fixed_filters(monkeypatch):
+    import json
+    from urllib.parse import urlparse, parse_qs
+    from app.services.swap_tron_deposit_watcher import default_transfer_fetcher
+    contract = "USDT-contract"
+    monkeypatch.setattr("app.services.swap_tron_deposit_watcher.get_settings", lambda: SimpleNamespace(
+        tron_grid_api_url="https://example.test", tron_grid_api_key="test-key", usdt_trc20_contract=contract))
+    def item(tx):
+        return {"transaction_id": tx, "to": DEPOSIT, "value": "25000000", "block_timestamp": 1000,
+                "type": "Transfer", "token_info": {"address": contract, "decimals": 6}}
+    pages = [{"data": [item("a" * 64)], "meta": {"fingerprint": "next page"}}, {"data": [item("b" * 64)]}]
+    requests = []
+    def urlopen(req, **_):
+        requests.append(req)
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps(pages.pop(0)).encode()
+        return response
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    out = default_transfer_fetcher(DEPOSIT, 0)
+    assert [x.txid for x in out] == ["a" * 64, "b" * 64]
+    queries = [parse_qs(urlparse(req.full_url).query) for req in requests]
+    assert queries[0]["only_confirmed"] == ["true"]
+    assert queries[1].pop("fingerprint") == ["next page"]
+    assert queries[0] == queries[1]
+
+
+@pytest.mark.parametrize("body", [{"success": False, "data": []}, {"data": [{}]}, {"unexpected": []}])
+def test_provider_failure_is_not_an_empty_success(monkeypatch, body):
+    import json
+    from app.services.swap_tron_deposit_watcher import default_transfer_fetcher
+    response = MagicMock()
+    response.__enter__.return_value.read.return_value = json.dumps(body).encode()
+    monkeypatch.setattr("urllib.request.urlopen", lambda *_a, **_k: response)
+    with pytest.raises(RuntimeError):
+        default_transfer_fetcher(DEPOSIT, 0)
+
+
+@pytest.mark.asyncio
+async def test_failed_fetch_does_not_advance_checkpoint(monkeypatch):
+    settings = SimpleNamespace(ff_swap_deposit_watcher=True, swap_deposit_watcher_mode="shadow",
+                               usdt_trc20_deposit_address=DEPOSIT)
+    monkeypatch.setattr("app.services.swap_tron_deposit_watcher.get_settings", lambda: settings)
+    checkpoint = SimpleNamespace(last_block_height=1234)
+    session = AsyncMock()
+    session.get.return_value = checkpoint
+    def fail(*_):
+        raise TimeoutError("remote text")
+    out = await tick_swap_tron_deposits(session, fetch_transfers=fail)
+    assert out["ok"] is False
+    assert checkpoint.last_block_height == 1234
+    session.execute.assert_not_awaited()
+
+
 @pytest.mark.asyncio
 async def test_tick_skipped_when_flag_off(monkeypatch):
     settings = SimpleNamespace(ff_swap_deposit_watcher=False)
@@ -116,7 +186,7 @@ async def test_tick_shadow_does_not_claim(monkeypatch):
     seen_order.scalar_one_or_none.return_value = None
     execute_results.append(seen_order)
     seen_audit = MagicMock()
-    seen_audit.scalars.return_value.all.return_value = []
+    seen_audit.scalar_one_or_none.return_value = None
     execute_results.append(seen_audit)
 
     session.execute = AsyncMock(side_effect=execute_results)
@@ -147,7 +217,7 @@ async def test_tick_shadow_does_not_claim(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_tick_pending_review_claims_once(monkeypatch):
+async def test_tick_pending_review_fails_closed(monkeypatch):
     order = _order(usdt_trc20_amount=Decimal("7"))
     checkpoint = SimpleNamespace(chain_key="tron_usdt_swap", last_block_height=0, updated_at=None)
     session = AsyncMock()
@@ -160,7 +230,7 @@ async def test_tick_pending_review_claims_once(monkeypatch):
     seen_order = MagicMock()
     seen_order.scalar_one_or_none.return_value = None
     seen_audit = MagicMock()
-    seen_audit.scalars.return_value.all.return_value = []
+    seen_audit.scalar_one_or_none.return_value = None
     session.execute = AsyncMock(side_effect=[open_result, seen_order, seen_audit])
 
     settings = SimpleNamespace(
@@ -179,9 +249,11 @@ async def test_tick_pending_review_claims_once(monkeypatch):
         )
     ]
     out = await tick_swap_tron_deposits(session, fetch_transfers=lambda *_: transfers)
-    assert out["claimed"] == 1
-    assert order.status == "pending_review"
-    assert order.tron_txid == "claimme"
+    assert out["ok"] is False
+    assert "shadow_only" in out["error"]
+    assert order.status == "awaiting_deposit"
+    assert order.tron_txid is None
+    session.execute.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -201,7 +273,7 @@ async def test_tick_duplicate_txid_skipped(monkeypatch):
 
     settings = SimpleNamespace(
         ff_swap_deposit_watcher=True,
-        swap_deposit_watcher_mode="pending_review",
+        swap_deposit_watcher_mode="shadow",
         usdt_trc20_deposit_address=DEPOSIT,
     )
     monkeypatch.setattr("app.services.swap_tron_deposit_watcher.get_settings", lambda: settings)

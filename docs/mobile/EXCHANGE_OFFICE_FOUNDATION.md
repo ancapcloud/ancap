@@ -72,7 +72,7 @@ Creating an OTC metal/goods ticket also opens an `acp_otc_intake_orders` row and
 
 - Service: `app/services/swap_tron_deposit_watcher.py`
 - Jobs tick key: `swap_deposit_watcher` (behind `FF_SWAP_DEPOSIT_WATCHER`, default off)
-- Modes: `shadow` (audit only) · `pending_review` (sets `tron_txid` + status; **no ACP transfer**)
+- Modes: `shadow` (audit only) · `pending_review (disabled by engineering audit until durable claim reconciliation)` (sets `tron_txid` + status; **no ACP transfer**)
 - Checkpoint: `bridge_watcher_checkpoints.chain_key=tron_usdt_swap`
 - Replay/idempotency: duplicate `tron_txid` / audit payload skipped; ambiguous same-amount orders logged, not claimed
 
@@ -85,3 +85,10 @@ Creating an OTC metal/goods ticket also opens an `acp_otc_intake_orders` row and
 - `app/db/models.py` → `AcpExchangeTicket`
 - `alembic/versions/062_exchange_office.py`
 - `ancap-mobile/apps/acp-wallet-expo/app/(tabs)/exchange.tsx`
+
+Audit follow-up: watcher matching is observation-only. All non-shadow modes fail
+closed. Queries paginate confirmed USDT with fixed filters, replay a 24-hour
+overlap and leave the cursor unchanged on failed/incomplete fetches. This is not
+exactly-once crediting: durable per-transfer identity, DB uniqueness/locking,
+network-specific reconciliation and shared-address attribution remain gates.
+Provider contract: https://developers.tron.network/reference/get-trc20-transaction-info-by-account-address

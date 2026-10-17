@@ -1,16 +1,18 @@
 """USDT TRC-20 deposit watcher for ACP swap desk (shadow-first).
 
-Read-only: observes transfers into the shared deposit address, matches open
-``AcpSwapOrder`` rows, and either audits (shadow) or advances to
-``pending_review`` (still no ACP payout / no Tron spend keys).
+Read-only: observes confirmed transfers into the shared deposit address and
+audits candidate matches. Non-shadow mode fails closed pending claim controls.
 """
 
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import logging
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 from typing import Any, Callable, Iterable, Sequence
 from uuid import uuid4
 
@@ -25,7 +27,6 @@ logger = logging.getLogger(__name__)
 CHECKPOINT_KEY = "tron_usdt_swap"
 EVENT_SHADOW = "swap_deposit_shadow"
 EVENT_CLAIM = "swap_deposit_pending_review"
-AMOUNT_TOLERANCE = Decimal("0.000001")
 
 
 @dataclass(frozen=True)
@@ -52,13 +53,14 @@ def _normalize_addr(addr: str | None) -> str:
 
 
 def _amounts_match(expected: Decimal, observed: Decimal) -> bool:
-    return abs(expected - observed) <= AMOUNT_TOLERANCE
+    return expected.is_finite() and observed.is_finite() and expected > 0 and observed > 0 and expected == observed
 
 
-async def _load_checkpoint(session: AsyncSession) -> BridgeWatcherCheckpoint:
-    row = await session.get(BridgeWatcherCheckpoint, CHECKPOINT_KEY)
+async def _load_checkpoint(session: AsyncSession, scope: str) -> BridgeWatcherCheckpoint:
+    key = CHECKPOINT_KEY + "_" + hashlib.sha256(scope.encode()).hexdigest()[:16]
+    row = await session.get(BridgeWatcherCheckpoint, key)
     if row is None:
-        row = BridgeWatcherCheckpoint(chain_key=CHECKPOINT_KEY, last_block_height=0)
+        row = BridgeWatcherCheckpoint(chain_key=key, last_block_height=0)
         session.add(row)
         await session.flush()
     return row
@@ -77,14 +79,22 @@ def match_transfer_to_order(
     deposit_address: str,
 ) -> AcpSwapOrder | None:
     """Return a unique open order match by deposit address + amount (+ optional memo)."""
-    if _normalize_addr(transfer.to_address).lower() != _normalize_addr(deposit_address).lower():
+    if _normalize_addr(transfer.to_address) != _normalize_addr(deposit_address):
         return None
     candidates: list[AcpSwapOrder] = []
     for order in orders:
         if order.status not in ("awaiting_deposit", "pending_review"):
             continue
-        if order.tron_txid and order.tron_txid.strip().lower() == transfer.txid.strip().lower():
-            return order
+        if _normalize_addr(order.deposit_trc20_address) != _normalize_addr(deposit_address):
+            continue
+        if order.tron_txid and order.tron_txid.strip().lower() != transfer.txid.strip().lower():
+            continue
+        created = getattr(order, "created_at", None)
+        if created is not None:
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            if transfer.block_timestamp_ms < int(created.timestamp() * 1000):
+                continue
         if not _amounts_match(_to_dec(order.usdt_trc20_amount), transfer.amount_usdt):
             continue
         if transfer.memo and order.deposit_reference:
@@ -105,18 +115,15 @@ async def _already_seen_txid(session: AsyncSession, txid: str) -> bool:
     )
     if claimed.scalar_one_or_none() is not None:
         return True
-    # Portable filter (works on SQLite test DBs without JSONB path ops).
-    recent = await session.execute(
-        select(BridgeAuditEvent)
-        .where(BridgeAuditEvent.event_type.in_((EVENT_SHADOW, EVENT_CLAIM)))
-        .order_by(BridgeAuditEvent.created_at.desc())
-        .limit(300)
+    # Query the actual key, not an arbitrary last-300 audit window.
+    # These are observation records only; they never authorize live claims.
+    observed = await session.execute(
+        select(BridgeAuditEvent.id).where(
+            BridgeAuditEvent.event_type.in_((EVENT_SHADOW, EVENT_CLAIM)),
+            BridgeAuditEvent.payload_json["txid"].as_string() == needle,
+        ).limit(1)
     )
-    for ev in recent.scalars().all():
-        payload = ev.payload_json or {}
-        if str(payload.get("txid") or "").strip() == needle:
-            return True
-    return False
+    return observed.scalar_one_or_none() is not None
 
 
 async def _record_event(
@@ -136,7 +143,7 @@ async def _record_event(
 
 
 def default_transfer_fetcher(deposit_address: str, since_ms: int) -> list[ObservedTronTransfer]:
-    """Fetch TRC-20 USDT transfers via TronGrid when configured; else empty (desk fallback)."""
+    """Read all confirmed pages in a bounded window; incomplete fetches fail closed."""
     import json
     import urllib.error
     import urllib.request
@@ -148,44 +155,76 @@ def default_transfer_fetcher(deposit_address: str, since_ms: int) -> list[Observ
     if not deposit_address:
         return []
 
-    url = (
-        f"{base}/v1/accounts/{deposit_address}/transactions/trc20"
-        f"?only_to=true&limit=50&contract_address={usdt_contract}"
-        f"&min_timestamp={max(0, since_ms)}"
-    )
+    from urllib.parse import quote, urlencode
+
+    # Fixed query window across pages; never follow provider-supplied URLs with
+    # API credentials. A failed/incomplete page must leave the checkpoint intact.
+    params = {"only_to": "true", "only_confirmed": "true", "limit": 200,
+              "order_by": "block_timestamp,asc", "contract_address": usdt_contract,
+              "min_timestamp": max(0, since_ms),
+              "max_timestamp": int(datetime.now(timezone.utc).timestamp() * 1000)}
     headers = {"Accept": "application/json", "User-Agent": "ancap-swap-deposit-watcher/1.0"}
     if api_key:
         headers["TRON-PRO-API-KEY"] = api_key
-    req = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
-        logger.warning("tron_deposit_fetch_failed: %s", exc)
-        return []
-
     out: list[ObservedTronTransfer] = []
-    for item in body.get("data") or []:
+    fingerprints: set[str] = set()
+    deadline = time.monotonic() + 45
+    for _ in range(100):
+        url = f"{base}/v1/accounts/{quote(deposit_address, safe='')}/transactions/trc20?{urlencode(params)}"
+        req = urllib.request.Request(url, headers=headers)
         try:
-            txid = str(item.get("transaction_id") or "").strip()
-            to_addr = str(item.get("to") or "").strip()
-            raw_value = item.get("value")
-            decimals = int(item.get("token_info", {}).get("decimals") or 6)
-            amount = _to_dec(raw_value) / (Decimal(10) ** decimals)
-            ts = int(item.get("block_timestamp") or 0)
-            if not txid or amount <= 0:
-                continue
-            out.append(
-                ObservedTronTransfer(
-                    txid=txid,
-                    amount_usdt=amount,
-                    to_address=to_addr,
-                    block_timestamp_ms=ts,
-                )
-            )
-        except (TypeError, ValueError, InvalidOperation):
-            continue
-    return out
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Tron pagination deadline exceeded")
+            with urllib.request.urlopen(req, timeout=min(20, remaining)) as resp:
+                raw = resp.read(8_000_001)
+                if len(raw) > 8_000_000:
+                    raise ValueError("Provider response too large")
+                body = json.loads(raw.decode("utf-8"))
+            if not isinstance(body, dict) or body.get("success") is False or not isinstance(body.get("data"), list):
+                raise ValueError("Invalid provider response")
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
+            # Do not log remote response/error text or credentials.
+            raise RuntimeError("Tron deposit fetch failed; checkpoint unchanged") from exc
+        for item in body["data"]:
+            try:
+                token = item.get("token_info") or {}
+                # Enforce token identity and decimals even if the provider ignores filters.
+                if token.get("address") != usdt_contract or str(token.get("decimals")) != "6":
+                    raise ValueError("Unexpected token")
+                if item.get("type") != "Transfer":
+                    continue
+                txid = str(item.get("transaction_id") or "").strip().lower()
+                to_addr = str(item.get("to") or "").strip()
+                raw_value = str(item.get("value") or "")
+                if not raw_value.isascii() or not raw_value.isdigit() or len(raw_value) > 78:
+                    raise ValueError("Invalid transfer value")
+                if int(raw_value) >= 2**256:
+                    raise ValueError("Transfer value exceeds uint256")
+                with localcontext() as context:
+                    context.prec = 90
+                    amount = Decimal(raw_value) / Decimal(1_000_000)
+                ts = int(item.get("block_timestamp") or 0)
+                if len(txid) != 64 or any(c not in "0123456789abcdef" for c in txid) or not amount.is_finite() or amount <= 0 or ts <= 0:
+                    raise ValueError("Invalid transfer")
+                if to_addr != deposit_address:
+                    continue
+                if ts < int(params["min_timestamp"]) or ts > int(params["max_timestamp"]):
+                    raise ValueError("Transfer outside query window")
+                out.append(ObservedTronTransfer(txid, amount, to_addr, ts))
+            except (AttributeError, TypeError, ValueError, InvalidOperation) as exc:
+                raise RuntimeError("Invalid Tron transfer response; checkpoint unchanged") from exc
+        fingerprint = (body.get("meta") or {}).get("fingerprint")
+        if not fingerprint:
+            # A full page without continuation is not proof the range is complete.
+            if len(body["data"]) >= 200:
+                raise RuntimeError("Incomplete Tron pagination; checkpoint unchanged")
+            return out
+        if not isinstance(fingerprint, str) or fingerprint in fingerprints:
+            raise RuntimeError("Invalid Tron pagination; checkpoint unchanged")
+        fingerprints.add(fingerprint)
+        params["fingerprint"] = fingerprint
+    raise RuntimeError("Tron pagination budget exceeded; checkpoint unchanged")
 
 
 async def tick_swap_tron_deposits(
@@ -198,24 +237,31 @@ async def tick_swap_tron_deposits(
     Modes:
     - disabled (ff off): skipped
     - shadow: audit only, never mutate order status
-    - pending_review: claim unique match onto order (desk still pays ACP)
+    - all non-shadow modes: rejected until durable claim reconciliation exists
     """
     settings = get_settings()
     if not bool(getattr(settings, "ff_swap_deposit_watcher", False)):
         return {"skipped": True, "reason": "ff_swap_deposit_watcher_disabled"}
 
     mode = (getattr(settings, "swap_deposit_watcher_mode", None) or "shadow").strip().lower()
-    if mode not in ("shadow", "pending_review"):
-        mode = "shadow"
+    if mode != "shadow":
+        # Unique amount on a shared address is not sufficient ownership proof.
+        # Live claims require durable event identity, DB uniqueness/locking and
+        # independently verified ownership/reconciliation before enablement.
+        return {"ok": False, "error": "shadow_only_until_claim_reconciliation_verified"}
 
     deposit_address = _normalize_addr(getattr(settings, "usdt_trc20_deposit_address", None))
     if not deposit_address:
         return {"ok": False, "error": "usdt_trc20_deposit_address_unset"}
 
-    checkpoint = await _load_checkpoint(session)
+    checkpoint = await _load_checkpoint(session, deposit_address + ":" + str(getattr(settings, "usdt_trc20_contract", "USDT")))
     since_ms = int(checkpoint.last_block_height or 0)
     fetcher = fetch_transfers or default_transfer_fetcher
-    transfers = list(fetcher(deposit_address, since_ms))
+    # Replay a bounded overlap for provider indexing lag; audit dedupe is persistent.
+    try:
+        transfers = list(await asyncio.to_thread(fetcher, deposit_address, max(0, since_ms - 86_400_000)))
+    except Exception:
+        return {"ok": False, "error": "transfer_fetch_failed", "cursor_ms": since_ms}
     orders = await _open_awaiting_orders(session)
 
     seen = 0
@@ -224,15 +270,17 @@ async def tick_swap_tron_deposits(
     ambiguous = 0
     duplicates = 0
     max_ts = since_ms
+    batch_txids: set[str] = set()
 
     for transfer in sorted(transfers, key=lambda t: t.block_timestamp_ms):
         seen += 1
         if transfer.block_timestamp_ms > max_ts:
             max_ts = transfer.block_timestamp_ms
-        if await _already_seen_txid(session, transfer.txid):
+        if transfer.txid in batch_txids or await _already_seen_txid(session, transfer.txid):
             duplicates += 1
             continue
 
+        batch_txids.add(transfer.txid)
         order = match_transfer_to_order(transfer, orders, deposit_address)
         if order is None:
             # Count multi-candidate amount collisions as ambiguous when any amount hits.
@@ -240,8 +288,8 @@ async def tick_swap_tron_deposits(
                 o
                 for o in orders
                 if _amounts_match(_to_dec(o.usdt_trc20_amount), transfer.amount_usdt)
-                and _normalize_addr(o.deposit_trc20_address).lower()
-                == _normalize_addr(deposit_address).lower()
+                and _normalize_addr(o.deposit_trc20_address)
+                == _normalize_addr(deposit_address)
             ]
             if len(hits) > 1:
                 ambiguous += 1
@@ -280,19 +328,7 @@ async def tick_swap_tron_deposits(
             "reason": "matched",
         }
 
-        if mode == "shadow" or order.status == "pending_review":
-            await _record_event(session, event_type=EVENT_SHADOW, payload=payload)
-            continue
-
-        # pending_review claim — idempotent status flip only; no ACP transfer.
-        if order.status == "awaiting_deposit" and not order.tron_txid:
-            order.tron_txid = transfer.txid
-            order.status = "pending_review"
-            order.updated_at = datetime.now(timezone.utc)
-            claimed += 1
-            await _record_event(session, event_type=EVENT_CLAIM, payload=payload)
-        else:
-            await _record_event(session, event_type=EVENT_SHADOW, payload={**payload, "reason": "already_claimed"})
+        await _record_event(session, event_type=EVENT_SHADOW, payload=payload)
 
     if max_ts > since_ms:
         checkpoint.last_block_height = max_ts
