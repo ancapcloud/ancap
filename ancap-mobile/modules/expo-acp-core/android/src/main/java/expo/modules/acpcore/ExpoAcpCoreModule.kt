@@ -6,6 +6,8 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import uniffi.acp_mobile_ffi.AcpWalletException
 import uniffi.acp_mobile_ffi.acpAddressFromKeystoreFfi
 import uniffi.acp_mobile_ffi.acpCreateWalletFfi
+import uniffi.acp_mobile_ffi.acpEncryptKeystoreFfi
+import uniffi.acp_mobile_ffi.acpDecryptKeystoreFfi
 import uniffi.acp_mobile_ffi.acpEstimateFeeDefaultFfi
 import uniffi.acp_mobile_ffi.acpSignTransferFfi
 import uniffi.acp_mobile_ffi.acpValidateAddressFfi
@@ -25,6 +27,16 @@ private fun mapWalletError(e: AcpWalletException): CodedException {
 class ExpoAcpCoreModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("ExpoAcpCore")
+
+    AsyncFunction("encryptKeystore") { keystoreJson: String, password: String ->
+      try { acpEncryptKeystoreFfi(keystoreJson, password) }
+      catch (e: AcpWalletException) { throw mapWalletError(e) }
+    }
+
+    AsyncFunction("decryptKeystore") { backupJson: String, password: String ->
+      try { acpDecryptKeystoreFfi(backupJson, password) }
+      catch (e: AcpWalletException) { throw mapWalletError(e) }
+    }
 
     AsyncFunction("createWallet") {
       try {

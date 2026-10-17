@@ -4,9 +4,20 @@ mod wallet_core;
 
 pub use wallet_core::{
     acp_address_from_keystore, acp_address_from_mnemonic, acp_create_wallet, acp_estimate_fee_default,
-    acp_import_mnemonic, acp_import_wallet, acp_sign_transfer, acp_validate_address, AcpWalletException,
+    acp_import_mnemonic, acp_import_wallet, acp_sign_transfer, acp_validate_address,
+    acp_encrypt_keystore, acp_decrypt_keystore, AcpWalletException,
     CreatedWallet, FeeEstimate, SignedTransfer,
 };
+
+#[uniffi::export]
+fn acp_encrypt_keystore_ffi(keystore_json: String, password: String) -> Result<String, AcpWalletException> {
+    wallet_core::acp_encrypt_keystore(keystore_json, password)
+}
+
+#[uniffi::export]
+fn acp_decrypt_keystore_ffi(backup_json: String, password: String) -> Result<String, AcpWalletException> {
+    wallet_core::acp_decrypt_keystore(backup_json, password)
+}
 
 #[uniffi::export]
 fn acp_create_wallet_ffi() -> Result<CreatedWallet, AcpWalletException> {

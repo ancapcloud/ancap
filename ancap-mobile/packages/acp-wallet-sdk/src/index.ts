@@ -4,6 +4,8 @@ export { safeErrorMessage, sanitizeSensitiveText, MAX_SAFE_ERROR_MESSAGE_LENGTH 
 export { nativeCore } from "./native-stub.js";
 export {
   addressFromKeystore,
+  encryptKeystoreBackup,
+  decryptKeystoreBackup,
   createWallet,
   estimateFeeDefault,
   setNativeWalletModule,

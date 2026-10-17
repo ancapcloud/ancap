@@ -20,6 +20,7 @@ const { store, secureStore, lockApi, keystoreExport } = vi.hoisted(() => {
       isBiometricUnlockEnabled: vi.fn(async () => false),
       lockSession: vi.fn(),
       markSessionUnlocked: vi.fn(),
+      requiresUnlock: vi.fn(async () => false),
     },
     keystoreExport: {
       deleteKeystoreExportFile: vi.fn(async () => undefined),
@@ -77,6 +78,7 @@ describe("generation vault", () => {
     lockApi.isBiometricUnlockEnabled.mockResolvedValue(false);
     lockApi.lockSession.mockClear();
     lockApi.markSessionUnlocked.mockClear();
+    lockApi.requiresUnlock.mockResolvedValue(false);
     keystoreExport.deleteKeystoreExportFile.mockClear();
 
     secureStore.getItemAsync.mockImplementation(async (key: string) => store.get(key) ?? null);
@@ -86,6 +88,102 @@ describe("generation vault", () => {
     secureStore.deleteItemAsync.mockImplementation(async (key: string) => {
       store.delete(key);
     });
+  });
+
+  it("blocks secret reads and replacement of an existing locked wallet", async () => {
+    await vault.saveVault({ address: "original", keystoreJson: SMALL_KS });
+    lockApi.requiresUnlock.mockResolvedValue(true);
+    await expect(vault.loadVault()).rejects.toThrow(/locked/);
+    await expect(vault.saveVault({ address: "replacement", keystoreJson: LARGE_KS })).rejects.toThrow(/locked/);
+    expect(await vault.hasVault()).toBe(true);
+    lockApi.requiresUnlock.mockResolvedValue(false);
+    expect((await vault.loadVault())?.address).toBe("original");
+  });
+
+  it("preserves the committed wallet when pending-list cleanup fails after the flip", async () => {
+    await vault.saveVault({ address: "old", keystoreJson: SMALL_KS });
+    let flipped = false;
+    secureStore.setItemAsync.mockImplementation(async (key, value) => {
+      if (key === "acp_wallet_active_gen") flipped = true;
+      if (flipped && key === KEY_PENDING) throw new Error("metadata cleanup unavailable");
+      store.set(key, value);
+    });
+    secureStore.deleteItemAsync.mockImplementation(async (key) => {
+      if (flipped && key === KEY_PENDING) throw new Error("metadata cleanup unavailable");
+      store.delete(key);
+    });
+    await vault.saveVault({ address: "new", keystoreJson: LARGE_KS });
+    expect((await vault.loadVault())?.address).toBe("new");
+    expect((await vault.loadVault())?.keystoreJson).toBe(LARGE_KS);
+  });
+
+  it("retains an active generation if the pointer promise rejects after persisting", async () => {
+    await vault.saveVault({ address: "old", keystoreJson: SMALL_KS });
+    secureStore.setItemAsync.mockImplementation(async (key, value) => {
+      store.set(key, value);
+      if (key === "acp_wallet_active_gen") throw new Error("acknowledgement lost");
+    });
+    await vault.saveVault({ address: "new", keystoreJson: LARGE_KS });
+    expect((await vault.loadVault())?.address).toBe("new");
+  });
+
+  it("does not silently remove existing biometric protection on an ordinary save", async () => {
+    await vault.saveVault({ address: "wallet", keystoreJson: SMALL_KS, protectedByBiometrics: true });
+    await vault.saveVault({ address: "wallet", keystoreJson: LARGE_KS });
+    expect((await vault.loadVault())?.protectedByBiometrics).toBe(true);
+  });
+
+  it("never overwrites an active allocation if a generation id repeats", async () => {
+    const clock = vi.spyOn(Date, "now").mockReturnValue(123456);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    try {
+      await vault.saveVault({ address: "original", keystoreJson: SMALL_KS });
+      await expect(vault.saveVault({ address: "replacement", keystoreJson: LARGE_KS })).rejects.toThrow(/collision/);
+      expect((await vault.loadVault())?.address).toBe("original");
+    } finally { clock.mockRestore(); random.mockRestore(); }
+  });
+
+  it("serializes concurrent saves and a later wipe without resurrecting a wallet", async () => {
+    await Promise.all([
+      vault.saveVault({ address: "one", keystoreJson: SMALL_KS }),
+      vault.saveVault({ address: "two", keystoreJson: LARGE_KS }),
+      vault.wipeVault(),
+    ]);
+    expect(await vault.hasVault()).toBe(false);
+    expect([...store.keys()].filter((key) => /_ks_p\d+$/.test(key))).toEqual([]);
+  });
+
+  it("retains failed wipe metadata for retry and reports incomplete removal", async () => {
+    await vault.saveVault({ address: "one", keystoreJson: LARGE_KS });
+    const gen = activeGen()!;
+    secureStore.deleteItemAsync.mockImplementation(async (key) => {
+      if (key === `acp_wallet_${gen}_ks_p1`) throw new Error("delete refused");
+      store.delete(key);
+    });
+    await expect(vault.wipeVault()).rejects.toThrow(/removal incomplete/);
+    expect(pendingGens()).toContain(gen);
+    expect(store.has(`acp_wallet_${gen}_ks_parts`)).toBe(true);
+    expect(lockApi.lockSession).toHaveBeenCalled();
+    secureStore.deleteItemAsync.mockImplementation(async (key) => { store.delete(key); });
+    await vault.wipeVault();
+    expect(pendingGens()).toEqual([]);
+    expect(store.has(`acp_wallet_${gen}_ks_p1`)).toBe(false);
+  });
+
+  it("does not interpret corrupt chunk metadata as an empty wallet", async () => {
+    await vault.saveVault({ address: "one", keystoreJson: SMALL_KS });
+    store.set(`acp_wallet_${activeGen()}_ks_parts`, "1garbage");
+    expect(await vault.hasVault()).toBe(true);
+    await expect(vault.loadVault()).rejects.toThrow(/metadata/);
+  });
+
+  it("cleans an interrupted allocation beyond the old 32-chunk fallback", async () => {
+    const gen = "ginterrupted";
+    store.set(KEY_PENDING, JSON.stringify([gen]));
+    store.set(`acp_wallet_${gen}_ks_parts`, "45");
+    store.set(`acp_wallet_${gen}_ks_p40`, "secret");
+    await vault.cleanupIncompleteGenerations();
+    expect(store.has(`acp_wallet_${gen}_ks_p40`)).toBe(false);
   });
 
   it("imports keystore without mnemonic and still loads for signing", async () => {

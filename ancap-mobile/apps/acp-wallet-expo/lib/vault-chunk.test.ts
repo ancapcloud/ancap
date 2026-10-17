@@ -2,6 +2,19 @@ import { describe, expect, it } from "vitest";
 import { chunkSecret, joinSecretChunks, SECURE_STORE_CHUNK_SIZE } from "./vault-chunk";
 
 describe("vault-chunk", () => {
+  it("bounds UTF-8 bytes without splitting Unicode code points", () => {
+    const value = "кошелёк🔑漢字".repeat(1000);
+    const parts = chunkSecret(value, 11);
+    expect(parts.every((p) => new TextEncoder().encode(p).length <= 11)).toBe(true);
+    expect(joinSecretChunks(parts)).toBe(value);
+  });
+
+  it("rejects invalid budgets instead of looping forever", () => {
+    for (const size of [0, -1, NaN, Infinity, 1.5]) {
+      expect(() => chunkSecret("secret", size)).toThrow();
+    }
+    expect(() => chunkSecret("🔑", 3)).toThrow();
+  });
   it("keeps small secrets as a single chunk", () => {
     expect(chunkSecret("abc")).toEqual(["abc"]);
   });

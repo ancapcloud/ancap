@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addressFromKeystore,
+  encryptKeystoreBackup,
+  decryptKeystoreBackup,
   createWallet,
   estimateFeeDefault,
   setNativeWalletModule,
@@ -36,6 +38,22 @@ function makeNativeModule(): NativeWalletModule {
 describe("wallet-service native bridge", () => {
   beforeEach(() => {
     setNativeWalletModule(null);
+  });
+
+  it("fails closed on old native builds instead of exporting plaintext", async () => {
+    setNativeWalletModule(makeNativeModule());
+    await expect(encryptKeystoreBackup("secret", "password")).rejects.toThrow(/rebuilt native/);
+    await expect(decryptKeystoreBackup("encrypted", "password")).rejects.toThrow(/rebuilt native/);
+  });
+
+  it("uses the native encrypted backup bridge without a remote fallback", async () => {
+    const native = makeNativeModule();
+    native.encryptKeystore = vi.fn().mockResolvedValue("encrypted");
+    native.decryptKeystore = vi.fn().mockResolvedValue("plaintext");
+    setNativeWalletModule(native);
+    expect(await encryptKeystoreBackup("plaintext", "password")).toBe("encrypted");
+    expect(await decryptKeystoreBackup("encrypted", "password")).toBe("plaintext");
+    expect(native.encryptKeystore).toHaveBeenCalledWith("plaintext", "password");
   });
 
   it("throws a clear error when the native module is missing", async () => {
@@ -121,6 +139,16 @@ describe("wallet-service native bridge", () => {
         amountAcp: "1",
       })
     ).rejects.toThrow("from is invalid");
+    expect(native.signTransfer).not.toHaveBeenCalled();
+  });
+
+  it("rejects a keystore belonging to a different confirmed sender", async () => {
+    const native = makeNativeModule();
+    vi.mocked(native.addressFromKeystore).mockResolvedValue(TO);
+    setNativeWalletModule(native);
+    await expect(signAndPrepareTransfer("https://example/rpc", "{}", {
+      from: FROM, to: TO, amountAcp: "1",
+    })).rejects.toThrow("does not match the confirmed sender");
     expect(native.signTransfer).not.toHaveBeenCalled();
   });
 

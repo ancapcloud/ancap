@@ -9,6 +9,45 @@ use reqwest::blocking::Client;
 use serde_json::{json, Value};
 use std::time::Duration;
 
+fn backup_error(message: &str) -> AcpWalletException {
+    AcpWalletException::Internal { message: message.to_string() }
+}
+
+/// Encrypt a native plaintext identity using the existing versioned keystore envelope.
+pub fn acp_encrypt_keystore(keystore_json: String, password: String) -> Result<String, AcpWalletException> {
+    if password.chars().count() < 12 || password.len() > 1024 {
+        return Err(backup_error("Backup password must contain at least 12 characters (maximum 1024 bytes)."));
+    }
+    if keystore_json.len() > acp_crypto::limits::MAX_KEYSTORE_PLAINTEXT_BYTES {
+        return Err(backup_error("Keystore exceeds backup size limit."));
+    }
+    let ks: KeystoreV3 = serde_json::from_str(&keystore_json)
+        .map_err(|_| backup_error("Invalid plaintext keystore."))?;
+    WalletIdentity::from_keystore_v3(&ks).map_err(|_| backup_error("Invalid wallet identity."))?;
+    let encrypted = acp_crypto::KeystoreJson::encrypt_v3(&password, &ks, OsRng)
+        .map_err(|_| backup_error("Keystore encryption failed."))?;
+    encrypted.to_string_pretty().map_err(|_| backup_error("Keystore serialization failed."))
+}
+
+/// Authenticate/decrypt before returning any plaintext to the mobile vault.
+pub fn acp_decrypt_keystore(backup_json: String, password: String) -> Result<String, AcpWalletException> {
+    if password.is_empty() || password.len() > 1024 {
+        return Err(backup_error("Invalid backup password length."));
+    }
+    let encrypted = acp_crypto::KeystoreJson::from_str_with_limits(&backup_json)
+        .map_err(|_| backup_error("Invalid encrypted backup."))?;
+    let crypto = &encrypted.crypto;
+    if crypto.mem_kib != acp_crypto::limits::ARGON2_MEM_KIB ||
+        crypto.time != acp_crypto::limits::ARGON2_TIME ||
+        crypto.parallelism != acp_crypto::limits::ARGON2_PARALLELISM {
+        return Err(backup_error("Unsupported backup KDF parameters."));
+    }
+    let ks = encrypted.decrypt_v3(&password)
+        .map_err(|_| backup_error("Wrong backup password or corrupted backup."))?;
+    WalletIdentity::from_keystore_v3(&ks).map_err(|_| backup_error("Invalid wallet identity."))?;
+    serde_json::to_string(&ks).map_err(|_| backup_error("Keystore serialization failed."))
+}
+
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum AcpWalletException {
     #[error("invalid address")]

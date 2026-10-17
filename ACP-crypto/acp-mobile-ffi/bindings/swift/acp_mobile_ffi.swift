@@ -488,7 +488,7 @@ public struct CreatedWallet {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(address: String, mnemonic: String, 
+    public init(address: String, mnemonic: String,
         /**
          * Encrypted-ready keystore v3 JSON — required for stable address re-derivation (PQC keys).
          */keystoreJson: String) {
@@ -529,8 +529,8 @@ public struct FfiConverterTypeCreatedWallet: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CreatedWallet {
         return
             try CreatedWallet(
-                address: FfiConverterString.read(from: &buf), 
-                mnemonic: FfiConverterString.read(from: &buf), 
+                address: FfiConverterString.read(from: &buf),
+                mnemonic: FfiConverterString.read(from: &buf),
                 keystoreJson: FfiConverterString.read(from: &buf)
         )
     }
@@ -597,7 +597,7 @@ public struct FfiConverterTypeFeeEstimate: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FeeEstimate {
         return
             try FeeEstimate(
-                feeAcp: FfiConverterString.read(from: &buf), 
+                feeAcp: FfiConverterString.read(from: &buf),
                 feeUnits: FfiConverterUInt64.read(from: &buf)
         )
     }
@@ -663,7 +663,7 @@ public struct FfiConverterTypeSignedTransfer: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignedTransfer {
         return
             try SignedTransfer(
-                rawTx: FfiConverterString.read(from: &buf), 
+                rawTx: FfiConverterString.read(from: &buf),
                 txid: FfiConverterString.read(from: &buf)
         )
     }
@@ -692,8 +692,8 @@ public func FfiConverterTypeSignedTransfer_lower(_ value: SignedTransfer) -> Rus
 
 public enum AcpWalletException {
 
-    
-    
+
+
     case InvalidAddress
     case InvalidMnemonic
     case InvalidAmount
@@ -715,9 +715,9 @@ public struct FfiConverterTypeAcpWalletException: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
 
-        
 
-        
+
+
         case 1: return .InvalidAddress
         case 2: return .InvalidMnemonic
         case 3: return .InvalidAmount
@@ -736,35 +736,35 @@ public struct FfiConverterTypeAcpWalletException: FfiConverterRustBuffer {
     public static func write(_ value: AcpWalletException, into buf: inout [UInt8]) {
         switch value {
 
-        
 
-        
-        
+
+
+
         case .InvalidAddress:
             writeInt(&buf, Int32(1))
-        
-        
+
+
         case .InvalidMnemonic:
             writeInt(&buf, Int32(2))
-        
-        
+
+
         case .InvalidAmount:
             writeInt(&buf, Int32(3))
-        
-        
+
+
         case .InsufficientFunds:
             writeInt(&buf, Int32(4))
-        
-        
+
+
         case let .Rpc(message):
             writeInt(&buf, Int32(5))
             FfiConverterString.write(message, into: &buf)
-            
-        
+
+
         case let .Internal(message):
             writeInt(&buf, Int32(6))
             FfiConverterString.write(message, into: &buf)
-            
+
         }
     }
 }
@@ -814,6 +814,22 @@ public func acpCreateWalletFfi()throws  -> CreatedWallet {
     )
 })
 }
+public func acpDecryptKeystoreFfi(backupJson: String, password: String)throws  -> String {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeAcpWalletException.lift) {
+    uniffi_acp_mobile_ffi_fn_func_acp_decrypt_keystore_ffi(
+        FfiConverterString.lower(backupJson),
+        FfiConverterString.lower(password),$0
+    )
+})
+}
+public func acpEncryptKeystoreFfi(keystoreJson: String, password: String)throws  -> String {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeAcpWalletException.lift) {
+    uniffi_acp_mobile_ffi_fn_func_acp_encrypt_keystore_ffi(
+        FfiConverterString.lower(keystoreJson),
+        FfiConverterString.lower(password),$0
+    )
+})
+}
 public func acpEstimateFeeDefaultFfi()throws  -> FeeEstimate {
     return try  FfiConverterTypeFeeEstimate.lift(try rustCallWithError(FfiConverterTypeAcpWalletException.lift) {
     uniffi_acp_mobile_ffi_fn_func_acp_estimate_fee_default_ffi($0
@@ -858,6 +874,12 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_acp_mobile_ffi_checksum_func_acp_create_wallet_ffi() != 16727) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_acp_mobile_ffi_checksum_func_acp_decrypt_keystore_ffi() != 33015) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_acp_mobile_ffi_checksum_func_acp_encrypt_keystore_ffi() != 60948) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_acp_mobile_ffi_checksum_func_acp_estimate_fee_default_ffi() != 13663) {

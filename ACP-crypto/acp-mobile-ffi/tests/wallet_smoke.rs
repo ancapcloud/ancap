@@ -4,6 +4,26 @@ use acp_mobile_ffi::{
 };
 
 #[test]
+fn encrypted_backup_roundtrip_and_wrong_password() {
+    use acp_mobile_ffi::{acp_encrypt_keystore, acp_decrypt_keystore};
+    let wallet = acp_create_wallet().expect("create");
+    let password = "test-only-long-password".to_string();
+    let encrypted = acp_encrypt_keystore(wallet.keystore_json.clone(), password.clone())
+        .unwrap_or_else(|e| panic!("encrypt {} bytes: {e}", wallet.keystore_json.len()));
+    assert!(!encrypted.contains("spend_ed25519_seed32"));
+    assert!(!encrypted.contains("spend_dilithium_sk"));
+    assert!(acp_decrypt_keystore(encrypted.clone(), "wrong-password".into()).is_err());
+    let plain = acp_decrypt_keystore(encrypted.clone(), password.clone()).expect("decrypt");
+    assert_eq!(acp_address_from_keystore(plain).expect("address"), wallet.address);
+    let mut corrupted: serde_json::Value = serde_json::from_str(&encrypted).unwrap();
+    corrupted["crypto"]["ciphertext_b64"] = serde_json::json!("AAAA");
+    assert!(acp_decrypt_keystore(corrupted.to_string(), password.clone()).is_err());
+    assert!(acp_encrypt_keystore(wallet.keystore_json, "short".into()).is_err());
+    corrupted["crypto"]["mem_kib"] = serde_json::json!(1);
+    assert!(acp_decrypt_keystore(corrupted.to_string(), password).is_err());
+}
+
+#[test]
 fn create_wallet_roundtrip_via_keystore() {
     let CreatedWallet {
         address,

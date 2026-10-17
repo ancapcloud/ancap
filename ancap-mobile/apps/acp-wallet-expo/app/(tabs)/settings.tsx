@@ -92,8 +92,12 @@ export default function SettingsScreen() {
         text: t("settings.remove"),
         style: "destructive",
         onPress: async () => {
-          await wipeVault();
-          router.replace("/");
+            try {
+              await wipeVault();
+              router.replace("/");
+            } catch (error) {
+              Alert.alert(t("settings.removeWalletTitle"), safeErrorMessage(error, "Wallet removal incomplete. Retry removal."));
+            }
         },
       },
     ]);
@@ -321,6 +325,9 @@ export default function SettingsScreen() {
         ) : null}
       </View>
 
+      <Pressable style={styles.secondary} onPress={() => router.push("/backup")}>
+        <Text style={styles.secondaryText}>{t("backup.title")}</Text>
+      </Pressable>
       <Pressable style={styles.danger} onPress={onWipe}>
         <Text style={styles.dangerText}>{t("settings.removeWallet")}</Text>
       </Pressable>

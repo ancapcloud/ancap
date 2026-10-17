@@ -50,11 +50,11 @@ export default function RootLayout() {
       const vault = await hasVault();
       const pinEnabled = await hasPinLock();
       const unlocked = isSessionUnlocked();
-      if (!vault && (inTabs || onUnlock)) {
+      if (!vault && (inTabs || onUnlock || segments[0] === "backup" || segments[0] === "smart-pay")) {
         router.replace("/");
         return;
       }
-      if (vault && pinEnabled && !unlocked && inTabs) {
+      if (vault && pinEnabled && !unlocked && !onUnlock) {
         router.replace("/unlock");
         return;
       }
@@ -84,6 +84,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="receive" options={{ title: t("screenTitles.receive") }} />
         <Stack.Screen name="smart-pay" options={{ title: "Smart Pay beta" }} />
+        <Stack.Screen name="backup" options={{ title: t("backup.title") }} />
         <Stack.Screen name="onboarding/create" options={{ title: t("screenTitles.createWallet") }} />
         <Stack.Screen name="onboarding/import" options={{ title: t("screenTitles.importWallet") }} />
         <Stack.Screen

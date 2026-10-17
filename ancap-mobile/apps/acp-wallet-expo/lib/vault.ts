@@ -5,6 +5,7 @@ import {
   isBiometricUnlockEnabled,
   lockSession,
   markSessionUnlocked,
+  requiresUnlock,
 } from "./lock";
 import { chunkSecret, joinSecretChunks } from "./vault-chunk";
 
@@ -40,6 +41,25 @@ const LEGACY = {
   mnemonicAuth: "acp_wallet_mnemonic_auth",
   vaultMode: "acp_wallet_vault_mode",
 } as const;
+
+const MAX_CHUNKS = 512;
+
+function parseChunkCount(raw: string | null): number {
+  if (!raw || !/^[1-9]\d*$/.test(raw)) throw new Error("Vault keystore metadata is invalid.");
+  const count = Number(raw);
+  if (!Number.isSafeInteger(count) || count > MAX_CHUNKS) {
+    throw new Error("Vault keystore metadata is invalid.");
+  }
+  return count;
+}
+
+// Serialize reads and mutations, including biometric migration and wipe.
+let vaultQueue: Promise<unknown> = Promise.resolve();
+function exclusive<T>(operation: () => Promise<T>): Promise<T> {
+  const result = vaultQueue.then(operation);
+  vaultQueue = result.catch(() => undefined);
+  return result;
+}
 
 const VAULT_AUTH_PROMPT = "Unlock ACP Wallet secrets";
 
@@ -112,17 +132,19 @@ async function readPendingGens(): Promise<string[]> {
   }
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
+    if (!Array.isArray(parsed) || parsed.length > 32 || parsed.some((item) =>
+      typeof item !== "string" || !/^[a-zA-Z0-9_]{1,48}$/.test(item))) {
+      throw new Error("Invalid pending generation metadata");
     }
-    return parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    return parsed as string[];
   } catch {
-    return [];
+    throw new Error("Vault pending generation metadata is invalid. Device cleanup requires recovery.");
   }
 }
 
 async function writePendingGens(gens: string[]): Promise<void> {
   const unique = [...new Set(gens.map((g) => g.trim()).filter(Boolean))];
+  if (unique.length > 32) throw new Error("Vault cleanup backlog must be cleared before saving again.");
   if (unique.length === 0) {
     await SecureStore.deleteItemAsync(KEY_PENDING_GENS);
     return;
@@ -153,7 +175,10 @@ async function writeChunked(
   if (parts.length === 0) {
     throw new Error("Cannot store empty keystore in vault.");
   }
-  // Write payload chunks first; commit count last so a mid-write crash has no valid parts meta.
+  if (parts.length > MAX_CHUNKS) throw new Error("Vault keystore is too large.");
+  // This generation is not active. Persist its allocation before writing any
+  // chunks so a crash at any chunk can be cleaned up completely.
+  await SecureStore.setItemAsync(partsKey, String(parts.length), options);
   for (let i = 0; i < parts.length; i += 1) {
     await SecureStore.setItemAsync(partKey(i), parts[i], options);
   }
@@ -170,10 +195,7 @@ async function readChunked(
   if (!partsRaw) {
     throw new Error("Vault keystore metadata is missing.");
   }
-  const count = Number.parseInt(partsRaw, 10);
-  if (!Number.isFinite(count) || count <= 0) {
-    throw new Error("Vault keystore metadata is invalid.");
-  }
+  const count = parseChunkCount(partsRaw);
   const parts: string[] = [];
   for (let i = 0; i < count; i += 1) {
     const part = await SecureStore.getItemAsync(partKey(i), options);
@@ -191,22 +213,26 @@ async function deleteChunked(
   options: SecureStore.SecureStoreOptions,
   knownCount?: number
 ): Promise<void> {
-  let count = knownCount;
-  if (count == null) {
-    const partsRaw = await SecureStore.getItemAsync(partsKey, options);
-    count = partsRaw ? Number.parseInt(partsRaw, 10) : 0;
+  let raw = knownCount == null ? null : String(knownCount);
+  if (knownCount == null) {
+    try { raw = await SecureStore.getItemAsync(partsKey, options); }
+    catch { /* biometric invalidation must not prevent explicit key deletion */ }
   }
-  const toDelete = Number.isFinite(count) && (count as number) > 0 ? (count as number) : 32;
-  const deletions: Promise<void>[] = [SecureStore.deleteItemAsync(partsKey)];
-  for (let i = 0; i < toDelete; i += 1) {
-    deletions.push(SecureStore.deleteItemAsync(partKey(i)));
-  }
-  await Promise.all(deletions);
+  // Absent metadata may be from an interrupted older writer. Scan the supported
+  // bounded range; never discard metadata until all chunk deletions settle.
+  let count = MAX_CHUNKS;
+  try { count = parseChunkCount(raw); } catch { /* bounded recovery scan */ }
+  const deletions = await Promise.allSettled(
+    Array.from({ length: count }, (_, i) => SecureStore.deleteItemAsync(partKey(i)))
+  );
+  const failure = deletions.find((item) => item.status === "rejected");
+  if (failure?.status === "rejected") throw failure.reason;
+  await SecureStore.deleteItemAsync(partsKey);
 }
 
 async function deleteGeneration(gen: string): Promise<void> {
   const keys = genKeys(gen);
-  await Promise.all([
+  await settleDeletions([
     SecureStore.deleteItemAsync(keys.address),
     SecureStore.deleteItemAsync(keys.mode),
     SecureStore.deleteItemAsync(keys.mnemonic),
@@ -214,6 +240,12 @@ async function deleteGeneration(gen: string): Promise<void> {
     deleteChunked(keys.keystoreParts, keys.keystorePart, DEVICE_ONLY_OPTIONS),
     deleteChunked(keys.keystoreAuthParts, keys.keystoreAuthPart, BIOMETRIC_SECRET_OPTIONS),
   ]);
+}
+
+async function settleDeletions(deletions: Promise<void>[]): Promise<void> {
+  const results = await Promise.allSettled(deletions);
+  const failure = results.find((item) => item.status === "rejected");
+  if (failure?.status === "rejected") throw failure.reason;
 }
 
 /** Best-effort delete of residual SecureStore stash keys from older app builds. */
@@ -226,7 +258,7 @@ async function clearLeftoverStashKeys(): Promise<void> {
  * Delete tracked incomplete generations (except the active pointer).
  * Failed deletions stay on the pending list for a later retry / wipeVault.
  */
-export async function cleanupIncompleteGenerations(): Promise<void> {
+async function cleanupIncompleteGenerationsImpl(): Promise<void> {
   const active = await getActiveGen();
   const pending = await readPendingGens();
   const remaining: string[] = [];
@@ -273,7 +305,10 @@ async function readGeneration(gen: string): Promise<VaultPayload> {
   if (!address) {
     throw new Error("Vault generation address is missing.");
   }
-  const mode: VaultMode = modeRaw === "biometric" ? "biometric" : "plain";
+  if (modeRaw !== "plain" && modeRaw !== "biometric") {
+    throw new Error("Vault generation mode metadata is invalid.");
+  }
+  const mode: VaultMode = modeRaw;
   const secretOpts = mode === "biometric" ? BIOMETRIC_SECRET_OPTIONS : DEVICE_ONLY_OPTIONS;
   const partsKey = mode === "biometric" ? keys.keystoreAuthParts : keys.keystoreParts;
   const partKey = mode === "biometric" ? keys.keystoreAuthPart : keys.keystorePart;
@@ -340,7 +375,7 @@ async function readLegacyVault(): Promise<VaultPayload | null> {
 }
 
 async function deleteLegacyVault(): Promise<void> {
-  await Promise.all([
+  await settleDeletions([
     SecureStore.deleteItemAsync(LEGACY.address),
     SecureStore.deleteItemAsync(LEGACY.vaultMode),
     SecureStore.deleteItemAsync(LEGACY.mnemonic),
@@ -365,12 +400,16 @@ async function commitVault(
   payload: { address: string; keystoreJson: string; mnemonic: string },
   mode: VaultMode
 ): Promise<VaultPayload> {
-  await cleanupIncompleteGenerations();
+  await cleanupIncompleteGenerationsImpl();
 
   const previous = await getActiveGen();
   const gen = nextGenerationId();
+  if (gen === previous || (await readPendingGens()).includes(gen)) {
+    throw new Error("Vault generation collision. Retry saving the wallet.");
+  }
   await trackPendingGen(gen);
 
+  let committed = false;
   try {
     await writeGeneration(gen, payload, mode);
     const verified = await readGeneration(gen);
@@ -384,25 +423,38 @@ async function commitVault(
       throw new Error("Vault mode verification failed.");
     }
 
+    // Track the previous allocation before flipping so process death cannot orphan it.
+    if (previous) await trackPendingGen(previous);
     await setActiveGen(gen);
-    await untrackPendingGen(gen);
-
-    if (previous && previous !== gen) {
-      try {
-        await deleteGeneration(previous);
-      } catch {
-        await trackPendingGen(previous);
-      }
-    }
-
-    await cleanupIncompleteGenerations();
+    committed = true;
+    // Post-commit housekeeping must never roll back or delete the active wallet.
     try {
-      await deleteLegacyVault();
+      await untrackPendingGen(gen);
+
+      if (previous && previous !== gen) {
+        try {
+          await deleteGeneration(previous);
+        } catch {
+          await trackPendingGen(previous);
+        }
+      }
+
+      await cleanupIncompleteGenerationsImpl();
+      try {
+        await deleteLegacyVault();
+      } catch {
+        // Best-effort.
+      }
     } catch {
-      // Best-effort.
+      // Pending metadata is retained for a later cleanup/wipe retry.
     }
     return verified;
   } catch (error) {
+    if (committed) throw error;
+    // A rejected storage promise does not prove the pointer write had no effect.
+    // If its outcome cannot be read, retain both tracked generations for recovery.
+    const observedActive = await getActiveGen();
+    if (observedActive === gen) return readGeneration(gen);
     try {
       await deleteGeneration(gen);
       await untrackPendingGen(gen);
@@ -413,21 +465,12 @@ async function commitVault(
   }
 }
 
-export async function hasVault(): Promise<boolean> {
-  const gen = await getActiveGen();
-  if (gen) {
-    try {
-      const vault = await readGeneration(gen);
-      return Boolean(vault.address && vault.keystoreJson);
-    } catch {
-      return false;
-    }
-  }
-  const legacy = await readLegacyVault();
-  return Boolean(legacy?.address && legacy.keystoreJson);
+async function hasVaultImpl(): Promise<boolean> {
+  if (await getActiveGen()) return true;
+  return Boolean(await SecureStore.getItemAsync(LEGACY.address, DEVICE_ONLY_OPTIONS));
 }
 
-export async function loadVaultAddress(): Promise<string | null> {
+async function loadVaultAddressImpl(): Promise<string | null> {
   const gen = await getActiveGen();
   if (gen) {
     return SecureStore.getItemAsync(genKeys(gen).address, DEVICE_ONLY_OPTIONS);
@@ -435,21 +478,26 @@ export async function loadVaultAddress(): Promise<string | null> {
   return SecureStore.getItemAsync(LEGACY.address, DEVICE_ONLY_OPTIONS);
 }
 
-export async function isVaultBiometricProtected(): Promise<boolean> {
+async function isVaultBiometricProtectedImpl(): Promise<boolean> {
   const gen = await getActiveGen();
   if (gen) {
     const mode = await SecureStore.getItemAsync(genKeys(gen).mode, DEVICE_ONLY_OPTIONS);
+    if (mode !== "plain" && mode !== "biometric") throw new Error("Vault mode metadata is invalid.");
     return mode === "biometric";
   }
   const mode = await SecureStore.getItemAsync(LEGACY.vaultMode, DEVICE_ONLY_OPTIONS);
   return mode === "biometric";
 }
 
-export async function saveVault(payload: VaultPayload): Promise<void> {
+async function saveVaultImpl(payload: VaultPayload): Promise<void> {
+  if (await hasVaultImpl() && await requiresUnlock()) {
+    throw new Error("Wallet is locked. Unlock before replacing wallet data.");
+  }
   if (!payload.address?.trim() || !payload.keystoreJson?.trim()) {
     throw new Error("Vault requires address and keystore JSON.");
   }
-  const protectSecrets = payload.protectedByBiometrics ?? (await isBiometricUnlockEnabled());
+  const protectSecrets = payload.protectedByBiometrics ??
+    ((await isVaultBiometricProtectedImpl()) || (await isBiometricUnlockEnabled()));
   await commitVault(
     {
       address: payload.address.trim(),
@@ -461,8 +509,8 @@ export async function saveVault(payload: VaultPayload): Promise<void> {
   markSessionUnlocked();
 }
 
-export async function enableVaultBiometricProtection(): Promise<boolean> {
-  const current = await loadVault();
+async function enableVaultBiometricProtectionImpl(): Promise<boolean> {
+  const current = await loadVaultImpl();
   if (!current) {
     return false;
   }
@@ -480,8 +528,8 @@ export async function enableVaultBiometricProtection(): Promise<boolean> {
   return true;
 }
 
-export async function disableVaultBiometricProtection(): Promise<boolean> {
-  const current = await loadVault();
+async function disableVaultBiometricProtectionImpl(): Promise<boolean> {
+  const current = await loadVaultImpl();
   if (!current) {
     return false;
   }
@@ -499,7 +547,8 @@ export async function disableVaultBiometricProtection(): Promise<boolean> {
   return true;
 }
 
-export async function loadVault(): Promise<VaultPayload | null> {
+async function loadVaultImpl(): Promise<VaultPayload | null> {
+  if (await requiresUnlock()) throw new Error("Wallet is locked. Unlock before accessing secrets.");
   const gen = await getActiveGen();
   if (gen) {
     try {
@@ -522,37 +571,38 @@ export async function loadVault(): Promise<VaultPayload | null> {
  * legacy flat keys, leftover stash keys from older builds, and any document-dir
  * keystore export file left by an explicit Copy action.
  */
-export async function wipeVault(): Promise<void> {
+async function wipeVaultImpl(): Promise<void> {
+  // Lock even if storage access or cleanup fails.
+  lockSession();
   const active = await getActiveGen();
   const pending = await readPendingGens();
+  const toDelete = [...new Set([...pending, ...(active ? [active] : [])])];
+  await writePendingGens(toDelete);
   await SecureStore.deleteItemAsync(KEY_ACTIVE_GEN);
-
-  const toDelete = new Set<string>([...pending, ...(active ? [active] : [])]);
+  const remaining: string[] = [];
+  const errors: unknown[] = [];
   for (const gen of toDelete) {
-    try {
-      await deleteGeneration(gen);
-    } catch {
-      // continue — still clear metadata below
-    }
+    try { await deleteGeneration(gen); }
+    catch (error) { remaining.push(gen); errors.push(error); }
   }
-  await writePendingGens([]);
-
-  try {
-    await deleteLegacyVault();
-  } catch {
-    // continue
+  await writePendingGens(remaining);
+  for (const cleanup of [deleteLegacyVault, clearLeftoverStashKeys, deleteKeystoreExportFile, clearPinLock]) {
+    try { await cleanup(); } catch (error) { errors.push(error); }
   }
-  try {
-    await clearLeftoverStashKeys();
-  } catch {
-    // continue
-  }
-  try {
-    await deleteKeystoreExportFile();
-  } catch {
-    // continue
-  }
-
-  await clearPinLock();
-  lockSession();
+  if (errors.length) throw new Error("Wallet removal incomplete. Retry removal to clear remaining device data.");
 }
+
+export const cleanupIncompleteGenerations = () => exclusive(cleanupIncompleteGenerationsImpl);
+export const hasVault = () => exclusive(hasVaultImpl);
+export const loadVaultAddress = () => exclusive(loadVaultAddressImpl);
+export const isVaultBiometricProtected = () => exclusive(isVaultBiometricProtectedImpl);
+export const saveVault = (payload: VaultPayload) => exclusive(() => saveVaultImpl(payload));
+export const saveVaultMnemonic = (mnemonic: string) => exclusive(async () => {
+  const current = await loadVaultImpl();
+  if (!current) throw new Error("Vault address/keystore must be saved before storing mnemonic via SecureVault.");
+  await saveVaultImpl({ ...current, mnemonic });
+});
+export const enableVaultBiometricProtection = () => exclusive(enableVaultBiometricProtectionImpl);
+export const disableVaultBiometricProtection = () => exclusive(disableVaultBiometricProtectionImpl);
+export const loadVault = () => exclusive(loadVaultImpl);
+export const wipeVault = () => exclusive(wipeVaultImpl);

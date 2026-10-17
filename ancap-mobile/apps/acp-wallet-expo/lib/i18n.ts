@@ -19,6 +19,21 @@ function buildResources() {
   return {
     en: {
       translation: {
+        backup: {
+          title: "Encrypted wallet backup",
+          password: "Backup password (12+ characters)",
+          confirm: "Confirm backup password",
+          passwordMismatch: "Use at least 12 characters and matching backup passwords.",
+          hint: "Save the encrypted backup outside this app and keep its password separately. You need both to restore this wallet. App documents and the clipboard alone are not a reliable backup.",
+          copied: "Encrypted backup copied and an encrypted copy saved in app documents. Save it outside this app and keep the password separately.",
+          clipboardOnly: "Encrypted backup copied to clipboard only. Save it outside this app and keep the password separately.",
+          export: "Save encrypted backup file",
+          saved: "Encrypted backup written to the selected folder. Keep its password separately.",
+          verifyShared: "Share sheet closed. Verify that you saved the backup outside this app; sharing alone does not confirm a saved copy.",
+          failed: "Backup operation failed. Check the password and try again.",
+          decryptFailed: "Could not unlock backup. Check its password, format and integrity.",
+          import: "Choose backup file",
+        },
         common: {
           loading: "Loading…",
           enabled: "enabled",
@@ -372,6 +387,21 @@ function buildResources() {
     },
     ru: {
       translation: {
+        backup: {
+          title: "Зашифрованный бэкап кошелька",
+          password: "Пароль бэкапа (от 12 символов)",
+          confirm: "Повтори пароль бэкапа",
+          passwordMismatch: "Нужны совпадающие пароли длиной от 12 символов.",
+          hint: "Сохрани зашифрованный бэкап вне приложения, а пароль — отдельно. Для восстановления нужны оба. Документы приложения и буфер сами по себе не являются надёжной резервной копией.",
+          copied: "Зашифрованный бэкап скопирован; зашифрованная копия сохранена в документах приложения. Сохрани её вне приложения, пароль держи отдельно.",
+          clipboardOnly: "Зашифрованный бэкап только в буфере. Сохрани его вне приложения, а пароль отдельно.",
+          export: "Сохранить зашифрованный файл",
+          saved: "Зашифрованный бэкап записан в выбранную папку. Храни пароль отдельно.",
+          verifyShared: "Окно передачи закрыто. Проверь, что файл сохранён вне приложения: закрытие окна не подтверждает сохранение.",
+          failed: "Не удалось выполнить операцию. Проверь пароль и повтори.",
+          decryptFailed: "Не удалось открыть бэкап. Проверь пароль, формат и целостность файла.",
+          import: "Выбрать файл бэкапа",
+        },
         common: {
           loading: "Загрузка…",
           enabled: "включено",
@@ -725,6 +755,21 @@ function buildResources() {
     },
     uk: {
       translation: {
+        backup: {
+          title: "Зашифрована резервна копія",
+          password: "Пароль копії (від 12 символів)",
+          confirm: "Повтори пароль копії",
+          passwordMismatch: "Потрібні однакові паролі довжиною від 12 символів.",
+          hint: "Збережи зашифровану копію поза застосунком, а пароль окремо. Для відновлення потрібні обидва. Документи застосунку та буфер самі по собі не є надійною копією.",
+          copied: "Зашифровану копію скопійовано та збережено в документах застосунку. Збережи її поза застосунком, пароль тримай окремо.",
+          clipboardOnly: "Зашифрована копія лише в буфері. Збережи її поза застосунком, пароль окремо.",
+          export: "Зберегти зашифрований файл",
+          saved: "Зашифровану копію записано у вибрану папку. Тримай пароль окремо.",
+          verifyShared: "Вікно передачі закрито. Перевір збереження файлу поза застосунком: закриття вікна не підтверджує збереження.",
+          failed: "Не вдалося виконати операцію. Перевір пароль і повтори.",
+          decryptFailed: "Не вдалося відкрити копію. Перевір пароль, формат і цілісність файлу.",
+          import: "Вибрати файл копії",
+        },
         common: {
           loading: "Завантаження…",
           enabled: "увімкнено",
@@ -1078,6 +1123,21 @@ function buildResources() {
     },
     de: {
       translation: {
+        backup: {
+          title: "Verschlüsseltes Wallet-Backup",
+          password: "Backup-Passwort (mind. 12 Zeichen)",
+          confirm: "Backup-Passwort bestätigen",
+          passwordMismatch: "Mindestens 12 Zeichen und übereinstimmende Passwörter erforderlich.",
+          hint: "Speichere das verschlüsselte Backup außerhalb der App und das Passwort separat. Zur Wiederherstellung brauchst du beides. App-Dokumente und Zwischenablage allein sind kein zuverlässiges Backup.",
+          copied: "Verschlüsseltes Backup kopiert und in App-Dokumenten abgelegt. Außerhalb der App speichern; Passwort separat aufbewahren.",
+          clipboardOnly: "Verschlüsseltes Backup nur in der Zwischenablage. Außerhalb der App speichern; Passwort separat aufbewahren.",
+          export: "Verschlüsseltes Backup speichern",
+          saved: "Verschlüsseltes Backup im gewählten Ordner gespeichert. Passwort separat aufbewahren.",
+          verifyShared: "Teilen-Dialog geschlossen. Prüfe, ob die Datei außerhalb der App gespeichert wurde; das Schließen bestätigt keine Speicherung.",
+          failed: "Backup-Vorgang fehlgeschlagen. Passwort prüfen und erneut versuchen.",
+          decryptFailed: "Backup kann nicht geöffnet werden. Passwort, Format und Dateiintegrität prüfen.",
+          import: "Backup-Datei auswählen",
+        },
         common: {
           loading: "Lädt…",
           enabled: "aktiv",

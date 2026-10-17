@@ -259,13 +259,23 @@ RustBuffer uniffi_acp_mobile_ffi_fn_func_acp_address_from_keystore_ffi(RustBuffe
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_CREATE_WALLET_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_CREATE_WALLET_FFI
 RustBuffer uniffi_acp_mobile_ffi_fn_func_acp_create_wallet_ffi(RustCallStatus *_Nonnull out_status
-    
+
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_DECRYPT_KEYSTORE_FFI
+#define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_DECRYPT_KEYSTORE_FFI
+RustBuffer uniffi_acp_mobile_ffi_fn_func_acp_decrypt_keystore_ffi(RustBuffer backup_json, RustBuffer password, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_ENCRYPT_KEYSTORE_FFI
+#define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_ENCRYPT_KEYSTORE_FFI
+RustBuffer uniffi_acp_mobile_ffi_fn_func_acp_encrypt_keystore_ffi(RustBuffer keystore_json, RustBuffer password, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_ESTIMATE_FEE_DEFAULT_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_ESTIMATE_FEE_DEFAULT_FFI
 RustBuffer uniffi_acp_mobile_ffi_fn_func_acp_estimate_fee_default_ffi(RustCallStatus *_Nonnull out_status
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_FN_FUNC_ACP_SIGN_TRANSFER_FFI
@@ -561,37 +571,48 @@ void ffi_acp_mobile_ffi_rust_future_complete_void(uint64_t handle, RustCallStatu
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ADDRESS_FROM_KEYSTORE_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ADDRESS_FROM_KEYSTORE_FFI
 uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_address_from_keystore_ffi(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_CREATE_WALLET_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_CREATE_WALLET_FFI
 uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_create_wallet_ffi(void
-    
+
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_DECRYPT_KEYSTORE_FFI
+#define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_DECRYPT_KEYSTORE_FFI
+uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_decrypt_keystore_ffi(void
+
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ENCRYPT_KEYSTORE_FFI
+#define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ENCRYPT_KEYSTORE_FFI
+uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_encrypt_keystore_ffi(void
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ESTIMATE_FEE_DEFAULT_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_ESTIMATE_FEE_DEFAULT_FFI
 uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_estimate_fee_default_ffi(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_SIGN_TRANSFER_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_SIGN_TRANSFER_FFI
 uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_sign_transfer_ffi(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_VALIDATE_ADDRESS_FFI
 #define UNIFFI_FFIDEF_UNIFFI_ACP_MOBILE_FFI_CHECKSUM_FUNC_ACP_VALIDATE_ADDRESS_FFI
 uint16_t uniffi_acp_mobile_ffi_checksum_func_acp_validate_address_ffi(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_ACP_MOBILE_FFI_UNIFFI_CONTRACT_VERSION
 #define UNIFFI_FFIDEF_FFI_ACP_MOBILE_FFI_UNIFFI_CONTRACT_VERSION
 uint32_t ffi_acp_mobile_ffi_uniffi_contract_version(void
-    
+
 );
 #endif
-

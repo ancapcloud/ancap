@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { preventScreenCaptureAsync, allowScreenCaptureAsync } from "expo-screen-capture";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -12,12 +13,15 @@ import {
 } from "react-native";
 import {
   addressFromKeystore,
+  decryptKeystoreBackup,
   assertAcpAddress,
   safeErrorMessage,
   validateAcpAddress,
 } from "@ancap/acp-wallet-sdk";
 import { assertKeystoreExportJson, readKeystoreExportFile } from "@/lib/keystore-export";
 import { saveVault } from "@/lib/vault";
+import { pickKeystoreBackup } from "@/lib/keystore-backup";
+import { assertEncryptedBackup } from "@/lib/keystore-backup-format";
 
 export default function ImportWalletScreen() {
   const { t } = useTranslation();
@@ -26,16 +30,29 @@ export default function ImportWalletScreen() {
   const [mnemonic, setMnemonic] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [backupPassword, setBackupPassword] = useState("");
+  useEffect(() => {
+    void preventScreenCaptureAsync();
+    return () => { allowScreenCaptureAsync().catch(() => {}); };
+  }, []);
+
+  const decodeInput = async (raw: string) => {
+    if (raw.length > 512_000) throw new Error(t("importWallet.keystoreRequired"));
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { throw new Error(t("importWallet.keystoreRequired")); }
+    if (parsed?.v === 2 && parsed?.crypto) {
+      try {
+        return assertKeystoreExportJson(await decryptKeystoreBackup(assertEncryptedBackup(raw), backupPassword));
+      } catch { throw new Error(t("backup.decryptFailed")); }
+    }
+    try { return assertKeystoreExportJson(raw); }
+    catch { throw new Error(t("importWallet.keystoreRequired")); }
+  };
 
   const applyKeystore = async (raw: string) => {
-    let trimmed: string;
-    try {
-      trimmed = assertKeystoreExportJson(raw);
-    } catch {
-      throw new Error(t("importWallet.keystoreRequired"));
-    }
-    setKeystoreJson(trimmed);
+    const trimmed = await decodeInput(raw);
     const derived = await addressFromKeystore(trimmed);
+    setKeystoreJson(trimmed);
     setAddress(assertAcpAddress(derived, "address"));
   };
 
@@ -72,6 +89,16 @@ export default function ImportWalletScreen() {
     }
   };
 
+  const onPickBackup = async () => {
+    setError(""); setBusy(true);
+    try {
+      const raw = await pickKeystoreBackup();
+      if (raw !== null) await applyKeystore(raw);
+    } catch (error) {
+      setError(safeErrorMessage(error, t("importWallet.importFailed")));
+    } finally { setBusy(false); }
+  };
+
   const onDeriveAddress = async () => {
     setError("");
     setBusy(true);
@@ -88,12 +115,7 @@ export default function ImportWalletScreen() {
     setError("");
     setBusy(true);
     try {
-      let trimmed: string;
-      try {
-        trimmed = assertKeystoreExportJson(keystoreJson);
-      } catch {
-        throw new Error(t("importWallet.keystoreRequired"));
-      }
+      const trimmed = await decodeInput(keystoreJson);
       const derived = await addressFromKeystore(trimmed);
       const addr = assertAcpAddress(derived, "address");
       const typed = address.trim();
@@ -107,6 +129,7 @@ export default function ImportWalletScreen() {
         keystoreJson: trimmed,
         ...(mnemonic.trim() ? { mnemonic: mnemonic.trim() } : {}),
       });
+      setBackupPassword("");
       router.replace("/(tabs)");
     } catch (e) {
       setError(safeErrorMessage(e, t("importWallet.importFailed")));
@@ -119,6 +142,13 @@ export default function ImportWalletScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t("importWallet.title")}</Text>
       <Text style={styles.hint}>{t("importWallet.hint")}</Text>
+      <TextInput accessibilityLabel="backup-password" style={styles.input}
+        placeholder={t("backup.password")} placeholderTextColor="#64748b"
+        value={backupPassword} onChangeText={setBackupPassword} secureTextEntry
+        autoCapitalize="none" autoCorrect={false} editable={!busy} />
+      <Pressable style={styles.secondary} onPress={() => void onPickBackup()} disabled={busy}>
+        <Text style={styles.secondaryText}>{t("backup.import")}</Text>
+      </Pressable>
 
       <Pressable style={styles.secondary} onPress={() => void onPasteKeystore()} disabled={busy}>
         <Text style={styles.secondaryText}>{t("importWallet.pasteKeystore")}</Text>

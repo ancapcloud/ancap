@@ -13,6 +13,8 @@ export type FeeEstimateResult = {
 };
 
 export type NativeWalletModule = {
+  encryptKeystore?(keystoreJson: string, password: string): Promise<string>;
+  decryptKeystore?(backupJson: string, password: string): Promise<string>;
   createWallet(): Promise<CreatedWalletResult>;
   validateAddress(address: string): Promise<boolean>;
   addressFromKeystore(keystoreJson: string): Promise<string>;
@@ -25,6 +27,18 @@ export type NativeWalletModule = {
     feeAcp?: string;
   }): Promise<SignedTransaction>;
 };
+
+export async function encryptKeystoreBackup(keystoreJson: string, password: string): Promise<string> {
+  const native = requireNative();
+  if (!native.encryptKeystore) throw new Error("Encrypted backup requires a rebuilt native wallet.");
+  return native.encryptKeystore(keystoreJson, password);
+}
+
+export async function decryptKeystoreBackup(backupJson: string, password: string): Promise<string> {
+  const native = requireNative();
+  if (!native.decryptKeystore) throw new Error("Encrypted backup requires a rebuilt native wallet.");
+  return native.decryptKeystore(backupJson, password);
+}
 
 let nativeModule: NativeWalletModule | null | undefined;
 let secureVault: SecureVault | null = null;
@@ -82,7 +96,12 @@ export async function signAndPrepareTransfer(
 ): Promise<SignedTransaction> {
   assertAcpAddress(req.from, "from");
   assertAcpAddress(req.to, "to");
-  return requireNative().signTransfer({
+  const native = requireNative();
+  const signer = await native.addressFromKeystore(keystoreJson);
+  if (signer !== req.from.trim()) {
+    throw new Error("Signing wallet does not match the confirmed sender.");
+  }
+  return native.signTransfer({
     rpcUrl,
     keystoreJson,
     to: req.to,

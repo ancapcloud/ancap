@@ -10,9 +10,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
-import { createWallet, safeErrorMessage } from "@ancap/acp-wallet-sdk";
+import { createWallet, encryptKeystoreBackup, safeErrorMessage } from "@ancap/acp-wallet-sdk";
+import { exportEncryptedBackup } from "@/lib/keystore-backup";
 import { deleteKeystoreExportFile, writeKeystoreExportFile } from "@/lib/keystore-export";
 import { saveVault } from "@/lib/vault";
 
@@ -28,6 +30,8 @@ export default function CreateWalletScreen() {
   const [words, setWords] = useState<string[]>([]);
   const [address, setAddress] = useState("");
   const [keystoreJson, setKeystoreJson] = useState("");
+  const [backupPassword, setBackupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     void preventScreenCaptureAsync();
@@ -46,6 +50,8 @@ export default function CreateWalletScreen() {
       setWords(wordsList);
       setAddress(w.address);
       setKeystoreJson(w.keystoreJson);
+      setBackupPassword("");
+      setConfirmPassword("");
     } catch (e) {
       const msg = safeErrorMessage(e, t("createWallet.couldNotCreate"));
       if (msg.includes("not linked") || msg.includes("Native ACP")) {
@@ -70,7 +76,7 @@ export default function CreateWalletScreen() {
   const onBackupConfirm = () => {
     Alert.alert(
       t("createWallet.backupTitle"),
-      t("createWallet.backupBody"),
+      t("backup.hint") + "\n\n" + t("createWallet.backupBody"),
       [
         { text: t("createWallet.backupDone"), style: "cancel" },
         { text: t("createWallet.backupReview"), style: "destructive" },
@@ -78,26 +84,42 @@ export default function CreateWalletScreen() {
     );
   };
 
+  const prepareBackup = async () => {
+    if ([...backupPassword].length < 12 || backupPassword !== confirmPassword) {
+      throw new Error(t("backup.passwordMismatch"));
+    }
+    return encryptKeystoreBackup(keystoreJson, backupPassword);
+  };
+
   const onCopyKeystore = async () => {
     if (!keystoreJson) {
       Alert.alert(t("createWallet.generateFirst"));
       return;
     }
-    // Explicit external export only: clipboard + optional document-dir file for the user to pull.
-    // Never write a hidden SecureStore stash copy.
-    await Clipboard.setStringAsync(keystoreJson);
-    let fileWritten = false;
+    setBusy(true);
     try {
-      fileWritten = await writeKeystoreExportFile(keystoreJson);
-    } catch {
-      fileWritten = false;
+      const encrypted = await prepareBackup();
+      await Clipboard.setStringAsync(encrypted);
+      let fileWritten = false;
+      try { fileWritten = await writeKeystoreExportFile(encrypted); } catch { /* clipboard only */ }
+      Alert.alert(t("createWallet.keystoreCopiedTitle"), fileWritten
+        ? t("backup.copied") : t("backup.clipboardOnly"));
+    } catch (error) {
+      Alert.alert(t("backup.title"), safeErrorMessage(error, t("backup.failed")));
+    } finally {
+      setBusy(false);
     }
-    Alert.alert(
-      t("createWallet.keystoreCopiedTitle"),
-      fileWritten
-        ? t("createWallet.keystoreCopiedBody")
-        : t("createWallet.keystoreCopiedClipboardOnlyBody")
-    );
+  };
+
+  const onExportBackup = async () => {
+    setBusy(true);
+    try {
+      const result = await exportEncryptedBackup(await prepareBackup());
+      if (result !== "cancelled") Alert.alert(t("backup.title"),
+        result === "saved" ? t("backup.saved") : t("backup.verifyShared"));
+    } catch (error) {
+      Alert.alert(t("backup.title"), safeErrorMessage(error, t("backup.failed")));
+    } finally { setBusy(false); }
   };
 
   const onSaveAndContinue = async () => {
@@ -105,12 +127,19 @@ export default function CreateWalletScreen() {
       Alert.alert(t("createWallet.generateFirst"));
       return;
     }
-    await saveVault({ address, keystoreJson, mnemonic: words.join(" ") });
-    Alert.alert(
+    setBusy(true);
+    try {
+      await saveVault({ address, keystoreJson, mnemonic: words.join(" ") });
+      setBackupPassword("");
+      setConfirmPassword("");
+      Alert.alert(
       t("createWallet.savedTitle"),
       t("createWallet.savedBody"),
       [{ text: t("createWallet.continue"), onPress: () => router.replace("/(tabs)") }]
-    );
+      );
+    } catch (error) {
+      Alert.alert(t("createWallet.couldNotCreate"), safeErrorMessage(error, t("backup.failed")));
+    } finally { setBusy(false); }
   };
 
   return (
@@ -147,7 +176,19 @@ export default function CreateWalletScreen() {
       {words.length > 0 ? (
         <>
           <Text style={styles.keystoreNote}>{t("createWallet.keystoreNote")}</Text>
-          <Pressable style={styles.secondary} onPress={() => void onCopyKeystore()}>
+          <Text style={styles.body}>{t("backup.hint")}</Text>
+          <TextInput accessibilityLabel="backup-password" style={styles.password}
+            placeholder={t("backup.password")} placeholderTextColor="#94a3b8"
+            value={backupPassword} onChangeText={setBackupPassword} secureTextEntry
+            autoCapitalize="none" autoCorrect={false} editable={!busy} />
+          <TextInput accessibilityLabel="backup-password-confirm" style={styles.password}
+            placeholder={t("backup.confirm")} placeholderTextColor="#94a3b8"
+            value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry
+            autoCapitalize="none" autoCorrect={false} editable={!busy} />
+          <Pressable style={styles.secondary} onPress={() => void onExportBackup()} disabled={busy}>
+            <Text style={styles.secondaryText}>{t("backup.export")}</Text>
+          </Pressable>
+          <Pressable style={styles.secondary} onPress={() => void onCopyKeystore()} disabled={busy}>
             <Text style={styles.secondaryText}>{t("createWallet.copyKeystore")}</Text>
           </Pressable>
 
@@ -155,7 +196,7 @@ export default function CreateWalletScreen() {
             <Text style={styles.warningText}>{t("createWallet.readBeforeContinuing")}</Text>
           </Pressable>
 
-          <Pressable style={styles.secondary} onPress={onSaveAndContinue}>
+          <Pressable style={styles.secondary} onPress={onSaveAndContinue} disabled={busy}>
             <Text style={styles.secondaryText}>{t("createWallet.saveWallet")}</Text>
           </Pressable>
         </>
@@ -165,6 +206,7 @@ export default function CreateWalletScreen() {
 }
 
 const styles = StyleSheet.create({
+  password: { color: "#f5f7ff", borderColor: "#334155", borderWidth: 1, padding: 12, borderRadius: 10, marginBottom: 12 },
   container: { padding: 24, flexGrow: 1 },
   title: { color: "#f5f7ff", fontSize: 24, fontWeight: "700", marginBottom: 12 },
   body: { color: "#94a3b8", fontSize: 16, lineHeight: 24, marginBottom: 20 },

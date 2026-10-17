@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { fileSystem } = vi.hoisted(() => {
   const files = new Map<string, string>();
@@ -34,6 +34,7 @@ import {
 } from "./keystore-export";
 
 const VALID_V = JSON.stringify({ v: 3, seed: [1, 2, 3] });
+const ENCRYPTED = JSON.stringify({ v: 2, crypto: { kdf: "argon2id", mem_kib: 65536, time: 3, parallelism: 1, salt_b64: "AAAA", nonce_b64: "AAAA", ciphertext_b64: "AAAA" } });
 const VALID_VERSION = JSON.stringify({ version: 3, cipher: "x" });
 
 describe("assertKeystoreExportJson", () => {
@@ -51,7 +52,9 @@ describe("assertKeystoreExportJson", () => {
 });
 
 describe("keystore export file helpers", () => {
+  afterEach(() => vi.unstubAllGlobals());
   beforeEach(() => {
+    vi.stubGlobal("__DEV__", true);
     fileSystem.files.clear();
     fileSystem.documentDirectory = "file:///mock-docs/";
     fileSystem.writeAsStringAsync.mockClear();
@@ -61,10 +64,10 @@ describe("keystore export file helpers", () => {
   });
 
   it("writes, reads, and deletes the export file", async () => {
-    expect(await writeKeystoreExportFile(VALID_V)).toBe(true);
+    expect(await writeKeystoreExportFile(ENCRYPTED)).toBe(true);
     const uri = `file:///mock-docs/${KEYSTORE_EXPORT_FILENAME}`;
-    expect(fileSystem.files.get(uri)).toBe(VALID_V);
-    expect(await readKeystoreExportFile()).toBe(VALID_V);
+    expect(fileSystem.files.get(uri)).toBe(ENCRYPTED);
+    expect(await readKeystoreExportFile()).toBe(ENCRYPTED);
     await deleteKeystoreExportFile();
     expect(fileSystem.files.has(uri)).toBe(false);
     expect(await readKeystoreExportFile()).toBeNull();
@@ -72,7 +75,19 @@ describe("keystore export file helpers", () => {
 
   it("returns false when documentDirectory is unavailable", async () => {
     fileSystem.documentDirectory = null as unknown as string;
-    expect(await writeKeystoreExportFile(VALID_V)).toBe(false);
+    expect(await writeKeystoreExportFile(ENCRYPTED)).toBe(false);
     expect(fileSystem.writeAsStringAsync).not.toHaveBeenCalled();
+  });
+
+  it("never writes plaintext private keys to the release app documents directory", async () => {
+    vi.stubGlobal("__DEV__", false);
+    await expect(writeKeystoreExportFile(VALID_V)).rejects.toThrow(/encrypted ACP backup/);
+    expect(fileSystem.writeAsStringAsync).not.toHaveBeenCalled();
+  });
+
+  it("surfaces deletion failure for wipe retry", async () => {
+    await writeKeystoreExportFile(ENCRYPTED);
+    fileSystem.deleteAsync.mockRejectedValueOnce(new Error("delete failed"));
+    await expect(deleteKeystoreExportFile()).rejects.toThrow("delete failed");
   });
 });

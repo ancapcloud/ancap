@@ -1,4 +1,5 @@
 import * as FileSystem from "expo-file-system";
+import { assertEncryptedBackup } from "./keystore-backup-format";
 
 /**
  * Explicit user-initiated keystore export filename under the app document directory.
@@ -19,6 +20,7 @@ function exportUri(): string | null {
  * Accepts both `"v":3` (native KeystoreV3) and legacy `"version":3` fixtures.
  */
 export function assertKeystoreExportJson(raw: string): string {
+  if (raw.length > 512_000) throw new Error("Keystore JSON is too large.");
   const trimmed = raw.trim();
   if (!trimmed) {
     throw new Error("Keystore JSON is empty.");
@@ -45,14 +47,15 @@ export function assertKeystoreExportJson(raw: string): string {
 
 /**
  * Write an external keystore backup file (user Copy action only).
- * @returns true when a durable file was written; false when documentDirectory is unavailable.
+ * User-initiated encrypted backup copy. An app-owned file is not an external backup.
+ * @returns true when an app-owned file was written; false if its directory is unavailable.
  */
 export async function writeKeystoreExportFile(keystoreJson: string): Promise<boolean> {
+  const validated = assertEncryptedBackup(keystoreJson);
   const uri = exportUri();
   if (!uri) {
     return false;
   }
-  const validated = assertKeystoreExportJson(keystoreJson);
   await FileSystem.writeAsStringAsync(uri, validated);
   return true;
 }
@@ -71,7 +74,9 @@ export async function readKeystoreExportFile(): Promise<string | null> {
   if (!raw?.trim()) {
     return null;
   }
-  return assertKeystoreExportJson(raw);
+  // Support legacy app-owned raw exports for migration; new writes are encrypted only.
+  try { return assertEncryptedBackup(raw); }
+  catch { return assertKeystoreExportJson(raw); }
 }
 
 /** Remove the export file (called on wallet wipe so secrets do not linger after remove). */
@@ -80,12 +85,8 @@ export async function deleteKeystoreExportFile(): Promise<void> {
   if (!uri) {
     return;
   }
-  try {
-    const info = await FileSystem.getInfoAsync(uri);
-    if (info.exists) {
-      await FileSystem.deleteAsync(uri, { idempotent: true });
-    }
-  } catch {
-    // Best-effort — wipe must still clear SecureStore.
+  const info = await FileSystem.getInfoAsync(uri);
+  if (info.exists) {
+    await FileSystem.deleteAsync(uri, { idempotent: true });
   }
 }

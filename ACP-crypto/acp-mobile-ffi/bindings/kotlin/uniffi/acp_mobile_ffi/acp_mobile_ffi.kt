@@ -721,6 +721,10 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -739,6 +743,10 @@ internal interface UniffiLib : Library {
     fun uniffi_acp_mobile_ffi_fn_func_acp_address_from_keystore_ffi(`keystoreJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
     fun uniffi_acp_mobile_ffi_fn_func_acp_create_wallet_ffi(uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_acp_mobile_ffi_fn_func_acp_decrypt_keystore_ffi(`backupJson`: RustBuffer.ByValue,`password`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_acp_mobile_ffi_fn_func_acp_encrypt_keystore_ffi(`keystoreJson`: RustBuffer.ByValue,`password`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
     fun uniffi_acp_mobile_ffi_fn_func_acp_estimate_fee_default_ffi(uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
@@ -862,6 +870,10 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_acp_mobile_ffi_checksum_func_acp_create_wallet_ffi(
     ): Short
+    fun uniffi_acp_mobile_ffi_checksum_func_acp_decrypt_keystore_ffi(
+    ): Short
+    fun uniffi_acp_mobile_ffi_checksum_func_acp_encrypt_keystore_ffi(
+    ): Short
     fun uniffi_acp_mobile_ffi_checksum_func_acp_estimate_fee_default_ffi(
     ): Short
     fun uniffi_acp_mobile_ffi_checksum_func_acp_sign_transfer_ffi(
@@ -889,6 +901,12 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_acp_mobile_ffi_checksum_func_acp_create_wallet_ffi() != 16727.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_acp_mobile_ffi_checksum_func_acp_decrypt_keystore_ffi() != 33015.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_acp_mobile_ffi_checksum_func_acp_encrypt_keystore_ffi() != 60948.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_acp_mobile_ffi_checksum_func_acp_estimate_fee_default_ffi() != 13663.toShort()) {
@@ -1185,18 +1203,18 @@ sealed class AcpWalletException: kotlin.Exception() {
 
     class Rpc(
 
-        val `message`: kotlin.String
+        val `details`: kotlin.String
         ) : AcpWalletException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "message=${ `details` }"
     }
 
     class Internal(
 
-        val `message`: kotlin.String
+        val `details`: kotlin.String
         ) : AcpWalletException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "message=${ `details` }"
     }
 
 
@@ -1250,12 +1268,12 @@ public object FfiConverterTypeAcpWalletException : FfiConverterRustBuffer<AcpWal
             is AcpWalletException.Rpc -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`details`)
             )
             is AcpWalletException.Internal -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`details`)
             )
         }
     }
@@ -1280,12 +1298,12 @@ public object FfiConverterTypeAcpWalletException : FfiConverterRustBuffer<AcpWal
             }
             is AcpWalletException.Rpc -> {
                 buf.putInt(5)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`details`, buf)
                 Unit
             }
             is AcpWalletException.Internal -> {
                 buf.putInt(6)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`details`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -1339,6 +1357,26 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
     uniffiRustCallWithError(AcpWalletException) { _status ->
     UniffiLib.INSTANCE.uniffi_acp_mobile_ffi_fn_func_acp_create_wallet_ffi(
         _status)
+}
+    )
+    }
+
+
+    @Throws(AcpWalletException::class) fun `acpDecryptKeystoreFfi`(`backupJson`: kotlin.String, `password`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(AcpWalletException) { _status ->
+    UniffiLib.INSTANCE.uniffi_acp_mobile_ffi_fn_func_acp_decrypt_keystore_ffi(
+        FfiConverterString.lower(`backupJson`),FfiConverterString.lower(`password`),_status)
+}
+    )
+    }
+
+
+    @Throws(AcpWalletException::class) fun `acpEncryptKeystoreFfi`(`keystoreJson`: kotlin.String, `password`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(AcpWalletException) { _status ->
+    UniffiLib.INSTANCE.uniffi_acp_mobile_ffi_fn_func_acp_encrypt_keystore_ffi(
+        FfiConverterString.lower(`keystoreJson`),FfiConverterString.lower(`password`),_status)
 }
     )
     }

@@ -41,6 +41,26 @@ public class ExpoAcpCoreModule: Module {
   public func definition() -> ModuleDefinition {
     Name("ExpoAcpCore")
 
+    AsyncFunction("encryptKeystore") { (keystoreJson: String, password: String) -> String in
+      try requireAcpNativeLinked()
+      #if canImport(acp_mobile_ffiFFI)
+      do { return try acpEncryptKeystoreFfi(keystoreJson: keystoreJson, password: password) }
+      catch let error as AcpWalletException { throw mapWalletError(error) }
+      #else
+      throw Exceptions.NotImplemented(acpNativeAvailabilityMessage())
+      #endif
+    }
+
+    AsyncFunction("decryptKeystore") { (backupJson: String, password: String) -> String in
+      try requireAcpNativeLinked()
+      #if canImport(acp_mobile_ffiFFI)
+      do { return try acpDecryptKeystoreFfi(backupJson: backupJson, password: password) }
+      catch let error as AcpWalletException { throw mapWalletError(error) }
+      #else
+      throw Exceptions.NotImplemented(acpNativeAvailabilityMessage())
+      #endif
+    }
+
     AsyncFunction("createWallet") { () -> [String: Any] in
       try requireAcpNativeLinked()
       #if canImport(acp_mobile_ffiFFI)
