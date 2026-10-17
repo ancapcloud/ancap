@@ -132,9 +132,14 @@ function Restore-ExportFileToApp {
 }
 
 Launch-App
-$xml = Wait-Welcome "START"
+$xml = Dump
+Write-Host "START $(Labels $xml)"
+# Existing wallet blocks welcome — wipe via Settings tab or hard clear app data.
 if ($xml -notmatch "Create new wallet") {
   $m = [regex]::Match($xml, 'content-desc="[^"]*Settings"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"')
+  if (-not $m.Success) {
+    $m = [regex]::Match($xml, 'text="Settings"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"')
+  }
   if ($m.Success) {
     adb shell input tap ([int]((([int]$m.Groups[1].Value)+([int]$m.Groups[3].Value))/2)) ([int]((([int]$m.Groups[2].Value)+([int]$m.Groups[4].Value))/2))
     Start-Sleep 2
@@ -142,12 +147,25 @@ if ($xml -notmatch "Create new wallet") {
       if ((Dump) -match "Remove wallet from this device") { break }
       adb shell input swipe 640 2200 640 800 300; Start-Sleep -Milliseconds 400
     }
-    Tap-Contains "Remove wallet from this device"; Start-Sleep 1
-    if ((Dump) -match 'text="REMOVE"') { Tap-Text "REMOVE" } else { Tap-Text "Remove" }
-    Start-Sleep 5; Launch-App
-    Wait-Welcome "AFTER_WIPE" | Out-Null
+    try {
+      Tap-Contains "Remove wallet from this device"; Start-Sleep 1
+      if ((Dump) -match 'text="REMOVE"') { Tap-Text "REMOVE" } else { Tap-Text "Remove" }
+      Start-Sleep 5
+    } catch {
+      Write-Host "UI wipe failed; pm clear fallback"
+      adb shell am force-stop $Package
+      adb shell pm clear $Package | Out-Null
+      Start-Sleep 2
+    }
+  } else {
+    Write-Host "Settings tab not found; pm clear fallback"
+    adb shell am force-stop $Package
+    adb shell pm clear $Package | Out-Null
+    Start-Sleep 2
   }
+  Launch-App
 }
+Wait-Welcome "START" | Out-Null
 if ((Dump) -notmatch "Create new wallet") { throw "expected welcome" }
 
 Tap-Text "Create new wallet"; Start-Sleep 2
