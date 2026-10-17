@@ -26,11 +26,6 @@ import type {
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { useLocalSearchParams } from "expo-router";
 import { getApi, hasApiAuthHeader } from "@/lib/api";
-import { executeRoutePlanLocally } from "@/lib/smart-pay-route-broadcast";
-import { loadVault } from "@/lib/vault";
-
-const ACP_RPC_URL =
-  process.env.EXPO_PUBLIC_ACP_RPC_URL ?? "https://acp1.ancap.cloud/rpc";
 import {
   clearSmartPayHistorySnapshots,
   loadSmartPayHistoryTimeline,
@@ -787,32 +782,10 @@ export default function SmartPayScreen() {
       setShowConfirmation(false);
       setConfirmationAccepted(false);
 
-      // SQ-7: non-custodial ACP legs from routePlan (bridge/swap stay skipped until chain clients).
-      const plan = result.execution.routePlan ?? [];
-      if (plan.length > 0) {
-        const vault = await loadVault();
-        if (vault?.keystoreJson) {
-          const { results: routeResults } = await executeRoutePlanLocally({
-            routePlan: plan,
-            rpcUrl: ACP_RPC_URL,
-            keystoreJson: vault.keystoreJson,
-            fromAddress: vault.address,
-            broadcastAcp: true,
-            broadcastRawTx: async (rawTx) => {
-              const broadcast = await getApi().broadcast(rawTx);
-              return {
-                accepted: Boolean(broadcast.accepted),
-                txid: broadcast.txid ?? undefined,
-                reason: broadcast.reason ?? undefined,
-              };
-            },
-          });
-          const summary = routeResults
-            .map((r) => `#${r.stepIndex} ${r.action}/${r.network}: ${r.status}${r.txid ? ` ${r.txid}` : ""}${r.reason ? ` (${r.reason})` : ""}`)
-            .join("\n");
-          Alert.alert("Route plan", summary.slice(0, 1200) || "No route steps");
-        }
-      }
+      // SQ-7 remains awaiting_local_signature. Do not automatically submit a
+      // server-provided plan before reviewed payload binding and durable recovery
+      // are wired into this screen. Existing receipt/recovery UI stays available.
+
     } catch (e) {
       setError(safeErrorMessage(e, "Execute failed"));
     } finally {

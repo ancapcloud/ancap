@@ -12,7 +12,7 @@ export type RouteBroadcastStepResult = {
   stepIndex: number;
   action: SmartPayRouteExecutionStep["action"];
   network: string;
-  status: "broadcast" | "signed_local" | "skipped" | "failed";
+  status: "broadcast" | "signed_local" | "skipped" | "failed" | "submission_unknown";
   txid?: string;
   reason?: string;
 };
@@ -22,15 +22,17 @@ export type RouteBroadcastInput = {
   rpcUrl: string;
   keystoreJson: string;
   fromAddress: string;
-  /** When false, ACP legs are signed but not submitted. Default true. */
+  /** Submission requires explicit opt-in. Default false. */
   broadcastAcp?: boolean;
   /** Submit a signed raw ACP tx; required when broadcastAcp is true. */
   broadcastRawTx?: (rawTx: string) => Promise<{ accepted: boolean; txid?: string; reason?: string }>;
+  /** Persist signed bytes/txid BEFORE submission; retries must reconcile this record. */
+  persistSignedTx?: (tx: { rawTx: string; txid: string; stepIndex: number }) => Promise<void>;
 };
 
 function isAcpNetwork(network: string): boolean {
   const n = network.trim().toLowerCase();
-  return n === "acp" || n === "ancap" || n.startsWith("acp");
+  return n === "acp";
 }
 
 /**
@@ -40,11 +42,29 @@ function isAcpNetwork(network: string): boolean {
 export async function executeRoutePlanLocally(
   input: RouteBroadcastInput
 ): Promise<{ results: RouteBroadcastStepResult[]; txRefs: SmartPayTxRef[] }> {
-  const broadcastAcp = input.broadcastAcp !== false;
+  const broadcastAcp = input.broadcastAcp === true;
   const results: RouteBroadcastStepResult[] = [];
   const txRefs: SmartPayTxRef[] = [];
 
   const steps = [...input.routePlan].sort((a, b) => a.stepIndex - b.stepIndex);
+  // Multi-leg dependencies, input reservation and recovery are not implemented.
+  // Fail the complete plan before signing any leg, rather than skipping a prerequisite.
+  if (steps.length !== 1 || steps.some((step) =>
+    !Number.isSafeInteger(step.stepIndex) || step.stepIndex < 0 ||
+    !["transfer", "payment"].includes(step.action) || !isAcpNetwork(step.network) ||
+    step.fromAsset !== "ACP" || step.toAsset !== "ACP" || step.status !== "ready"
+  )) {
+    return { results: steps.map((step) => ({
+      stepIndex: step.stepIndex, action: step.action, network: step.network,
+      status: "skipped" as const, reason: "Only a single ready native ACP payment is supported; reconcile other routes first",
+    })), txRefs };
+  }
+  if (broadcastAcp && (!input.broadcastRawTx || !input.persistSignedTx)) {
+    return { results: steps.map((step) => ({
+      stepIndex: step.stepIndex, action: step.action, network: step.network,
+      status: "failed" as const, reason: "Durable signed transaction persistence and broadcast callback required",
+    })), txRefs };
+  }
   for (const step of steps) {
     if (step.action === "bridge" || step.action === "swap" || !isAcpNetwork(step.network)) {
       results.push({
@@ -57,7 +77,8 @@ export async function executeRoutePlanLocally(
       continue;
     }
 
-    if (!step.recipient || !step.amount) {
+    if (!step.recipient?.trim() || !step.amount || !/^\d+(?:\.\d{1,8})?$/.test(step.amount.trim()) ||
+        !/[1-9]/.test(step.amount)) {
       results.push({
         stepIndex: step.stepIndex,
         action: step.action,
@@ -94,7 +115,16 @@ export async function executeRoutePlanLocally(
         });
         continue;
       }
-      const submitted = await input.broadcastRawTx(signed.rawTx);
+      await input.persistSignedTx!({ ...signed, stepIndex: step.stepIndex });
+      let submitted;
+      try {
+        submitted = await input.broadcastRawTx(signed.rawTx);
+      } catch {
+        results.push({ stepIndex: step.stepIndex, action: step.action, network: step.network,
+          status: "submission_unknown", txid: signed.txid,
+          reason: "Submission outcome unknown. Reconcile the persisted transaction before retrying." });
+        break;
+      }
       if (!submitted.accepted) {
         results.push({
           stepIndex: step.stepIndex,
@@ -105,7 +135,12 @@ export async function executeRoutePlanLocally(
         });
         continue;
       }
-      const txid = submitted.txid || signed.txid;
+      if (submitted.txid && submitted.txid !== signed.txid) {
+        results.push({ stepIndex: step.stepIndex, action: step.action, network: step.network,
+          status: "submission_unknown", txid: signed.txid, reason: "Broadcast txid mismatch; reconcile signed transaction" });
+        break;
+      }
+      const txid = signed.txid;
       results.push({
         stepIndex: step.stepIndex,
         action: step.action,
@@ -119,14 +154,13 @@ export async function executeRoutePlanLocally(
         role: step.action === "payment" ? "payment" : "transfer",
         routeStepIndex: step.stepIndex,
       });
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+    } catch {
       results.push({
         stepIndex: step.stepIndex,
         action: step.action,
         network: step.network,
         status: "failed",
-        reason: message.slice(0, 240),
+        reason: "Local signing or durable persistence failed; transaction was not submitted",
       });
     }
   }
