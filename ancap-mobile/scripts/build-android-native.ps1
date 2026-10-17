@@ -87,6 +87,7 @@ if ($missingTargets.Count -gt 0) {
 if (-not (Get-Command cargo-ndk -ErrorAction SilentlyContinue)) {
   Write-Host "Installing cargo-ndk (needs network)..."
   cargo install cargo-ndk
+  if ($LASTEXITCODE -ne 0) { throw "cargo-ndk installation failed" }
 }
 
 $targets = @(
@@ -97,7 +98,8 @@ $targets = @(
 
 foreach ($t in $targets) {
   Write-Host "Building $($t.triple)..."
-  cargo ndk -t $t.abi -o $jniRoot build -p acp-mobile-ffi --release
+  cargo ndk -t $t.abi -o $jniRoot build -p acp-mobile-ffi --release --locked
+  if ($LASTEXITCODE -ne 0) { throw "Native build failed for $($t.triple); do not use older libraries" }
 }
 
 Write-Host "Native libs installed under expo-acp-core/android/src/main/jniLibs"

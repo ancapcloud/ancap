@@ -1,17 +1,26 @@
 # Emulator smoke: open Send → Sign locally (no broadcast).
 # Expects an unlocked wallet already on home (after vault-external-restore-smoke).
-# Without UTXOs, native sign may fail with a clear insufficient-funds / no-utxo error — that still proves FFI linkage.
+# Exit 0: signed result observed; exit 2: funding blocked; exit 1: failed/unobserved.
+# An error mentioning native/module/failure is NEVER evidence of successful linkage.
 
 $ErrorActionPreference = "Stop"
 $env:ANDROID_HOME = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { "$env:LOCALAPPDATA\Android\Sdk" }
 $env:Path = "$env:ANDROID_HOME\platform-tools;$env:Path"
 $Package = "cloud.ancap.acpwallet"
 $Amount = "0.00000001"
+$UiDumpPath = Join-Path $env:TEMP ("ancap-sign-ui-" + [guid]::NewGuid().ToString("N") + ".xml")
+$DeviceUiPath = "/sdcard/ancap-sign-ui.xml"
+$qemu = (& adb shell getprop ro.kernel.qemu 2>$null | Out-String).Trim()
+if ($LASTEXITCODE -ne 0 -or $qemu -ne "1") { throw "Expected one Android emulator." }
+$avd = (& adb emu avd name 2>$null | Select-Object -First 1).Trim()
+if ($LASTEXITCODE -ne 0 -or $avd -ne "Pixel_10_Pro") { throw "Expected Pixel_10_Pro." }
 
 function Dump {
-  adb shell uiautomator dump /sdcard/ui.xml 2>$null | Out-Null
-  cmd /c "adb pull /sdcard/ui.xml %TEMP%\u-sign.xml >nul 2>&1"
-  Get-Content "$env:TEMP\u-sign.xml" -Raw -Encoding UTF8
+  adb shell uiautomator dump $DeviceUiPath 2>$null | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw "UI dump failed; no signing evidence." }
+  & adb pull $DeviceUiPath $UiDumpPath 2>$null | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw "UI pull failed; no signing evidence." }
+  Get-Content -LiteralPath $UiDumpPath -Raw -Encoding UTF8
 }
 function Labels([string]$xml) {
   ([regex]::Matches($xml, 'text="([^"]{3,70})"') | ForEach-Object { $_.Groups[1].Value } |
@@ -29,6 +38,7 @@ function Tap-Contains([string]$sub) {
   Write-Host "tap:$($m.Groups[1].Value)"; Start-Sleep 1
 }
 
+try {
 adb shell am force-stop $Package
 Start-Sleep 2
 adb shell monkey -p $Package -c android.intent.category.LAUNCHER 1 | Out-Null
@@ -58,6 +68,8 @@ adb shell input tap ([int]((([int]$amtBounds.Groups[1].Value)+([int]$amtBounds.G
 Start-Sleep 1
 adb shell input text $Amount
 Start-Sleep 1
+adb shell input keyevent 4
+Start-Sleep 1
 
 Tap-Contains "Sign locally"
 $seen = $null
@@ -69,27 +81,20 @@ for ($i = 0; $i -lt 20; $i++) {
     Write-Host "SIGN_LOCAL_OK=True ADDR=$addr"
     exit 0
   }
-  if ($xml -match "(?i)insufficient|no spendable|UTXO|native module|Sign failed|sign failed|could not sign|No UTXO") {
-    Write-Host "SIGN_LOCAL_LINKED=True (expected empty-UTXO failure without test ACP) ADDR=$addr"
-    Write-Host "DETAIL=$(Labels $xml)"
-    exit 0
+  if ($xml -match "(?i)insufficient funds|no spendable|no utxo") {
+    Write-Host "SIGN_LOCAL_BLOCKED=funding_required ADDR=$addr"
+    exit 2
   }
-  # Android AlertDialog title/message nodes
-  if ($xml -match 'resource-id="android:id/message"[^>]*text="([^"]+)"') {
-    $seen = $Matches[1]
-    Write-Host "ALERT=$seen"
-    if ($seen -match "(?i)signed|txid") {
-      Write-Host "SIGN_LOCAL_OK=True ADDR=$addr"
-      exit 0
-    }
-    if ($seen -match "(?i)utxo|insufficient|native|fail|error|spendable") {
-      Write-Host "SIGN_LOCAL_LINKED=True ADDR=$addr DETAIL=$seen"
-      exit 0
-    }
+  if ($xml -match "(?i)native module|not linked|Sign failed|could not sign") {
+    Write-Host "SIGN_LOCAL_FAILED=True ADDR=$addr"
+    exit 1
   }
+
 }
-# UI path verified even when Alert text is not exposed to uiautomator (common on RN dialogs).
-# Funded UTXO sign/broadcast remains operator follow-up.
-Write-Host "SIGN_LOCAL_UI_OK=True ADDR=$addr TO=$To AMOUNT=$Amount"
-Write-Host "NOTE=Alert/FFI outcome not captured; wallet has 0 UTXOs — fund test ACP then re-run"
-exit 0
+Write-Host "SIGN_LOCAL_UNVERIFIED=True ADDR=$addr"
+Write-Host "NOTE=No definite signing outcome observed; do not count this run as passed"
+exit 1
+} finally {
+  Remove-Item -LiteralPath $UiDumpPath -Force -ErrorAction SilentlyContinue
+  & adb shell rm -f $DeviceUiPath 2>$null | Out-Null
+}

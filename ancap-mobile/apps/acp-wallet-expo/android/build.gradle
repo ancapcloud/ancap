@@ -43,6 +43,12 @@ buildscript {
 
 subprojects { subproject ->
     subproject.buildscript {
+        // react-native-nfc-manager and similar libs only declare mavenCentral();
+        // AGP 8.8.2 is published on Google Maven, not Maven Central.
+        repositories {
+            google()
+            mavenCentral()
+        }
         configurations.configureEach {
             if (it.name == "classpath") {
                 it.resolutionStrategy.force "com.android.tools.build:gradle:8.8.2"

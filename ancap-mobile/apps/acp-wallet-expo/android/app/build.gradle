@@ -130,6 +130,22 @@ android {
     }
 }
 
+// Internal/store candidates must never silently use the template debug key.
+// Read the final config at execution time so operator/EAS signing injection is supported.
+def verifyReleaseSigning = tasks.register("verifyReleaseSigning") {
+    doLast {
+        def selected = android.buildTypes.getByName("release").signingConfig
+        def debugSigning = android.signingConfigs.getByName("debug")
+        if (selected == null || selected == debugSigning || selected.storeFile == null ||
+            selected.storeFile.canonicalFile == debugSigning.storeFile.canonicalFile) {
+            throw new GradleException("Release signing is not configured with an operator upload key. Debug signing is forbidden for release artifacts.")
+        }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(verifyReleaseSigning)
+}
+
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
 // Accepts values in comma delimited lists, example:
 // android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini
