@@ -19,7 +19,16 @@ if ($LASTEXITCODE -ne 0 -or $avd -ne "Pixel_10_Pro") { throw "Refusing wallet re
 $ExportFilename = "acp-keystore-export.json"
 $ExportPath = Join-Path $env:TEMP ("ancap-keystore-external-" + [guid]::NewGuid().ToString("N") + ".json")
 $UiDumpPath = Join-Path $env:TEMP ("ancap-smoke-ui-" + [guid]::NewGuid().ToString("N") + ".xml")
-$TestBackupPassword = "ancap-smoke-test-only-2026"
+# Ephemeral credential for this disposable-wallet run only. Never log or persist it.
+$passwordBytes = New-Object byte[] 24
+$passwordRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try {
+  $passwordRng.GetBytes($passwordBytes)
+  $TestBackupPassword = [Convert]::ToBase64String($passwordBytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+} finally {
+  $passwordRng.Dispose()
+  [Array]::Clear($passwordBytes, 0, $passwordBytes.Length)
+}
 $DeviceTmp = "/data/local/tmp/ancap-ks-external.json"
 
 function Dump {
@@ -320,6 +329,7 @@ if ($h3 -ne $ADDR) { throw "restart mismatch" }
 
 Write-Host "SMOKE_OK=True ADDR=$ADDR"
 } finally {
+  $TestBackupPassword = $null
   Remove-Item -LiteralPath $ExportPath -Force -ErrorAction SilentlyContinue
   Remove-Item -LiteralPath $UiDumpPath -Force -ErrorAction SilentlyContinue
   & adb shell rm -f $DeviceTmp /sdcard/ui.xml 2>$null | Out-Null
