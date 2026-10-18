@@ -1,5 +1,16 @@
 # ANCAP Master Roadmap
 
+## Wallet audit publication and GitHub follow-up — 2026-10-18
+
+Commit `4c161f1` was pushed with the operator's authorization. Backend CI passed
+981 tests / 37 skips; Frontend, mobile SDK, E2E, Crypto, CodeQL, Docs and Secret
+Hygiene workflows passed. Follow-up fixes remove stale Rust member lockfiles,
+pin patched browserslist and re-encode scanner previews as PNG pixels. Local
+scanner acceptance: 5 passed; mobile acceptance remains 346 passed. Deployment
+completion requires the final GitHub deploy job plus public health/readiness
+and exact frontend build provenance; a running job is not closure. See
+`docs/security/CODEQL_TRIAGE_2026-10-17.md` for remaining dependency/security gates.
+
 ## Wallet and side-track engineering audit — 2026-10-17
 
 Follow-up to local commits `b9a3fb2`–`dfbdcb7`: fixed vault post-commit

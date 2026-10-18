@@ -53,3 +53,27 @@ and notes; all four scanner safety scenarios pass locally against the dev
 server. This supports a non-exploitable-image-context assessment for this trace
 on the tested browser; it is not universal browser proof or a GitHub dismissal.
 Alert #481 remains open; no alert state was changed.
+
+## GitHub/deployment follow-up — 2026-10-18
+
+The image-preview path is now hardened beyond that original assessment:
+supported raster MIME and magic bytes must agree, browser decode must succeed,
+and dimensions are bounded to 16 megapixels. A canvas encodes the decoded pixels
+as PNG; the image sink never receives a raw-upload object URL. Spoofed SVG/PNG
+is rejected before preview/upload. Five Chromium scanner regressions passed,
+including valid PNG preview and escaped malicious labels. Lint and TypeScript
+passed. GitHub rescan, rather than dismissal, determines closure of #481.
+
+Dependabot follow-up removes three stale member Cargo.lock files: Cargo metadata
+confirms all four crates use ACP-crypto/Cargo.lock. The authoritative workspace
+lock is unchanged. Dependabot is configured at that workspace root. browserslist
+is pinned to patched 4.28.7 with its compatible data dependencies; mobile
+typecheck and all 346 tests passed after installation.
+
+Other findings are not described as fixed: image-size's available patch changes
+the callable CommonJS API used by current Metro; decode-uri-component's patch is
+ESM while its current consumer requires CommonJS. The old Expo launcher still
+resolves its own ajv 8.11 despite existing npm overrides. These need a validated
+Expo/Metro dependency migration. Current braces/node-forge alerts have no patched
+version listed by GitHub. No forced major upgrade or bulk alert dismissal was
+performed. Advisory counts remain time-specific; CI success is not zero alerts.
