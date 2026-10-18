@@ -83,6 +83,11 @@ ACP-crypto/acp-wallet/receive-address.txt
 ACP-crypto/.acp-node-data-*/
 ACP-crypto/.acp-node-data*/
 .env.moltbook
+
+# Cargo workspace members use ACP-crypto/Cargo.lock, not stale member locks.
+/ACP-crypto/acp-crypto/Cargo.lock
+/ACP-crypto/acp-node/Cargo.lock
+/ACP-crypto/acp-wallet/Cargo.lock
 .env.telegram
 .cache_ggshield/
 
