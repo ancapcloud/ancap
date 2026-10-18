@@ -18,8 +18,14 @@ if ($LASTEXITCODE -ne 0 -or $avd -ne "Pixel_10_Pro") { throw "Expected Pixel_10_
 function Dump {
   adb shell uiautomator dump $DeviceUiPath 2>$null | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "UI dump failed; no signing evidence." }
-  & adb pull $DeviceUiPath $UiDumpPath 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) { throw "UI pull failed; no signing evidence." }
+  # Windows PowerShell treats adb's successful stderr progress as an error.
+  $previousPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    & adb pull $DeviceUiPath $UiDumpPath 2>$null | Out-Null
+    $pullExitCode = $LASTEXITCODE
+  } finally { $ErrorActionPreference = $previousPreference }
+  if ($pullExitCode -ne 0) { throw "UI pull failed; no signing evidence." }
   Get-Content -LiteralPath $UiDumpPath -Raw -Encoding UTF8
 }
 function Labels([string]$xml) {

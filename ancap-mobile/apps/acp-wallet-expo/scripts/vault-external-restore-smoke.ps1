@@ -25,8 +25,13 @@ $DeviceTmp = "/data/local/tmp/ancap-ks-external.json"
 function Dump {
   adb shell uiautomator dump /sdcard/ui.xml 2>$null | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "UI hierarchy dump failed; do not reuse stale evidence." }
-  & adb pull /sdcard/ui.xml $UiDumpPath 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) { throw "UI hierarchy pull failed; do not reuse stale evidence." }
+  $previousPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    & adb pull /sdcard/ui.xml $UiDumpPath 2>$null | Out-Null
+    $pullExitCode = $LASTEXITCODE
+  } finally { $ErrorActionPreference = $previousPreference }
+  if ($pullExitCode -ne 0) { throw "UI hierarchy pull failed; do not reuse stale evidence." }
   try { Get-Content -LiteralPath $UiDumpPath -Raw -Encoding UTF8 }
   finally { & adb shell rm -f /sdcard/ui.xml 2>$null | Out-Null }
 }

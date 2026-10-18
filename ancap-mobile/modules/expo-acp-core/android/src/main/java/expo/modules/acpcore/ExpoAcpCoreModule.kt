@@ -21,7 +21,17 @@ private fun mapWalletError(e: AcpWalletException): CodedException {
     is AcpWalletException.Rpc -> "ERR_RPC"
     is AcpWalletException.Internal -> "ERR_INTERNAL"
   }
-  return CodedException(code, e.message ?: "ACP wallet error", e)
+  val message = when (e) {
+    is AcpWalletException.InvalidAddress -> "Invalid ACP address"
+    is AcpWalletException.InvalidMnemonic -> "Invalid mnemonic"
+    is AcpWalletException.InvalidAmount -> "Invalid ACP amount"
+    is AcpWalletException.InsufficientFunds -> "Insufficient funds"
+    is AcpWalletException.Rpc -> e.details
+    is AcpWalletException.Internal -> e.details
+  }
+  // UniFFI unit variants have an empty message; do not expose that empty cause
+  // as the deepest Expo rejection and hide the actionable domain error.
+  return CodedException(code, message.ifBlank { "ACP wallet error" }, null)
 }
 
 class ExpoAcpCoreModule : Module() {

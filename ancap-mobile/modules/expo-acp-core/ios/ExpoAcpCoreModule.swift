@@ -20,13 +20,13 @@ private func requireAcpNativeLinked() throws {
 private func mapWalletError(_ error: AcpWalletException) -> Exception {
   switch error {
   case .InvalidAddress:
-    return Exception(name: "ERR_INVALID_ADDRESS", description: error.localizedDescription)
+    return Exception(name: "ERR_INVALID_ADDRESS", description: "Invalid ACP address")
   case .InvalidMnemonic:
-    return Exception(name: "ERR_INVALID_MNEMONIC", description: error.localizedDescription)
+    return Exception(name: "ERR_INVALID_MNEMONIC", description: "Invalid mnemonic")
   case .InvalidAmount:
-    return Exception(name: "ERR_INVALID_AMOUNT", description: error.localizedDescription)
+    return Exception(name: "ERR_INVALID_AMOUNT", description: "Invalid ACP amount")
   case .InsufficientFunds:
-    return Exception(name: "ERR_INSUFFICIENT_FUNDS", description: error.localizedDescription)
+    return Exception(name: "ERR_INSUFFICIENT_FUNDS", description: "Insufficient funds")
   case .Rpc(let message):
     return Exception(name: "ERR_RPC", description: message)
   case .Internal(let message):

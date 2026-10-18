@@ -24,7 +24,8 @@ fn local_sign_binds_sender_recipient_amount_fee_and_network_without_funding() {
     let server = thread::spawn(move || {
         let deadline = Instant::now() + Duration::from_secs(20);
         let mut methods = Vec::new();
-        while methods.len() < 4 && Instant::now() < deadline {
+        let mut throttled = false;
+        while methods.len() < 5 && Instant::now() < deadline {
             let (mut stream, _) = match listener.accept() {
                 Ok(pair) => pair,
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -59,10 +60,16 @@ fn local_sign_binds_sender_recipient_amount_fee_and_network_without_funding() {
             reader.read_exact(&mut bytes).unwrap();
             let request: Value = serde_json::from_slice(&bytes).unwrap();
             let method = request["method"].as_str().unwrap();
+            if !throttled {
+                assert_eq!(method, "getbestblockhash");
+                write!(stream, "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 4\r\nConnection: close\r\n\r\nbusy").unwrap();
+                throttled = true;
+                continue;
+            }
             let result = match method {
-                "getnetworkinfo" => json!({"chain_id": 4242}),
+                "getblock" if request["params"]["verbose"] == true => json!({"chain_id": 4242}),
                 "getblockcount" => json!(1),
-                "getblockhash" => json!("88".repeat(32)),
+                "getbestblockhash" | "getblockhash" => json!("88".repeat(32)),
                 "getblock" => json!({"tx": [{"txid": "11".repeat(32), "vin": [],
                     "vout": [{"recipient_address": address, "amount": 3 * UNITS_PER_ACP}]}]}),
                 other => panic!("unexpected RPC, especially any broadcast: {other}"),
@@ -84,7 +91,8 @@ fn local_sign_binds_sender_recipient_amount_fee_and_network_without_funding() {
     assert_eq!(
         server.join().unwrap(),
         [
-            "getnetworkinfo",
+            "getbestblockhash",
+            "getblock",
             "getblockcount",
             "getblockhash",
             "getblock"

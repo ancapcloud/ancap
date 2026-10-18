@@ -115,28 +115,49 @@ fn rpc(client: &Client, rpc_url: &str, method: &str, params: Value) -> Result<Va
         "method": method,
         "params": params
     });
-    let mut req = client.post(rpc_url).json(&body);
-    if let Ok(t) = std::env::var("ACP_RPC_TOKEN") {
-        let t = t.trim().to_string();
-        if !t.is_empty() {
-            req = req.header("x-acp-rpc-token", t);
+    for attempt in 0..4 {
+        let mut req = client.post(rpc_url).json(&body);
+        if let Ok(t) = std::env::var("ACP_RPC_TOKEN") {
+            let t = t.trim().to_string();
+            if !t.is_empty() {
+                req = req.header("x-acp-rpc-token", t);
+            }
         }
+        let response = req
+            .send()
+            .map_err(|e| AcpWalletException::Rpc {
+                message: e.to_string(),
+            })?;
+        let status = response.status();
+        if (status.as_u16() == 429 || status.as_u16() == 503) && attempt < 3 {
+            let delay = response.headers().get("retry-after")
+                .and_then(|value| value.to_str().ok())
+                .and_then(|value| value.parse::<u64>().ok())
+                .map(Duration::from_secs)
+                .unwrap_or_else(|| Duration::from_millis(500 * (1 << attempt)));
+            if delay <= Duration::from_secs(5) {
+                std::thread::sleep(delay);
+                continue;
+            }
+        }
+        if !status.is_success() {
+            return Err(AcpWalletException::Rpc {
+                message: format!("RPC {method}: HTTP {}", status.as_u16()),
+            });
+        }
+        let res: Value = response
+            .json()
+            .map_err(|_| AcpWalletException::Rpc {
+                message: format!("RPC {method}: invalid JSON response"),
+            })?;
+        if let Some(err) = res.get("error") {
+            return Err(AcpWalletException::Rpc {
+                message: err.to_string(),
+            });
+        }
+        return Ok(res["result"].clone());
     }
-    let res: Value = req
-        .send()
-        .map_err(|e| AcpWalletException::Rpc {
-            message: e.to_string(),
-        })?
-        .json()
-        .map_err(|e| AcpWalletException::Rpc {
-            message: e.to_string(),
-        })?;
-    if let Some(err) = res.get("error") {
-        return Err(AcpWalletException::Rpc {
-            message: err.to_string(),
-        });
-    }
-    Ok(res["result"].clone())
+    unreachable!("RPC retry loop returns on its final attempt")
 }
 
 fn identity_from_mnemonic(mnemonic: &str) -> Result<(WalletIdentity, Seed), AcpWalletException> {
@@ -217,6 +238,8 @@ fn scan_utxos(client: &Client, rpc_url: &str, address: &str) -> Result<Vec<Utxo>
     let mut spent: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     for h in 1..=tip {
+        // Public nginx permits 5 requests/second; a scan must not exhaust its burst.
+        std::thread::sleep(Duration::from_millis(250));
         let bh = rpc(client, rpc_url, "getblockhash", json!({ "height": h }))?
             .as_str()
             .ok_or_else(|| AcpWalletException::Rpc {
@@ -224,6 +247,7 @@ fn scan_utxos(client: &Client, rpc_url: &str, address: &str) -> Result<Vec<Utxo>
             })?
             .to_string();
 
+        std::thread::sleep(Duration::from_millis(250));
         let block = rpc(
             client,
             rpc_url,
@@ -422,12 +446,21 @@ pub fn acp_sign_transfer(
             message: e.to_string(),
         })?;
 
-    let chain_id = rpc(&client, &rpc_url, "getnetworkinfo", json!({}))?
+    // getnetworkinfo is operator-authenticated. Wallets read the chain ID from
+    // the public best-block header instead of carrying an operator RPC token.
+    let best_hash = rpc(&client, &rpc_url, "getbestblockhash", json!({}))?
+        .as_str()
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| AcpWalletException::Rpc {
+            message: "best block hash missing".into(),
+        })?
+        .to_string();
+    let chain_id = rpc(&client, &rpc_url, "getblock", json!({ "blockhash": best_hash, "verbose": true }))?
         .get("chain_id")
         .and_then(|v| v.as_u64())
-        .map(|v| v as u32)
+        .and_then(|v| u32::try_from(v).ok())
         .ok_or_else(|| AcpWalletException::Rpc {
-            message: "getnetworkinfo.chain_id missing".into(),
+            message: "block chain_id missing or out of range".into(),
         })?;
 
     let id = identity_from_keystore_json(&keystore_json)?;
