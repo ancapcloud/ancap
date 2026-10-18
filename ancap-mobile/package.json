@@ -2,7 +2,7 @@
   "name": "ancap-mobile",
   "private": true,
   "version": "0.1.0",
-  "description": "ANCAP ACP Wallet — React Native monorepo",
+  "description": "ANCAP ACP Wallet \u00e2\u20ac\u201d React Native monorepo",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -52,6 +52,7 @@
     "uuid": "^11.1.1",
     "vite": "^6.4.3",
     "shell-quote": "^1.12.0",
-    "brace-expansion@1": "^1.1.21"
+    "brace-expansion@1": "^1.1.21",
+    "browserslist": "4.28.7"
   }
 }
