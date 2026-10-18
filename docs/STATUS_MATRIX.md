@@ -1,3 +1,9 @@
+<!-- Local audit update: 2026-10-17 -->
+See [wallet/side-track engineering audit](mobile/ENGINEERING_AUDIT_2026-10-17.md)
+for encrypted backup verification, vault cleanup fixes, shadow-only deposit
+observations and suspended automatic Smart Pay broadcast. Physical/store/iOS
+and funded sign/broadcast remain open; local tests are not production evidence.
+
 # ANCAP Status Matrix
 
 ## Workflow Studio release — 2026-10-15

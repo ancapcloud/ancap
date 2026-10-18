@@ -25,7 +25,7 @@ Current MVP implementation:
 1. Cache address in device-only secure storage (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`).
 2. Store mnemonic + `keystore_json` in device-only secure storage by default.
 3. When the user enables biometric unlock, migrate mnemonic + `keystore_json` into biometric-gated secure storage (`requireAuthentication: true`) so reading signing secrets requires device authentication.
-4. If device biometrics change and the secure item is invalidated, require wallet re-import from the backup phrase / keystore.
+4. If device biometrics change and the secure item is invalidated, require wallet re-import from the encrypted keystore backup and its password. Mnemonic alone does not restore the original hybrid identity.
 
 Current libraries: `expo-secure-store`, `expo-local-authentication`.
 
@@ -36,7 +36,7 @@ Future hardening target:
 
 | Control | MVP |
 |---------|-----|
-| PIN (4-8 digits) | Stored as salted SHA-256 verifier in device-only secure storage; raw PIN is no longer persisted |
+| PIN (4-8 digits) | Stored as domain-separated SHA-256 verifier (fixed application prefix, no per-wallet random salt) in device-only secure storage; raw PIN is no longer persisted |
 | Biometric unlock | Optional after PIN |
 | Auto-lock | 5 min inactivity timer currently wired in Expo app |
 | Screenshot block | Seed phrase screen is protected; confirm-tx hardening still depends on native signing flow closure |
@@ -96,3 +96,23 @@ Show custodial rail disclaimer (from `bridge-spec-v1.md`):
 
 - Support: `support@ancap.cloud` (configure in env).
 - Compromised device: user must rotate to new seed (export not supported in MVP — document recovery from backup only).
+
+## 2026-10-17 engineering follow-up
+
+KeystoreV3 is **plaintext identity material** inside the process and SecureStore;
+it must not be described as a password-encrypted file. New file/clipboard exports
+use the existing `KeystoreJson` encrypted envelope (outer v2, inner v3), Argon2id
+and XChaCha20-Poly1305. The backup password is not saved with the vault. Native
+bridges must be rebuilt together with generated bindings. Existing plaintext v3
+imports remain supported for migration; exporting them directly is rejected.
+Android external export uses a user-selected SAF directory. iOS share-sheet
+completion does not prove a saved file. Both platforms can import via the system
+file picker. App-owned encrypted copies are removed on wipe; external user-owned
+copies remain under the user's control. Screenshot blocking covers create,
+import and backup screens. This is code behavior, not physical MASVS evidence.
+
+Vault reads and replacement of an existing vault require an unlocked PIN
+session. Route guards include deep-linked backup and Smart Pay screens. PIN
+rate limiting, app lifecycle behavior, per-chunk biometric prompting and release
+variant behavior still require explicit evaluation against the device checklist;
+a fixed-prefix PIN hash is not evidence that those controls passed.

@@ -7,6 +7,8 @@
 
 Current truth:
 
+- Audit follow-up (2026-10-17): the debug APK builds, but target API 34 requires a validated API 36+ stack migration before Play submission; see the linked policy and acceptance gates in `RELEASE_CHECKLIST.md`. Release signing must pass `:app:verifyReleaseSigning`, and full-artifact 16 KB compatibility remains unverified.
+
 - The repo already has a generic release workflow and release-process doc for the wider ANCAP stack.
 - The mobile wallet now also has an explicit release runbook, but that does **not** mean the wallet is release-ready yet.
 - The final mobile `v1.0.0` cut is still blocked by Android NDK-backed native artifacts, macOS/Xcode iOS packaging, real device verification, internal store uploads, and final operator/legal assets.

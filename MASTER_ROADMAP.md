@@ -1,5 +1,18 @@
 # ANCAP Master Roadmap
 
+## Wallet and side-track engineering audit — 2026-10-17
+
+Follow-up to local commits `b9a3fb2`–`dfbdcb7`: fixed vault post-commit
+cleanup/data-loss risk, concurrent operations, byte chunking and retryable wipe;
+added password-encrypted backup through the existing Rust keystore envelope.
+Disabled unsafe automatic Smart Pay submission until confirmation binding and
+durable recovery are wired. Tron watcher remains disabled by default and only
+accepts shadow mode; fee recycle uses finite positive threshold and authoritative
+30-day revenue. Verification and remaining release gates:
+[engineering audit](docs/mobile/ENGINEERING_AUDIT_2026-10-17.md).
+No production deployment, funded broadcast, physical MASVS or store closure is
+implied by these local changes.
+
 ## Stabilization and next development — 2026-10-16
 
 Homepage/mobile presentation and primary/Oracle chain state checked. Payment
@@ -925,7 +938,7 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | ID | Task | Status |
 |----|------|--------|
 | P4-8 | PIN + biometrics | [~] wired, real device verification pending |
-| P4-9 | SecureVault | [~] SecureStore wired, biometric migration done, verification pending |
+| P4-9 | SecureVault | [~] Generation cleanup/concurrency/wipe hardened; encrypted backup added; physical and release verification pending (`docs/mobile/ENGINEERING_AUDIT_2026-10-17.md`) |
 | P4-15 | i18n EN/RU/UK/DE | [x] react-i18next wired in the Expo app with persisted language selection and translated core wallet flows/screens |
 | P5-XO | Exchange office foundation (ACP hub, all↔all quotes, tickets, Exchange tab) | [x] see `docs/mobile/EXCHANGE_OFFICE_FOUNDATION.md` — catalog/quote/tickets + **auth-settle/sync/admin-complete**; USDT→ACP opens linked swap desk order; Expo open-ticket+settle wired |
 | P5-XO2 | OTC commodities + Markets AI workflows | [x] oil/gas/uranium/timber/sand/stone/ores desk rail; Markets category workflows + Markets Intel Pack on `/ai/workflows` |
@@ -948,18 +961,18 @@ Remaining future work: deeper dispute evidence capture, external fiat-provider c
 | P5-1 | MASVS L1 checklist | [~] repo-baseline closed in `docs/mobile/SECURITY_MODEL.md` (hashed PIN verifier, device-only secure storage, biometric-gated vault migration, error redaction, screenshot/clipboard/auto-lock controls); remaining closure is real-device/native release verification |
 | P5-5 | No secrets in Sentry/logs | [x] mobile wallet error surfaces now route thrown messages through a shared secret-redacting helper; mnemonic/keystore/rawTx/bearer-token shaped values are scrubbed before UI/log propagation |
 | P5.5 | Biohax NFC + org identity + digital passport | [~] backend + `066_digital_passport` + `072_passport_education_docs` (ChaCha20-Poly1305 edu vault), soulbound BSC contract (`contracts/digital-passport/`), API `/v1/passports/*` + education-docs, web `/passport`, mobile Passport tab + NFC backend sync; admin web UI + DESFire still open — see `docs/DIGITAL_PASSPORT.md`, `docs/mobile/BIOHAX_NFC.md` |
-| P6-3 | Device matrix (iOS + Android) | [~] Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |
-| P6-4 | TestFlight + Play Internal | [~] local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |
+| P6-3 | Device matrix (iOS + Android) | [~] Android local test env **ready** (`Pixel_10_Pro`); prior and encrypted-follow-up evidence tracked in `docs/mobile/device-evidence-2026-10-17.md` and `docs/mobile/ENGINEERING_AUDIT_2026-10-17.md`; physical + iOS matrix rows still open |
+| P6-4 | TestFlight + Play Internal | [~] Emulator available; API 36+ stack migration, full-artifact 16 KB support and release signing remain engineering gates before operator uploads (`docs/mobile/RELEASE_CHECKLIST.md`) |
 | P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |
-| P6-6 | Production v1.0.0 | [~] Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |
+| P6-6 | Production v1.0.0 | [~] API 36+/16 KB and release signing gates remain; production cut also needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |
 
 ### 5.2 Native-build-dependent items
 
 | ID | Task | Status / blocker |
 |----|------|------------------|
 | P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host with Android SDK/NDK installed, emitting `arm64-v8a`, `armeabi-v7a`, and `x86_64` `libacp_mobile_ffi.so` artifacts into `ancap-mobile/modules/expo-acp-core/android/src/main/jniLibs` |
-| P4-3 | Create wallet via FFI | [~] Android native artifacts + host assemble OK; **local emulator online** (`Pixel_10_Pro`) — run Expo against it; iOS still depends on P1-7 |
-| P4-11 | Send + preview + sign | [~] Android native artifacts + host assemble OK; **local emulator online** for runtime verification; iOS still depends on P1-7 |
+| P4-3 | Create wallet via FFI | [~] Prior emulator create/restore evidence recorded; encrypted-backup native follow-up in `docs/mobile/ENGINEERING_AUDIT_2026-10-17.md`; iOS still depends on P1-7 |
+| P4-11 | Send + preview + sign | [~] Android native rebuild + encrypted restore passed; sign-only runtime reached funding_required after TLS/auth/throttling fixes; funded sign/broadcast require operator test ACP; iOS still depends on P1-7 |
 | P1-7 | iOS Swift UniFFI link | [~] Run `ancap-mobile/scripts/build-ios-native.ps1` on macOS/Xcode and verify packaged artifacts |
 
 ### 5.3 Smart QR Pay / AI Payment Scanner / Claim Codes track (v1.1 / v2, after wallet release closure)

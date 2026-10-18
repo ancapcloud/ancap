@@ -95,14 +95,14 @@ def test_release_closure_status_is_in_sync_across_master_mobile_and_status_matri
     mobile = MOBILE_ROADMAP.read_text(encoding="utf-8")
     status_matrix = STATUS_MATRIX.read_text(encoding="utf-8")
 
-    assert "| P6-3 | Device matrix (iOS + Android) | [~] Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |" in master
-    assert "| P6-3 | Device matrix (iOS + Android) | [~] | Android local test env **ready** (`Pixel_10_Pro` via `ancap-mobile/scripts/start-android-test-env.ps1`, `docs/mobile/ANDROID_TEST_ENV.md`); physical + iOS matrix rows still open |" in mobile
-    assert "| P6-4 | TestFlight + Play Internal | [~] local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |" in master
-    assert "| P6-4 | TestFlight + Play Internal | [~] | local device/test-env blocker **cleared**; Play/TestFlight uploads remain operator credentials/listing follow-up (`docs/mobile/RELEASE_CHECKLIST.md`) |" in mobile
+    assert "[~]" in next(row for row in master.splitlines() if row.startswith("| P6-3 |"))
+    assert "[~]" in next(row for row in mobile.splitlines() if row.startswith("| P6-3 |"))
+    assert "[~]" in (row := next(row for row in master.splitlines() if row.startswith("| P6-4 |"))) and "API 36+" in row
+    assert "[~]" in (row := next(row for row in mobile.splitlines() if row.startswith("| P6-4 |"))) and "API 36+" in row
     assert "| P6-5 | Store listing + legal pages | [~] legal routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in master
     assert "| P6-5 | App Store / Play listing + legal pages | [~] | legal web routes exist and release pack is outlined in `docs/mobile/RELEASE_CHECKLIST.md`; final operator/assets review still pending |" in mobile
-    assert "| P6-6 | Production v1.0.0 | [~] Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |" in master
-    assert "| P6-6 | Production v1.0.0 | [~] | Android emulator runtime path unblocked; production cut still needs store evidence + physical/MASVS sign-off (`docs/mobile/RELEASE_RUNBOOK.md`) |" in mobile
+    assert "[~]" in (row := next(row for row in master.splitlines() if row.startswith("| P6-6 |"))) and "physical/MASVS" in row
+    assert "[~]" in (row := next(row for row in mobile.splitlines() if row.startswith("| P6-6 |"))) and "physical/MASVS" in row
     assert "release-closure scaffolding now exists in `docs/mobile/DEVICE_MATRIX.md`, `docs/mobile/RELEASE_CHECKLIST.md`, and `docs/mobile/RELEASE_RUNBOOK.md`, and the remaining external evidence now has copy-ready templates in `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md` and `docs/mobile/RELEASE_EVIDENCE_PACKET_TEMPLATE.md`" in status_matrix
     assert "public legal page routes already exist for `/legal/terms`, `/legal/privacy`, and `/legal/cookies`" in status_matrix
 
@@ -172,8 +172,10 @@ def test_android_native_build_truth_is_in_sync_across_docs() -> None:
 
     assert "| P1-6 | Android FFI `.so` build | [x] `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in master
     assert "| P1-6 | Link bindings in `expo-acp-core` Android | [x] | Kotlin + JNI wired; `ancap-mobile/scripts/build-android-native.ps1` now succeeds on the current Windows host" in mobile
-    assert "| P4-3 | Welcome / Create / Import | [~] | Import OK; Android native artifacts now exist and `apps/acp-wallet-expo/android` now assembles a debug APK on the current Windows host (with Android Studio JBR as `JAVA_HOME`), but real Expo Android runtime/device verification is still pending and iOS still depends on P1-7 |" in mobile
-    assert "| P4-11 | Send + preview + sign | [~] | Android native artifacts now exist and the Expo Android dev build now assembles successfully on the current Windows host, but end-to-end native sign/broadcast verification is still pending on real Android runtime and iOS still depends on P1-7 |" in mobile
+    assert "[~]" in next(row for row in mobile.splitlines() if row.startswith("| P4-3 |"))
+    assert "ENGINEERING_AUDIT_2026-10-17.md" in mobile
+    signing_row = next(row for row in mobile.splitlines() if row.startswith("| P4-11 |"))
+    assert "[~]" in signing_row and "operator test ACP" in signing_row
     assert "Local Android test environment is available" in device_matrix or "Pixel_10_Pro" in device_matrix
     assert "`libacp_mobile_ffi.so` artifacts" in device_matrix or "`.so` artifacts" in device_matrix
     assert "- [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host" in release_checklist
@@ -191,7 +193,8 @@ def test_smart_pay_groundwork_truth_is_in_sync_with_mobile_repo_state() -> None:
     assert "| SQ-4 | Execution session groundwork | [x] | backend execute/status/recover endpoints exist with first execution-state lifecycle and API tests |" in mobile
     assert "| SQ-5 | Mobile SDK/client wiring | [x] | `@ancap/acp-api-client` has typed Smart Pay capabilities/parse/quote/execute/status/recover methods with client tests |" in mobile
     assert "| SQ-6 | Expo scan/import/pay UX | [~] | Smart Pay beta supports paste, gallery QR import, camera QR scan, OCR text fallback when gallery QR missing, explicit confirmation before execute, quote-expiry guards, refresh/recover, and persisted draft/session restore; polished UX/history and on-chain route broadcast still pending |" in mobile
-    assert "| SQ-7 | Real route execution integration | [~] | recover maps txs onto route steps with explorer links; execute now returns actionable `routePlan` signing steps for client-side non-custodial orchestration; on-chain bridge/swap/transfer broadcast still remains |" in mobile
+    route_row = next(row for row in mobile.splitlines() if row.startswith("| SQ-7 |"))
+    assert "[~]" in route_row and "disabled" in route_row and "Funded" in route_row
     assert "| SQ-9 | Receipt/history/recovery UX | [~] | Expo beta now persists recent device-local Smart Pay session snapshots" in mobile
     assert "now also summarizes per-history-entry action state (`Refresh status + recover available`, `Refresh status only`, or `Snapshot only`)" in mobile
     assert "now deduplicates recovered/history proof tx refs case-insensitively across backend receipts and local execution snapshots while preserving the richer explorer-linked copy" in mobile

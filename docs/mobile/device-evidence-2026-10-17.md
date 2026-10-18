@@ -7,7 +7,7 @@ Filled from `docs/mobile/DEVICE_VERIFICATION_EVIDENCE_TEMPLATE.md`.
 - Date: 2026-10-17
 - Operator: Cursor agent (local Windows host)
 - Commit SHA: `23267af` (+ follow-up vault smoke / Smart Pay commits in same session)
-- App version: `0.1.0` (Expo debug)
+- Workspace package version: `0.1.0`; installed app version was not captured in this original record (Expo debug)
 - Android build number: debug APK via `npx expo run:android`
 - iOS build number: n/a (macOS host required)
 - Backend/API target: `https://ancap.cloud` / `https://acp1.ancap.cloud/rpc`
@@ -49,3 +49,17 @@ Failure classification:
 - `ancap-mobile/scripts/start-android-test-env.ps1`
 - `ancap-mobile/apps/acp-wallet-expo/scripts/vault-external-restore-smoke.ps1` → `SMOKE_OK=True`
 - `ancap-mobile/apps/acp-wallet-expo/scripts/sign-local-smoke.ps1` (UI path; funded UTXO still open)
+
+## Audit qualification
+
+The failure classification above is historical. Follow-up found and corrected
+vault failure paths and native TLS/RPC method selection; target API and release
+compatibility gates also remain. Use the audit report for current readiness.
+
+The original Copy/pull/restore run used a plaintext KeystoreV3 file. It proves
+that the prior identity roundtripped; it does not prove encrypted backup,
+password handling, a system file picker, release variant or funded signing.
+Follow-up encrypted-flow results are recorded separately in
+`ENGINEERING_AUDIT_2026-10-17.md`. Updated sign smoke exits 2 on insufficient
+funding, 1 on failure/unobserved result, and 0 only on an observed signed result.
+Destructive recovery scripts require `-AllowTestWalletReset` and Pixel_10_Pro.

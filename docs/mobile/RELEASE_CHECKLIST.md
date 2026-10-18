@@ -24,6 +24,11 @@ This file is intentionally practical: it records what the repo already has, what
 
 ### Entry conditions
 
+- [ ] Migrate and validate the Android dependency/toolchain stack for target API 36 or higher. The audited debug APK still targets API 34. Google Play requires API 36 for new phone apps/updates from 2026-08-31 ([official policy](https://support.google.com/googleplay/android-developer/answer/11926878?hl=en)); this is an engineering gate before submission.
+- [ ] Verify 16 KB page-size compatibility for the complete release artifact, including React Native/Expo and every bundled native library, on a matching device/emulator ([Android guidance](https://developer.android.com/guide/practices/page-sizes)). A Rust NDK build alone is insufficient evidence.
+  Debug APK audit found 12 arm64 dependencies with 4 KB ELF LOAD alignment, including RN/Hermes/barhopper; migrate these dependencies and validate ZIP/AAB packaging plus runtime. See ENGINEERING_AUDIT_2026-10-17.md.
+- [ ] Configure operator-owned release signing and pass `:app:verifyReleaseSigning`. The checked-in debug signing configuration is deliberately rejected for release builds; do not bypass the guard.
+
 - [x] Android native `.so` artifacts built via `ancap-mobile/scripts/build-android-native.ps1` on the current Windows host
 - [~] Android Expo dev-build verification on Windows host (`npx expo run:android` against packaged `expo-acp-core`) — run before Play Internal upload
 - [ ] iOS native artifacts packaged via `ancap-mobile/scripts/build-ios-native.ps1`

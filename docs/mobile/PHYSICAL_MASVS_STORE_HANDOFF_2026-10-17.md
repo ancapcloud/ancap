@@ -1,6 +1,15 @@
 # Physical MASVS / store handoff — 2026-10-17
 
-Engineering closed what it can without a physical device, Apple Developer / Play Console credentials, or macOS.
+Local follow-up audit found additional engineering work beyond the operator gates.
+See `ENGINEERING_AUDIT_2026-10-17.md` for corrected vault behavior, encrypted
+backup native verification, and the SQ-7/Tron safety gates. Do not treat the
+original emulator smoke as evidence for the new encrypted export flow.
+
+Before the operator upload, engineering must validate an API 36+ dependency and
+toolchain migration (the audited debug APK targets API 34), full-artifact 16 KB
+page-size support, and non-debug release signing. See the mandatory gates and
+official platform references in `RELEASE_CHECKLIST.md`. Play Console access alone
+does not make the current artifact ready for submission.
 
 ## Done in-repo
 
