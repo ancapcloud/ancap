@@ -27,7 +27,7 @@ thiserror = "1"
 
 rocksdb = "0.22"
 hex = "0.4"
-sha2 = "0.10"
+sha2 = "0.11"
 base64 = "0.22"
 uuid = { version = "1", features = ["v4"] }
 flate2 = "1.0"
