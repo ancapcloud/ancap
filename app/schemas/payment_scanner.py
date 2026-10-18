@@ -17,3 +17,5 @@ class PaymentScannerPreview(BaseModel):
     confidence: float
     requires_manual_confirm: bool = True
     parse_notes: list[str]
+    recommendations: list[str] = Field(default_factory=list)
+    can_pay_acp: bool = False

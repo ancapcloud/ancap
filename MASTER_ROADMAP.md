@@ -1,5 +1,17 @@
 # ANCAP Master Roadmap
 
+## Smart Pay document intake — 2026-10-18
+
+Local implementation: authenticated, bounded PDF/DOCX/text/image import at
+`POST /v1/payment-scanner/parse-document`, field-based recommendations and native
+ACP wallet draft handoff with a separate wallet review/fee/confirmation step.
+PDF and image recognition require the configured vision provider; DOCX imports
+text only. Locked files must be unlocked before upload. Unsupported formats are
+reported explicitly. Fiat and non-ACP invoices are not relabeled or sent as ACP.
+No fiat settlement adapter or funded payment has been verified by this change.
+Acceptance: scanner API tests and frontend TypeScript check; deployment and live
+provider/browser acceptance remain open.
+
 ## Wallet audit publication and GitHub follow-up — 2026-10-18
 
 Commit `4c161f1` was pushed with the operator's authorization. Backend CI passed

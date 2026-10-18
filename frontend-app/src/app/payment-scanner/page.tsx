@@ -96,16 +96,14 @@ export default function PaymentScannerPage() {
     setPreview(null);
     clearPhotoPreview();
     try {
-      const text = await file.text().catch(() => "");
-      if (!text.trim()) {
-        setError("Selected file is empty or not plain text.");
-        return;
-      }
+      if (!file.size || file.size > 10 * 1024 * 1024) throw new Error("Выберите документ до 10 МБ.");
+      const parsed = await paymentScanner.parseDocument(file);
       setSource("ocr");
-      setRaw(text.trim());
-      setPreview(await paymentScanner.parse(text.trim(), "ocr"));
+      setRaw("");
+      setPhotoName(file.name);
+      setPreview(parsed);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Text import failed");
+      setError(err instanceof Error ? err.message : "Не удалось прочитать документ");
     } finally {
       setBusy(false);
     }
@@ -179,10 +177,11 @@ export default function PaymentScannerPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="text-3xl font-semibold">AI Payment Scanner</h1>
+        <h1 className="text-3xl font-semibold">Smart Pay · ANCAP</h1>
         <p className="mt-2 text-sm text-white/65">
-          Paste a payment URI, invoice/receipt OCR text, or QR payload — or upload a photo/image of the document.
-          Review the preview and manually confirm before executing Smart Pay.
+          Загрузите счёт, квитанцию или внутренний платёжный документ: PDF, Word (DOCX), текст или фото.
+          ANCAP разберёт реквизиты и даст рекомендации. Проверьте данные перед оплатой в ACP.
+          Файлы с паролем предварительно разблокируйте. PDF и фото передаются сервису ИИ для распознавания.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           {(["paste", "ocr"] as ParseSource[]).map((mode) => (
@@ -204,7 +203,7 @@ export default function PaymentScannerPage() {
             onClick={() => textInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
-            Import text file
+            Загрузить документ
           </button>
           <button
             type="button"
@@ -217,7 +216,7 @@ export default function PaymentScannerPage() {
           <input
             ref={textInputRef}
             type="file"
-            accept=".txt,.csv,.md,text/plain"
+            accept=".pdf,.docx,.txt,.csv,.md,.json,.xml,.jpg,.jpeg,.png,.webp,.gif"
             className="hidden"
             onChange={onTextFileSelected}
           />
@@ -262,6 +261,7 @@ export default function PaymentScannerPage() {
           </button>
         </form>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
+        {photoName && !photoPreviewUrl ? <p className="mt-3 text-sm">Документ: {photoName}</p> : null}
         {preview ? (
           <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
             <div>Network: {preview.detected_network || "unknown"}</div>
@@ -276,6 +276,10 @@ export default function PaymentScannerPage() {
                 <li key={note}>{note}</li>
               ))}
             </ul>
+            <h2 className="mt-4 font-semibold">Рекомендации ANCAP</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {(preview.recommendations || []).map((note: string) => <li key={note}>{note}</li>)}
+            </ul>
             <label className="mt-5 flex items-center gap-2">
               <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
               I reviewed this preview and want to proceed manually
@@ -288,9 +292,9 @@ export default function PaymentScannerPage() {
                 >
                   Open address
                 </Link>
-                <Link href="/wallet" className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
-                  Continue in wallet
-                </Link>
+                {preview.can_pay_acp ? <Link href={`/wallet/acp#${new URLSearchParams({ payTo: preview.address, payAmount: preview.amount }).toString()}`} className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
+                  Оплатить в ACP
+                </Link> : <p>Для оплаты в ACP уточните ACP-реквизиты и сумму у получателя.</p>}
               </div>
             ) : null}
           </section>

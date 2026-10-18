@@ -2177,6 +2177,11 @@ export const payouts = {
 };
 
 export const paymentScanner = {
+  async parseDocument(file: File) {
+    const body = new FormData();
+    body.append("file", file);
+    return apiFetch("/payment-scanner/parse-document", { method: "POST", body }, false);
+  },
   async parse(raw_text: string, source: "paste" | "qr" | "ocr" = "paste") {
     return apiFetch("/payment-scanner/parse", {
       method: "POST",

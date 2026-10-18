@@ -168,6 +168,18 @@ export default function AcpWalletPage() {
     confirm: "",
   });
   const [tool, setTool] = useState("");
+  useEffect(() => {
+    const draft = new URLSearchParams(window.location.hash.slice(1));
+    const to = draft.get("payTo") || "";
+    const value = draft.get("payAmount") || "";
+    if (isAcpAddress(to) && /^\d{1,18}(\.\d{1,8})?$/.test(value)) {
+      setRecipient(to);
+      setAmount(value);
+      setSection("send");
+      setReview(null);
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
   const securityRef = useRef<HTMLElement | null>(null);
   const operator =
     wallet?.view_mode === "operator_hot" ||

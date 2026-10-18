@@ -11,7 +11,7 @@ _AMOUNT_RE = re.compile(r"(?i)(?:amount|value|amt)[=:]([0-9.]+)")
 _EVM_ADDRESS_RE = re.compile(r"(?i)\b(0x[a-f0-9]{40})\b")
 _ACP_ADDRESS_RE = re.compile(r"\b(acp1[a-z0-9]{20,120})\b", re.IGNORECASE)
 _INVOICE_TOTAL_RE = re.compile(
-    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)",
+    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)",
 )
 _PAY_TO_RE = re.compile(
     r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*[:#]?\s*([^\n\r]{6,120})",
@@ -32,12 +32,12 @@ class PaymentTextParseResult:
 
 
 def _normalize_amount(raw: str) -> str | None:
-    cleaned = raw.strip().replace(",", "")
+    cleaned = raw.strip().replace(",", ".")
     try:
         parsed = Decimal(cleaned)
     except InvalidOperation:
         return None
-    if parsed <= 0:
+    if not parsed.is_finite() or parsed <= 0:
         return None
     normalized = format(parsed.normalize(), "f")
     if "." in normalized:

@@ -1,5 +1,11 @@
 # ANCAP Production Roadmap
 
+## Smart Pay documents — 2026-10-18
+
+Local document intake and reviewed ACP wallet handoff are implemented; see
+`MASTER_ROADMAP.md`. Production deployment, real vision-provider acceptance and
+funded payment verification remain open. Fiat conversion is not implemented.
+
 ## Stabilization — 2026-10-16
 
 See [verification and the next development plan](docs/PROJECT_STABILIZATION_2026-10-16.md)
