@@ -44,20 +44,37 @@ test("unsupported images are rejected before uploading", async ({ page }) => {
   expect(uploads).toBe(0);
 });
 
-test("a spoofed raster upload cannot execute script through the blob image preview", async ({ page }) => {
+test("a spoofed raster upload is rejected before preview or upload", async ({ page }) => {
   const dialogs: string[] = [];
   page.on("dialog", async dialog => { dialogs.push(dialog.message()); await dialog.dismiss(); });
+  let uploads = 0;
+  await page.route("**/payment-scanner/parse-image", route => { uploads++; return route.abort(); });
+  await page.locator('input[type="file"]').nth(1).setInputFiles({
+    name: "invoice.png", mimeType: "image/png",
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" onload="window.__scannerXss=true;alert(1)"></svg>'),
+  });
+  await expect(page.getByText(/Photo import failed/)).toBeVisible();
+  await expect(page.locator('img[alt="invoice.png"]')).toHaveCount(0);
+  expect(uploads).toBe(0);
+  expect(await page.evaluate(() => (window as Window & { __scannerXss?: boolean }).__scannerXss)).toBeUndefined();
+  expect(dialogs).toEqual([]);
+});
+
+test("valid raster preview is browser-encoded PNG and parsed labels stay text", async ({ page }) => {
   await page.route("**/payment-scanner/parse-image", route => route.fulfill({ json: {
     detected_network: "acp", address: "acp1fixture", amount: "10", currency: "ACP",
     confidence: 0.8, parse_notes: ["<img src=x onerror=alert('note-xss')>"],
     label: "<script>window.__scannerXss = true</script>",
   } }));
+  const png = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 2;
+    return canvas.toDataURL("image/png").split(",")[1];
+  });
   await page.locator('input[type="file"]').nth(1).setInputFiles({
-    name: "invoice.png", mimeType: "image/png",
-    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" onload="window.__scannerXss=true;alert(1)"></svg>'),
+    name: "invoice.png", mimeType: "image/png", buffer: Buffer.from(png, "base64"),
   });
   await expect(page.getByText("Label: <script>window.__scannerXss = true</script>", { exact: true })).toBeVisible();
-  await expect(page.locator('img[alt="invoice.png"]')).toHaveAttribute("src", /^blob:/);
+  await expect(page.locator('img[alt="invoice.png"]')).toHaveAttribute("src", /^data:image\/png;base64,/);
   expect(await page.evaluate(() => (window as Window & { __scannerXss?: boolean }).__scannerXss)).toBeUndefined();
-  expect(dialogs).toEqual([]);
 });

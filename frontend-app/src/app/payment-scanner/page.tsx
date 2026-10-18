@@ -1,12 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { ApiError, paymentScanner } from "@/lib/api";
 
 type ParseSource = "paste" | "qr" | "ocr";
+
+async function rasterPreview(file: File): Promise<string> {
+  const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const signature = (bytes: number[], offset = 0) => bytes.every((byte, index) => header[offset + index] === byte);
+  const valid =
+    (file.type === "image/png" && signature([137, 80, 78, 71, 13, 10, 26, 10])) ||
+    (file.type === "image/jpeg" && signature([255, 216, 255])) ||
+    (file.type === "image/gif" && (signature([71, 73, 70, 56, 55, 97]) || signature([71, 73, 70, 56, 57, 97]))) ||
+    (file.type === "image/webp" && signature([82, 73, 70, 70]) && signature([87, 69, 66, 80], 8));
+  if (!valid) throw new Error("Invalid raster image");
+  const bitmap = await createImageBitmap(file);
+  try {
+    if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > 16_000_000) throw new Error("Image dimensions exceed preview limit");
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Image preview unavailable");
+    context.drawImage(bitmap, 0, 0);
+    // The image sink receives browser-encoded PNG pixels, never a URL to raw input.
+    return canvas.toDataURL("image/png");
+  } finally {
+    bitmap.close();
+  }
+}
 
 async function decodeQrFromImageFile(file: File): Promise<string | null> {
   const Detector = (typeof window !== "undefined" ? (window as any).BarcodeDetector : null) as
@@ -40,10 +65,6 @@ export default function PaymentScannerPage() {
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const textInputRef = useRef<HTMLInputElement | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => () => {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-  }, [photoPreviewUrl]);
 
   function clearPhotoPreview() {
     setPhotoName("");
@@ -104,9 +125,10 @@ export default function PaymentScannerPage() {
       setBusy(false);
       return;
     }
-    setPhotoName(file.name);
-    setPhotoPreviewUrl(URL.createObjectURL(file));
     try {
+      const imagePreview = await rasterPreview(file);
+      setPhotoName(file.name);
+      setPhotoPreviewUrl(imagePreview);
       const qrPayload = await decodeQrFromImageFile(file);
       if (qrPayload) {
         setSource("paste");
