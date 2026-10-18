@@ -8,24 +8,24 @@ test.beforeEach(async ({ page }) => {
     id: "scanner-fixture", email: "scanner@example.com", display_name: "Scanner test",
   } }));
   await page.route("**/payment-scanner/parse", route => route.fulfill({ json: {
-    detected_network: "acp", address: "acp1fixture", amount: "10", currency: "ACP",
-    confidence: 0.8, parse_notes: [],
+    detected_network: "acp", address: "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9", amount: "10", currency: "ACP",
+    confidence: 0.8, parse_notes: [], can_pay_acp: true, recommendations: [],
   } }));
   await page.goto("/payment-scanner");
 });
 
 test("editing payment input clears the reviewed payment and wallet continuation", async ({ page }) => {
-  await page.locator("textarea").fill("acp:acp1fixture?amount=10");
+  await page.locator("textarea").fill("acp:acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9?amount=10");
   await page.getByRole("button", { name: "Preview payment", exact: true }).click();
   await page.getByRole("checkbox").check();
-  await expect(page.getByRole("link", { name: "Continue in wallet" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Оплатить в ACP" })).toHaveAttribute("href", "/wallet/acp#payTo=acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9&payAmount=10");
   await page.locator("textarea").fill("a different invoice");
   await expect(page.getByRole("checkbox")).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Continue in wallet" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Оплатить в ACP" })).toHaveCount(0);
 });
 
 test("failed replacement parse cannot retain an old reviewed result", async ({ page }) => {
-  await page.locator("textarea").fill("acp:acp1fixture?amount=10");
+  await page.locator("textarea").fill("acp:acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9?amount=10");
   await page.getByRole("button", { name: "Preview payment", exact: true }).click();
   await expect(page.getByRole("checkbox")).toBeVisible();
   await page.route("**/payment-scanner/parse", route => route.fulfill({ status: 422, json: { detail: "Invalid invoice" } }));
@@ -62,7 +62,7 @@ test("a spoofed raster upload is rejected before preview or upload", async ({ pa
 
 test("valid raster preview is browser-encoded PNG and parsed labels stay text", async ({ page }) => {
   await page.route("**/payment-scanner/parse-image", route => route.fulfill({ json: {
-    detected_network: "acp", address: "acp1fixture", amount: "10", currency: "ACP",
+    detected_network: "acp", address: "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9", amount: "10", currency: "ACP",
     confidence: 0.8, parse_notes: ["<img src=x onerror=alert('note-xss')>"],
     label: "<script>window.__scannerXss = true</script>",
   } }));
