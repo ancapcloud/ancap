@@ -1719,7 +1719,8 @@ def _chain_transaction_details(txid: str) -> AcpTransactionDetailsPublic | None:
     )
 
 
-@router.api_route("/deposit_address", methods=["GET", "POST"], response_model=AcpDepositAddressResponse)
+@router.get("/deposit_address", response_model=AcpDepositAddressResponse)
+@router.post("/deposit_address", response_model=AcpDepositAddressResponse)
 async def get_deposit_address(
     user_id: str = Depends(require_auth),
     session: AsyncSession = Depends(get_db),

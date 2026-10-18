@@ -28,9 +28,12 @@ def test_tech_auction_catalog_and_bid(client):
     ox = next(lot for lot in body["lots"] if lot["id"] == "tech-aeterna-oxygen-carrier")
     assert ox["starting_acp"].startswith("92000")
     lot_id = body["lots"][0]["id"]
-    min_next = body["lots"][0]["min_next_acp"]
-
     _, headers, _ = _register_and_login(client, "Tech Bidder")
+    # The increment is personalized by network-growth score. Quote as the
+    # bidder, rather than reusing the test client's previous authenticated user.
+    bidder_lot = client.get(f"/v1/tech-auction/lots/{lot_id}", headers=headers)
+    assert bidder_lot.status_code == 200, bidder_lot.text
+    min_next = bidder_lot.json()["min_next_acp"]
     bid = client.post(
         f"/v1/tech-auction/lots/{lot_id}/bids",
         headers=headers,

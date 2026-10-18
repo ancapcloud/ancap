@@ -213,3 +213,10 @@ def test_openapi_schema(client):
     assert "paths" in data
     assert "info" in data
     assert data.get("info", {}).get("title") == "ANCAP Core API"
+    operation_ids = [
+        operation["operationId"]
+        for path in data["paths"].values()
+        for method, operation in path.items()
+        if method in {"get", "post", "put", "patch", "delete", "head", "options", "trace"}
+    ]
+    assert len(operation_ids) == len(set(operation_ids)), "OpenAPI operation IDs must be unique"
