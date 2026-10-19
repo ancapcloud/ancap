@@ -17,7 +17,7 @@ export function HomePage() {
     { title: c.growth, body: c.growthBody, href: "/ai/run/crypto-campaign-builder" },
   ];
   return (
-    <div className={s.shell}>
+    <div className={s.shell} style={{ position: "relative", zIndex: 1 }}>
       <Navigation />
       <main className={s.main}>
         <section className={s.hero} id="product">

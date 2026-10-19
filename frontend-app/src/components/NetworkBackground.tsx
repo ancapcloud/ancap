@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function NetworkBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
-  const presentation = pathname === "/" || pathname === "/projects" || pathname === "/investors";
+  const presentation = pathname === "/projects" || pathname === "/investors";
 
   useEffect(() => {
     if (presentation) return;

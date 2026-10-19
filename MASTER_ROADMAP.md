@@ -1,5 +1,11 @@
 # ANCAP Master Roadmap
 
+## Homepage network animation restored — 2026-10-19
+
+Restored the existing animated network background on `/` after the presentation
+refresh disabled it. Homepage content stays above the decorative canvas.
+Reduced-motion preferences and hidden-tab suspension remain supported.
+
 ## Smart Pay document intake — 2026-10-18
 
 Local implementation: authenticated, bounded PDF/DOCX/text/image import at
