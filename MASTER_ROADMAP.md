@@ -1,5 +1,24 @@
 # ANCAP Master Roadmap
 
+## Dependency PR triage — 2026-10-19
+
+Accepted PRs #97, #99, #100 and #102: navigation lockfile refresh removes the
+old query-string/decode-uri-component dependency; bip39 3, axum 0.8 and tower
+0.5 are combined, resolving the shared node manifest without reverting either
+update. Each Rust PR passed its Linux Crypto CI before integration.
+Local integrated acceptance: clean `npm ci`, mobile workspace typecheck, all
+346 mobile tests, and classical Rust crypto tests passed. A fixed BIP39 seed
+vector also verifies recovery compatibility across the bip39 major update.
+Post-push Linux Crypto CI and deployment results remain separate acceptance.
+
+Closed #95 as obsolete (deleted member lockfile); #96 as an incomplete Expo
+52-to-58 native migration; #98 for incompatible SHA-256/HKDF digest traits;
+#101 for Rust 1.88 incompatibility and missing coordinated mobile binding work.
+Closing these PRs does not resolve their underlying security/migration follow-up.
+Retain the Expo/Metro remediation described in
+`docs/security/CODEQL_TRIAGE_2026-10-17.md`; SHA/HKDF and UniFFI/toolchain changes
+require coordinated migrations with native compatibility acceptance.
+
 ## Homepage network animation restored — 2026-10-19
 
 Restored the existing animated network background on `/` after the presentation
