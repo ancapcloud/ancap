@@ -27,11 +27,13 @@ Verification levels for this SHA:
 - **Real transaction:** not run for this verification.
 - **Physical device:** not run for this verification.
 
-Next release order: security follow-up with a named closure test, then the Android
-API 36 / 16 KB stack migration, then a checked Smart Pay ACP payment, then one
-paid workflow receipt. Automatic deposit crediting stays shadow-only until those
-gates have failure and concurrency evidence. React Flow, community payouts and
-new experimental tracks stay deferred.
+Next release order: security follow-up with a named closure test
+(`docs/security/DEPENDENCY_MIGRATION_2026-10-21.md`), then the Android API 36 /
+16 KB stack migration, then a checked Smart Pay ACP payment, then one paid
+workflow receipt. Automatic
+deposit crediting stays shadow-only until those gates have failure and
+concurrency evidence. React Flow, community payouts and new experimental tracks
+stay deferred.
 
 ## Dependency PR triage — 2026-10-19
 

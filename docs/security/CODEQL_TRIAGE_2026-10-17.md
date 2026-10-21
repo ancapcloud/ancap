@@ -77,3 +77,14 @@ resolves its own ajv 8.11 despite existing npm overrides. These need a validated
 Expo/Metro dependency migration. Current braces/node-forge alerts have no patched
 version listed by GitHub. No forced major upgrade or bulk alert dismissal was
 performed. Advisory counts remain time-specific; CI success is not zero alerts.
+
+## Recount — 2026-10-21
+
+Open Dependabot alerts on this date were #277 braces, #275 node-forge,
+#250 and #247 image-size, #9 ajv, and #49 pytest. No compatible lockfile bump
+was applied: braces and node-forge have no patched release, image-size 2.0.3 is
+the Metro-incompatible bump, ajv 8.20.0 is already overridden but the lockfile
+still installs 8.11.0 under expo-dev-launcher, and pytest 9.0.3 is a major
+test-runner move. Component, exploit path and closure test for each alert, plus
+the rejected Expo, SHA/HKDF and UniFFI pulls, are in
+`docs/security/DEPENDENCY_MIGRATION_2026-10-21.md`. Alerts were not dismissed.
