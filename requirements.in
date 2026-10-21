@@ -15,6 +15,7 @@ pydantic-settings==2.6.1
 email-validator==2.2.0
 pyjwt[crypto]==2.15.1
 # Explicit pins for Dependabot CVE floors (also pulled transitively).
+certifi==2026.10.19
 anyio==4.14.2
 cryptography==50.0.1
 bcrypt==5.0.0
