@@ -125,7 +125,8 @@ def test_fetch_paginates_confirmed_transfers_with_fixed_filters(monkeypatch):
     assert [x.txid for x in out] == ["a" * 64, "b" * 64]
     queries = [parse_qs(urlparse(req.full_url).query) for req in requests]
     assert queries[0]["only_confirmed"] == ["true"]
-    assert queries[1].pop("fingerprint") == ["next page"]
+    fingerprint = queries[1].pop("fingerprint")
+    assert fingerprint == ["next page"]
     assert queries[0] == queries[1]
 
 
