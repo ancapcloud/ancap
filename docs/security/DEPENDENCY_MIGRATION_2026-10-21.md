@@ -4,6 +4,14 @@ Recount of open GitHub alerts on `ancapcloud/ancap` at published `ab32ea0`.
 A closed Dependabot pull request is not a fix. CI on that SHA is green and is
 not zero alerts. No alert was dismissed from this pass.
 
+Implementation follow-up: after verified deployment of `22cb00a`, the Stripe
+request origin is restricted in production, redirects/path escapes are blocked,
+and local mock access needs an explicit non-production flag. The nested launcher
+AJV lock entry now uses the already pinned 8.20.0 artifact and integrity from the
+root lock entry; install/typecheck/tests verify that existing override. These
+changes are separate from an Expo native-stack migration. The alert inventory
+below is the original snapshot; rescan determines GitHub closure.
+
 ## Dependabot
 
 | Alert | Package | Where it runs | Exploit path | Patch | Closure test |

@@ -1,5 +1,19 @@
 # ANCAP Master Roadmap
 
+## Security execution after reviewed release — 2026-10-21
+
+Release `22cb00a` passed Backend/Frontend/E2E, CodeQL, Docs and Secret Hygiene;
+deployment completed and the live build id and API readiness matched. Stacked
+Cursor PRs #109–#111 were closed as integrated; #108 was automatically merged.
+
+The next security slice pins production Stripe requests to the official API
+origin, blocks malformed endpoint paths and redirects, and allows loopback mocks
+only with an explicit development/test flag. Regression tests cover rejected
+hosts, production override rejection and redirect handling. The Expo launcher
+AJV lock entry is aligned with the existing 8.20.0 override without an Expo/RN
+major upgrade. GitHub alert closure requires the post-push scan; native-store,
+funded-payment and Android API 36/16 KB acceptance remain open.
+
 ## Release-gates review — 2026-10-21
 
 Cursor's document/quote idempotency changes reviewed before publication.
