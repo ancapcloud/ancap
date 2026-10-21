@@ -1,15 +1,50 @@
 # ANCAP Master Roadmap
 
+## Published baseline ab32ea0 — verified 2026-10-21
+
+`origin/master` is still `ab32ea002def8c265401d82ee887bb8c2a9d3ab8`. Fetch on
+2026-10-21 found no commits after it. The checks below are for that published
+SHA. They do not close a physical-device sign-off, a Play or TestFlight install,
+a funded ACP transfer, or the open Dependabot and CodeQL alerts.
+
+| Check | Evidence |
+| --- | --- |
+| Docs CI | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332650) |
+| Secret Hygiene | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332861) |
+| CodeQL | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332665) |
+| Frontend CI | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332646) |
+| Backend CI | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332813) |
+| Crypto CI | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332647) |
+| Deploy ancap.cloud | [success](https://github.com/ancapcloud/ancap/actions/runs/39201332803) |
+| Live frontend build | `https://ancap.cloud/internal/frontend-build` returned `NEXT_PUBLIC_APP_BUILD_ID=ab32ea0` |
+| Live API | `https://ancap.cloud/api/v1/system/health` returned `{"status":"ok"}` |
+
+Verification levels for this SHA:
+
+- **Implementation:** merged on `origin/master`, including the Smart Pay document intake (`392b45b`, `5df5dbf`) and the accepted dependency PRs below.
+- **Automated tests:** the GitHub jobs above. A green job is not a claim that every alert is fixed.
+- **Live service:** the deployed frontend build id matches this SHA and the API health check succeeded. That probe did not upload a document or move funds.
+- **Real transaction:** not run for this verification.
+- **Physical device:** not run for this verification.
+
+Next release order: security follow-up with a named closure test, then the Android
+API 36 / 16 KB stack migration, then a checked Smart Pay ACP payment, then one
+paid workflow receipt. Automatic deposit crediting stays shadow-only until those
+gates have failure and concurrency evidence. React Flow, community payouts and
+new experimental tracks stay deferred.
+
 ## Dependency PR triage — 2026-10-19
 
 Accepted PRs #97, #99, #100 and #102: navigation lockfile refresh removes the
 old query-string/decode-uri-component dependency; bip39 3, axum 0.8 and tower
 0.5 are combined, resolving the shared node manifest without reverting either
 update. Each Rust PR passed its Linux Crypto CI before integration.
-Local integrated acceptance: clean `npm ci`, mobile workspace typecheck, all
-346 mobile tests, and classical Rust crypto tests passed. A fixed BIP39 seed
-vector also verifies recovery compatibility across the bip39 major update.
-Post-push Linux Crypto CI and deployment results remain separate acceptance.
+Integrated acceptance on the published SHA: clean `npm ci`, mobile workspace
+typecheck, all 346 mobile tests, and classical Rust crypto tests. A fixed BIP39
+seed vector verifies recovery compatibility across the bip39 major update.
+The post-push Linux Crypto CI job and the production deploy of `ab32ea0` are
+the rows in the table above. That accepts the integrated dependency PRs. It does
+not accept the rejected updates or clear later advisories.
 
 Closed #95 as obsolete (deleted member lockfile); #96 as an incomplete Expo
 52-to-58 native migration; #98 for incompatible SHA-256/HKDF digest traits;
@@ -25,17 +60,23 @@ Restored the existing animated network background on `/` after the presentation
 refresh disabled it. Homepage content stays above the decorative canvas.
 Reduced-motion preferences and hidden-tab suspension remain supported.
 
-## Smart Pay document intake — 2026-10-18
+## Smart Pay document intake — published in ab32ea0
 
-Local implementation: authenticated, bounded PDF/DOCX/text/image import at
-`POST /v1/payment-scanner/parse-document`, field-based recommendations and native
-ACP wallet draft handoff with a separate wallet review/fee/confirmation step.
-PDF and image recognition require the configured vision provider; DOCX imports
-text only. Locked files must be unlocked before upload. Unsupported formats are
-reported explicitly. Fiat and non-ACP invoices are not relabeled or sent as ACP.
-No fiat settlement adapter or funded payment has been verified by this change.
-Acceptance: scanner API tests and frontend TypeScript check; deployment and live
-provider/browser acceptance remain open.
+`392b45b` and `5df5dbf` are ancestors of published `ab32ea0`, and that SHA is
+the live frontend build. The implementation is authenticated, bounded
+PDF/DOCX/text/image import at `POST /v1/payment-scanner/parse-document`,
+field-based recommendations, and a native ACP wallet draft handoff with a
+separate wallet review, fee and confirmation step.
+
+What that publication proves, and what it does not:
+
+- **Implementation:** merged. PDF and image recognition call the configured vision provider. DOCX imports text only. Locked files must be unlocked before upload. Unsupported formats are reported explicitly.
+- **Automated tests:** scanner API tests in the backend CI job for `ab32ea0`. Those tests stub the vision provider.
+- **Live service:** the route is in the deployed tree. A real PDF, DOCX, photo or text file has not been accepted by the production OCR provider as part of this check.
+- **Real transaction:** no funded ACP send, receipt or network confirmation is attached to this intake.
+- **Currency:** EUR, USD and USDT stay distinct from ACP. A conversion quote is a separate route and is not implied by a parsed fiat amount.
+
+Wallet broadcast of a reviewed ACP leg still requires reconcile-before-retry and a separate confirmed test transaction. Play Internal and a physical device are separate gates.
 
 ## Wallet audit publication and GitHub follow-up — 2026-10-18
 
@@ -43,10 +84,10 @@ Commit `4c161f1` was pushed with the operator's authorization. Backend CI passed
 981 tests / 37 skips; Frontend, mobile SDK, E2E, Crypto, CodeQL, Docs and Secret
 Hygiene workflows passed. Follow-up fixes remove stale Rust member lockfiles,
 pin patched browserslist and re-encode scanner previews as PNG pixels. Local
-scanner acceptance: 5 passed; mobile acceptance remains 346 passed. Deployment
-completion requires the final GitHub deploy job plus public health/readiness
-and exact frontend build provenance; a running job is not closure. See
-`docs/security/CODEQL_TRIAGE_2026-10-17.md` for remaining dependency/security gates.
+scanner acceptance: 5 passed; mobile acceptance remains 346 passed. That follow-up is included in published `ab32ea0`. Its deploy job and the live
+build id are in the 2026-10-21 table above. A running job is not closure, and
+these checks do not clear the alerts in
+`docs/security/CODEQL_TRIAGE_2026-10-17.md`.
 
 ## Wallet and side-track engineering audit — 2026-10-17
 
@@ -88,7 +129,7 @@ Web wallet hierarchy, balance clarity, reviewed transfers and on-demand services
 Implementation and limits: [workflow operations](docs/WORKFLOW_OPERATIONS_RELEASE_2026-10-15.md). Durable schedules, review, delivery, context, versions, bounded trials/batches, API examples and BYOK are implemented. Full CI passed; build `e53f949` is deployed and verified. Release evidence records test counts and remaining dependency findings. External account credentials and private infrastructure are customer supplied; wallet/bridge/consensus/SACP WIP is excluded.
 
 > Status: active | Major revision: 2026-05-25
-> Created: 2026-05-23 | Last updated: 2026-10-02
+> Created: 2026-05-23 | Last updated: 2026-10-21
 
 ## Hardening + deploy wave (2026-07-01)
 

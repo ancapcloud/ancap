@@ -115,6 +115,9 @@ CI is not a claim that every open security alert or roadmap item is complete.
   work, including advisories without an upstream patch. They are not all fixed
   by this release. Physical device/store-release gates also remain open.
 
-Record final dependency-release CI links, deployment SHA and post-deploy checks
-after those operations finish. Interrupted local full-suite runs are not counted
-as completed test runs; the clean GitHub full run above is the completed evidence.
+Recorded 2026-10-21 for published `ab32ea0`: Docs, Secret Hygiene, CodeQL,
+Frontend, Backend, Crypto and Deploy ancap.cloud all succeeded on that push.
+Live frontend build id is `ab32ea0`; API health returned ok. Job links are in
+`MASTER_ROADMAP.md`. Interrupted local full-suite runs are not counted as
+completed test runs. CI success does not close the open Dependabot alerts,
+physical-device checks or a funded ACP transaction.

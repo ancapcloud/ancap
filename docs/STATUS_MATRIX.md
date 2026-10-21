@@ -1,8 +1,9 @@
-<!-- Local audit update: 2026-10-17 -->
+<!-- Published baseline check: 2026-10-21. origin/master ab32ea0 is deployed; live build id matches. CI links are in MASTER_ROADMAP.md. That check is not a funded payment, OCR-provider run, physical device or store install. -->
 See [wallet/side-track engineering audit](mobile/ENGINEERING_AUDIT_2026-10-17.md)
 for encrypted backup verification, vault cleanup fixes, shadow-only deposit
 observations and suspended automatic Smart Pay broadcast. Physical/store/iOS
-and funded sign/broadcast remain open; local tests are not production evidence.
+and funded sign/broadcast remain open. Automated tests and the live build id
+are separate from those gates.
 
 # ANCAP Status Matrix
 

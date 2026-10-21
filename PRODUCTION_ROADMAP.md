@@ -1,17 +1,20 @@
 # ANCAP Production Roadmap
 
-## Smart Pay documents — 2026-10-18
+## Published baseline — 2026-10-21
 
-Local document intake and reviewed ACP wallet handoff are implemented; see
-`MASTER_ROADMAP.md`. Production deployment, real vision-provider acceptance and
-funded payment verification remain open. Fiat conversion is not implemented.
+`origin/master` `ab32ea0` is deployed. Live `https://ancap.cloud/internal/frontend-build` reports that build id, and `https://ancap.cloud/api/v1/system/health` returned ok. CI for that push passed Docs, Secret Hygiene, CodeQL, Frontend, Backend, Crypto and Deploy. See `MASTER_ROADMAP.md` for the job links. This is live-build evidence, not a funded payment, OCR-provider acceptance or a device/store sign-off.
+
+## Smart Pay documents — published with ab32ea0
+
+Document intake and the reviewed ACP wallet handoff are in the deployed tree. Scanner API tests cover the parser with a stubbed vision provider. A production OCR document and a confirmed ACP transaction are still open. EUR, USD and USDT are not ACP, and fiat conversion is not implemented.
 
 ## Stabilization — 2026-10-16
 
 See [verification and the next development plan](docs/PROJECT_STABILIZATION_2026-10-16.md)
 for homepage checks, three-peer acceptance, payment-preview and explorer-hostname
-fixes, deployment gates and remaining security/mobile release work. Release
-completion requires final CI and deployed build verification.
+fixes, deployment gates and remaining security/mobile release work. The final CI
+and deployed build for `ab32ea0` are recorded in `MASTER_ROADMAP.md`. Open
+security alerts and the Android API 36 release gate remain.
 
 ## Contributor navigation fix — 2026-10-15
 
