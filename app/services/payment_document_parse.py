@@ -24,6 +24,8 @@ async def parse_payment_document(data: bytes, filename: str, content_type: str |
     if suffix == ".pdf":
         if not data.startswith(b"%PDF-"):
             raise ValueError("Invalid PDF document")
+        if b"/Encrypt" in data:
+            raise ValueError("Password-protected PDFs must be unlocked before upload")
         try:
             text = await extract_payment_text_from_image(image_bytes=data, media_type="application/pdf")
         except httpx.HTTPError as exc:

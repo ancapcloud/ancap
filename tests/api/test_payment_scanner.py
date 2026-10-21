@@ -148,3 +148,56 @@ def test_document_pdf_uses_document_recognition(client, auth_headers, monkeypatc
     res = client.post("/v1/payment-scanner/parse-document", files={"file": ("bill.pdf", b"%PDF-1.4")}, headers=auth_headers)
     assert res.status_code == 200
     assert res.json()["currency"] == "EUR"
+    assert res.json()["can_pay_acp"] is False
+
+
+def test_document_rejects_encrypted_pdf_before_ocr(client, auth_headers, monkeypatch):
+    called = False
+
+    async def extract(**kwargs):
+        nonlocal called
+        called = True
+        return "Total due: 1 ACP"
+
+    monkeypatch.setattr("app.services.payment_document_parse.extract_payment_text_from_image", extract)
+    res = client.post(
+        "/v1/payment-scanner/parse-document",
+        files={"file": ("locked.pdf", b"%PDF-1.4\n/Encrypt 1 0 R")},
+        headers=auth_headers,
+    )
+    assert res.status_code == 400
+    assert "unlocked" in res.json()["detail"].lower()
+    assert called is False
+
+
+def test_ambiguous_invoice_is_not_an_acp_draft(client, auth_headers):
+    first = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    second = "acp1qp2j34cyc530jn8rr5qjsc7whg7p34qjyqde4tyn"
+    raw = f"Pay to: {first}\nPay to: {second}\nTotal due: 10 ACP\nTotal due: 12 ACP\nAmount: 10 EUR"
+    res = client.post(
+        "/v1/payment-scanner/parse",
+        json={"raw_text": raw, "source": "ocr"},
+        headers=auth_headers,
+    )
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["can_pay_acp"] is False
+    assert payload["address"] is None
+    assert payload["amount"] is None
+    assert payload["currency"] is None
+    assert any("Ambiguous" in note for note in payload["parse_notes"])
+
+
+def test_eur_amount_token_is_not_relabeled_acp(client, auth_headers):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    res = client.post(
+        "/v1/payment-scanner/parse",
+        json={"raw_text": f"Pay to: {addr}\namount=10 EUR", "source": "paste"},
+        headers=auth_headers,
+    )
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["currency"] == "EUR"
+    assert payload["amount"] == "10"
+    assert payload["can_pay_acp"] is False
+    assert any("not relabeled as ACP" in note for note in payload["parse_notes"])

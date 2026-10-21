@@ -19,6 +19,10 @@ def _to_preview(parsed) -> PaymentScannerPreview:
         recommendations.append("Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.")
     if not parsed.amount or not parsed.currency:
         recommendations.append("Сумма или валюта не определены. Уточните их до оплаты.")
+    if any(note.startswith("Ambiguous") for note in parsed.parse_notes):
+        recommendations.append("Найдено несколько сумм, валют или получателей. Черновик ACP не готовится, пока реквизиты не однозначны.")
+    if parsed.currency in {"USD", "EUR", "USDT", "USDC", "BNB", "ETH"}:
+        recommendations.append(f"{parsed.currency} не является ACP. Конвертация — отдельный маршрут с котировкой и условиями расчёта.")
     if can_pay:
         recommendations.append("Можно подготовить оплату в ACP. Кошелёк покажет комиссию и запросит отдельное подтверждение.")
     else:

@@ -28,6 +28,10 @@ export type RouteBroadcastInput = {
   broadcastRawTx?: (rawTx: string) => Promise<{ accepted: boolean; txid?: string; reason?: string }>;
   /** Persist signed bytes/txid BEFORE submission; retries must reconcile this record. */
   persistSignedTx?: (tx: { rawTx: string; txid: string; stepIndex: number }) => Promise<void>;
+  /** Signed transaction from an earlier attempt. A retry must not create another signature. */
+  priorSignedTx?: { rawTx: string; txid: string; stepIndex: number };
+  /** Read chain/API status before any resubmission. Unknown status blocks a new send. */
+  lookupTxStatus?: (txid: string) => Promise<"confirmed" | "seen" | "absent" | "unknown">;
 };
 
 function isAcpNetwork(network: string): boolean {
@@ -73,6 +77,109 @@ export async function executeRoutePlanLocally(
         network: step.network,
         status: "skipped",
         reason: `Route step ${step.action}/${step.network} needs chain client — not auto-broadcast`,
+      });
+      continue;
+    }
+
+    const prior = input.priorSignedTx;
+    if (prior) {
+      if (prior.stepIndex !== step.stepIndex || !prior.txid.trim() || !prior.rawTx.trim()) {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "failed",
+          reason: "Saved signature does not match this route step",
+        });
+        break;
+      }
+      const observed = input.lookupTxStatus ? await input.lookupTxStatus(prior.txid) : "unknown";
+      if (observed === "confirmed" || observed === "seen") {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "broadcast",
+          txid: prior.txid,
+          reason: "Existing transaction is already known; no new signature was created",
+        });
+        txRefs.push({
+          network: step.network,
+          txid: prior.txid,
+          role: step.action === "payment" ? "payment" : "transfer",
+          routeStepIndex: step.stepIndex,
+        });
+        continue;
+      }
+      if (observed !== "absent") {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "submission_unknown",
+          txid: prior.txid,
+          reason: "Transaction status is unknown. Reconcile before retry.",
+        });
+        break;
+      }
+      if (!broadcastAcp) {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "signed_local",
+          txid: prior.txid,
+          reason: "Existing signature is not on the network yet; submission was not requested",
+        });
+        continue;
+      }
+      if (!input.broadcastRawTx) {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "failed",
+          reason: "broadcastRawTx callback required when broadcastAcp is true",
+        });
+        break;
+      }
+      let submitted;
+      try {
+        submitted = await input.broadcastRawTx(prior.rawTx);
+      } catch {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "submission_unknown",
+          txid: prior.txid,
+          reason: "Resubmission outcome unknown. Reconcile the same transaction before retrying.",
+        });
+        break;
+      }
+      if (!submitted.accepted || (submitted.txid && submitted.txid !== prior.txid)) {
+        results.push({
+          stepIndex: step.stepIndex,
+          action: step.action,
+          network: step.network,
+          status: "submission_unknown",
+          txid: prior.txid,
+          reason: "Resubmission did not confirm the saved transaction",
+        });
+        break;
+      }
+      results.push({
+        stepIndex: step.stepIndex,
+        action: step.action,
+        network: step.network,
+        status: "broadcast",
+        txid: prior.txid,
+      });
+      txRefs.push({
+        network: step.network,
+        txid: prior.txid,
+        role: step.action === "payment" ? "payment" : "transfer",
+        routeStepIndex: step.stepIndex,
       });
       continue;
     }

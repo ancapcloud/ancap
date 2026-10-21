@@ -29,8 +29,8 @@ Verification levels for this SHA:
 
 Next release order: security follow-up with a named closure test
 (`docs/security/DEPENDENCY_MIGRATION_2026-10-21.md`), then the Android API 36 /
-16 KB stack migration, then a checked Smart Pay ACP payment, then one paid
-workflow receipt. Automatic
+16 KB stack migration (`docs/mobile/ANDROID_STACK_MIGRATION_2026-10-21.md`),
+then a checked Smart Pay ACP payment, then one paid workflow receipt. Automatic
 deposit crediting stays shadow-only until those gates have failure and
 concurrency evidence. React Flow, community payouts and new experimental tracks
 stay deferred.
@@ -78,7 +78,12 @@ What that publication proves, and what it does not:
 - **Real transaction:** no funded ACP send, receipt or network confirmation is attached to this intake.
 - **Currency:** EUR, USD and USDT stay distinct from ACP. A conversion quote is a separate route and is not implied by a parsed fiat amount.
 
-Wallet broadcast of a reviewed ACP leg still requires reconcile-before-retry and a separate confirmed test transaction. Play Internal and a physical device are separate gates.
+Wallet broadcast of a reviewed ACP leg now keeps one execution per quote and, on
+retry, reads the saved signature before it can submit that same transaction.
+Ambiguous amounts, currencies or payees do not become an ACP draft. EUR, USD
+and USDT are still not ACP. These are automated tests. A production OCR file
+and a confirmed ACP transaction were not run. Play Internal and a physical
+device remain separate gates.
 
 ## Wallet audit publication and GitHub follow-up — 2026-10-18
 

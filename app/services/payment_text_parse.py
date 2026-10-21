@@ -18,6 +18,7 @@ _PAY_TO_RE = re.compile(
 )
 _CURRENCY_HINT_RE = re.compile(r"(?i)\b(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b")
 _INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s+request)\s*#?\s*([A-Z0-9-]{3,32})")
+_NON_ACP_CURRENCIES = {"USDT", "USDC", "BNB", "ETH", "USD", "EUR"}
 
 
 @dataclass
@@ -43,6 +44,14 @@ def _normalize_amount(raw: str) -> str | None:
     if "." in normalized:
         normalized = normalized.rstrip("0").rstrip(".")
     return normalized or None
+
+
+def _unique(values: list[str]) -> list[str]:
+    seen: list[str] = []
+    for value in values:
+        if value not in seen:
+            seen.append(value)
+    return seen
 
 
 def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextParseResult:
@@ -93,20 +102,25 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         confidence = max(confidence, 0.68)
         notes.append("Detected EVM address in free text")
 
-    amount_match = _AMOUNT_RE.search(text)
-    if amount_match and not amount:
-        amount = _normalize_amount(amount_match.group(1))
-        if amount:
-            currency = currency or "ACP"
-            confidence = max(confidence, 0.55)
-            notes.append("Extracted amount token from free text")
-
-    invoice_total = _INVOICE_TOTAL_RE.search(text)
-    if invoice_total and not amount:
-        amount = _normalize_amount(invoice_total.group(1))
-        if amount:
-            confidence = max(confidence, 0.62)
-            notes.append("Extracted invoice/receipt total")
+    amounts: list[str] = []
+    if amount:
+        amounts.append(amount)
+    for match in _INVOICE_TOTAL_RE.finditer(text):
+        normalized = _normalize_amount(match.group(1))
+        if normalized:
+            amounts.append(normalized)
+    for match in _AMOUNT_RE.finditer(text):
+        normalized = _normalize_amount(match.group(1))
+        if normalized:
+            amounts.append(normalized)
+    distinct_amounts = _unique(amounts)
+    if len(distinct_amounts) > 1:
+        amount = None
+        notes.append("Ambiguous amounts; no single total was selected")
+    elif len(distinct_amounts) == 1:
+        amount = distinct_amounts[0]
+        confidence = max(confidence, 0.62)
+        notes.append("Extracted one payment amount")
 
     pay_to = _PAY_TO_RE.search(text)
     if pay_to and not address:
@@ -128,13 +142,37 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
             confidence = max(confidence, 0.48)
             notes.append("Heuristic pay-to address extraction")
 
-    currency_match = _CURRENCY_HINT_RE.search(text)
-    if currency_match and not currency:
-        currency = currency_match.group(1).upper()
-        if currency in {"USD", "EUR"}:
-            network = network or "fiat"
+    hinted = _unique(match.group(1).upper() for match in _CURRENCY_HINT_RE.finditer(text))
+    amount_currencies = _unique(
+        match.group(2).upper()
+        for match in re.finditer(
+            r"(?i)([0-9]+(?:[.,][0-9]{1,8})?)\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
+            text,
+        )
+    )
+    if (
+        "ACP" in hinted
+        and "ACP" not in amount_currencies
+        and amount_currencies
+        and re.search(r"(?i)\bnetwork\s*[:#]?\s*acp\b", text)
+    ):
+        hinted = [item for item in hinted if item != "ACP"]
+    if currency == "ACP" and "ACP" not in hinted:
+        hinted.append("ACP")
+    if len(hinted) > 1:
+        currency = None
+        notes.append("Ambiguous currencies; no single asset was selected")
+    elif len(hinted) == 1:
+        currency = hinted[0]
+        if currency in _NON_ACP_CURRENCIES:
+            network = network or ("fiat" if currency in {"USD", "EUR"} else network)
+            notes.append(f"Detected non-ACP currency {currency}; it is not relabeled as ACP")
+        else:
+            notes.append(f"Detected currency hint: {currency}")
         confidence = max(confidence, 0.5)
-        notes.append(f"Detected currency hint: {currency}")
+    elif network == "acp" and amount:
+        currency = "ACP"
+        notes.append("ACP currency inferred from an ACP payee and one amount")
 
     invoice_label = _INVOICE_LABEL_RE.search(text)
     if invoice_label:
@@ -149,7 +187,15 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
             confidence = max(confidence, 0.45)
             notes.append("Heuristic address extraction")
 
-    if source == "ocr" and amount and address:
+    acp_addresses = _unique(match.lower() for match in _ACP_ADDRESS_RE.findall(text))
+    evm_addresses = _unique(match.group(1).lower() for match in _EVM_ADDRESS_RE.finditer(text))
+    if len(acp_addresses) > 1 or len(evm_addresses) > 1 or (acp_addresses and evm_addresses):
+        address = None
+        notes.append("Ambiguous recipients; no single payee was selected")
+
+    if any(note.startswith("Ambiguous") for note in notes):
+        confidence = min(confidence, 0.45)
+    elif source == "ocr" and amount and address:
         confidence = max(confidence, 0.75)
         notes.append("OCR receipt fields matched address and amount")
 

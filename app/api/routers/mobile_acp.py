@@ -14,7 +14,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.api.deps import DbSession, get_current_user_id, require_auth
 from app.api.routers import wallet_acp
@@ -1569,6 +1569,21 @@ async def smart_pay_quote(body: SmartPayQuoteRequest, session: DbSession):
     return SmartPayQuoteResponse(quote=quote)
 
 
+def _quote_execution_lock_key(quote_id: str) -> int:
+    digest = hashlib.sha256(quote_id.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big", signed=True)
+
+
+async def _execution_records_for_quote(session, quote_id: str) -> list[MobileSmartPayRecord]:
+    rows = await session.execute(
+        select(MobileSmartPayRecord).where(
+            MobileSmartPayRecord.kind == "execution",
+            MobileSmartPayRecord.payload["quote_id"].astext == quote_id,
+        )
+    )
+    return list(rows.scalars().all())
+
+
 @router.post("/mobile/smart-pay/execute", response_model=SmartPayExecutionResponse)
 async def smart_pay_execute(
     body: SmartPayExecuteRequest,
@@ -1585,6 +1600,24 @@ async def smart_pay_execute(
         raise HTTPException(status_code=404, detail="quoteId not found")
     if quote.payment_intent_id != intent.id:
         raise HTTPException(status_code=409, detail="quote does not belong to payment intent")
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(:key)"),
+        {"key": _quote_execution_lock_key(quote.quote_id)},
+    )
+    existing_records = await _execution_records_for_quote(session, quote.quote_id)
+    if existing_records:
+        owner_key = str(user_id)
+        owned = [record for record in existing_records if str(record.owner_user_id or "") == owner_key]
+        if not owned:
+            raise HTTPException(status_code=409, detail="quote already has an execution")
+        chosen = max(owned, key=lambda record: record.updated_at or record.created_at)
+        execution = await _hydrate_execution(session, chosen.id)
+        if execution is None or execution.payment_intent_id != intent.id:
+            raise HTTPException(status_code=409, detail="quote is bound to a different payment intent")
+        return SmartPayExecutionResponse(
+            execution=execution,
+            session_token=_get_session_token(execution.id),
+        )
     execution = _build_execution(intent, quote)
     session_token = _new_session_token()
     _SMART_PAY_EXECUTION_OWNERS[execution.id] = user_id

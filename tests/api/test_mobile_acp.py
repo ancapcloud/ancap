@@ -1510,3 +1510,51 @@ def test_smart_pay_execute_includes_multi_step_route_plan(client):
     assert route_plan[-1]["action"] == "transfer"
     assert route_plan[-1]["recipient"] == recipient
 
+
+def test_smart_pay_execute_returns_the_same_execution(client):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    parsed = client.post(
+        "/v1/mobile/smart-pay/parse",
+        json={"source": "paste", "rawPayload": f"{addr}?amount=1"},
+    )
+    assert parsed.status_code == 200, parsed.text
+    payment_intent_id = parsed.json()["paymentIntent"]["id"]
+    quote_res = client.post(
+        "/v1/mobile/smart-pay/quote",
+        json={
+            "paymentIntentId": payment_intent_id,
+            "sourcePreference": {
+                "preferredAsset": "ACP",
+                "allowedAssets": ["ACP"],
+                "maxSlippageBps": 100,
+                "minAcpFeeReserve": "1.0",
+            },
+        },
+    )
+    assert quote_res.status_code == 200, quote_res.text
+    quote_id = quote_res.json()["quote"]["quoteId"]
+    body = {
+        "paymentIntentId": payment_intent_id,
+        "quoteId": quote_id,
+        "confirmationAccepted": True,
+        "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
+    }
+    first = client.post("/v1/mobile/smart-pay/execute", json=body)
+    second = client.post("/v1/mobile/smart-pay/execute", json=body)
+    assert first.status_code == 200, first.text
+    assert second.status_code == 200, second.text
+    assert second.json()["execution"]["id"] == first.json()["execution"]["id"]
+    assert second.json()["sessionToken"] == first.json()["sessionToken"]
+    other = client.post(
+        "/v1/auth/users",
+        json={"email": f"pay2_{uuid.uuid4().hex[:10]}@test.com", "password": "password123", "display_name": "other"},
+        headers={"Authorization": ""},
+    )
+    assert other.status_code in (200, 201), other.text
+    blocked = client.post(
+        "/v1/mobile/smart-pay/execute",
+        json=body,
+        headers={"Authorization": f"Bearer {other.json()['access_token']}"},
+    )
+    assert blocked.status_code == 409
+

@@ -63,4 +63,33 @@ describe("executeRoutePlanLocally", () => {
     expect(out.results[0].txid).toBe("signed-id");
     expect(signAndPrepareTransfer).toHaveBeenCalledTimes(1);
   });
+  it("reconciles a known transaction before any new signature", async () => {
+    const broadcastRawTx = vi.fn();
+    const prior = { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 };
+    const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
+      priorSignedTx: prior, lookupTxStatus: async () => "confirmed", broadcastRawTx,
+      persistSignedTx: async () => {} });
+    expect(signAndPrepareTransfer).not.toHaveBeenCalled();
+    expect(broadcastRawTx).not.toHaveBeenCalled();
+    expect(out.results[0].status).toBe("broadcast");
+    expect(out.results[0].txid).toBe("saved-id");
+  });
+  it("blocks retry while transaction status is unknown", async () => {
+    const broadcastRawTx = vi.fn();
+    const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 },
+      broadcastRawTx, persistSignedTx: async () => {} });
+    expect(signAndPrepareTransfer).not.toHaveBeenCalled();
+    expect(broadcastRawTx).not.toHaveBeenCalled();
+    expect(out.results[0].status).toBe("submission_unknown");
+  });
+  it("resubmits the same signed bytes only after the transaction is absent", async () => {
+    const broadcastRawTx = vi.fn(async () => ({ accepted: true, txid: "saved-id" }));
+    const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 },
+      lookupTxStatus: async () => "absent", broadcastRawTx, persistSignedTx: async () => {} });
+    expect(signAndPrepareTransfer).not.toHaveBeenCalled();
+    expect(broadcastRawTx).toHaveBeenCalledWith("saved-bytes");
+    expect(out.results[0].txid).toBe("saved-id");
+  });
 });
