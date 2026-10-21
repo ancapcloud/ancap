@@ -62,9 +62,8 @@ def _stripe_request_base(settings) -> str:
         try:
             parsed = urlsplit(configured)
             valid_port = parsed.port is None or 1 <= parsed.port <= 65535
-        except ValueError:
-            parsed = None
-            valid_port = False
+        except ValueError as exc:
+            raise HTTPException(status_code=503, detail="Stripe API endpoint configuration is not allowed") from exc
         if parsed and valid_port and parsed.scheme in {"http", "https"} and parsed.hostname in {"localhost", "127.0.0.1", "::1"} and not (
             parsed.username or parsed.password or parsed.query or parsed.fragment
         ) and parsed.path == "/v1":
@@ -160,8 +159,8 @@ async def _stripe_request(
             message = ((payload.get("error") or {}).get("message") or "").strip()
             if message:
                 detail = f"Stripe API request failed: {message}"
-        except Exception:
-            pass
+        except (ValueError, TypeError, AttributeError):
+            detail = "Stripe API request failed"
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=detail)
 
     try:

@@ -48,7 +48,7 @@ def test_even_test_override_does_not_allow_arbitrary_hosts_or_urls(base):
         stripe_payments._stripe_request_base(settings(base, "test", True))
 
 
-@pytest.mark.parametrize("response_status", [200, 302])
+@pytest.mark.parametrize("response_status", [200, 302, 502])
 @pytest.mark.parametrize("path", ["/customers", "/customers/cus_fixture/payment_methods", "/payment_methods/pm_fixture",
                                   "/payment_methods/pm_fixture/detach", "/payment_intents", "/payment_intents/pi_fixture"])
 @pytest.mark.asyncio
@@ -63,13 +63,16 @@ async def test_official_endpoint_never_follows_redirects(monkeypatch, response_s
             pass
         async def request(self, method, url, **kwargs):
             calls.append((method, url))
+            if response_status == 502:
+                return httpx.Response(502, text="not-json upstream content")
             return httpx.Response(response_status, headers={"location": "https://evil.example"}, json={"id": "pi_fixture"})
     monkeypatch.setattr(stripe_payments, "get_settings", lambda: settings())
     monkeypatch.setattr(stripe_payments.httpx, "AsyncClient", FakeClient)
-    if response_status == 302:
+    if response_status >= 300:
         with pytest.raises(HTTPException) as caught:
             await stripe_payments._stripe_request("POST", path)
         assert caught.value.status_code == 502
+        assert caught.value.detail == "Stripe API request failed"
     else:
         assert await stripe_payments._stripe_request("POST", path) == {"id": "pi_fixture"}
     assert calls == [("POST", f"https://api.stripe.com/v1{path}")]
