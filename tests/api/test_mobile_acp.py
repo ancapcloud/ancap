@@ -1539,7 +1539,17 @@ def test_smart_pay_execute_returns_the_same_execution(client):
         "confirmationAccepted": True,
         "deviceContext": {"platform": "android", "appVersion": "1.1.0"},
     }
-    first = client.post("/v1/mobile/smart-pay/execute", json=body)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        concurrent = list(pool.map(lambda _: client.post("/v1/mobile/smart-pay/execute", json=body), range(4)))
+    assert all(response.status_code == 200 for response in concurrent), [r.text for r in concurrent]
+    assert len({response.json()["execution"]["id"] for response in concurrent}) == 1
+    first = concurrent[0]
+    from app.api.routers import mobile_acp
+    execution_id = first.json()["execution"]["id"]
+    for cache in (mobile_acp._SMART_PAY_EXECUTIONS, mobile_acp._SMART_PAY_EXECUTION_SESSION_TOKENS,
+                  mobile_acp._SMART_PAY_EXECUTION_OWNERS):
+        cache.pop(execution_id, None)
     second = client.post("/v1/mobile/smart-pay/execute", json=body)
     assert first.status_code == 200, first.text
     assert second.status_code == 200, second.text

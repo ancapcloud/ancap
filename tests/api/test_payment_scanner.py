@@ -201,3 +201,13 @@ def test_eur_amount_token_is_not_relabeled_acp(client, auth_headers):
     assert payload["amount"] == "10"
     assert payload["can_pay_acp"] is False
     assert any("not relabeled as ACP" in note for note in payload["parse_notes"])
+
+
+@pytest.mark.parametrize("total", ["10 PLN", "10", "1,234.56 ACP", "1.234,56 ACP"])
+def test_incomplete_or_grouped_amounts_cannot_prepare_payment(client, auth_headers, total):
+    addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    res = client.post("/v1/payment-scanner/parse", json={
+        "raw_text": f"Pay to: {addr}\nTotal due: {total}", "source": "ocr",
+    }, headers=auth_headers)
+    assert res.status_code == 200, res.text
+    assert res.json()["can_pay_acp"] is False

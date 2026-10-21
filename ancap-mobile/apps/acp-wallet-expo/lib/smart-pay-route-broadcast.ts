@@ -27,12 +27,18 @@ export type RouteBroadcastInput = {
   /** Submit a signed raw ACP tx; required when broadcastAcp is true. */
   broadcastRawTx?: (rawTx: string) => Promise<{ accepted: boolean; txid?: string; reason?: string }>;
   /** Persist signed bytes/txid BEFORE submission; retries must reconcile this record. */
-  persistSignedTx?: (tx: { rawTx: string; txid: string; stepIndex: number }) => Promise<void>;
+  persistSignedTx?: (tx: { rawTx: string; txid: string; stepIndex: number; routeBinding: string }) => Promise<void>;
   /** Signed transaction from an earlier attempt. A retry must not create another signature. */
-  priorSignedTx?: { rawTx: string; txid: string; stepIndex: number };
+  priorSignedTx?: { rawTx: string; txid: string; stepIndex: number; routeBinding?: string };
   /** Read chain/API status before any resubmission. Unknown status blocks a new send. */
   lookupTxStatus?: (txid: string) => Promise<"confirmed" | "seen" | "absent" | "unknown">;
 };
+
+/** Recovery metadata is matched before interpreting status or submitting bytes. */
+export function routeSigningBinding(input: Pick<RouteBroadcastInput, "fromAddress" | "rpcUrl">, step: SmartPayRouteExecutionStep): string {
+  return JSON.stringify([input.fromAddress, input.rpcUrl, step.stepIndex, step.action,
+    step.network, step.fromAsset, step.toAsset, step.recipient, step.amount]);
+}
 
 function isAcpNetwork(network: string): boolean {
   const n = network.trim().toLowerCase();
@@ -83,7 +89,8 @@ export async function executeRoutePlanLocally(
 
     const prior = input.priorSignedTx;
     if (prior) {
-      if (prior.stepIndex !== step.stepIndex || !prior.txid.trim() || !prior.rawTx.trim()) {
+      if (prior.stepIndex !== step.stepIndex || !prior.txid.trim() || !prior.rawTx.trim() ||
+          prior.routeBinding !== routeSigningBinding(input, step)) {
         results.push({
           stepIndex: step.stepIndex,
           action: step.action,
@@ -93,7 +100,12 @@ export async function executeRoutePlanLocally(
         });
         break;
       }
-      const observed = input.lookupTxStatus ? await input.lookupTxStatus(prior.txid) : "unknown";
+      let observed = "unknown";
+      try {
+        observed = input.lookupTxStatus ? await input.lookupTxStatus(prior.txid) : "unknown";
+      } catch {
+        // A failed lookup is not evidence that the transaction is absent.
+      }
       if (observed === "confirmed" || observed === "seen") {
         results.push({
           stepIndex: step.stepIndex,
@@ -222,7 +234,7 @@ export async function executeRoutePlanLocally(
         });
         continue;
       }
-      await input.persistSignedTx!({ ...signed, stepIndex: step.stepIndex });
+      await input.persistSignedTx!({ ...signed, stepIndex: step.stepIndex, routeBinding: routeSigningBinding(input, step) });
       let submitted;
       try {
         submitted = await input.broadcastRawTx(signed.rawTx);

@@ -7,11 +7,11 @@ from decimal import Decimal, InvalidOperation
 _QR_URI_RE = re.compile(
     r"(?i)(?:ethereum|bitcoin|solana|acp)?:?//?([a-zA-Z0-9]+)@?([0-9.]+)?",
 )
-_AMOUNT_RE = re.compile(r"(?i)(?:amount|value|amt)[=:]([0-9.]+)")
+_AMOUNT_RE = re.compile(r"(?i)(?:amount|value|amt)[=:]([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])")
 _EVM_ADDRESS_RE = re.compile(r"(?i)\b(0x[a-f0-9]{40})\b")
 _ACP_ADDRESS_RE = re.compile(r"\b(acp1[a-z0-9]{20,120})\b", re.IGNORECASE)
 _INVOICE_TOTAL_RE = re.compile(
-    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)",
+    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])",
 )
 _PAY_TO_RE = re.compile(
     r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*[:#]?\s*([^\n\r]{6,120})",
@@ -170,9 +170,6 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         else:
             notes.append(f"Detected currency hint: {currency}")
         confidence = max(confidence, 0.5)
-    elif network == "acp" and amount:
-        currency = "ACP"
-        notes.append("ACP currency inferred from an ACP payee and one amount")
 
     invoice_label = _INVOICE_LABEL_RE.search(text)
     if invoice_label:

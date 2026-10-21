@@ -44,7 +44,7 @@ template debug key. An operator upload key is required and must not be committed
 
 - New apps and updates submitted to Google Play must target Android 16 (API 36) from 31 August 2026. Wear OS and Android Automotive are API 35; Android TV and Android XR are API 34. An extension to 1 November 2026 can be requested in Play Console. Sources: [Play Console Help](https://support.google.com/googleplay/android-developer/answer/11926878) and [Android target API guidance](https://developer.android.com/google/play/requirements/target-sdk).
 - Apps targeting API 35 or higher must support 16 KB pages on 64-bit devices. From 1 February 2027, Play blocks updates that do not. Source: [Android 16 KB page sizes](https://developer.android.com/guide/practices/page-sizes).
-- Expo SDK 52 compiles with SDK 35 and targets 34. React Native 0.77 is the first line with 16 KB support, and that line is Expo SDK 53. Expo SDK 54 is the line that targets API 36 by default (React Native 0.81, React 19.1.0, compileSdk 36, targetSdk 36, iOS 15.1, Xcode 16.1, Node 20.19). Sources: [Expo SDK 54 changelog](https://expo.dev/changelog/sdk-54) and [Expo SDK reference](https://docs.expo.dev/versions/v54.0.0).
+- Expo SDK 52 compiles with SDK 35 and targets 34. The selected migration target is Expo SDK 54, which targets API 36 by default (React Native 0.81, React 19.1.0, compileSdk 36, targetSdk 36, iOS 15.1, Xcode 16.1, Node 20.19.4 minimum). Sources: [Expo SDK 54 changelog](https://expo.dev/changelog/sdk-54) and [Expo SDK reference](https://docs.expo.dev/versions/v54.0.0).
 - SDK 54 turns edge-to-edge on for every Android app. Predictive back stays opt-in.
 
 The audited debug APK still targets API 34 and has native libraries aligned to 4 KB. That artifact cannot be the Play upload.

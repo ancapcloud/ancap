@@ -4,10 +4,11 @@ const signAndPrepareTransfer = vi.fn();
 vi.mock("@ancap/acp-wallet-sdk", () => ({
   signAndPrepareTransfer: (...args: unknown[]) => signAndPrepareTransfer(...args),
 }));
-import { executeRoutePlanLocally } from "./smart-pay-route-broadcast";
+import { executeRoutePlanLocally, routeSigningBinding } from "./smart-pay-route-broadcast";
 const step: SmartPayRouteExecutionStep = { stepIndex: 0, action: "payment", network: "acp",
   fromAsset: "ACP", toAsset: "ACP", amount: "1.5", recipient: "acp1merchant", status: "ready" };
 const base = { rpcUrl: "https://example/rpc", keystoreJson: "{}", fromAddress: "acp1from" };
+const routeBinding = routeSigningBinding(base, step);
 describe("executeRoutePlanLocally", () => {
   beforeEach(() => { signAndPrepareTransfer.mockReset();
     signAndPrepareTransfer.mockResolvedValue({ txid: "signed-id", rawTx: "signed-bytes" }); });
@@ -65,7 +66,7 @@ describe("executeRoutePlanLocally", () => {
   });
   it("reconciles a known transaction before any new signature", async () => {
     const broadcastRawTx = vi.fn();
-    const prior = { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 };
+    const prior = { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0, routeBinding };
     const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
       priorSignedTx: prior, lookupTxStatus: async () => "confirmed", broadcastRawTx,
       persistSignedTx: async () => {} });
@@ -77,7 +78,7 @@ describe("executeRoutePlanLocally", () => {
   it("blocks retry while transaction status is unknown", async () => {
     const broadcastRawTx = vi.fn();
     const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
-      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 },
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0, routeBinding },
       broadcastRawTx, persistSignedTx: async () => {} });
     expect(signAndPrepareTransfer).not.toHaveBeenCalled();
     expect(broadcastRawTx).not.toHaveBeenCalled();
@@ -86,10 +87,30 @@ describe("executeRoutePlanLocally", () => {
   it("resubmits the same signed bytes only after the transaction is absent", async () => {
     const broadcastRawTx = vi.fn(async () => ({ accepted: true, txid: "saved-id" }));
     const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
-      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0 },
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0, routeBinding },
       lookupTxStatus: async () => "absent", broadcastRawTx, persistSignedTx: async () => {} });
     expect(signAndPrepareTransfer).not.toHaveBeenCalled();
     expect(broadcastRawTx).toHaveBeenCalledWith("saved-bytes");
     expect(out.results[0].txid).toBe("saved-id");
+  });
+  it.each([{ recipient: "acp1other" }, { amount: "20" }])("rejects saved signatures for changed terms %j", async patch => {
+    const broadcastRawTx = vi.fn();
+    const lookupTxStatus = vi.fn(async () => "confirmed" as const);
+    const out = await executeRoutePlanLocally({ ...base, routePlan: [{ ...step, ...patch }], broadcastAcp: true,
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0, routeBinding },
+      lookupTxStatus, broadcastRawTx, persistSignedTx: async () => {} });
+    expect(out.results[0].status).toBe("failed");
+    expect(lookupTxStatus).not.toHaveBeenCalled();
+    expect(signAndPrepareTransfer).not.toHaveBeenCalled();
+    expect(broadcastRawTx).not.toHaveBeenCalled();
+  });
+  it("keeps lookup failures recoverable without sending or exposing errors", async () => {
+    const broadcastRawTx = vi.fn();
+    const out = await executeRoutePlanLocally({ ...base, routePlan: [step], broadcastAcp: true,
+      priorSignedTx: { rawTx: "saved-bytes", txid: "saved-id", stepIndex: 0, routeBinding },
+      lookupTxStatus: async () => { throw new Error("private rpc token"); }, broadcastRawTx, persistSignedTx: async () => {} });
+    expect(out.results[0].status).toBe("submission_unknown");
+    expect(JSON.stringify(out)).not.toContain("private rpc token");
+    expect(broadcastRawTx).not.toHaveBeenCalled();
   });
 });

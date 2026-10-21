@@ -1,5 +1,16 @@
 # ANCAP Master Roadmap
 
+## Release-gates review — 2026-10-21
+
+Cursor's document/quote idempotency changes reviewed before publication.
+Recovery now rejects saved signatures with mismatched sender, RPC endpoint,
+asset, recipient, amount or step; failed status probes stay unknown. Native
+automatic submission remains disabled in the Expo UI pending complete
+intent/quote/fee binding and durable UI recovery acceptance. The helper alone
+does not close SQ-7. Invoice parsing no longer infers currency from the payee
+and rejects partially matched grouped amounts. Concurrent execute requests and
+cache-loss replay are included in the API regression test.
+
 ## Published baseline ab32ea0 — verified 2026-10-21
 
 `origin/master` is still `ab32ea002def8c265401d82ee887bb8c2a9d3ab8`. Fetch on
