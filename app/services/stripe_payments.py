@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 import time
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 from uuid import UUID
+from urllib.parse import urlsplit
 
 import httpx
 from fastapi import HTTPException, status
@@ -48,6 +50,26 @@ _ZERO_DECIMAL_CURRENCIES = {
 SUPPORTED_STRIPE_CURRENCIES = ("USD",)
 _SUPPORTED_STRIPE_CURRENCIES = SUPPORTED_STRIPE_CURRENCIES
 _SUPPORTED_STRIPE_CURRENCY_SET = {code.lower() for code in SUPPORTED_STRIPE_CURRENCIES}
+_STRIPE_API_BASE = "https://api.stripe.com/v1"
+
+
+def _stripe_request_base(settings) -> str:
+    configured = (settings.stripe_api_base or _STRIPE_API_BASE).rstrip("/")
+    if configured == _STRIPE_API_BASE:
+        # Return a constant for the production request sink, not the configured URL.
+        return _STRIPE_API_BASE
+    if settings.environment in {"development", "test"} and settings.stripe_allow_local_test_api:
+        try:
+            parsed = urlsplit(configured)
+            valid_port = parsed.port is None or 1 <= parsed.port <= 65535
+        except ValueError:
+            parsed = None
+            valid_port = False
+        if parsed and valid_port and parsed.scheme in {"http", "https"} and parsed.hostname in {"localhost", "127.0.0.1", "::1"} and not (
+            parsed.username or parsed.password or parsed.query or parsed.fragment
+        ) and parsed.path == "/v1":
+            return configured
+    raise HTTPException(status_code=503, detail="Stripe API endpoint configuration is not allowed")
 
 
 def stripe_is_configured() -> bool:
@@ -106,9 +128,15 @@ async def _stripe_request(
             detail="Stripe secret key is not configured",
         )
 
-    base_url = (settings.stripe_api_base or "https://api.stripe.com/v1").rstrip("/")
+    base_url = _stripe_request_base(settings)
+    if not re.fullmatch(
+        r"/(?:customers(?:/cus_[A-Za-z0-9_-]+/payment_methods)?|"
+        r"payment_intents(?:/pi_[A-Za-z0-9_-]+)?|payment_methods/pm_[A-Za-z0-9_-]+(?:/detach)?)",
+        path,
+    ):
+        raise HTTPException(status_code=400, detail="Invalid Stripe API path")
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=False) as client:
             response = await client.request(
                 method.upper(),
                 f"{base_url}{path}",
@@ -125,7 +153,7 @@ async def _stripe_request(
             detail="Stripe API is temporarily unavailable",
         ) from exc
 
-    if response.status_code >= 400:
+    if response.status_code >= 300:
         detail = "Stripe API request failed"
         try:
             payload = response.json()

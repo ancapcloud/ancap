@@ -31,7 +31,10 @@ Important: **poll fallback is not enough to close the roadmap item**. If `GET /v
    - `STRIPE_SECRET_KEY`
    - `STRIPE_PUBLISHABLE_KEY`
    - `STRIPE_WEBHOOK_SECRET`
-   - optional `STRIPE_API_BASE`
+   - `STRIPE_API_BASE` must remain `https://api.stripe.com/v1` in production.
+     Redirects and alternate hosts are rejected before sending the secret.
+     Development/test loopback `/v1` mocks require the explicit
+     `STRIPE_ALLOW_LOCAL_TEST_API=true` setting; production ignores that override.
 
    Production path: put the three values in GitHub repo secrets with those names. Deploy (`Deploy ancap.cloud`) writes them into the host `.env` and recreates `api`. Webhook endpoint to register in Stripe Dashboard / CLI:
 

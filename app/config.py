@@ -507,6 +507,7 @@ class Settings(BaseSettings):
     stripe_publishable_key: str = ""
     stripe_webhook_secret: str = ""
     stripe_api_base: str = "https://api.stripe.com/v1"
+    stripe_allow_local_test_api: bool = False  # Development/test loopback mocks only; never production.
 
     # MoonPay Commerce / Helio (https://moonpay.hel.io/developer) — never commit real keys
     helio_public_key: str = ""
