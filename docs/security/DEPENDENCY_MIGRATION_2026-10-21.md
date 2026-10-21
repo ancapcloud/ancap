@@ -12,6 +12,14 @@ root lock entry; install/typecheck/tests verify that existing override. These
 changes are separate from an Expo native-stack migration. The alert inventory
 below is the original snapshot; rescan determines GitHub closure.
 
+GitHub automatically marked #9 (AJV), #290 (Stripe partial SSRF) and #487
+(assert side effects) fixed after the security commits. No alert was dismissed.
+New alerts indexed during this pass: #299 certifi, #296–#298 Vite. certifi is
+patched to 2026.10.19 and Vite stays on patched 6.x; see
+[the certifi advisory](https://github.com/advisories/GHSA-6q48-6c7w-9gw2).
+The downloaded universal wheel's SHA-256 and removal of the compromised CA were
+checked before tests; the unchanged rest of the Linux dependency lock is retained.
+
 ## Dependabot
 
 | Alert | Package | Where it runs | Exploit path | Patch | Closure test |

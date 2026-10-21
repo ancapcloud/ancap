@@ -2,6 +2,14 @@
 
 ## Security execution after reviewed release — 2026-10-21
 
+Newly indexed advisories #299 (certifi) and #296–#298 (Vite) were found during
+this execution. The runtime CA bundle is pinned to certifi 2026.10.19 with PyPI
+wheel/sdist SHA-256 hashes; the universal wheel was verified and the compromised
+emSign ECC Root CA - G3 entry is absent. Only that platform-independent package
+entry changes in the existing Linux lock. Frontend Vite is patched within 6.x;
+the mobile override floor is raised to the already resolved safe version.
+Rebuilt images and GitHub rescan are required before calling these closed.
+
 Release `22cb00a` passed Backend/Frontend/E2E, CodeQL, Docs and Secret Hygiene;
 deployment completed and the live build id and API readiness matched. Stacked
 Cursor PRs #109–#111 were closed as integrated; #108 was automatically merged.
