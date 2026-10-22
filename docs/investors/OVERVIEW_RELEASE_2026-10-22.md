@@ -19,3 +19,11 @@ completed successfully. The managed preview launcher passes unsupported
 Next.js flags, so visual/browser QA and Playwright execution were not completed.
 Production deployment is verified separately through the existing GitHub
 Actions workflow and live build endpoint.
+
+## CI runner compatibility follow-up
+
+The initial GitHub E2E run failed before running tests: `ubuntu-latest`
+resolved to Ubuntu 26.04, unsupported by Playwright 1.58.2. The E2E job is
+pinned to supported Ubuntu 24.04. Browser installation and all existing E2E
+assertions remain required; no checks are skipped. GitHub run results verify
+the runner correction separately from the local unit/build checks above.
