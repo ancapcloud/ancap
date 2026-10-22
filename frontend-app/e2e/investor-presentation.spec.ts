@@ -198,7 +198,7 @@ test("investors page links budget and demo without inventing metrics", async ({ 
   await setLanguage(context, "en");
   await page.goto("/investors");
   await expect(page.getByRole("link", { name: /12-month budget/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /5-minute demo/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: investorOverviewByLang.en.demo, exact: true })).toBeVisible();
   await page.getByRole("link", { name: /12-month budget/i }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("12-month budget");
   await expect(page.getByText(/not a revenue forecast/i)).toBeVisible();
@@ -227,7 +227,9 @@ test("planned entities disclaimer is localized on investor and budget pages", as
   for (const lang of supportedLanguages) {
     await setLanguage(context, lang);
     await page.goto("/investors");
-    await expect(page.locator("main").getByText(positioningByLang[lang].entitiesBody, { exact: true })).toBeVisible();
+    await expect(page.locator("main").getByText(investorOverviewByLang[lang].structureBody, { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(investorOverviewByLang[lang].title);
+    await expect(page.locator("#investor-ecosystem article")).toHaveCount(3);
     await page.goto("/docs/investors/budget-12m");
     await expect(page.locator("article").getByText(investorDocsByLang[lang].budgetEntitiesBody, { exact: true })).toBeVisible();
   }
