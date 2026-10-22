@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InvestorOverview } from "./InvestorOverview";
 export const metadata: Metadata = {
-  title: "Investor overview — AI workflow commerce",
-  description: "ANCAP's workflow commerce model, product evidence, expansion portfolio and funding milestones.",
+  title: "Invest in ANCAP — product, business model & milestones",
+  description: "ANCAP's investment thesis: customers, AI workflow revenue model, wallet and project roadmap, product evidence and milestone-based use of funds.",
 };
 export default function InvestorsPage() { return <InvestorOverview />; }

@@ -1,5 +1,6 @@
 import { test, expect, type BrowserContext } from "@playwright/test";
 import { positioningByLang } from "../src/locales/positioning";
+import { investorOverviewByLang } from "../src/locales/investorOverview";
 import { investorDocsByLang } from "../src/locales/investorDocs";
 import { economyByLang } from "../src/locales/economy";
 import { testProjectsByLang } from "../src/locales/testProjects";
@@ -42,8 +43,8 @@ test("investor and portfolio pages avoid the old completion claim", async ({ pag
   await expect(page.getByText("Final delivery complete — all roadmap waves shipped")).toHaveCount(0);
   await expect(page.locator('#test-projects a[href="/aeterna"]')).toBeVisible();
   await page.goto("/investors");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A focused platform for AI workflow commerce");
-  await expect(page.getByText(/metrics have not been supplied/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(investorOverviewByLang.en.title);
+  await expect(page.getByText(investorOverviewByLang.en.metricsBody, { exact: true })).toBeVisible();
   await expect(page.locator('main a[href="/proof-center"]')).toBeVisible();
 });
 
@@ -197,7 +198,7 @@ test("investors page links budget and demo without inventing metrics", async ({ 
   await setLanguage(context, "en");
   await page.goto("/investors");
   await expect(page.getByRole("link", { name: /12-month budget/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /5-minute demo/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: investorOverviewByLang.en.demo, exact: true })).toBeVisible();
   await page.getByRole("link", { name: /12-month budget/i }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("12-month budget");
   await expect(page.getByText(/not a revenue forecast/i)).toBeVisible();
@@ -226,7 +227,9 @@ test("planned entities disclaimer is localized on investor and budget pages", as
   for (const lang of supportedLanguages) {
     await setLanguage(context, lang);
     await page.goto("/investors");
-    await expect(page.locator("main").getByText(positioningByLang[lang].entitiesBody, { exact: true })).toBeVisible();
+    await expect(page.locator("main").getByText(investorOverviewByLang[lang].structureBody, { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(investorOverviewByLang[lang].title);
+    await expect(page.locator("#investor-ecosystem article")).toHaveCount(3);
     await page.goto("/docs/investors/budget-12m");
     await expect(page.locator("article").getByText(investorDocsByLang[lang].budgetEntitiesBody, { exact: true })).toBeVisible();
   }

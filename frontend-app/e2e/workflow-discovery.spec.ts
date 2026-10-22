@@ -51,6 +51,7 @@ test("invalid run count disables export and mobile layouts stay usable", async (
 
 test("investor evidence links identify a recorded test demonstration", async ({ page }) => {
   await page.goto("/investors");
+  await page.locator("#investor-evidence summary").click();
   const evidence = page.locator('[aria-labelledby="demo-evidence-title"]');
   await expect(evidence.getByText("Local demo · test credits")).toBeVisible();
   await expect(evidence.getByRole("link", { name: "Inspect receipt" })).toHaveAttribute("href", /588ebb765c6ec1e62d39dbc206bc8c0f9e177bcc.*receipt.json$/);
