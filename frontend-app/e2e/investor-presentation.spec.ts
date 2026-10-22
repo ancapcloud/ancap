@@ -1,5 +1,6 @@
 import { test, expect, type BrowserContext } from "@playwright/test";
 import { positioningByLang } from "../src/locales/positioning";
+import { investorOverviewByLang } from "../src/locales/investorOverview";
 import { investorDocsByLang } from "../src/locales/investorDocs";
 import { economyByLang } from "../src/locales/economy";
 import { testProjectsByLang } from "../src/locales/testProjects";
@@ -42,8 +43,8 @@ test("investor and portfolio pages avoid the old completion claim", async ({ pag
   await expect(page.getByText("Final delivery complete — all roadmap waves shipped")).toHaveCount(0);
   await expect(page.locator('#test-projects a[href="/aeterna"]')).toBeVisible();
   await page.goto("/investors");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A focused platform for AI workflow commerce");
-  await expect(page.getByText(/metrics have not been supplied/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(investorOverviewByLang.en.title);
+  await expect(page.getByText(investorOverviewByLang.en.metricsBody, { exact: true })).toBeVisible();
   await expect(page.locator('main a[href="/proof-center"]')).toBeVisible();
 });
 
