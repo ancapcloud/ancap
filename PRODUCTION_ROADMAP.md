@@ -2,7 +2,7 @@
 
 ## Street QR attribution — 2026-10-25
 
-[~] Dedicated `/q/street` link, persistent daily counters and five-language admin statistics implemented in a proposed branch. Deployment, migration 090 and live scan validation pending; see [campaign release gate](docs/QR_STREET_CAMPAIGN.md).
+[x] Dedicated `/q/street` link, persistent daily counters and five-language admin statistics implemented. Publication authorized by the operator; release requires migration 090, green CI and live redirect verification. Release evidence is recorded in [PR #117](https://github.com/ancapcloud/ancap/pull/117); see [campaign release gate](docs/QR_STREET_CAMPAIGN.md).
 
 ## Published baseline — 2026-10-21
 
