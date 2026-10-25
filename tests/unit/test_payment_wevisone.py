@@ -240,3 +240,14 @@ def test_long_digit_sequence_cannot_become_a_truncated_amount():
     from app.services.payment_text_parse import parse_payment_text
     result = parse_payment_text("0" * 32000 + " ACP", source="ocr")
     assert result.amount is None
+
+
+@pytest.mark.asyncio
+async def test_invalid_private_ca_fails_before_document_upload(monkeypatch, tmp_path):
+    ca = tmp_path / "invalid-ca.pem"
+    ca.write_text("not a certificate")
+    configure(monkeypatch, lambda request: pytest.fail("Never send documents with invalid TLS trust"),
+              smart_pay_wevisone_ca_file=str(ca))
+    import ssl
+    with pytest.raises(ssl.SSLError):
+        await payment_wevisone.extract_wevisone_payment_text(image_bytes=b"x", media_type="image/png")

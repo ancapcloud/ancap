@@ -5,7 +5,8 @@
 Local GPU Docker stack and five-language UI implemented. Real 2B inference on
 RTX 5050 verified through Smart Pay: EN/RU/UK/DE sample fields pass; zh-Hant
 address recognition fails and is blocked by ACP checksum validation. Quality
-acceptance remains open. Not merged or deployed; no funded payment was sent.
+acceptance remains open. Private SSH/TLS production relay and per-provider CA
+validation are prepared for the operator-authorized release; no funded payment was sent.
 [Setup](docs/mobile/SMART_PAY_WEVISONE.md) ·
 [Evidence](docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
 

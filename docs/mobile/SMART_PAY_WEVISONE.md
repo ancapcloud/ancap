@@ -152,3 +152,53 @@ this remaining quality failure. Do not use OCR as settlement evidence or a
 reliable replacement for copying/decoding a payment address. All five UI languages
 and manual review remain available. Details and timings:
 [local evidence](SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
+## Production site → local GPU connection
+
+The production API can reach this computer through an encrypted reverse SSH
+connection. The server's TLS relay binds only to its private Docker bridge IP;
+there is no public OCR listener. A dedicated SSH account/key permits only remote
+forwarding to server loopback port 18097, with no shell, agent forwarding or
+local forwards. Do not enable forwarding for the general administrator account.
+
+Operator setup:
+
+1. Install a dedicated forwarding key for the service account `ancap-ocr-tunnel`.
+   Its sshd Match block must allow only remote forwarding, with
+   `PermitListen 127.0.0.1:18097` and `PermitOpen none`; retain global SSH hardening.
+2. On the server checkout, run `sudo bash scripts/install-wevisone-private-relay.sh`.
+   It creates a private CA/leaf certificate, checks nginx config and starts an
+   isolated relay container with `restart: unless-stopped`.
+   Only the public CA is copied to `Sicret/wevisone/ca.crt`, already mounted in API.
+3. On this computer, run the model and forwarding helper in a terminal:
+
+```powershell
+.\scripts\maintain-wevisone-tunnel.ps1 -SshTarget ancap-ocr-tunnel@YOUR_SERVER -IdentityFile C:\Users\YOU\.ssh\ancap_wevisone_tunnel
+```
+
+The helper retries SSH and starts the existing worker image when Docker is ready.
+Keep that terminal running. Windows automatic startup must be configured by the
+operator separately; this release does not install a scheduled task.
+
+4. Verify the server relay with its CA before changing production configuration:
+
+```sh
+curl --cacert Sicret/wevisone/ca.crt https://172.17.0.1:18443/healthz
+```
+
+Use the actual default Docker bridge address printed by the install script.
+Configure production `.env` with `SMART_PAY_VISION_PROVIDER=wevisone`,
+`SMART_PAY_WEVISONE_URL=https://172.17.0.1:18443`,
+`SMART_PAY_WEVISONE_CA_FILE=/run/secrets/wevisone/ca.crt`, and the same worker key
+in `SMART_PAY_WEVISONE_API_KEY`. Transfer the key through SSH; never put it in Git,
+frontend variables, command output or a public URL. TLS hostname/IP verification
+stays enabled. A bad CA file fails before document upload. Deploy/recreate API
+through the standard release process; no payment confirmation gates change.
+
+The install script permits only the production Docker bridge to reach the one
+private TLS port. Re-run it after a host firewall reload/reboot to restore that
+narrow rule; it never adds a WAN ingress rule. The computer, Docker, GPU model
+and SSH connection must stay running for OCR.
+Outages fail explicitly, with no automatic external-provider fallback. To roll
+back OCR only, restore the prior provider settings and recreate API. Stop the
+forwarding helper to close the tunnel. TLS leaf certificates expire after one
+year; renew the leaf using the retained private CA before expiry and recheck TLS.

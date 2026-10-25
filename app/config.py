@@ -491,6 +491,7 @@ class Settings(BaseSettings):
     smart_pay_wevisone_allow_local_http: bool = False
     smart_pay_wevisone_url: str = ""
     smart_pay_wevisone_api_key: str = ""
+    smart_pay_wevisone_ca_file: str = ""
     mobile_smart_pay_max_slippage_bps: int = 500
     mobile_smart_pay_min_acp_fee_reserve: str = "1.0"
 

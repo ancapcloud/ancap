@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import ssl
 from urllib.parse import urlsplit
 
 import httpx
@@ -28,8 +29,10 @@ async def extract_wevisone_payment_text(*, image_bytes: bytes, media_type: str) 
         raise RuntimeError("Configure a private HTTPS WeVisOne URL (HTTP is loopback-only)")
     if not settings.smart_pay_wevisone_api_key:
         raise RuntimeError("WeVisOne OCR is not configured (SMART_PAY_WEVISONE_API_KEY)")
+    ca_file = getattr(settings, "smart_pay_wevisone_ca_file", "")
+    verify = ssl.create_default_context(cafile=ca_file) if ca_file else True
     # No redirects or implicit fallback to a different document processor.
-    async with httpx.AsyncClient(timeout=60, follow_redirects=False) as client:
+    async with httpx.AsyncClient(timeout=60, follow_redirects=False, verify=verify) as client:
         async with client.stream(
             "POST", f"{url}/v1/payment-ocr", content=image_bytes,
             headers={"Authorization": f"Bearer {settings.smart_pay_wevisone_api_key}",
