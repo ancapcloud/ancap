@@ -1,8 +1,8 @@
 # ANCAP Production Roadmap
 
-Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
+Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Release 80159c7 passed public health/readiness, build provenance, guest access rejection (401), and production API -> private TLS -> SSH -> local RTX 5050 real OCR (correct address/12.50 ACP; manual confirmation required; no payment sent). Evidence: docs/mobile/SMART_PAY_WEVISONE_PRODUCTION_EVIDENCE_2026-10-25.md.
 
-## Smart Pay WeVisOne-VL — 2026-10-25 (PR #119 merged; production verification pending)
+## Smart Pay WeVisOne-VL — 2026-10-25 (production verified, release 80159c7)
 
 Local GPU Docker stack and five-language UI implemented. Real 2B inference on
 RTX 5050 verified through Smart Pay: EN/RU/UK/DE sample fields pass; zh-Hant
