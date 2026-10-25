@@ -22,6 +22,7 @@ Optional but production-relevant values that should also be reviewed when used:
 - `TURNSTILE_SECRET_KEY`
 - `SMTP_PASSWORD`
 - `ANTHROPIC_API_KEY` / `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY` (homepage dialog; free models only; never send this to the browser)
 - `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
 - any bridge / wallet operator secrets sourced from private env files
 

@@ -1,6 +1,7 @@
 .shell { color: var(--text); }
 .main { max-width: 1160px; margin: 0 auto; padding: 0 24px 64px; }
-.hero { padding: 80px 0 64px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; align-items: center; }
+.hero { padding: 72px 0 12px; }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 18px; }
 .title { font-size: clamp(2.4rem, 5.4vw, 4.6rem); font-weight: 700; letter-spacing: -.045em; line-height: 1.08; margin: 0 0 24px; max-width: 900px; }
 .lead { color: var(--text-muted); font-size: 17px; line-height: 1.8; max-width: 740px; margin: 0; }
@@ -13,6 +14,8 @@
 .flow { padding: 28px; border: 1px solid var(--border); border-radius: 18px; background: var(--bg-card); box-shadow: 0 20px 70px rgba(0,0,0,.12); }
 .flowRow { padding: 17px 0; border-bottom: 1px solid var(--border); }
 .flowRow:last-child { border: 0; }
+.steps .flowRow,
+.steps .flowRow:last-child { border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; background: var(--bg-card); }
 .flowRow strong { display: block; font-size: 14px; margin-bottom: 6px; }
 .flowRow p { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.7; }
 .section { padding: 42px 0; border-top: 1px solid var(--border); scroll-margin-top: 150px; }
@@ -33,6 +36,6 @@
 .note { border-left: 3px solid var(--accent); padding: 16px 20px; margin-top: 28px; background: var(--bg-card); font-size: 13px; line-height: 1.8; color: var(--text-muted); }
 .footer { border-top: 1px solid var(--border); padding: 28px 24px; max-width: 1160px; margin: auto; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
 .footer a { color: var(--text-muted); text-decoration: none; }
-@media (max-width: 850px) { .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 48px; } .grid { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .main { padding-inline: 18px; } .gridTwo { grid-template-columns: 1fr; } .hero { padding-bottom: 36px; } .card { padding: 20px; } }
+@media (max-width: 850px) { .hero { padding-top: 48px; } .grid { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .main { padding-inline: 18px; } .gridTwo, .steps { grid-template-columns: 1fr; } .hero { padding-bottom: 20px; } .card { padding: 20px; } }
 @media print { .shell > header { display: none; } .main { padding: 0; max-width: none; } .card, .note { break-inside: avoid; } .actions { display: none; } .section { padding: 22px 0; } }

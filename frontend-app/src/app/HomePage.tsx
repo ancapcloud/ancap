@@ -8,6 +8,7 @@ import { positioningByLang } from "@/locales/positioning";
 import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
 import { CreatorEarningsSection } from "@/components/CreatorEarningsSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
+import { HomeChatDialog } from "@/components/HomeChatDialog";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -31,9 +32,13 @@ export function HomePage() {
               <Link className={s.secondary} href="/dashboard/seller">{c.seller} →</Link>
               <Link className={s.secondary} href="/economy">{c.economyLink} →</Link>
             </div>
+            <HomeChatDialog />
           </div>
-          <div className={s.flow} aria-label={c.how}>
-            <p className={s.eyebrow}>{c.how}</p>
+        </section>
+
+        <section className={s.section} aria-label={c.how} style={{ borderTop: "none", paddingTop: 8 }}>
+          <p className={s.eyebrow}>{c.how}</p>
+          <div className={s.steps}>
             {[[c.step1, c.step1Body], [c.step2, c.step2Body], [c.step3, c.step3Body], [c.step4, c.step4Body]].map(([title, body]) => (
               <div className={s.flowRow} key={title}>
                 <strong>{title}</strong>
