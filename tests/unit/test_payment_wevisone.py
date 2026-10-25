@@ -138,7 +138,7 @@ def test_worker_auth_limits_and_sdk_contract(monkeypatch):
     buf = io.BytesIO()
     Image.new("RGB", (2, 2)).save(buf, format="PNG")
     assert client.post("/v1/payment-ocr", headers=headers, content=buf.getvalue()).json() == {"text": "Total due: 5 USDT"}
-    assert calls[0]["task"] == "freeform"
+    assert calls[0]["task"] == "ocr"
     assert calls[0]["decode_matting"] is False
     monkeypatch.setattr(worker, "MAX_BYTES", 2)
     assert client.post("/v1/payment-ocr", headers=headers, content=b"abc").status_code == 413
@@ -177,3 +177,37 @@ async def test_local_http_exception_does_not_allow_other_destinations(monkeypatc
               smart_pay_wevisone_url=url)
     with pytest.raises(RuntimeError):
         await payment_wevisone.extract_wevisone_payment_text(image_bytes=b"x", media_type="image/png")
+
+
+@pytest.mark.asyncio
+async def test_real_model_ref_markup_is_not_a_payment_uri(monkeypatch):
+    address = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    text = f"<ref>Invoice #LOCAL-1</ref>\n<ref>Pay to: {address}</ref>\n<ref>Total due: 12.50 ACP</ref>"
+    configure(monkeypatch, lambda request: httpx.Response(200, json={"text": text}))
+    parsed = await payment_image_parse.parse_payment_image(image_bytes=b"x", content_type="image/png")
+    assert parsed.address == address
+    assert parsed.detected_network == "acp"
+    assert parsed.amount == "12.5"
+
+
+def test_native_ocr_spans_are_plain_text():
+    Image = pytest.importorskip("PIL.Image")
+    from scripts import wevisone_payment_worker as worker
+    class Model:
+        def predict(self, image, **kwargs):
+            assert kwargs["task"] == "ocr"
+            assert "prompt" not in kwargs
+            return SimpleNamespace(response="<ref>Total due:</ref><box><1><2><3><4></box>, <ref>5 ACP</ref><box><4><5><6><7></box>")
+    buf = io.BytesIO()
+    Image.new("RGB", (2, 2)).save(buf, format="PNG")
+    assert worker.recognize(buf.getvalue(), Model()) == "Total due: 5 ACP"
+
+
+def test_traditional_chinese_total_and_non_uri_slashes():
+    from app.services.payment_text_parse import parse_payment_text
+    address = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
+    result = parse_payment_text(f"發票 / LOCAL-1 收款地址: {address} 應付總額: 12.50 ACP 網路: acp", source="ocr")
+    assert result.address == address
+    assert result.amount == "12.5"
+    assert result.currency == "ACP"
+    assert result.detected_network == "acp"

@@ -22,11 +22,11 @@ CASES = {
 
 def invoice(language: str, font_path: str) -> bytes:
     title, payee, total, network = CASES[language]
-    font = ImageFont.truetype(font_path, 32)
-    image = Image.new("RGB", (1400, 450), "white")
+    font = ImageFont.truetype(font_path, 48)
+    image = Image.new("RGB", (1800, 550), "white")
     draw = ImageDraw.Draw(image)
     for index, line in enumerate((title, f"{payee}: {ADDRESS}", f"{total}: 12.50 ACP", f"{network}: acp")):
-        draw.text((35, 35 + index * 90), line, fill="black", font=font)
+        draw.text((30, 30 + index * 125), line, fill="black", font=font)
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
@@ -62,7 +62,8 @@ def main():
             results.append({"language": language, "passed": passed,
                             "seconds": round(time.monotonic() - started, 2), "status": response.status_code,
                             "preview": payload})
-            print(json.dumps(results[-1], ensure_ascii=False), flush=True)
+            (out / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(json.dumps(results[-1], ensure_ascii=True), flush=True)
     (out / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     raise SystemExit(0 if all(item["passed"] for item in results) else 1)
 

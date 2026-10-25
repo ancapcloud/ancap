@@ -10,4 +10,3 @@ COPY app/services/payment_vision_prompt.py app/services/payment_vision_prompt.py
 ENV HF_HOME=/cache/huggingface PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 EXPOSE 8097
 CMD ["python", "-m", "uvicorn", "scripts.wevisone_payment_worker:app", "--host", "0.0.0.0", "--port", "8097", "--workers", "1", "--no-access-log"]
-

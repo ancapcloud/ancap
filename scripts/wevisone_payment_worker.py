@@ -4,6 +4,7 @@ from __future__ import annotations
 import hmac
 import io
 import os
+import re
 import threading
 import warnings
 from contextlib import asynccontextmanager
@@ -12,7 +13,6 @@ from fastapi import FastAPI, HTTPException, Request
 from PIL import Image, UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
 
-from app.services.payment_vision_prompt import _VISION_PROMPT
 
 MAX_BYTES = 5_242_880
 MAX_PIXELS = 16_000_000
@@ -57,10 +57,15 @@ def recognize(data: bytes, model) -> str:
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError,
             Image.DecompressionBombWarning) as exc:
         raise HTTPException(status_code=422, detail="Invalid or oversized image") from exc
-    # Public SDK supports custom freeform prompts; no dense decoder is needed for OCR.
-    result = model.predict(image, task="freeform", prompt=_VISION_PROMPT,
+    # Use the checkpoint's trained OCR instruction, not freeform field completion.
+    result = model.predict(image, task="ocr",
                            decode_matting=False, temperature=0, max_new_tokens=int(os.environ.get("WEVISONE_MAX_NEW_TOKENS", "512")))
     text = result.response.strip()
+    # The released OCR task emits recognized spans plus bounding boxes. Only
+    # literal recognized spans enter the deterministic parser, never box tokens.
+    spans = re.findall(r"<ref>(.*?)</ref>", text, flags=re.DOTALL)
+    if spans:
+        text = " ".join(spans).strip()
     if len(text) > 32000:
         raise HTTPException(status_code=502, detail="OCR output exceeds limit")
     return "" if text.upper() in {"EMPTY", "NONE"} else text
