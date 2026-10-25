@@ -9,7 +9,8 @@ router = APIRouter(prefix="/qr", tags=["QR campaigns"])
 logger = logging.getLogger(__name__)
 NO_CACHE = {"Cache-Control": "no-store, max-age=0", "X-Robots-Tag": "noindex, nofollow"}
 
-@router.api_route("/street", methods=["GET", "HEAD"])
+@router.get("/street")
+@router.head("/street", include_in_schema=False)
 async def street(request: Request, session: DbSession):
     if svc.should_count(request.method, request.headers):
         try:

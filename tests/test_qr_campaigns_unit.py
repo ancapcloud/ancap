@@ -77,3 +77,13 @@ def test_concurrent_increments_are_not_lost(qr_client):
         assert list(pool.map(visit, range(20))) == [302]*20
     allow_admin(app)
     assert c.get("/v1/qr/street/stats").json()["total"] == 20
+
+
+def test_openapi_operation_ids_are_unique():
+    app = FastAPI()
+    app.include_router(router)
+    app.include_router(router, prefix="/v1")
+    ids = [operation["operationId"] for path in app.openapi()["paths"].values()
+           for method, operation in path.items() if method in {"get", "head"}]
+    assert len(ids) == len(set(ids))
+    assert "head" not in app.openapi()["paths"]["/v1/qr/street"]
