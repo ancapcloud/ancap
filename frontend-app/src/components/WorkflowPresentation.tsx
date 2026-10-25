@@ -1,4 +1,5 @@
 "use client";
+import { webInstallByLang } from "@/locales/webInstall";
 import Link from "next/link";
 import { useLanguage } from "./LanguageProvider";
 import { portfolioByLang, solutionPortfolio } from "@/lib/solutionPortfolio";
@@ -32,7 +33,7 @@ export function WorkflowFooter() {
   const { lang, t } = useLanguage();
   const c = positioningByLang[lang];
   return <footer className={s.footer}><span>ANCAP · {c.kicker}</span><div className={s.projects}>
-    <Link href="/investors">{c.investors}</Link><Link href="/legal/terms">{t("legal.termsLink")}</Link>
+    <Link href="/install">{webInstallByLang[lang].link}</Link><Link href="/investors">{c.investors}</Link><Link href="/legal/terms">{t("legal.termsLink")}</Link>
     <Link href="/legal/privacy">{t("legal.privacyLink")}</Link><Link href="/legal/refunds">{t("legal.refundsLink")}</Link>
     <Link href="/legal">{t("nav.legal")}</Link><a href="mailto:support@ancap.cloud">support@ancap.cloud</a>
   </div></footer>;

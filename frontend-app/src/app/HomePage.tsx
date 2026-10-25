@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { WebInstallGuide } from "@/components/WebInstallGuide";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SolutionAreas, WorkflowFooter, presentationStyles as s } from "@/components/WorkflowPresentation";
@@ -66,6 +67,8 @@ export function HomePage() {
           </div>
           <p className={s.note}>{c.smartPayMobile}</p>
         </section>
+
+        <WebInstallGuide />
 
         <PeopleAiEconomySection />
         <CreatorEarningsSection />
