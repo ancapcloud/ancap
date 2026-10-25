@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ACP-crypto ./ACP-crypto
-RUN cargo build --manifest-path ACP-crypto/Cargo.toml --bin walletd --release --locked
+RUN cargo build --manifest-path ACP-crypto/Cargo.toml --bin walletd --release --locked --jobs 2
 
 FROM python:3.11-slim
 

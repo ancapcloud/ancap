@@ -1,6 +1,8 @@
 # ANCAP Master Roadmap
 
-## Smart Pay WeVisOne-VL adapter — 2026-10-25 (review branch)
+Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
+
+## Smart Pay WeVisOne-VL adapter — 2026-10-25 (PR #119 merged; production verification pending)
 
 [x] Optional private OCR worker, native Tencent OCR, bounded uploads, provider
 selection and manual review. No model weights or wallet keys in the API worker.
