@@ -1,5 +1,13 @@
 # ANCAP Master Roadmap
 
+## Smart Pay WeVisOne-VL adapter — 2026-10-25 (review branch)
+
+[x] Optional private photo-recognition worker and provider selection wired into
+the existing Smart Pay parser; default Anthropic path retained. Bounded uploads,
+explicit failures and manual payment review retained. No weights in the API.
+[ ] Real checkpoint accuracy/latency, all-five-language invoice evaluation and
+production activation remain open. See [operator setup](docs/mobile/SMART_PAY_WEVISONE.md).
+
 ## Product retail pricing — 2026-10-25 (review branch)
 
 Explicit per-product USD faces replace the discontinuous legacy magnitude rule.

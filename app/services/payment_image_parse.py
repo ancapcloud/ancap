@@ -46,6 +46,12 @@ def normalize_image_media_type(content_type: str | None) -> str | None:
 
 async def extract_payment_text_from_image(*, image_bytes: bytes, media_type: str) -> str:
     settings = get_settings()
+    if settings.smart_pay_vision_provider == "wevisone":
+        from app.services.payment_wevisone import extract_wevisone_payment_text
+
+        return await extract_wevisone_payment_text(image_bytes=image_bytes, media_type=media_type)
+    if settings.smart_pay_vision_provider != "anthropic":
+        raise RuntimeError("Unsupported Smart Pay vision provider")
     if not settings.anthropic_api_key:
         raise RuntimeError("Vision OCR is not configured (ANTHROPIC_API_KEY)")
 

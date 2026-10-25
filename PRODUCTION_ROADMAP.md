@@ -1,5 +1,11 @@
 # ANCAP Production Roadmap
 
+## Smart Pay WeVisOne-VL — 2026-10-25 (review branch)
+
+Optional private photo OCR provider and isolated inference worker implemented;
+unit checks use fake inference. Not merged, deployed or model-validated.
+Setup and activation gates: [WeVisOne Smart Pay](docs/mobile/SMART_PAY_WEVISONE.md).
+
 ## Product retail pricing — 2026-10-25 (review branch)
 
 Explicit per-product USD faces replace the discontinuous legacy magnitude rule.

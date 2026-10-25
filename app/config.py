@@ -486,6 +486,10 @@ class Settings(BaseSettings):
     mobile_smart_pay_ai_fallback_enabled: bool = False
     mobile_smart_pay_auto_swap_enabled: bool = False
     mobile_smart_pay_max_image_bytes: int = 5_242_880
+    # Optional private WeVisOne worker; model weights never load in the payment API.
+    smart_pay_vision_provider: str = "anthropic"
+    smart_pay_wevisone_url: str = ""
+    smart_pay_wevisone_api_key: str = ""
     mobile_smart_pay_max_slippage_bps: int = 500
     mobile_smart_pay_min_acp_fee_reserve: str = "1.0"
 
