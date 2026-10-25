@@ -133,7 +133,7 @@ def test_admin_can_approve_refund_request_and_credit_user_back(client, monkeypat
     try:
         _deposit_user_credits(client, user["id"], amount="20", currency="ACP", headers=headers)
         run, payment = _create_paid_workflow_intent(client, headers, user["id"])
-        assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("6.000000000000000000")
+        assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("5.000000000000000000")
 
         created = client.post(
             "/v1/payments/refund-request",

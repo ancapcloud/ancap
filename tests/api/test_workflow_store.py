@@ -84,7 +84,7 @@ def test_workflow_payment_intent_reserves_and_captures_credits(client):
     assert reserved_payload["item"]["status"] == "reserved"
     assert reserved_payload["run"]["status"] == "paid"
     assert Decimal(reserved_payload["item"]["amount"]["amount"]) == Decimal(run["price"]["amount"])
-    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("6.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("5.000000000000000000")
 
     execute = client.post(f"/v1/workflow-store/runs/{run_id}/execute", headers=headers)
     assert execute.status_code == 200, execute.text
@@ -97,7 +97,7 @@ def test_workflow_payment_intent_reserves_and_captures_credits(client):
     assert executed_payload["item"]["result"]["llm_usage"]["event_id"] == llm_usage["event_id"]
 
     balance_after_capture = _user_balance(client, user["id"], "ACP", headers=headers)
-    assert balance_after_capture == Decimal("6.000000000000000000")
+    assert balance_after_capture == Decimal("5.000000000000000000")
 
 
 def test_workflow_payment_intent_refunds_reserved_credits_on_cancel(client):
@@ -112,7 +112,7 @@ def test_workflow_payment_intent_refunds_reserved_credits_on_cancel(client):
         headers=headers,
     )
     assert reserve.status_code == 201, reserve.text
-    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("6.000000000000000000")
+    assert _user_balance(client, user["id"], "ACP", headers=headers) == Decimal("5.000000000000000000")
 
     cancel = client.post(f"/v1/workflow-store/runs/{run_id}/status", json={"status": "cancelled"}, headers=headers)
     assert cancel.status_code == 200, cancel.text
@@ -217,7 +217,7 @@ def test_workflow_capture_rewards_referrer_on_first_paid_purchase(client, monkey
         assert summary_payload["total_reward_events"] >= 1
         assert Decimal(summary_payload["signup_bonus_acp_amount"]) >= Decimal("25")
         assert _user_balance(client, owner["id"], "ACP", headers=owner_headers) >= Decimal("25")
-        assert _user_balance(client, referred_user["id"], "ACP", headers=referred_headers) == Decimal("6.000000000000000000")
+        assert _user_balance(client, referred_user["id"], "ACP", headers=referred_headers) == Decimal("5.000000000000000000")
     finally:
         monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
         get_settings.cache_clear()

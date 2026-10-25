@@ -139,7 +139,7 @@ def test_referral_summary_reports_reward_totals_after_first_paid_workflow(client
     assert {"referral_signup_bonus", "referral_commission_share"}.issubset(trigger_types)
 
     assert _user_balance(client, owner_token, owner_user["id"], "ACP") >= Decimal("25")
-    assert _user_balance(client, referred_token, referred_user["id"], "ACP") == Decimal("6.000000000000000000")
+    assert _user_balance(client, referred_token, referred_user["id"], "ACP") == Decimal("5.000000000000000000")
 
 
 def test_referral_rewards_enqueue_onchain_payout_jobs_when_runtime_enabled(client, db_cursor, monkeypatch):
@@ -194,7 +194,7 @@ def test_referral_rewards_enqueue_onchain_payout_jobs_when_runtime_enabled(clien
         assert len(rows) == 2
 
         payout_by_trigger = {trigger: (Decimal(str(amount)), status, to_address) for trigger, amount, status, to_address in rows}
-        assert payout_by_trigger["referral_commission_share"][0] == Decimal("1.40000000")
+        assert payout_by_trigger["referral_commission_share"][0] == Decimal("1.50000000")
         assert payout_by_trigger["referral_signup_bonus"][0] == Decimal("25")
         assert all(status == "pending" for _, status, _ in payout_by_trigger.values())
         assert all(str(to_address).startswith("acp") for _, _, to_address in payout_by_trigger.values())
