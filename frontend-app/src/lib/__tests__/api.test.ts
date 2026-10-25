@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { api, bridgeRail, formatNetworkError, organizations, payments, subscriptions, walletAcp, webhooks } from '../api';
+import { describe, it, expect, vi } from 'vitest';
+import { auth, api, bridgeRail, formatNetworkError, organizations, payments, subscriptions, walletAcp, webhooks } from '../api';
 
 describe('API Client', () => {
   it('should have correct base URL', () => {
@@ -88,5 +88,23 @@ describe('API Client', () => {
     expect(api.payments).toBe(payments);
     expect(api.subscriptions).toBe(subscriptions);
     expect(api.webhooks).toBe(webhooks);
+  });
+});
+
+
+describe('optional Turnstile on local login', () => {
+  it.each(['', 'verified-widget-token'])('submits optional token correctly: %s', async (token) => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ access_token: 'local-test-only' }), {
+      status: 200, headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      await auth.login('local@example.com', 'local-test-password', token);
+      const submitted = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(submitted.email).toBe('local@example.com');
+      expect(submitted.turnstile_token).toBe(token || undefined);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

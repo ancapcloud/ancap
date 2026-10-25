@@ -127,3 +127,14 @@ def explorer_tx_redacted(decoded: Any) -> dict[str, Any]:
         "output_count": tx_count_out,
         "note": "Full wire remains on-node; amounts/addresses hidden by default for user privacy.",
     }
+
+
+def valid_acp_address_checksum(address: str) -> bool:
+    """Check native ACP Bech32 without guessing or correcting OCR characters."""
+    if not address.startswith("acp1") or address != address.lower() or len(address) < 11:
+        return False
+    try:
+        values = [CHARSET.index(char) for char in address[4:]]
+    except ValueError:
+        return False
+    return _polymod(_hrp_expand("acp") + values) == 1

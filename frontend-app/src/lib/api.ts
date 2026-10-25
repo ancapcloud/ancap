@@ -200,7 +200,7 @@ export const auth = {
   async login(email: string, password: string, turnstileToken?: string) {
     const data = await apiFetch("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
+      body: JSON.stringify({ email, password, turnstile_token: turnstileToken || undefined }),
     });
     setToken(data.access_token);
     return data;
@@ -209,7 +209,7 @@ export const auth = {
   async walletNonce(address: string, chain_id?: number, domain?: string, uri?: string, turnstileToken?: string) {
     return apiFetch("/auth/wallet/nonce", {
       method: "POST",
-      body: JSON.stringify({ address, chain_id, domain, uri, turnstile_token: turnstileToken }),
+      body: JSON.stringify({ address, chain_id, domain, uri, turnstile_token: turnstileToken || undefined }),
     });
   },
 
@@ -232,14 +232,14 @@ export const auth = {
   async forgotPassword(email: string, turnstileToken?: string) {
     return apiFetch("/auth/password/forgot", {
       method: "POST",
-      body: JSON.stringify({ email, turnstile_token: turnstileToken }),
+      body: JSON.stringify({ email, turnstile_token: turnstileToken || undefined }),
     });
   },
 
   async resetPassword(token: string, password: string, turnstileToken?: string) {
     return apiFetch("/auth/password/reset", {
       method: "POST",
-      body: JSON.stringify({ token, password, turnstile_token: turnstileToken }),
+      body: JSON.stringify({ token, password, turnstile_token: turnstileToken || undefined }),
     });
   },
 
@@ -260,7 +260,7 @@ export const auth = {
   async register(email: string, password: string, display_name: string, referral_code?: string, turnstileToken?: string) {
     const data = await apiFetch("/auth/users", {
       method: "POST",
-      body: JSON.stringify({ email, password, display_name, referral_code, turnstile_token: turnstileToken }),
+      body: JSON.stringify({ email, password, display_name, referral_code, turnstile_token: turnstileToken || undefined }),
     });
     if (data?.access_token) {
       setToken(data.access_token);

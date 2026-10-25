@@ -1,5 +1,18 @@
 # ANCAP Master Roadmap
 
+## Smart Pay WeVisOne-VL adapter — 2026-10-25 (review branch)
+
+[x] Optional private OCR worker, native Tencent OCR, bounded uploads, provider
+selection and manual review. No model weights or wallet keys in the API worker.
+[x] Windows/WSL2 GPU Docker stack and five-language scanner UI; real RTX 5050
+2B inference and browser/API connection verified. EN/RU/UK/DE sample fields pass;
+zh-Hant sample amount passes but the address fails checksum and is blocked.
+[x] Private SSH/TLS production relay and per-provider CA validation implemented;
+activation is operator controlled and depends on this GPU computer staying online.
+[ ] Five-language payment-grade recognition quality and funded payment verification
+remain open. See [setup](docs/mobile/SMART_PAY_WEVISONE.md) and
+[local evidence](docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
+
 ## Product retail pricing — 2026-10-25 (review branch)
 
 Explicit per-product USD faces replace the discontinuous legacy magnitude rule.

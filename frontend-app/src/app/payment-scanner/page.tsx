@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
+import { paymentScannerCopy } from "@/locales/paymentScanner";
 import { FormEvent, useRef, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
@@ -55,6 +57,8 @@ async function decodeQrFromImageFile(file: File): Promise<string | null> {
 
 export default function PaymentScannerPage() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { lang } = useLanguage();
+  const copy = paymentScannerCopy[lang] || paymentScannerCopy.en;
   const [raw, setRaw] = useState("");
   const [source, setSource] = useState<ParseSource>("paste");
   const [preview, setPreview] = useState<any>(null);
@@ -80,7 +84,7 @@ export default function PaymentScannerPage() {
     try {
       setPreview(await paymentScanner.parse(raw, source));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Parse failed");
+      setError(err instanceof ApiError ? err.message : copy.error);
     } finally {
       setBusy(false);
     }
@@ -96,14 +100,14 @@ export default function PaymentScannerPage() {
     setPreview(null);
     clearPhotoPreview();
     try {
-      if (!file.size || file.size > 10 * 1024 * 1024) throw new Error("Выберите документ до 10 МБ.");
+      if (!file.size || file.size > 10 * 1024 * 1024) throw new Error(copy.size);
       const parsed = await paymentScanner.parseDocument(file);
       setSource("ocr");
       setRaw("");
       setPhotoName(file.name);
       setPreview(parsed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось прочитать документ");
+      setError(err instanceof Error ? err.message : copy.error);
     } finally {
       setBusy(false);
     }
@@ -118,8 +122,8 @@ export default function PaymentScannerPage() {
     setConfirmed(false);
     setPreview(null);
     clearPhotoPreview();
-    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 10 * 1024 * 1024) {
-      setError("Choose a JPEG, PNG, WebP or GIF image up to 10 MB.");
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setError(copy.imageSize);
       setBusy(false);
       return;
     }
@@ -153,7 +157,7 @@ export default function PaymentScannerPage() {
       setError(
         err instanceof ApiError
           ? err.message
-          : "Photo import failed. Try a clearer image, paste OCR text, or use a QR photo.",
+          : copy.error,
       );
     } finally {
       setBusy(false);
@@ -166,7 +170,7 @@ export default function PaymentScannerPage() {
         <Navigation />
         <main className="mx-auto max-w-lg px-4 py-16 text-center">
           <Link href="/login?next=/payment-scanner" className="text-emerald-300">
-            Log in to use Payment Scanner
+            {copy.login}
           </Link>
         </main>
       </div>
@@ -179,9 +183,7 @@ export default function PaymentScannerPage() {
       <main className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-semibold">Smart Pay · ANCAP</h1>
         <p className="mt-2 text-sm text-white/65">
-          Загрузите счёт, квитанцию или внутренний платёжный документ: PDF, Word (DOCX), текст или фото.
-          ANCAP разберёт реквизиты и даст рекомендации. Проверьте данные перед оплатой в ACP.
-          Файлы с паролем предварительно разблокируйте. PDF и фото передаются сервису ИИ для распознавания.
+          {copy.intro}
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           {(["paste", "ocr"] as ParseSource[]).map((mode) => (
@@ -194,7 +196,7 @@ export default function PaymentScannerPage() {
                 source === mode ? "bg-emerald-400 text-slate-950" : "border border-white/15"
               }`}
             >
-              {mode === "paste" ? "Paste / QR text" : "Receipt / OCR text"}
+              {mode === "paste" ? copy.paste : copy.ocr}
             </button>
           ))}
           <button
@@ -203,7 +205,7 @@ export default function PaymentScannerPage() {
             onClick={() => textInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
-            Загрузить документ
+            {copy.upload}
           </button>
           <button
             type="button"
@@ -211,7 +213,7 @@ export default function PaymentScannerPage() {
             onClick={() => photoInputRef.current?.click()}
             className="rounded-full border border-white/15 px-4 py-2"
           >
-            Import photo / image
+            {copy.photo}
           </button>
           <input
             ref={textInputRef}
@@ -257,32 +259,32 @@ export default function PaymentScannerPage() {
             disabled={busy}
             className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 disabled:opacity-60"
           >
-            {busy ? "Parsing…" : "Preview payment"}
+            {busy ? copy.busy : copy.preview}
           </button>
         </form>
         {error ? <p className="mt-4 text-amber-200">{error}</p> : null}
-        {photoName && !photoPreviewUrl ? <p className="mt-3 text-sm">Документ: {photoName}</p> : null}
+        {photoName && !photoPreviewUrl ? <p className="mt-3 text-sm">{copy.document}: {photoName}</p> : null}
         {preview ? (
           <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm">
-            <div>Network: {preview.detected_network || "unknown"}</div>
-            <div className="mt-1">Address: {preview.address || "—"}</div>
+            <div>{copy.network}: {preview.detected_network || "unknown"}</div>
+            <div className="mt-1">{copy.address}: {preview.address || "—"}</div>
             <div className="mt-1">
-              Amount: {preview.amount || "—"} {preview.currency || ""}
+              {copy.amount}: {preview.amount || "—"} {preview.currency || ""}
             </div>
-            {preview.label ? <div className="mt-1">Label: {preview.label}</div> : null}
-            <div className="mt-1">Confidence: {(preview.confidence * 100).toFixed(0)}%</div>
+            {preview.label ? <div className="mt-1">{copy.label}: {preview.label}</div> : null}
+            <div className="mt-1">{copy.confidence}: {(preview.confidence * 100).toFixed(0)}%</div>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-white/65">
               {(preview.parse_notes || []).map((note: string) => (
                 <li key={note}>{note}</li>
               ))}
             </ul>
-            <h2 className="mt-4 font-semibold">Рекомендации ANCAP</h2>
+            <h2 className="mt-4 font-semibold">{copy.recommendations}</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               {(preview.recommendations || []).map((note: string) => <li key={note}>{note}</li>)}
             </ul>
             <label className="mt-5 flex items-center gap-2">
               <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-              I reviewed this preview and want to proceed manually
+              {copy.confirm}
             </label>
             {confirmed && preview.address ? (
               <div className="mt-4 flex flex-wrap gap-3">
@@ -290,11 +292,11 @@ export default function PaymentScannerPage() {
                   href={`/explorer/address/${encodeURIComponent(preview.address)}`}
                   className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold"
                 >
-                  Open address
+                  {copy.open}
                 </Link>
                 {preview.can_pay_acp ? <Link href={`/wallet/acp#${new URLSearchParams({ payTo: preview.address, payAmount: preview.amount }).toString()}`} className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
-                  Оплатить в ACP
-                </Link> : <p>Для оплаты в ACP уточните ACP-реквизиты и сумму у получателя.</p>}
+                  {copy.pay}
+                </Link> : <p>{copy.unavailable}</p>}
               </div>
             ) : null}
           </section>

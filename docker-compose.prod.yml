@@ -93,6 +93,10 @@ services:
       LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.tenetauniversity.com}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      SMART_PAY_VISION_PROVIDER: ${SMART_PAY_VISION_PROVIDER:-anthropic}
+      SMART_PAY_WEVISONE_URL: ${SMART_PAY_WEVISONE_URL:-}
+      SMART_PAY_WEVISONE_API_KEY: ${SMART_PAY_WEVISONE_API_KEY:-}
+      SMART_PAY_WEVISONE_CA_FILE: ${SMART_PAY_WEVISONE_CA_FILE:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       # Homepage dialog — free OpenRouter models only. Key stays on the host .env.
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
