@@ -42,6 +42,14 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     results = []
     with httpx.Client(base_url=args.api, timeout=90) as client:
+        for attempt in range(30):
+            try:
+                client.get("/v1/system/health", timeout=3).raise_for_status()
+                break
+            except httpx.HTTPError:
+                if attempt == 29:
+                    raise RuntimeError("Local API not ready; inspect Compose logs")
+                time.sleep(2)
         response = client.post("/v1/auth/users", json={
             "email": f"local-ocr-{secrets.token_hex(6)}@example.com",
             "password": secrets.token_urlsafe(24), "display_name": "Local OCR acceptance",
@@ -63,7 +71,7 @@ def main():
                             "seconds": round(time.monotonic() - started, 2), "status": response.status_code,
                             "preview": payload})
             (out / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
-            print(json.dumps(results[-1], ensure_ascii=True), flush=True)
+            print(json.dumps({key: results[-1][key] for key in ("language", "passed", "seconds", "status")}), flush=True)
     (out / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     raise SystemExit(0 if all(item["passed"] for item in results) else 1)
 

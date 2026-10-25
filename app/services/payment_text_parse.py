@@ -11,10 +11,10 @@ _AMOUNT_RE = re.compile(r"(?i)(?:amount|value|amt)[=:]([0-9]+(?:[.,][0-9]{1,8})?
 _EVM_ADDRESS_RE = re.compile(r"(?i)\b(0x[a-f0-9]{40})\b")
 _ACP_ADDRESS_RE = re.compile(r"\b(acp1[a-z0-9]{20,120})\b", re.IGNORECASE)
 _INVOICE_TOTAL_RE = re.compile(
-    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag|應付總額|應付金額|總計|合計)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])",
+    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag|應付總額|應付金額|總計|合計)\s*(?:[:#]\s*)?(?:\$\s*)?([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])",
 )
 _PAY_TO_RE = re.compile(
-    r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*[:#]?\s*([^\n\r]{6,120})",
+    r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*(?:[:#]\s*)?([^\n\r]{6,120})",
 )
 _CURRENCY_HINT_RE = re.compile(r"(?i)\b(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b")
 _INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s+request)\s*#?\s*([A-Z0-9-]{3,32})")
@@ -110,6 +110,14 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         if normalized:
             amounts.append(normalized)
     for match in _AMOUNT_RE.finditer(text):
+        normalized = _normalize_amount(match.group(1))
+        if normalized:
+            amounts.append(normalized)
+    # Explicit amount + asset pairs do not depend on OCR label language.
+    for match in re.finditer(
+        r"(?i)(?<![\w.,])([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])\s*(?:USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
+        text,
+    ):
         normalized = _normalize_amount(match.group(1))
         if normalized:
             amounts.append(normalized)

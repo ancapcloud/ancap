@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pytest pytest-asyncio fastapi httpx pydantic-settings Pillow
+      - run: pip install pytest pytest-asyncio fastapi httpx pydantic-settings Pillow cryptography
       - run: python -m pytest --noconftest tests/unit/test_payment_wevisone.py -q
       - name: Validate local GPU Compose
         env:

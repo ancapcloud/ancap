@@ -211,3 +211,26 @@ def test_traditional_chinese_total_and_non_uri_slashes():
     assert result.amount == "12.5"
     assert result.currency == "ACP"
     assert result.detected_network == "acp"
+
+
+@pytest.mark.parametrize("text,amount", [("До сплати: 12.50 ACP", "12.5"), ("應付總額: 12.50 ACP", "12.5"), ("12.50 ACP / 15 EUR", None)])
+def test_explicit_asset_amount_is_language_independent_and_ambiguity_safe(text, amount):
+    from app.services.payment_text_parse import parse_payment_text
+    result = parse_payment_text(text, source="ocr")
+    assert result.amount == amount
+
+
+@pytest.mark.asyncio
+async def test_ocr_checksum_error_cannot_prepare_payment(monkeypatch):
+    address = "acp1qzfdkqxfgyw9ysk99qsd79yxdffe338yd85vrqn9"
+    configure(monkeypatch, lambda request: httpx.Response(200, json={"text": f"Pay to: {address} Total due: 12.50 ACP"}))
+    parsed = await payment_image_parse.parse_payment_image(image_bytes=b"x", content_type="image/png")
+    assert parsed.address is None
+    assert parsed.confidence <= 0.45
+    assert any("checksum failed" in note for note in parsed.parse_notes)
+
+
+def test_long_whitespace_in_untrusted_ocr_does_not_stall_parser():
+    from app.services.payment_text_parse import parse_payment_text
+    result = parse_payment_text("сума" + " " * 32000 + "not an amount", source="ocr")
+    assert result.amount is None
