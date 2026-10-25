@@ -1,6 +1,8 @@
 # ANCAP Production Roadmap
 
-## Smart Pay WeVisOne-VL — 2026-10-25 (review branch)
+Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
+
+## Smart Pay WeVisOne-VL — 2026-10-25 (PR #119 merged; production verification pending)
 
 Local GPU Docker stack and five-language UI implemented. Real 2B inference on
 RTX 5050 verified through Smart Pay: EN/RU/UK/DE sample fields pass; zh-Hant
