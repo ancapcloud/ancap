@@ -36,7 +36,12 @@ async def post_home_chat(payload: HomeChatRequest, request: Request) -> HomeChat
     )
 
     try:
-        result = await complete_home_chat(messages=payload.messages, mode=payload.mode, lang=payload.lang)
+        result = await complete_home_chat(
+            messages=payload.messages,
+            mode=payload.mode,
+            lang=payload.lang,
+            session_model=payload.session_model,
+        )
     except HomeChatError as exc:
         raise HTTPException(
             status_code=exc.status_code,

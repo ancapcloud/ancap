@@ -82,22 +82,38 @@ def test_pretty_model_and_free_filter():
     assert "openrouter/free" not in ids
 
 
-def test_client_cannot_choose_model():
+def test_client_cannot_choose_paid_model():
     with pytest.raises(ValidationError):
         HomeChatRequest.model_validate(
             {"messages": [{"role": "user", "content": "hi"}], "model": "openai/gpt-4o"}
         )
+    with pytest.raises(ValidationError):
+        HomeChatRequest.model_validate(
+            {
+                "messages": [{"role": "user", "content": "hi"}],
+                "session_model": "openai/gpt-4o",
+            }
+        )
+    pinned = HomeChatRequest.model_validate(
+        {
+            "messages": [{"role": "user", "content": "hi"}],
+            "session_model": "google/gemma-3-12b-it:free",
+            "mode": "howto",
+        }
+    )
+    assert pinned.session_model == "google/gemma-3-12b-it:free"
+    assert pinned.mode == "howto"
 
 
 def test_build_messages_uses_language_and_hides_secrets():
     wired = build_messages(
         messages=[{"role": "user", "content": "Привет"}],
-        mode="plan",
+        mode="howto",
         lang="ru",
     )
     assert wired[0]["role"] == "system"
     assert "Russian" in wired[0]["content"]
-    assert "plan" in wired[0]["content"].lower() or "Plan" in wired[0]["content"] or "idea" in wired[0]["content"]
+    assert "ANCAP" in wired[0]["content"]
     assert "sk-or-" not in wired[0]["content"]
     assert wired[-1] == {"role": "user", "content": "Привет"}
 
@@ -142,6 +158,43 @@ def test_fallback_skips_paid_models(monkeypatch):
     assert result.label == "Gemma 3 12B"
     assert calls[0] == ("/chat/completions", "openrouter/free")
     assert all(model is None or model == "openrouter/free" or model.endswith(":free") for _, model in calls)
+    clear_home_chat_state()
+
+
+def test_session_model_stays_pinned(monkeypatch):
+    clear_home_chat_state()
+    calls: list[str] = []
+
+    async def fake_request(method: str, path: str, json_body: dict | None = None):
+        assert path == "/chat/completions"
+        model = str((json_body or {}).get("model") or "")
+        calls.append(model)
+        return 200, {
+            "model": "some-other/alias:free",
+            "choices": [{"message": {"content": f"ok:{len(calls)}"}}],
+        }
+
+    monkeypatch.setattr("app.services.home_chat.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.home_chat._openrouter_request", fake_request)
+
+    async def _run() -> None:
+        first = await complete_home_chat(
+            messages=[{"role": "user", "content": "one"}],
+            session_model="google/gemma-3-12b-it:free",
+        )
+        second = await complete_home_chat(
+            messages=[
+                {"role": "user", "content": "one"},
+                {"role": "assistant", "content": first.reply},
+                {"role": "user", "content": "two"},
+            ],
+            session_model=first.model,
+        )
+        assert first.model == "google/gemma-3-12b-it:free"
+        assert second.model == first.model
+        assert calls == ["google/gemma-3-12b-it:free", "google/gemma-3-12b-it:free"]
+
+    anyio.run(_run)
     clear_home_chat_state()
 
 
@@ -193,7 +246,7 @@ def test_rate_limit_and_automatic_reply(monkeypatch):
         return HomeChatResult(reply="ok", model="google/gemma-3-12b-it:free", label="Gemma 3 12B")
 
     monkeypatch.setattr("app.api.routers.home_chat.complete_home_chat", fake_complete)
-    payload = HomeChatRequest.model_validate({"messages": [{"role": "user", "content": "hi"}], "mode": "cloud"})
+    payload = HomeChatRequest.model_validate({"messages": [{"role": "user", "content": "hi"}], "mode": "earn"})
 
     async def _run() -> None:
         first = await post_home_chat(payload, _request())

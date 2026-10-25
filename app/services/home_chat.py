@@ -1,8 +1,8 @@
 """Homepage dialog via OpenRouter.
 
-The API key never leaves this process. The public route cannot name a model:
-`openrouter/free` picks a free model, and a failed route falls back to another
-catalog model whose prompt and completion prices are zero.
+The API key never leaves this process. The first turn picks a free model; later
+turns reuse `session_model` so one dialog stays on one free model. Paid ids are
+rejected. If the pinned free model fails, another free catalog model is used.
 """
 from __future__ import annotations
 
@@ -40,9 +40,9 @@ _LANG_NAMES = {
 }
 _MODE_HINTS = {
     "chat": "Answer the user's latest message.",
-    "plan": "The user wants a plan for a new idea. Give a short structured plan with concrete steps. Do not claim any step was executed.",
-    "multitask": "Split the request into a few independent tasks and answer each one briefly.",
-    "cloud": "Relate the answer to running the work as an ANCAP workflow settled in ACP. Do not claim a workflow was started or that funds moved.",
+    "howto": "Explain how ANCAP works for a new visitor: publish or buy defined AI workflow outputs settled in ACP. Keep it practical and short.",
+    "workflows": "Help the user find or choose a paid AI workflow on ANCAP. Point to /ai/workflows when useful. Do not invent prices or availability.",
+    "earn": "Explain how creators earn on ANCAP by selling workflow runs. Mention the seller workspace when useful. Do not promise earnings.",
 }
 
 _router_disabled = False
@@ -236,11 +236,23 @@ async def _load_free_ids() -> list[str]:
     return free_model_ids(data)
 
 
+def _normalize_free_session(model_id: str | None) -> str | None:
+    raw = (model_id or "").strip()
+    if not raw or raw.lower() == _FREE_ROUTER:
+        return None
+    if not raw.lower().endswith(":free"):
+        return None
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._/-]{0,118}:free", raw, flags=re.IGNORECASE):
+        return None
+    return raw
+
+
 async def complete_home_chat(
     *,
     messages: list[HomeChatMessageIn] | list[dict[str, str]],
     mode: str = "chat",
     lang: str = "en",
+    session_model: str | None = None,
 ) -> HomeChatResult:
     global _router_disabled
     settings = get_settings()
@@ -253,8 +265,11 @@ async def complete_home_chat(
     if len(wired) < 2:
         raise HomeChatError("EMPTY", 422)
 
+    pinned = _normalize_free_session(session_model)
     candidates: list[str] = []
-    if _router_disabled:
+    if pinned:
+        candidates.append(pinned)
+    elif _router_disabled:
         candidates.extend((await _load_free_ids())[:2])
     else:
         candidates.append(_FREE_ROUTER)
@@ -286,8 +301,14 @@ async def complete_home_chat(
                 if len(reply) > 4000:
                     reply = reply[:4000].rstrip() + "…"
                 used = str(payload.get("model") or model)
-                if not used or used == _FREE_ROUTER:
-                    used = model
+                if pinned:
+                    used = pinned
+                elif not used or used == _FREE_ROUTER:
+                    used = model if model != _FREE_ROUTER else used
+                    if used == _FREE_ROUTER:
+                        # Should not happen; fall back to a catalog free id if needed.
+                        free_ids = await _load_free_ids()
+                        used = free_ids[0] if free_ids else used
                 return HomeChatResult(reply=reply, model=used, label=pretty_model(used))
             status = 502
 

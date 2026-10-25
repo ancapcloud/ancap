@@ -47,6 +47,12 @@
   background: #23262b;
   color: #dedede;
   cursor: pointer;
+  text-decoration: none;
+}
+
+a.chip:hover {
+  border-color: #5a6068;
+  color: #fff;
 }
 
 .chip svg,
