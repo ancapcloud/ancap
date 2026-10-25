@@ -44,6 +44,15 @@ _MODE_HINTS = {
     "workflows": "Help the user find or choose a paid AI workflow on ANCAP. Point to /ai/workflows when useful. Do not invent prices or availability.",
     "earn": "Explain how creators earn on ANCAP by selling workflow runs. Mention the seller workspace when useful. Do not promise earnings.",
 }
+# Free models (esp. Nemotron) sometimes echo classifier tags into the reply body.
+_SAFETY_LINE = re.compile(
+    r"^\s*(?:user|response|prompt|assistant)\s+safety\s*:\s*\S+\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+_SAFETY_INLINE = re.compile(
+    r"(?:^|\n)\s*(?:user|response|prompt|assistant)\s+safety\s*:\s*\S+\s*(?=\n|$)",
+    re.IGNORECASE,
+)
 
 _router_disabled = False
 
@@ -154,7 +163,9 @@ def build_messages(*, messages: list[HomeChatMessageIn] | list[dict[str, str]], 
         "ANCAP is an ACP-first platform where people buy, create, and sell defined AI workflow outputs. "
         f"Reply in {lang_name}. Be concise and practical. {hint} "
         "You cannot access wallets, sign transactions, move ACP, or start jobs. "
-        "Never invent balances, prices, or legal status. If you are unsure, say so."
+        "Never invent balances, prices, or legal status. If you are unsure, say so. "
+        "Never output safety classifiers, labels, or metadata such as "
+        "'User Safety: safe' or 'Response Safety: safe' — reply with the answer only."
     )
     wired = [{"role": "system", "content": system}]
     for message in list(messages)[-8:]:
@@ -164,9 +175,22 @@ def build_messages(*, messages: list[HomeChatMessageIn] | list[dict[str, str]], 
         else:
             role = message.role
             content = message.content.strip()
+        if role == "assistant":
+            content = scrub_model_reply(content)
         if role in {"user", "assistant"} and content:
             wired.append({"role": role, "content": content})
     return wired
+
+
+def scrub_model_reply(text: str) -> str:
+    """Remove free-model safety classifier noise from visible reply text."""
+    raw = (text or "").strip()
+    if not raw:
+        return ""
+    cleaned = _SAFETY_LINE.sub("", raw)
+    cleaned = _SAFETY_INLINE.sub("\n", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    return cleaned
 
 
 def _message_text(payload: dict[str, Any]) -> str:
@@ -295,7 +319,7 @@ async def complete_home_chat(
             status, payload = exc.status_code, {}
 
         if status == 200 and isinstance(payload, dict):
-            reply = _message_text(payload)
+            reply = scrub_model_reply(_message_text(payload))
             if reply:
                 reply = re.sub(r"\n{3,}", "\n\n", reply).strip()
                 if len(reply) > 4000:

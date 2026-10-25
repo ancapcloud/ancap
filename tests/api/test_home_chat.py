@@ -18,6 +18,7 @@ from app.services.home_chat import (
     complete_home_chat,
     free_model_ids,
     pretty_model,
+    scrub_model_reply,
 )
 from app.services.rate_limit import clear_rate_limit_state
 
@@ -114,8 +115,69 @@ def test_build_messages_uses_language_and_hides_secrets():
     assert wired[0]["role"] == "system"
     assert "Russian" in wired[0]["content"]
     assert "ANCAP" in wired[0]["content"]
+    assert "User Safety" in wired[0]["content"]
     assert "sk-or-" not in wired[0]["content"]
     assert wired[-1] == {"role": "user", "content": "Привет"}
+
+
+def test_scrub_model_reply_drops_safety_tags():
+    raw = (
+        "User Safety: safe\n"
+        "User Safety: safe\n"
+        "Response Safety: safe\n"
+        "Чтобы зарабатывать на ANCAP, опубликуйте workflow и продавайте запуски за ACP."
+    )
+    cleaned = scrub_model_reply(raw)
+    assert "Safety" not in cleaned
+    assert "опубликуйте workflow" in cleaned
+    assert scrub_model_reply("User Safety: safe\nResponse Safety: safe") == ""
+    history = build_messages(
+        messages=[
+            {"role": "user", "content": "как зарабатывать"},
+            {"role": "assistant", "content": raw},
+            {"role": "user", "content": "ещё"},
+        ],
+        mode="earn",
+        lang="ru",
+    )
+    assistant = next(m for m in history if m["role"] == "assistant")
+    assert "Safety" not in assistant["content"]
+
+
+def test_complete_home_chat_scrubs_safety_noise(monkeypatch):
+    clear_home_chat_state()
+
+    async def fake_request(method: str, path: str, json_body: dict | None = None):
+        assert path == "/chat/completions"
+        return 200, {
+            "model": "nvidia/nemotron-3-nano:free",
+            "choices": [
+                {
+                    "message": {
+                        "content": (
+                            "User Safety: safe\n"
+                            "Response Safety: safe\n"
+                            "Кратко: продавайте запуски workflow за ACP."
+                        )
+                    }
+                }
+            ],
+        }
+
+    monkeypatch.setattr("app.services.home_chat.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.home_chat._openrouter_request", fake_request)
+
+    async def _run() -> HomeChatResult:
+        return await complete_home_chat(
+            messages=[{"role": "user", "content": "как зарабатывать"}],
+            lang="ru",
+            session_model="nvidia/nemotron-3-nano:free",
+        )
+
+    result = anyio.run(_run)
+    assert "Safety" not in result.reply
+    assert "продавайте запуски" in result.reply
+    clear_home_chat_state()
 
 
 def test_routes_registered():
