@@ -271,12 +271,12 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="aeterna-stem-cell-organ-print",
         title="AETERNA Stem-Cell Organ Print",
         category="AETERNA",
-        summary="Licensed-partner organ bioprint from autologous stem cells — wisdom-tooth DPSC fallback — 250,000 ACP per organ.",
+        summary="Licensed-partner organ bioprint from autologous stem cells — wisdom-tooth DPSC fallback — $49 per planning brief.",
         description=(
-            "Settles 250,000 ACP per organ and issues a licensed-partner bioreactor handoff. "
+            "Settles $49 per planning brief and issues a licensed-partner bioreactor handoff. "
         "Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. "
-        "A dedicated DPSC biomaterial SKU (aeterna-dpsc-biomaterial, 65,000 ACP) expands DPSC into a construct; "
-        "this organ-print SKU remains 250,000 ACP per organ. "
+        "A dedicated DPSC biomaterial SKU (aeterna-dpsc-biomaterial, priced separately) expands DPSC into a construct; "
+        "this organ-print SKU remains $49 per planning brief. "
         "Printing occurs only in a licensed biochemical reactor operated by a verified partner. "
             "Not a home kit — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture."
         ),
@@ -294,7 +294,7 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-partner consult brief on partial cellular reprogramming via mRNA in lipid nanoparticles — "
-            "public patent-literacy only, 1,000,000 ACP."
+            "public patent-literacy only, $39."
         ),
         description=(
             "Builds a partner-ready discussion brief on partial epigenetic reprogramming: "
@@ -322,10 +322,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-veterinary-partner intake for a feline tissue cryoconservator-restorer "
-            "(controlled-rate freeze, LN2 store, thaw/restore) — 75,000 ACP."
+            "(controlled-rate freeze, LN2 store, thaw/restore) — $29."
         ),
         description=(
-            "Settles 75,000 ACP and issues a licensed-veterinary-partner brief for cat tissue banking: "
+            "Settles $29 and issues a licensed-veterinary-partner brief for cat tissue banking: "
             "harvest of a small sample (skin, cartilage, fat, muscle, or stem-cell niche), controlled-rate "
             "freezing to about −150…−196 °C with cryoprotectant protocols, liquid-nitrogen storage, then "
             "planned thaw and partner-clinic return of tissue. Conceptual architecture only — ANCAP does not "
@@ -351,10 +351,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-veterinary-partner organ-transplant and regeneration chamber pathway for dogs "
-            "(VET REGEN POD) — 180,000 ACP."
+            "(VET REGEN POD) — $39."
         ),
         description=(
-            "Settles 180,000 ACP and issues a licensed-veterinary-partner brief for a canine organ pathway: "
+            "Settles $39 and issues a licensed-veterinary-partner brief for a canine organ pathway: "
             "organ bank at cryogenic temperature, 3D tissue bioprint assist, robot-assisted placement, "
             "stem-cell / growth-factor stimulation, and post-op monitoring inside a sealed veterinary chamber. "
             "Infographics illustrate intended partner architecture. ANCAP does not operate VET REGEN POD hardware, "
@@ -380,10 +380,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed phototherapy-partner intake for a full-body LED / UVA / red / near-IR "
-            "photobiomodulation chamber (Leonardo sunlight-health literacy) — 48,000 ACP."
+            "photobiomodulation chamber (Leonardo sunlight-health literacy) — $19."
         ),
         description=(
-            "Settles 48,000 ACP and issues a licensed dermatology or phototherapy-partner brief for a "
+            "Settles $19 and issues a licensed dermatology or phototherapy-partner brief for a "
             "full-body light-session chamber: red 620–680 nm and near-IR 780–950 nm as photobiomodulation "
             "literacy (cytochrome-c oxidase / ATP as public research framing, not a guaranteed effect), "
             "plus UVA 320–400 nm only under partner screening. Inspired by Leonardo da Vinci’s notes on "
@@ -411,10 +411,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed aesthetic/dermatology-partner intake for contact-cooled microwave body contouring "
-            "(2.45 / 5.8 GHz ISM applicator) — 52,000 ACP."
+            "(2.45 / 5.8 GHz ISM applicator) — $19."
         ),
         description=(
-            "Settles 52,000 ACP and issues a licensed dermatology or aesthetic-medicine partner brief for a "
+            "Settles $19 and issues a licensed dermatology or aesthetic-medicine partner brief for a "
             "contact-cooled microwave applicator in the 2.45 GHz / 5.8 GHz ISM bands. Public device literature "
             "discusses selective heating of adipocytes with surface cooling; AETERNA does not claim blebbing, "
             "macrophage clearance, lymphatic drainage, or a guaranteed contour change. Not liposuction, not a "
@@ -441,10 +441,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-partner intake for a BioFusion micromanipulation chamber "
-            "(IVF/ICSI, plant pollination, embryo observation, microorganism handling) — 88,000 ACP."
+            "(IVF/ICSI, plant pollination, embryo observation, microorganism handling) — $49."
         ),
         description=(
-            "Settles 88,000 ACP and issues a licensed-partner brief for a conceptual BioFusion chamber: "
+            "Settles $49 and issues a licensed-partner brief for a conceptual BioFusion chamber: "
             "temperature / pH / gas control, HEPA-UV enclosure, and sub-micron micromanipulators as architecture "
             "literacy. Rails: licensed assisted-reproduction clinic (IVF/ICSI), licensed agricultural research "
             "(plant pollination / hybridization), embryo-development observation as clinic protocol literacy, "
@@ -472,13 +472,13 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-bioreactor intake to expand autologous wisdom-tooth dental pulp stem cells (DPSC) "
-            "into a biomaterial construct — 65,000 ACP."
+            "into a biomaterial construct — $29."
         ),
         description=(
-            "Settles 65,000 ACP and issues a licensed biochemical-reactor partner brief to harvest / receive "
+            "Settles $29 and issues a licensed biochemical-reactor partner brief to harvest / receive "
             "wisdom-tooth dental pulp stem cells and expand them into a biomaterial construct (scaffold or "
             "tissue sheet). This is not a full organ print — that remains aeterna-stem-cell-organ-print at "
-            "250,000 ACP per organ, where DPSC is the fallback cell source. ANCAP does not culture cells, "
+            "$29 per organ, where DPSC is the fallback cell source. ANCAP does not culture cells, "
             "does not practice dentistry or regenerative medicine, and does not claim an FDA/CE cell therapy "
             "or a guaranteed organ. No home culture kit, CRISPR design, or gene synthesis."
         ),
@@ -501,10 +501,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed phlebology/aesthetic-partner intake for Vascular Care+ "
-            "(anhydrous N2+O2 flow plus light-wave applicator) — 54,000 ACP."
+            "(anhydrous N2+O2 flow plus light-wave applicator) — $19."
         ),
         description=(
-            "Settles 54,000 ACP and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
+            "Settles $19 and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
             "for a conceptual Vascular Care+ cart: controlled anhydrous nitrogen-oxygen flow plus a light-wave "
             "handpiece. Infographic copy about vessel dilation, oedema, varicose veins, or diabetic angiopathy "
             "is protocol literacy, not a guaranteed clinical result. ANCAP does not manufacture the cart, does "
@@ -531,10 +531,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed phlebology/aesthetic-partner intake for Vascular Care "
-            "(ultrasound / radiofrequency / thermal applicator) — 58,000 ACP."
+            "(ultrasound / radiofrequency / thermal applicator) — $19."
         ),
         description=(
-            "Settles 58,000 ACP and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
+            "Settles $19 and issues a licensed phlebology, vascular-medicine, or aesthetic-partner brief "
             "for a conceptual Vascular Care cart combining ultrasound, radiofrequency, and thermal applicators. "
             "Infographic copy about vessel tone, oedema, or varicose diameter is protocol literacy, not a "
             "guaranteed result. Not surgery, not a marketed medical device, and not a CE/FDA product sold by "
@@ -559,10 +559,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed clinic-partner intake for a needle-free transdermal pistol "
-            "(aerosol actives plus carrier gas) — 46,000 ACP."
+            "(aerosol actives plus carrier gas) — $19."
         ),
         description=(
-            "Settles 46,000 ACP and issues a licensed clinic-partner brief for a conceptual needle-free "
+            "Settles $19 and issues a licensed clinic-partner brief for a conceptual needle-free "
             "transdermal pistol: aerosol of actives plus carrier gas (CO2 / N2 / O2 literacy) across epithelium. "
             "Infographic copy about varicose veins, fat reduction, cosmetics, or joints is protocol literacy, "
             "not a guaranteed dose or outcome. ANCAP does not compound drugs, does not dispense prescriptions, "
@@ -588,10 +588,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed-clinic subscription for multimodal M-receptor delivery and neuromodulation literacy "
-            "(patch, iontophoresis, inhaler, vagus-adjacent stimulation) — 12,000 ACP / month."
+            "(patch, iontophoresis, inhaler, vagus-adjacent stimulation) — $19 / month."
         ),
         description=(
-            "Settles the first subscription period (12,000 ACP monthly; 32,000 quarterly; 108,000 annual) "
+            "Settles the first subscription period ($19 monthly; 32,000 quarterly; 108,000 annual) "
             "and issues a licensed-clinic partner brief for a conceptual multimodal system: transdermal patch, "
             "iontophoretic wrist module, inhaler/nebulizer, and vagus-adjacent neurostimulation. Infographic "
             "M1–M5 tables and scopolamine callouts are receptor literacy, not a dosing guide and not compounding. "
@@ -627,10 +627,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed bioreactor / transfusion-medicine partner brief for hemoglobin-vesicle or "
-            "perfluorocarbon-emulsion oxygen-carrier architecture literacy — 92,000 ACP."
+            "perfluorocarbon-emulsion oxygen-carrier architecture literacy — $39."
         ),
         description=(
-            "Settles 92,000 ACP and issues a licensed-partner brief for a conceptual oxygen-transfer particle: "
+            "Settles $39 and issues a licensed-partner brief for a conceptual oxygen-transfer particle: "
             "hemoglobin or PFC core, lipid or polymer shell, affinity regulators, buffers, and sterile-fill "
             "literacy. Infographic production steps, QC icons, and vial diagrams are architecture literacy, "
             "not a manufacturing SOP and not compounding. ANCAP does not produce blood substitutes, does not "
@@ -661,10 +661,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed bioreactor / transfusion-medicine partner brief for synthetic-blood architecture "
-            "with modified Black Mamba peptide literacy — 98,000 ACP."
+            "with modified Black Mamba peptide literacy — $49."
         ),
         description=(
-            "Settles 98,000 ACP and issues a licensed-partner brief for a conceptual multi-layer particle: "
+            "Settles $49 and issues a licensed-partner brief for a conceptual multi-layer particle: "
             "oxygen-carrier core (hemoglobin or PFC), lipid shell, polymer mesh, modified Black Mamba "
             "peptide literacy, delivery vesicle, and immune-management sensors. Infographic stages and "
             "'controlled dose' callouts are architecture literacy, not a manufacturing SOP and not a toxin "
@@ -696,10 +696,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed clinician partner brief for ADHD / СДВГ support literacy "
-            "(attention, planning, emotion, school adaptation) — 42,000 ACP."
+            "(attention, planning, emotion, school adaptation) — $19."
         ),
         description=(
-            "Settles 42,000 ACP and issues a licensed-partner brief covering ADHD / СДВГ support "
+            "Settles $19 and issues a licensed-partner brief covering ADHD / СДВГ support "
             "literacy: attention and task completion, planning and impulse control, emotion regulation, "
             "peer skills, self-esteem, and comorbid-risk literacy. Infographic 'path to a billion' steps "
             "are motivational architecture, not a guaranteed academic or financial outcome. ANCAP does "
@@ -730,10 +730,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed lifestyle / longevity partner brief for rapid quality-of-life literacy: "
-            "nutrition, sport, health, and longevity recommendations — 40 ACP."
+            "nutrition, sport, health, and longevity recommendations — $19."
         ),
         description=(
-            "Settles 40 ACP and issues a licensed lifestyle / longevity / nutrition-sport partner brief "
+            "Settles $19 and issues a licensed lifestyle / longevity / nutrition-sport partner brief "
             "for quality-of-life acceleration literacy: nutrition recommendations, sport and movement, "
             "everyday health hygiene, sleep and recovery, and longevity framing. ANCAP does not diagnose, "
             "does not prescribe, does not sell drugs or medical devices, and does not guarantee lifespan, "
@@ -763,10 +763,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed developmental pediatrics / genetics partner brief for Down syndrome "
-            "support literacy — 42,000 ACP. Not a cure."
+            "support literacy — $19. Not a cure."
         ),
         description=(
-            "Settles 42,000 ACP and issues a licensed-partner brief covering Down syndrome support "
+            "Settles $19 and issues a licensed-partner brief covering Down syndrome support "
             "literacy: early intervention, family caregiver coordination, learning and skills "
             "adaptation, health-partner screening, and community peer-support literacy. ANCAP does "
             "not cure Down syndrome, does not diagnose trisomy 21, does not sell gene therapy or CRISPR, "
@@ -798,10 +798,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         summary=(
             "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief for coding "
             "literacy (light, clinic-only substances, hypnosis) aimed at non-essential psychoactive "
-            "dependence — 48,000 ACP. Not a coding session by ANCAP."
+            "dependence — $19. Not a coding session by ANCAP."
         ),
         description=(
-            "Settles 48,000 ACP and issues a licensed-partner brief covering substance-coding support "
+            "Settles $19 and issues a licensed-partner brief covering substance-coding support "
             "literacy: light-protocol themes, clinic-only substance protocol literacy, and clinical "
             "hypnosis literacy for psychoactive substances that are not necessary for life. ANCAP does "
             "not perform coding, does not guarantee abstinence, does not compound or sell controlled "
@@ -831,10 +831,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed pulmonology / respiratory clinic subscription for PulmoPure gas-vibration and "
-            "lavender-oil architecture literacy — 14,000 ACP / month."
+            "lavender-oil architecture literacy — $19 / month."
         ),
         description=(
-            "Settles the first subscription period (14,000 ACP monthly; 38,000 quarterly; 128,000 annual) "
+            "Settles the first subscription period ($19 monthly; 38,000 quarterly; 128,000 annual) "
             "and issues a licensed-clinic partner brief for a conceptual handheld lung-care system: silicone "
             "mouthpiece, gas-vibration generator, medical-gas mix literacy, lavender-oil atomizer, filter/"
             "cleaning unit, and Soft / Standard / Intensive mode literacy. Infographic before/after alveoli "
@@ -871,10 +871,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and "
-            "neonatal hyperbaric-chamber literacy — 72,000 ACP."
+            "neonatal hyperbaric-chamber literacy — $39."
         ),
         description=(
-            "Settles 72,000 ACP and issues a licensed-partner brief for Installation Project "
+            "Settles $39 and issues a licensed-partner brief for Installation Project "
             "(Проект Установки): high-protein natural-synthetic infant milk production literacy "
             "(conceptual ~1,000 L/day; liquid and dry formats; GMP / medical-standards framing) and "
             "neonatal hyperbaric-chamber architecture literacy (1.5–2.0 ATA; 36–37 °C; 1–2 newborns; "
@@ -906,10 +906,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="AETERNA",
         summary=(
             "Licensed cosmetic / fragrance partner fill for a DNA-vault–informed pheromone perfume — "
-            "sold per bottle at 8,900 ACP."
+            "sold per bottle at $29."
         ),
         description=(
-            "Settles 8,900 ACP for exactly one bottle and issues a licensed cosmetic / fragrance partner "
+            "Settles $29 for exactly one bottle and issues a licensed cosmetic / fragrance partner "
             "handoff. An optional DNA-vault content hash may inform olfactory-profile literacy; genome bytes "
             "are never uploaded to ANCAP. Not a drug, not an aphrodisiac medical claim, not a guaranteed "
             "attraction or relationship outcome, not CE/FDA pheromone medicine, and not compounding of "
@@ -936,7 +936,7 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="counsel-jurisdiction-match",
         title="Worldwide Legal Counsel — Jurisdiction Match",
         category="Counsel",
-        summary="Match licensed counsel in any covered country — from 3,900 ACP.",
+        summary="Match licensed counsel in any covered country — from $19.",
         description=(
             "Settles ACP for a worldwide jurisdiction-match brief and licensed-counsel shortlist "
             "handoff. ANCAP is not a law firm, does not practice law, and does not form an "
@@ -959,7 +959,7 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="counsel-entity-setup",
         title="Worldwide Legal Counsel — Entity / Incorporation Brief",
         category="Counsel",
-        summary="Entity setup intake + licensed local counsel handoff — from 8,900 ACP.",
+        summary="Entity setup intake + licensed local counsel handoff — from $39.",
         description=(
             "Settles ACP for an incorporation / entity-setup intake brief and licensed local "
             "counsel handoff anywhere covered by the desk. Not a ready-made company sold by ANCAP."
@@ -981,7 +981,7 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="counsel-contract-review",
         title="Worldwide Legal Counsel — Contract Review Brief",
         category="Counsel",
-        summary="Contract intake + licensed counsel review handoff — from 4,500 ACP.",
+        summary="Contract intake + licensed counsel review handoff — from $29.",
         description=(
             "Settles ACP for a structured contract-review intake and licensed-counsel handoff. "
             "ANCAP does not redline as your attorney."
@@ -1003,7 +1003,7 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="counsel-crypto-assets",
         title="Worldwide Legal Counsel — Crypto / Digital Assets Match",
         category="Counsel",
-        summary="Crypto-assets counsel match for token / exchange / stablecoin rails — from 12,000 ACP.",
+        summary="Crypto-assets counsel match for token / exchange / stablecoin rails — from $39.",
         description=(
             "Settles ACP for a crypto / digital-assets literacy pack and licensed counsel match. "
             "Not an investment prospectus or securities opinion from ANCAP."
@@ -1373,9 +1373,9 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="stardust-extreme-weather-monitor",
         title="Stardust Extreme Weather Worldwide Monitor",
         category="StardustSRT",
-        summary="Licensed partner brief for worldwide hurricane / storm / rainfall monitoring literacy — 18,000 ACP.",
+        summary="Licensed partner brief for worldwide hurricane / storm / rainfall monitoring literacy — $19.",
         description=(
-            "Settles 18,000 ACP and issues a licensed-partner brief for extreme-weather monitoring "
+            "Settles $19 and issues a licensed-partner brief for extreme-weather monitoring "
             "literacy worldwide. Not an official meteorological warning, not AccuWeather replacement, "
             "and not a storm-track guarantee. ANCAP is not affiliated with StardustSRT unless separately contracted."
         ),
@@ -1396,9 +1396,9 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="stardust-disaster-early-warning",
         title="Stardust Disaster Early-Warning Coordination",
         category="StardustSRT",
-        summary="Seismic / tsunami / volcano / flood early-alert coordination literacy — 28,000 ACP.",
+        summary="Seismic / tsunami / volcano / flood early-alert coordination literacy — $29.",
         description=(
-            "Settles 28,000 ACP and issues a licensed-partner brief for multi-hazard early-warning "
+            "Settles $29 and issues a licensed-partner brief for multi-hazard early-warning "
             "coordination literacy. Not a government emergency system and not a guaranteed early alert."
         ),
         price=Money(amount="28000", currency="ACP"),
@@ -1420,10 +1420,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="StardustSRT",
         summary=(
             "Worldwide weather-control architecture literacy (rainfall, storm dissipation, "
-            "temperature, snow) — 58,000 ACP."
+            "temperature, snow) — $49."
         ),
         description=(
-            "Settles 58,000 ACP and issues a licensed-partner brief for global weather-control "
+            "Settles $49 and issues a licensed-partner brief for global weather-control "
             "architecture literacy. UI toggles and satellite artwork are product literacy — not a "
             "live geoengineering console, not unilateral weather modification by ANCAP, and not a "
             "guaranteed rainfall or storm-dissipation outcome. Partner screening required under "
@@ -1446,9 +1446,9 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         slug="stardust-weather-control-subscription",
         title="Stardust Worldwide Weather-Control Subscription",
         category="StardustSRT",
-        summary="Monthly ACP retainer for worldwide weather-control / earth-monitoring partner literacy — 45,000 ACP / month.",
+        summary="Monthly ACP retainer for worldwide weather-control / earth-monitoring partner literacy — $29 / month.",
         description=(
-            "Settles 45,000 ACP per month and issues an ongoing licensed-partner coordination brief "
+            "Settles $29 per month and issues an ongoing licensed-partner coordination brief "
             "for worldwide weather-control and earth-monitoring literacy. Not a live weather remote "
             "control and not a guaranteed climate outcome."
         ),
@@ -1532,10 +1532,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="Entertainment",
         summary=(
             "Licensed venue partner brief for a Tesla-coil spectacle party with complimentary "
-            "Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only — 8,900 ACP."
+            "Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only — $29."
         ),
         description=(
-            "Settles 8,900 ACP and issues a licensed entertainment-venue partner brief for a Tesla-coil "
+            "Settles $29 and issues a licensed entertainment-venue partner brief for a Tesla-coil "
             "show party. Complimentary whiskey hospitality is framed as Jack Daniel's brand literacy where "
             "the venue holds a liquor licence — ANCAP is not affiliated with Jack Daniel's or Brown-Forman "
             "and does not hold a liquor licence. Age/ID gates (18+/21+ by jurisdiction) apply. "
@@ -1567,10 +1567,10 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         category="Conservation",
         summary=(
             "Licensed conservation / metallurgy partner brief for antique restoration after "
-            "total fire using reverse-combustion literacy — 42,000 ACP."
+            "total fire using reverse-combustion literacy — $29."
         ),
         description=(
-            "Settles 42,000 ACP and issues a licensed conservation / metallurgy partner brief. "
+            "Settles $29 and issues a licensed conservation / metallurgy partner brief. "
             "Reverse-combustion and reduction chemistry themes are partner literacy only — not a "
             "DIY furnace kit. The six-stage recovery map is a conservation protocol analogy for "
             "artifacts — not medical burn care. ANCAP does not guarantee authenticity or original "
@@ -1902,22 +1902,24 @@ def find_credit_package(package_slug: str) -> WorkflowCreditPackagePublic | None
 def quote_workflow_amount(template: WorkflowTemplatePublic, payment_currency: str) -> Decimal:
     from app.services.market_economy import quote_catalog_acp
 
-    acp, _sticker, _spot = quote_catalog_acp(template.price.amount, payment_currency=payment_currency)
+    acp, _sticker, _spot = quote_catalog_acp(template.price.amount, catalog_slug=template.slug, payment_currency=payment_currency)
     return acp
 
 
 def quote_bundle_amount(bundle: WorkflowBundlePublic, payment_currency: str) -> Decimal:
     from app.services.market_economy import quote_catalog_acp
 
-    acp, _sticker, _spot = quote_catalog_acp(bundle.price.amount, payment_currency=payment_currency)
+    acp, _sticker, _spot = quote_catalog_acp(bundle.price.amount, catalog_slug=bundle.slug, payment_currency=payment_currency)
     return acp
 
 
 def quote_credit_package_amount(package: WorkflowCreditPackagePublic, payment_currency: str) -> Decimal:
-    from app.services.market_economy import quote_catalog_acp
+    from app.services.bridge_decimal import WACP_PER_ACP
 
-    acp, _sticker, _spot = quote_catalog_acp(package.price.amount, payment_currency=payment_currency)
-    return acp
+    amount = Decimal(str(package.price.amount))
+    if payment_currency.upper() == "WACP":
+        return (amount * Decimal(WACP_PER_ACP) * Decimal("0.9")).quantize(Decimal("0.01"))
+    return amount
 
 
 
@@ -2634,7 +2636,7 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                 "related_organ_print_slug": "aeterna-stem-cell-organ-print",
                 "note": (
                     "ANCAP settles ACP and issues a partner handoff brief. Cell expansion occurs only in a "
-                    "licensed biochemical reactor. This SKU is a biomaterial construct, not a 250,000 ACP organ."
+                    "licensed biochemical reactor. This SKU is a biomaterial construct, not an organ purchase."
                 ),
             }
         if template.slug == "aeterna-vascular-care-plus":
@@ -2968,7 +2970,7 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "partner_fill_and_label",
                 ],
                 "note": (
-                    "ANCAP settles 8,900 ACP for one bottle and issues a partner handoff brief. "
+                    "ANCAP settles the quoted brief price and issues a partner handoff brief. Bottle production is quoted separately. "
                     "Optional vault-hash matching is olfactory literacy, not a medical pheromone assay."
                 ),
             }
@@ -3032,7 +3034,7 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
                     "no_ancap_insurance_payout",
                 ],
                 "note": (
-                    "ANCAP settles 42,000 ACP and issues a partner handoff brief. Workshop work "
+                    "ANCAP settles the quoted brief price and issues a partner handoff brief. Workshop work "
                     "stays with the licensed conservation / metallurgy partner."
                 ),
             },

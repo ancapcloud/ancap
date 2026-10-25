@@ -6,7 +6,7 @@ import { solutionPortfolio, portfolioByLang, workflowArea } from "@/lib/solution
 import { positioningByLang } from "@/locales/positioning";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
-import type { WorkflowBundle, WorkflowTemplate } from "@/lib/workflowStore";
+import { catalogPriceLabel, type WorkflowBundle, type WorkflowTemplate } from "@/lib/workflowStore";
 import { WorkflowChoiceButtons, WorkflowDiscoveryPanel, useWorkflowShortlist } from "@/components/workflow/WorkflowDiscoveryPanel";
 
 const PREMIUM_SLUGS = [
@@ -124,18 +124,7 @@ export function WorkflowsCatalog({
                       </span>
                     </div>
                     <span className="text-right text-sm font-semibold text-emerald-300">
-                      {workflow.usd_sticker?.amount ? (
-                        <>
-                          <span>${workflow.usd_sticker.amount}</span>
-                          <span className="mt-0.5 block text-[11px] font-normal text-white/45">
-                            ≈ {(workflow.price_acp || workflow.price).amount} ACP
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          {workflow.price.amount} {workflow.price.currency}
-                        </>
-                      )}
+                      {catalogPriceLabel(workflow)}
                     </span>
                   </div>
                   <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>
@@ -195,7 +184,7 @@ export function WorkflowsCatalog({
                       </span>
                     </div>
                     <span className="text-sm font-semibold text-emerald-300">
-                      {bundle.price.amount} {bundle.price.currency} ·{" "}
+                      {catalogPriceLabel(bundle)} ·{" "}
                       {bundle.discount_percent > 0
                         ? t("workflowsPage.bundleDiscount").replace("{n}", String(bundle.discount_percent))
                         : t("workflowsPage.premiumPack")}
@@ -265,9 +254,7 @@ export function WorkflowsCatalog({
                     {workflow.category}
                   </span>
                   <span className="text-sm font-semibold text-emerald-300">
-                    {t("workflowsPage.fromPrice")
-                      .replace("{amount}", workflow.price.amount)
-                      .replace("{currency}", workflow.price.currency)}
+                    {catalogPriceLabel(workflow)}
                   </span>
                 </div>
                 <h3 className="text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>

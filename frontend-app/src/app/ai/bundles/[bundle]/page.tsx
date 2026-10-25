@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { workflowStore } from "@/lib/api";
-import { getFallbackWorkflowBundle, getFallbackWorkflowTemplate, type WorkflowBundle, type WorkflowTemplate } from "@/lib/workflowStore";
+import { catalogPriceLabel, getFallbackWorkflowBundle, getFallbackWorkflowTemplate, type WorkflowBundle, type WorkflowTemplate } from "@/lib/workflowStore";
 
 type BundleCheckoutResponse = {
   bundle: WorkflowBundle;
@@ -63,6 +63,7 @@ export default function WorkflowBundlePage() {
 
   const quotedPreview = useMemo(() => {
     if (!bundle) return "";
+    if (bundle.price.currency === "USD") return `$${bundle.price.amount} · ${paymentCurrency}`;
     const base = Number(bundle.price.amount || 0);
     // Bridge 1 ACP ↔ 10 wACP; catalog wACP rail keeps a 10% discount → ×9.
     if (paymentCurrency === "wACP") return `${(base * 9).toFixed(2)} ${paymentCurrency}`;
@@ -126,7 +127,8 @@ export default function WorkflowBundlePage() {
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">Bundle price</div>
-                  <div className="mt-2 text-xl font-semibold text-emerald-300">{quotedPreview}</div>
+                  <div className="mt-2 text-xl font-semibold text-emerald-300">{catalogPriceLabel(bundle)}</div>
+                  {bundle.price.currency !== "USD" && <div className="mt-1 text-xs text-white/55">≈ {quotedPreview}</div>}
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">{bundle.discount_percent > 0 ? "Discount" : "Tier"}</div>
@@ -156,7 +158,7 @@ export default function WorkflowBundlePage() {
                   {includedWorkflows.map((workflow) => (
                     <Link key={workflow.slug} href={`/sample-reports/${workflow.slug}`} className="rounded-2xl border border-white/10 bg-black/15 p-4 text-sm text-white/75 transition hover:border-emerald-400/25 hover:text-white">
                       <div className="font-semibold text-white/90">{workflow.title}</div>
-                      <div className="mt-1 text-white/50">{workflow.price.amount} {workflow.price.currency} sample output</div>
+                      <div className="mt-1 text-white/50">{workflow.usd_sticker?.amount ? `$${workflow.usd_sticker.amount}` : `${workflow.price.amount} ${workflow.price.currency}`} sample output</div>
                     </Link>
                   ))}
                 </div>
