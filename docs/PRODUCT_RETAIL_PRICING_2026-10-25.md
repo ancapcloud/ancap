@@ -2,6 +2,7 @@
 
 Status: implemented on a review branch; not merged or deployed.
 Baseline: `d7a4ec26d77e875848b9bcef5dae367ce4a624c1`.
+Integrated current master `0ec351b` into the review branch; retained the QR campaign roadmap entries.
 
 ## Product logic
 
