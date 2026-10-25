@@ -350,7 +350,7 @@ export function HomeChatDialog() {
     }
   }
 
-  function useStarter(nextMode: Mode, prompt: string) {
+  function applyStarter(nextMode: Mode, prompt: string) {
     setMode(nextMode);
     void sendMessage(prompt, nextMode);
   }
@@ -458,9 +458,9 @@ export function HomeChatDialog() {
         </div>
       </div>
       <div className={styles.pills}>
-        <button type="button" className={styles.pill} aria-pressed={mode === "howto"} disabled={loading} onClick={() => useStarter("howto", text.howtoPrompt)}>{text.howto}</button>
-        <button type="button" className={styles.pill} aria-pressed={mode === "workflows"} disabled={loading} onClick={() => useStarter("workflows", text.workflowsPrompt)}>{text.findWorkflow}</button>
-        <button type="button" className={styles.pill} aria-pressed={mode === "earn"} disabled={loading} onClick={() => useStarter("earn", text.earnPrompt)}>{text.earn}</button>
+        <button type="button" className={styles.pill} aria-pressed={mode === "howto"} disabled={loading} onClick={() => applyStarter("howto", text.howtoPrompt)}>{text.howto}</button>
+        <button type="button" className={styles.pill} aria-pressed={mode === "workflows"} disabled={loading} onClick={() => applyStarter("workflows", text.workflowsPrompt)}>{text.findWorkflow}</button>
+        <button type="button" className={styles.pill} aria-pressed={mode === "earn"} disabled={loading} onClick={() => applyStarter("earn", text.earnPrompt)}>{text.earn}</button>
       </div>
       {configured === false && !error && <p className={styles.note}>{text.unavailable}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
