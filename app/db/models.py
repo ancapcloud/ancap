@@ -3609,3 +3609,11 @@ class EconomyApplication(Base):
     __table_args__ = (
         Index("ix_economy_applications_task_user", "task_id", "applicant_user_id", unique=True),
     )
+
+
+class QrDailyCount(Base):
+    """Aggregate requests only: no IP, cookie or visitor identifier."""
+    __tablename__ = "qr_daily_counts"
+    campaign = Column(String(40), primary_key=True)
+    day = Column(Date, primary_key=True)
+    visits = Column(BigInteger, nullable=False, server_default=text("0"))

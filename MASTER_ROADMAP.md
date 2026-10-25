@@ -1,5 +1,9 @@
 # ANCAP Master Roadmap
 
+## Street QR attribution — 2026-10-25
+
+[~] Dedicated `/q/street` link, persistent daily counters and five-language admin statistics implemented in a proposed branch. Deployment, migration 090 and live scan validation pending; see [campaign release gate](docs/QR_STREET_CAMPAIGN.md).
+
 ## Security execution after reviewed release — 2026-10-21
 
 Newly indexed advisories #299 (certifi) and #296–#298 (Vite) were found during

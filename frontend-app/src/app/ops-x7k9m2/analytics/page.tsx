@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { useLanguage } from "@/components/LanguageProvider";
+import QrCampaignStats from "@/components/QrCampaignStats";
 import { platformAdmin } from "@/lib/api";
 
 const METRICS = [
@@ -57,6 +58,7 @@ export default function OpsAnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      <QrCampaignStats />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-lg font-medium">{t("opsConsole.analyticsTitle")}</h2>

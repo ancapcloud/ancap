@@ -1,5 +1,9 @@
 # ANCAP Production Roadmap
 
+## Street QR attribution — 2026-10-25
+
+[~] Dedicated `/q/street` link, persistent daily counters and five-language admin statistics implemented in a proposed branch. Deployment, migration 090 and live scan validation pending; see [campaign release gate](docs/QR_STREET_CAMPAIGN.md).
+
 ## Published baseline — 2026-10-21
 
 `origin/master` `ab32ea0` is deployed. Live `https://ancap.cloud/internal/frontend-build` reports that build id, and `https://ancap.cloud/api/v1/system/health` returned ok. CI for that push passed Docs, Secret Hygiene, CodeQL, Frontend, Backend, Crypto and Deploy. See `MASTER_ROADMAP.md` for the job links. This is live-build evidence, not a funded payment, OCR-provider acceptance or a device/store sign-off.
