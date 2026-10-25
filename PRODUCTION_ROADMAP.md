@@ -1,5 +1,14 @@
 # ANCAP Production Roadmap
 
+## Product retail pricing — 2026-10-25 (review branch)
+
+Explicit per-product USD faces replace the discontinuous legacy magnitude rule.
+Catalogue and checkout share the schedule; bundle discounts and subscription
+faces match it, and credit-package ACP balances are not treated as USD services.
+Implementation and verification: [pricing review](docs/PRODUCT_RETAIL_PRICING_2026-10-25.md).
+Not merged or deployed; database-backed purchase tests remain unverified locally.
+
+
 ## Published baseline — 2026-10-21
 
 `origin/master` `ab32ea0` is deployed. Live `https://ancap.cloud/internal/frontend-build` reports that build id, and `https://ancap.cloud/api/v1/system/health` returned ok. CI for that push passed Docs, Secret Hygiene, CodeQL, Frontend, Backend, Crypto and Deploy. See `MASTER_ROADMAP.md` for the job links. This is live-build evidence, not a funded payment, OCR-provider acceptance or a device/store sign-off.

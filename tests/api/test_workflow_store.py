@@ -246,8 +246,8 @@ def test_workflow_bundle_checkout_reserves_discounted_launch_pack(client):
     payload = checkout.json()
     assert payload["bundle"]["slug"] == "launch-pack"
     assert payload["quoted_total"] == {"amount": "49.00", "currency": "ACP"}
-    assert payload["original_total"] == {"amount": "70.00", "currency": "ACP"}
-    assert payload["discount_amount"] == {"amount": "21.00", "currency": "ACP"}
+    assert payload["original_total"] == {"amount": "67.00", "currency": "ACP"}
+    assert payload["discount_amount"] == {"amount": "18.00", "currency": "ACP"}
     assert payload["reserved"] is True
     assert len(payload["runs"]) == 5
     assert len(payload["payment_intents"]) == 5

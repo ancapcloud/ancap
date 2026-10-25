@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { WorkflowRunPanel } from "@/components/workflow/WorkflowRunPanel";
-import { getFallbackWorkflowTemplate, type WorkflowTemplate } from "@/lib/workflowStore";
+import { catalogPriceLabel, getFallbackWorkflowTemplate, type WorkflowTemplate } from "@/lib/workflowStore";
 import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
 
 const API_BASE = getServerApiBase();
@@ -107,7 +107,7 @@ export default async function WorkflowRunTemplatePage({
             <div className="mt-4 flex items-end justify-between gap-3">
               <div>
                 <div className="text-sm text-white/55">Price</div>
-                <div className="mt-1 text-2xl font-semibold text-emerald-300">from {workflow.price.amount} {workflow.price.currency}</div>
+                <div className="mt-1 text-2xl font-semibold text-emerald-300">{catalogPriceLabel(workflow)}</div>
               </div>
               <div className="text-right">
                 <div className="text-sm text-white/55">ETA</div>
@@ -157,7 +157,7 @@ export default async function WorkflowRunTemplatePage({
 
             <div className="mt-6 grid gap-3">
               {[
-                ["Quote", `${workflow.price.amount} ${workflow.price.currency} before launch`],
+                ["Quote", catalogPriceLabel(workflow)],
                 ["Payment", "ACP reservation or payment intent"],
                 ["Receipt", "Run ID, input hash, status timeline"],
                 ["Proof", "Proof Center lookup after execution"],

@@ -240,8 +240,46 @@ def test_market_routes_registered():
     assert "/v1/market/status" in paths
 
 
-def test_catalog_amount_to_usd_sticker_scales_aeterna():
+def test_catalog_amount_to_usd_sticker_requires_explicit_sku_for_repricing():
     assert market_economy.catalog_amount_to_usd_sticker("59") == Decimal("59.00")
     assert market_economy.catalog_amount_to_usd_sticker("8900") == Decimal("8900.00")
-    assert market_economy.catalog_amount_to_usd_sticker("1000000") == Decimal("1000")
-    assert market_economy.catalog_amount_to_usd_sticker("250000") == Decimal("250")
+    assert market_economy.catalog_amount_to_usd_sticker("1000000", catalog_slug="aeterna-dna-wellness-report") == Decimal("39.00")
+    assert market_economy.catalog_amount_to_usd_sticker("250000", catalog_slug="aeterna-stem-cell-organ-print") == Decimal("49.00")
+
+
+@pytest.mark.asyncio
+async def test_catalog_api_and_new_run_use_same_product_price(monkeypatch):
+    from app.config import get_settings
+    from app.api.routers import workflow_store
+    from app.services.workflow_execution import find_workflow_template
+    monkeypatch.setenv("WACP_ORACLE_PIN_DESK", "false")
+    get_settings.cache_clear()
+    async def spot():
+        return Decimal("0.000002"), "test"
+    monkeypatch.setattr(market_economy, "get_wacp_usd_oracle", spot)
+    market_economy._ORACLE.update(at=__import__("time").time(), price="0.000002", source="test")
+    item = await workflow_store.get_workflow_template("aeterna-dna-pheromone-perfume")
+    row = workflow_store._build_workflow_run_record(
+        owner_user_id="00000000-0000-0000-0000-000000000001",
+        template=find_workflow_template(item.slug), payment_currency="ACP",
+        unlock_full_result=True, inputs={},
+    )
+    assert item.usd_sticker.amount == "29.00"
+    assert row.quoted_amount == Decimal(item.price.amount) == Decimal("1450000.00")
+    assert row.receipt_json["usd_sticker"] == {"amount": "29.00", "currency": "USD"}
+    assert "brief and intake preparation only" in item.description
+    market_economy.clear_oracle_cache()
+    get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_catalog_api_subscriptions_and_bundle_discount(monkeypatch):
+    from app.api.routers import workflow_store
+    async def spot():
+        return Decimal("0.000002"), "test"
+    monkeypatch.setattr(market_economy, "get_wacp_usd_oracle", spot)
+    bundle = await workflow_store.get_workflow_bundle("aeterna-longevity-pack")
+    assert bundle.discount_percent == 23
+    subscription = await workflow_store.get_workflow_template("aeterna-pulmopure-subscription")
+    assert subscription.subscription_price_monthly.model_dump() == {"amount": "19.00", "currency": "USD"}
+    assert subscription.subscription_price_annual.model_dump() == {"amount": "190.00", "currency": "USD"}

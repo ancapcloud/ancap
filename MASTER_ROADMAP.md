@@ -1,5 +1,14 @@
 # ANCAP Master Roadmap
 
+## Product retail pricing — 2026-10-25 (review branch)
+
+Explicit per-product USD faces replace the discontinuous legacy magnitude rule.
+Catalogue and checkout share the schedule; bundle discounts and subscription
+faces match it, and credit-package ACP balances are not treated as USD services.
+Implementation and verification: [pricing review](docs/PRODUCT_RETAIL_PRICING_2026-10-25.md).
+Not merged or deployed; database-backed purchase tests remain unverified locally.
+
+
 ## Security execution after reviewed release — 2026-10-21
 
 Newly indexed advisories #299 (certifi) and #296–#298 (Vite) were found during

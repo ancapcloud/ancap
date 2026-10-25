@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { catalogPriceLabel } from "@/lib/workflowStore";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -37,23 +38,7 @@ const TIERS = [
 ] as const;
 
 function PriceFace({ item }: { item: { price: Money; usd_sticker?: Money | null; price_acp?: Money | null } }) {
-  const sticker = item.usd_sticker;
-  const acp = item.price_acp || item.price;
-  if (sticker?.amount) {
-    return (
-      <div>
-        <div className="text-3xl font-black text-emerald-300">${sticker.amount}</div>
-        <div className="mt-1 text-xs text-white/50">
-          ≈ {acp.amount} ACP
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="text-3xl font-black text-emerald-300">
-      {item.price.amount} {item.price.currency}
-    </div>
-  );
+  return <div className="text-3xl font-black text-emerald-300">{catalogPriceLabel(item)}</div>;
 }
 
 export function PricingView({

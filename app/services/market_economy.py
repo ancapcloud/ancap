@@ -10,6 +10,8 @@ ACP USD spot ≈ 10 × wACP DEX USD; checkout ACP = usd_sticker / acp_usd.
 from __future__ import annotations
 
 import re
+import json
+from pathlib import Path
 import time
 from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_HALF_UP
 from typing import Any
@@ -53,6 +55,7 @@ _ORACLE: dict[str, Any] = {"at": 0.0, "price": None, "source": "none"}
 _Q_SPOT = Decimal("0.00000000000001")
 _Q_RATE = Decimal("0.00000001")
 _Q_ACP = Decimal("0.01")
+CATALOG_USD_PRICES = json.loads(Path(__file__).with_name("catalog_prices.json").read_text())
 # Soft fallback when GT is unreachable (order-of-magnitude of thin-pool spot).
 _FALLBACK_WACP_USD = Decimal("0.0000023189")
 
@@ -62,7 +65,7 @@ def _to_dec(raw: Any) -> Decimal | None:
         if raw is None:
             return None
         v = Decimal(str(raw))
-        if v <= 0:
+        if not v.is_finite() or v <= 0:
             return None
         return v
     except (InvalidOperation, ValueError, TypeError):
@@ -208,18 +211,15 @@ def usdt_to_acp_desk_rate(*, wacp_usd: Decimal | None = None) -> Decimal:
     return rate
 
 
-def catalog_amount_to_usd_sticker(catalog_amount: Decimal | str) -> Decimal:
-    """Map historical catalog ACP figures (desk fiction ACP≈USD) to retail USD stickers.
+def catalog_amount_to_usd_sticker(catalog_amount: Decimal | str, *, catalog_slug: str | None = None) -> Decimal:
+    """Explicit per-product retail USD price; legacy unkeyed faces keep face value.
 
-    Small SKUs keep their face value as USD. Mid desks (≤10k) stay as USD.
-    Larger AETERNA-style figures scale by /1000 so 1_000_000 → $1000, 250_000 → $250.
+    A brief is priced as a brief, never as the medical procedure, equipment or
+    partner service it describes. No amount-dependent scaling or price cliff.
     """
-    amount = _to_dec(catalog_amount) or Decimal("0")
-    if amount <= 0:
-        return Decimal("0")
-    if amount <= Decimal("10000"):
-        return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return (amount / Decimal("1000")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    raw = CATALOG_USD_PRICES[catalog_slug] if catalog_slug is not None else catalog_amount
+    amount = _to_dec(raw) or Decimal("0")
+    return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 def usd_to_acp(usd: Decimal | str, *, wacp_usd: Decimal | None = None) -> Decimal:
@@ -242,6 +242,7 @@ def quote_catalog_acp(
     catalog_amount: Decimal | str,
     *,
     payment_currency: str = "ACP",
+    catalog_slug: str | None = None,
     wacp_usd: Decimal | None = None,
 ) -> tuple[Decimal, Decimal, Decimal]:
     """Return (charge_amount, usd_sticker, oracle_spot) for a catalog face amount.
@@ -251,17 +252,17 @@ def quote_catalog_acp(
     discount), matching field-services desk doctrine (1 ACP ↔ 10 wACP).
 
     When WACP_ORACLE_PIN_DESK is true (tests / emergency), catalog faces are treated
-    as ACP at a $1 accounting spot so existing credit balances stay meaningful.
+    as ACP at a $1 accounting spot. Explicit SKU retail prices still apply.
     """
     settings = get_settings()
     pay = (payment_currency or "ACP").upper()
     if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
-        amount = _to_dec(catalog_amount) or Decimal("0")
+        amount = catalog_amount_to_usd_sticker(catalog_amount, catalog_slug=catalog_slug)
         acp = amount.quantize(_Q_ACP, rounding=ROUND_HALF_UP)
         sticker = amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         spot = Decimal("1")
     else:
-        sticker = catalog_amount_to_usd_sticker(catalog_amount)
+        sticker = catalog_amount_to_usd_sticker(catalog_amount, catalog_slug=catalog_slug)
         spot = wacp_usd or get_cached_wacp_usd(allow_stale=True) or _FALLBACK_WACP_USD
         acp = usd_to_acp(sticker, wacp_usd=spot)
 
