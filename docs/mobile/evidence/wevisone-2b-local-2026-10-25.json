@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-25",
+  "model": "tencent/WeVisOne-VL-2B",
+  "model_revision": "798ffc7c87ad6104410812b589e240ba32d92315",
+  "sdk_commit": "9a6bcd85404505df0d05cfb5d97512ccacf35dee",
+  "hardware": "NVIDIA RTX 5050 8 GB, Windows 11 / Docker Desktop WSL2",
+  "fixture": "Synthetic 1800x550 invoice, Microsoft YaHei 48 px, 12.50 ACP and known checksum-valid ACP address",
+  "payment_execution_called": false,
+  "results": [
+    {
+      "language": "en",
+      "exact_fields_pass": true,
+      "seconds": 40.55,
+      "http_status": 200,
+      "amount": "12.5",
+      "currency": "ACP",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "requires_manual_confirm": true,
+      "can_pay_acp": true,
+      "checksum_rejected": false
+    },
+    {
+      "language": "ru",
+      "exact_fields_pass": true,
+      "seconds": 19.02,
+      "http_status": 200,
+      "amount": "12.5",
+      "currency": "ACP",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "requires_manual_confirm": true,
+      "can_pay_acp": true,
+      "checksum_rejected": false
+    },
+    {
+      "language": "uk",
+      "exact_fields_pass": true,
+      "seconds": 19.56,
+      "http_status": 200,
+      "amount": "12.5",
+      "currency": "ACP",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "requires_manual_confirm": true,
+      "can_pay_acp": true,
+      "checksum_rejected": false
+    },
+    {
+      "language": "de",
+      "exact_fields_pass": true,
+      "seconds": 18.72,
+      "http_status": 200,
+      "amount": "12.5",
+      "currency": "ACP",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "requires_manual_confirm": true,
+      "can_pay_acp": true,
+      "checksum_rejected": false
+    },
+    {
+      "language": "zh-Hant",
+      "exact_fields_pass": false,
+      "seconds": 18.42,
+      "http_status": 200,
+      "amount": "12.5",
+      "currency": "ACP",
+      "address": null,
+      "requires_manual_confirm": true,
+      "can_pay_acp": false,
+      "checksum_rejected": true
+    }
+  ]
+}

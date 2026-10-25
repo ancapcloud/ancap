@@ -2,9 +2,12 @@
 
 ## Smart Pay WeVisOne-VL — 2026-10-25 (review branch)
 
-Optional private photo OCR provider and isolated inference worker implemented;
-unit checks use fake inference. Not merged, deployed or model-validated.
-Setup and activation gates: [WeVisOne Smart Pay](docs/mobile/SMART_PAY_WEVISONE.md).
+Local GPU Docker stack and five-language UI implemented. Real 2B inference on
+RTX 5050 verified through Smart Pay: EN/RU/UK/DE sample fields pass; zh-Hant
+address recognition fails and is blocked by ACP checksum validation. Quality
+acceptance remains open. Not merged or deployed; no funded payment was sent.
+[Setup](docs/mobile/SMART_PAY_WEVISONE.md) ·
+[Evidence](docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
 
 ## Product retail pricing — 2026-10-25 (review branch)
 

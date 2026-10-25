@@ -2,11 +2,14 @@
 
 ## Smart Pay WeVisOne-VL adapter — 2026-10-25 (review branch)
 
-[x] Optional private photo-recognition worker and provider selection wired into
-the existing Smart Pay parser; default Anthropic path retained. Bounded uploads,
-explicit failures and manual payment review retained. No weights in the API.
-[ ] Real checkpoint accuracy/latency, all-five-language invoice evaluation and
-production activation remain open. See [operator setup](docs/mobile/SMART_PAY_WEVISONE.md).
+[x] Optional private OCR worker, native Tencent OCR, bounded uploads, provider
+selection and manual review. No model weights or wallet keys in the API worker.
+[x] Windows/WSL2 GPU Docker stack and five-language scanner UI; real RTX 5050
+2B inference and browser/API connection verified. EN/RU/UK/DE sample fields pass;
+zh-Hant sample amount passes but the address fails checksum and is blocked.
+[ ] Five-language payment-grade recognition quality, funded payment and production
+activation remain open. See [setup](docs/mobile/SMART_PAY_WEVISONE.md) and
+[local evidence](docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
 
 ## Product retail pricing — 2026-10-25 (review branch)
 
