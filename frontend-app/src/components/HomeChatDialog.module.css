@@ -7,6 +7,19 @@
   font-size: 14px;
 }
 
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  max-width: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: rgba(7, 11, 22, 0.92);
+  backdrop-filter: blur(10px);
+}
+
 .composer {
   background: #2c2f33;
   border: 1px solid #3c4046;
@@ -14,11 +27,28 @@
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
 }
 
+.fullscreen .composer {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-radius: 18px;
+}
+
+.fullscreen .pills {
+  flex: none;
+}
+
 .top {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   padding: 10px 12px 0;
+}
+
+.expandBtn {
+  margin-left: auto;
 }
 
 .chipWrap {
@@ -110,6 +140,12 @@ a.chip:hover {
   padding: 12px 12px 0;
 }
 
+.fullscreen .transcript {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 180px;
+}
+
 .bubble {
   max-width: 92%;
   padding: 8px 10px;
@@ -183,7 +219,13 @@ a.chip:hover {
   color: #d8d8d8;
 }
 
-.iconBtn[aria-pressed="true"] {
+.expandBtn[aria-pressed="true"] {
+  border-color: #6a7078;
+  color: #fff;
+  background: #3a3f46;
+}
+
+.listening {
   border-color: #f0a8a8;
   color: #f0a8a8;
 }

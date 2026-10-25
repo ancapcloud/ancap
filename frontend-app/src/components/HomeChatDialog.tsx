@@ -52,6 +52,8 @@ const copy: Record<Language, {
   howtoPrompt: string;
   workflowsPrompt: string;
   earnPrompt: string;
+  expand: string;
+  collapse: string;
 }> = {
   en: {
     placeholder: "Ask how ANCAP works, which workflow to buy, or how to earn",
@@ -76,6 +78,8 @@ const copy: Record<Language, {
     howtoPrompt: "Explain how ANCAP works in simple terms: buying and selling defined AI workflow outputs with ACP.",
     workflowsPrompt: "Help me choose a workflow on ANCAP for my task. Ask what I need, then suggest where to look in the catalog.",
     earnPrompt: "How can I earn on ANCAP as a creator? What do I publish and where do paid runs settle?",
+    expand: "Full screen",
+    collapse: "Exit full screen",
   },
   ru: {
     placeholder: "Спросите, как работает ANCAP, какой workflow купить или как зарабатывать",
@@ -100,6 +104,8 @@ const copy: Record<Language, {
     howtoPrompt: "Объясни простыми словами, как работает ANCAP: покупка и продажа готовых AI workflow за ACP.",
     workflowsPrompt: "Помоги выбрать workflow на ANCAP под мою задачу. Уточни, что нужно, и куда смотреть в каталоге.",
     earnPrompt: "Как зарабатывать на ANCAP как автор? Что публиковать и как проходят оплаченные запуски?",
+    expand: "На весь экран",
+    collapse: "Свернуть",
   },
   uk: {
     placeholder: "Запитайте, як працює ANCAP, який workflow купити або як заробляти",
@@ -124,6 +130,8 @@ const copy: Record<Language, {
     howtoPrompt: "Поясни простими словами, як працює ANCAP: купівля і продаж готових AI workflow за ACP.",
     workflowsPrompt: "Допоможи обрати workflow на ANCAP під мою задачу. Уточни потребу і куди дивитися в каталозі.",
     earnPrompt: "Як заробляти на ANCAP як автор? Що публікувати і як проходять оплачені запуски?",
+    expand: "На весь екран",
+    collapse: "Згорнути",
   },
   de: {
     placeholder: "Fragen Sie, wie ANCAP funktioniert, welchen Workflow Sie kaufen oder wie Sie verdienen",
@@ -148,6 +156,8 @@ const copy: Record<Language, {
     howtoPrompt: "Erkläre einfach, wie ANCAP funktioniert: Kauf und Verkauf definierter AI-Workflow-Ergebnisse mit ACP.",
     workflowsPrompt: "Hilf mir, einen Workflow auf ANCAP für meine Aufgabe zu finden. Frage nach dem Bedarf und zeige den Katalog.",
     earnPrompt: "Wie verdiene ich auf ANCAP als Creator? Was veröffentliche ich und wie laufen bezahlte Runs?",
+    expand: "Vollbild",
+    collapse: "Vollbild beenden",
   },
   "zh-Hant": {
     placeholder: "詢問 ANCAP 如何運作、該買哪個 workflow，或如何賺取",
@@ -172,6 +182,8 @@ const copy: Record<Language, {
     howtoPrompt: "用簡單說明解釋 ANCAP：如何用 ACP 買賣已定義的 AI workflow 產出。",
     workflowsPrompt: "幫我在 ANCAP 依需求選 workflow，並指出目錄該怎麼看。",
     earnPrompt: "作為創作者如何在 ANCAP 賺錢？要發布什麼，付費執行怎麼結算？",
+    expand: "全螢幕",
+    collapse: "結束全螢幕",
   },
 };
 
@@ -184,6 +196,7 @@ export function HomeChatDialog() {
   const [sessionModel, setSessionModel] = useState<string | null>(null);
   const [label, setLabel] = useState(text.auto);
   const [modelOpen, setModelOpen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
@@ -217,18 +230,31 @@ export function HomeChatDialog() {
   }, []);
 
   useEffect(() => {
-    if (!modelOpen) return;
+    if (!modelOpen && !fullscreen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setModelOpen(false);
+      if (event.key !== "Escape") return;
+      if (modelOpen) setModelOpen(false);
+      else if (fullscreen) setFullscreen(false);
     };
-    const onPointer = () => setModelOpen(false);
+    const onPointer = () => {
+      if (modelOpen) setModelOpen(false);
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onPointer);
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onPointer);
     };
-  }, [modelOpen]);
+  }, [modelOpen, fullscreen]);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [fullscreen]);
 
   useEffect(() => {
     const node = transcriptRef.current;
@@ -356,7 +382,12 @@ export function HomeChatDialog() {
   }
 
   return (
-    <section className={styles.root} id="ask" data-testid="home-chat">
+    <section
+      className={`${styles.root}${fullscreen ? ` ${styles.fullscreen}` : ""}`}
+      id="ask"
+      data-testid="home-chat"
+      data-fullscreen={fullscreen ? "true" : "false"}
+    >
       <h2 className={styles.srOnly}>{text.dialog}</h2>
       <div className={styles.composer}>
         <div className={styles.top}>
@@ -372,6 +403,25 @@ export function HomeChatDialog() {
             <ChipIcon name="creators" />
             {text.creators}
           </Link>
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${styles.expandBtn}`}
+            data-testid="home-chat-fullscreen"
+            aria-label={fullscreen ? text.collapse : text.expand}
+            aria-pressed={fullscreen}
+            title={fullscreen ? text.collapse : text.expand}
+            onClick={() => setFullscreen((open) => !open)}
+          >
+            {fullscreen ? (
+              <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M5.5 2.5H3.5v2M10.5 2.5h2v2M5.5 13.5H3.5v-2M10.5 13.5h2v-2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
         </div>
         {messages.length > 0 || loading ? (
           <div className={styles.transcript} ref={transcriptRef} aria-live="polite">
@@ -431,7 +481,7 @@ export function HomeChatDialog() {
             </div>
             <button
               type="button"
-              className={styles.iconBtn}
+              className={`${styles.iconBtn}${listening ? ` ${styles.listening}` : ""}`}
               aria-label={text.voice}
               aria-pressed={listening}
               title={text.voice}
