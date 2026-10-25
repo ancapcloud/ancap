@@ -151,3 +151,29 @@ def test_worker_auth_limits_and_sdk_contract(monkeypatch):
         assert client.post("/v1/payment-ocr", headers=headers, content=b"x").status_code == 503
     finally:
         worker._lock.release()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("environment,enabled,accepted", [
+    ("development", True, True), ("development", False, False),
+    ("production", True, False), ("production", False, False),
+])
+async def test_compose_http_is_explicit_and_development_only(monkeypatch, environment, enabled, accepted):
+    configure(monkeypatch, lambda request: httpx.Response(200, json={"text": "Total due: 5 ACP"}),
+              environment=environment, smart_pay_wevisone_allow_local_http=enabled,
+              smart_pay_wevisone_url="http://wevisone:8097")
+    if accepted:
+        assert await payment_wevisone.extract_wevisone_payment_text(image_bytes=b"x", media_type="image/png") == "Total due: 5 ACP"
+    else:
+        with pytest.raises(RuntimeError, match="HTTPS"):
+            await payment_wevisone.extract_wevisone_payment_text(image_bytes=b"x", media_type="image/png")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("url", ["http://wevisone:80", "http://other:8097", "http://wevisone:8097?x=1"])
+async def test_local_http_exception_does_not_allow_other_destinations(monkeypatch, url):
+    configure(monkeypatch, lambda request: pytest.fail("Must reject before sending"),
+              environment="development", smart_pay_wevisone_allow_local_http=True,
+              smart_pay_wevisone_url=url)
+    with pytest.raises(RuntimeError):
+        await payment_wevisone.extract_wevisone_payment_text(image_bytes=b"x", media_type="image/png")

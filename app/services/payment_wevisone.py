@@ -17,9 +17,14 @@ async def extract_wevisone_payment_text(*, image_bytes: bytes, media_type: str) 
         raise ValueError("Invalid Smart Pay image size")
     url = settings.smart_pay_wevisone_url.rstrip("/")
     target = urlsplit(url)
+    local_container = (
+        getattr(settings, "environment", "production") == "development"
+        and getattr(settings, "smart_pay_wevisone_allow_local_http", False)
+        and target.hostname == "wevisone" and target.port == 8097
+    )
     if (target.scheme not in {"https", "http"} or not target.hostname
             or target.username or target.password or target.query or target.fragment
-            or (target.scheme == "http" and target.hostname not in {"127.0.0.1", "localhost", "::1"})):
+            or (target.scheme == "http" and target.hostname not in {"127.0.0.1", "localhost", "::1"} and not local_container)):
         raise RuntimeError("Configure a private HTTPS WeVisOne URL (HTTP is loopback-only)")
     if not settings.smart_pay_wevisone_api_key:
         raise RuntimeError("WeVisOne OCR is not configured (SMART_PAY_WEVISONE_API_KEY)")

@@ -488,6 +488,7 @@ class Settings(BaseSettings):
     mobile_smart_pay_max_image_bytes: int = 5_242_880
     # Optional private WeVisOne worker; model weights never load in the payment API.
     smart_pay_vision_provider: str = "anthropic"
+    smart_pay_wevisone_allow_local_http: bool = False
     smart_pay_wevisone_url: str = ""
     smart_pay_wevisone_api_key: str = ""
     mobile_smart_pay_max_slippage_bps: int = 500
