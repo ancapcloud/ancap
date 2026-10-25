@@ -234,3 +234,9 @@ def test_long_whitespace_in_untrusted_ocr_does_not_stall_parser():
     from app.services.payment_text_parse import parse_payment_text
     result = parse_payment_text("сума" + " " * 32000 + "not an amount", source="ocr")
     assert result.amount is None
+
+
+def test_long_digit_sequence_cannot_become_a_truncated_amount():
+    from app.services.payment_text_parse import parse_payment_text
+    result = parse_payment_text("0" * 32000 + " ACP", source="ocr")
+    assert result.amount is None

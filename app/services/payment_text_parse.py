@@ -16,6 +16,9 @@ _INVOICE_TOTAL_RE = re.compile(
 _PAY_TO_RE = re.compile(
     r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*(?:[:#]\s*)?([^\n\r]{6,120})",
 )
+_ASSET_AMOUNT_RE = re.compile(
+    r"(?i)(?<![\w.,])([0-9]{1,18}(?:[.,][0-9]{1,8})?)(?![0-9.,])\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
+)
 _CURRENCY_HINT_RE = re.compile(r"(?i)\b(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b")
 _INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s+request)\s*#?\s*([A-Z0-9-]{3,32})")
 _NON_ACP_CURRENCIES = {"USDT", "USDC", "BNB", "ETH", "USD", "EUR"}
@@ -114,10 +117,7 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         if normalized:
             amounts.append(normalized)
     # Explicit amount + asset pairs do not depend on OCR label language.
-    for match in re.finditer(
-        r"(?i)(?<![\w.,])([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])\s*(?:USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
-        text,
-    ):
+    for match in _ASSET_AMOUNT_RE.finditer(text):
         normalized = _normalize_amount(match.group(1))
         if normalized:
             amounts.append(normalized)
@@ -153,10 +153,7 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
     hinted = _unique(match.group(1).upper() for match in _CURRENCY_HINT_RE.finditer(text))
     amount_currencies = _unique(
         match.group(2).upper()
-        for match in re.finditer(
-            r"(?i)([0-9]+(?:[.,][0-9]{1,8})?)\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
-            text,
-        )
+        for match in _ASSET_AMOUNT_RE.finditer(text)
     )
     if (
         "ACP" in hinted
