@@ -50,6 +50,7 @@ jobs:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ACCUWEATHER_API_KEY: ${{ secrets.ACCUWEATHER_API_KEY }}
           INSTANTLY_API_KEY: ${{ secrets.INSTANTLY_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
@@ -61,7 +62,7 @@ jobs:
           host: ${{ secrets.ANCAP_DEPLOY_HOST }}
           username: ${{ secrets.ANCAP_DEPLOY_USER }}
           key: ${{ secrets.ANCAP_DEPLOY_SSH_KEY }}
-          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY,STRIPE_WEBHOOK_SECRET,HELIO_PUBLIC_KEY,HELIO_SECRET_KEY,HELIO_PAYLINK_ID,HELIO_WEBHOOK_SHARED_TOKEN
+          envs: COINGECKO_API_KEY,ACCUWEATHER_API_KEY,INSTANTLY_API_KEY,OPENROUTER_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY,STRIPE_WEBHOOK_SECRET,HELIO_PUBLIC_KEY,HELIO_SECRET_KEY,HELIO_PAYLINK_ID,HELIO_WEBHOOK_SHARED_TOKEN
           # Full rebuild of the prod stack (compose cache allowed; use host prune for clean).
           # acp-node release cargo build routinely exceeds 45–60m on the VPS when cold;
           # keep command_timeout high enough for api+frontend+acp-node in one compose build.
@@ -103,6 +104,26 @@ jobs:
               fi
             else
               echo "== COINGECKO_API_KEY GitHub secret not set; market board stays platform-only"
+            fi
+
+            if [ -n "${OPENROUTER_API_KEY:-}" ]; then
+              echo "== sync OpenRouter key into host .env (value redacted)"
+              touch .env
+              if grep -q '^OPENROUTER_API_KEY=' .env; then
+                sed -i "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=${OPENROUTER_API_KEY}|" .env
+              else
+                printf '\nHOME_CHAT_ENABLED=true\nOPENROUTER_API_KEY=%s\nOPENROUTER_BASE_URL=https://openrouter.ai/api/v1\n' "$OPENROUTER_API_KEY" >> .env
+              fi
+              if ! grep -q '^HOME_CHAT_ENABLED=' .env; then
+                printf 'HOME_CHAT_ENABLED=true\n' >> .env
+              else
+                sed -i 's|^HOME_CHAT_ENABLED=.*|HOME_CHAT_ENABLED=true|' .env
+              fi
+              if ! grep -q '^OPENROUTER_BASE_URL=' .env; then
+                printf 'OPENROUTER_BASE_URL=https://openrouter.ai/api/v1\n' >> .env
+              fi
+            else
+              echo "== OPENROUTER_API_KEY GitHub secret not set; homepage chat stays unavailable"
             fi
 
             if [ -n "${ACCUWEATHER_API_KEY:-}" ]; then

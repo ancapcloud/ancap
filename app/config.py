@@ -496,6 +496,19 @@ class Settings(BaseSettings):
     anthropic_base_url: str = "https://api.tenetauniversity.com"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
+    # Homepage dialog. The key stays on the server; the browser never receives it.
+    # Model selection is automatic and limited to OpenRouter free models.
+    openrouter_api_key: str = ""
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_site_url: str = "https://ancap.cloud"
+    openrouter_app_name: str = "ANCAP"
+    home_chat_enabled: bool = True
+    home_chat_timeout_seconds: int = 45
+    home_chat_max_tokens: int = 700
+    home_chat_ip_limit: int = 12
+    home_chat_ip_window_seconds: int = 3600
+    home_chat_global_limit: int = 100
+    home_chat_global_window_seconds: int = 86400
     ollama_base_url: str = "http://localhost:11434"
     llm_timeout_seconds: int = 45
     llm_max_tokens: int = 1800
