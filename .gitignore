@@ -170,3 +170,7 @@ ACP-crypto/target-lean/
 
 .env.sourcecraft
 .env.moltbook
+
+# Local Smart Pay Docker credentials and acceptance artifacts
+.env.wevisone
+.wevisone-smoke/

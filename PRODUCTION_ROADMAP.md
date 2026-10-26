@@ -1,5 +1,17 @@
 # ANCAP Production Roadmap
 
+Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
+
+## Smart Pay WeVisOne-VL — 2026-10-25 (PR #119 merged; production verification pending)
+
+Local GPU Docker stack and five-language UI implemented. Real 2B inference on
+RTX 5050 verified through Smart Pay: EN/RU/UK/DE sample fields pass; zh-Hant
+address recognition fails and is blocked by ACP checksum validation. Quality
+acceptance remains open. Private SSH/TLS production relay and per-provider CA
+validation are prepared for the operator-authorized release; no funded payment was sent.
+[Setup](docs/mobile/SMART_PAY_WEVISONE.md) ·
+[Evidence](docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-25.md).
+
 ## Product retail pricing — 2026-10-25 (review branch)
 
 Explicit per-product USD faces replace the discontinuous legacy magnitude rule.

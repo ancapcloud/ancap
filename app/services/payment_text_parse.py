@@ -5,16 +5,19 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 _QR_URI_RE = re.compile(
-    r"(?i)(?:ethereum|bitcoin|solana|acp)?:?//?([a-zA-Z0-9]+)@?([0-9.]+)?",
+    r"(?i)(?:ethereum|bitcoin|solana|acp):/{0,2}([a-zA-Z0-9]+)@?([0-9.]+)?",
 )
 _AMOUNT_RE = re.compile(r"(?i)(?:amount|value|amt)[=:]([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])")
 _EVM_ADDRESS_RE = re.compile(r"(?i)\b(0x[a-f0-9]{40})\b")
 _ACP_ADDRESS_RE = re.compile(r"\b(acp1[a-z0-9]{20,120})\b", re.IGNORECASE)
 _INVOICE_TOTAL_RE = re.compile(
-    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag)\s*[:#]?\s*\$?\s*([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])",
+    r"(?i)(?:total(?:\s+due)?|amount\s+due|grand\s+total|pay(?:able)?(?:\s+amount)?|balance\s+due|итого|к\s+оплате|до\s+сплати|сума|сумма|gesamtbetrag|rechnungsbetrag|應付總額|應付金額|總計|合計)\s*(?:[:#]\s*)?(?:\$\s*)?([0-9]+(?:[.,][0-9]{1,8})?)(?![0-9.,])",
 )
 _PAY_TO_RE = re.compile(
-    r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*[:#]?\s*([^\n\r]{6,120})",
+    r"(?i)(?:pay(?:\s+to)?|recipient|beneficiary|send\s+to|wallet)\s*(?:[:#]\s*)?([^\n\r]{6,120})",
+)
+_ASSET_AMOUNT_RE = re.compile(
+    r"(?i)(?<![\w.,])([0-9]{1,18}(?:[.,][0-9]{1,8})?)(?![0-9.,])\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
 )
 _CURRENCY_HINT_RE = re.compile(r"(?i)\b(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b")
 _INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s+request)\s*#?\s*([A-Z0-9-]{3,32})")
@@ -113,6 +116,11 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         normalized = _normalize_amount(match.group(1))
         if normalized:
             amounts.append(normalized)
+    # Explicit amount + asset pairs do not depend on OCR label language.
+    for match in _ASSET_AMOUNT_RE.finditer(text):
+        normalized = _normalize_amount(match.group(1))
+        if normalized:
+            amounts.append(normalized)
     distinct_amounts = _unique(amounts)
     if len(distinct_amounts) > 1:
         amount = None
@@ -145,10 +153,7 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
     hinted = _unique(match.group(1).upper() for match in _CURRENCY_HINT_RE.finditer(text))
     amount_currencies = _unique(
         match.group(2).upper()
-        for match in re.finditer(
-            r"(?i)([0-9]+(?:[.,][0-9]{1,8})?)\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
-            text,
-        )
+        for match in _ASSET_AMOUNT_RE.finditer(text)
     )
     if (
         "ACP" in hinted

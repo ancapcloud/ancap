@@ -1,0 +1,84 @@
+name: ancap-smart-pay-local
+services:
+  wevisone:
+    build:
+      context: .
+      dockerfile: docker/wevisone/Dockerfile
+    gpus: all
+    environment:
+      WEVISONE_WORKER_API_KEY: ${SMART_PAY_WEVISONE_API_KEY:?Generate a local worker token first}
+      HF_HUB_DISABLE_XET: "1"
+      WEVISONE_MODEL: tencent/WeVisOne-VL-2B
+      WEVISONE_MODEL_REVISION: 798ffc7c87ad6104410812b589e240ba32d92315
+      WEVISONE_MAX_PIXELS: 802816
+      WEVISONE_MAX_NEW_TOKENS: 512
+    ports:
+      - "127.0.0.1:8097:8097"
+    volumes:
+      - model-cache:/cache/huggingface
+    shm_size: 1gb
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8097/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 120
+      start_period: 60s
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ancap
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - local-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+  api:
+    build:
+      context: .
+      dockerfile: docker/wevisone/Dockerfile.api
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+asyncpg://postgres@postgres:5432/ancap
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SMART_PAY_WEVISONE_API_KEY:?Generate a local token first}
+      SMART_PAY_VISION_PROVIDER: wevisone
+      SMART_PAY_WEVISONE_URL: http://wevisone:8097
+      SMART_PAY_WEVISONE_ALLOW_LOCAL_HTTP: "true"
+      SMART_PAY_WEVISONE_API_KEY: ${SMART_PAY_WEVISONE_API_KEY}
+      CORS_ORIGINS: http://localhost:3001,http://127.0.0.1:3001
+      WORKFLOW_OPERATIONS_WORKER_ENABLED: "false"
+      TURNSTILE_SECRET_KEY: ""
+    ports:
+      - "127.0.0.1:8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      wevisone:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/system/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  web:
+    build:
+      context: frontend-app
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8001/v1
+    environment:
+      ANCAP_SERVER_API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  model-cache:
+  local-db:

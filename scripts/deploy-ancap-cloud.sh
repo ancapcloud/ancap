@@ -310,7 +310,9 @@ if [[ "$WITH_ACP_NODE" -eq 1 ]]; then
   docker compose -f "$COMPOSE" build
 else
   echo "Building api + frontend only (pass --with-acp-node for Rust node rebuild)..."
-  docker compose -f "$COMPOSE" build api frontend
+  # Keep the wallet Rust compiler and Next.js build from competing for VPS RAM.
+  docker compose -f "$COMPOSE" build api
+  docker compose -f "$COMPOSE" build frontend
 fi
 docker compose -f "$COMPOSE" up -d
 # Bind-mounted nginx conf updates need a reload / recreate so acp1 + /rpc land.

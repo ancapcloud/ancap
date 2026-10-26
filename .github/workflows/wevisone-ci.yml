@@ -1,0 +1,28 @@
+name: Smart Pay WeVisOne contracts
+on:
+  pull_request:
+    paths:
+      - 'app/services/payment*'
+      - 'app/config.py'
+      - 'scripts/*wevisone*'
+      - 'docker/wevisone/**'
+      - 'docker-compose.wevisone.yml'
+      - 'tests/unit/test_payment_wevisone.py'
+      - '.github/workflows/wevisone-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest pytest-asyncio fastapi httpx pydantic-settings Pillow cryptography
+      - run: python -m pytest --noconftest tests/unit/test_payment_wevisone.py -q
+      - name: Validate local GPU Compose
+        env:
+          SMART_PAY_WEVISONE_API_KEY: ci-placeholder-never-use-for-local-documents
+        run: docker compose -f docker-compose.wevisone.yml config --quiet
