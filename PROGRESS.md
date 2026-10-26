@@ -4,12 +4,12 @@
 - Integrated origin/master through 80159c7 with local Theodore commit 110a13e.
 - Restored colon-delimited subscription price keys in both catalogs; added coverage for all billing periods and frontend/backend parity.
 - Fixed TypeScript errors in newly tracked translation scripts (typed audit report and explicit TS import support with noEmit).
-- Updated ctutils 0.4.4, rustls-webpki 0.103.16, webpki-roots 1.0.10 and zstd-sys 2.1.2. cargo audit exits successfully; seven existing maintenance/unsoundness warnings remain.
+- Updated ctutils 0.4.4, rustls-webpki 0.103.16, webpki-roots 1.0.10, zstd-sys 2.1.2 and tokio 1.53.3. cargo audit exits successfully; six existing unmaintained-library warnings remain.
 - Added the missing cstdint header to the Crypto CI C++ compilation flags for bundled RocksDB with newer GCC. Linux verification is pending CI.
-- Browser CI: give the full onboarding/copy/jobs integration scenario an explicit 120s budget; offer navigation waits for DOMContentLoaded rather than external image completion.
-- Local evidence: 77 frontend tests, 9 pricing tests, TypeScript, ESLint and Next production build pass. Default PQC Rust tests pass. Further browser and classical/FFI checks in progress.
+- Browser CI: give onboarding/copy integration an explicit 120s budget and remove its unrelated operator-wide jobs tick (already tested in tests/api/test_growth_layer.py); offer navigation waits for DOMContentLoaded rather than external image completion.
+- Local evidence: 77 frontend tests, 9 pricing tests, TypeScript, ESLint and Next production build pass. Default and classical crypto tests and all four FFI integration tests pass. Mobile typechecks and 352 mobile tests pass. Frontend Vitest upgraded to 4.1.12; npm audit reports zero frontend vulnerabilities. Mobile fast-uri upgraded to 3.1.9. Two targeted browser scenarios pass against the local API using an isolated browser with CORS disabled (the existing local API only allows port 3001, already occupied); unmodified Chromium verification remains assigned to GitHub CI.
 - OpenClaw development schedule paused during repair to prevent overlapping writes. Existing check_migration.py is preserved locally and excluded from commits.
-- No deployment or master push performed. Next: finish browser and GitHub checks; resume the development schedule after verification.
+- No deployment or master push performed. PR: https://github.com/ancapcloud/ancap/pull/123. Next: finish GitHub checks; resume the development schedule after verification. Existing mobile Expo/React Native image-size and node-forge advisories require a separately tested SDK migration; node-forge 1.4.0 has no patched release.
 
 # PROGRESS.md
 
