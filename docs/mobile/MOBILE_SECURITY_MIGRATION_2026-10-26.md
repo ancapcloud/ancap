@@ -25,13 +25,23 @@ expo-dev-client enables its supported embeddedBundle option (the launcher offers
 
 The project commits generated Android files. npm run android invokes prebuild:android before the native build, and the config plugin preserves wallet constraints when regenerating. Expo Doctor's appConfigFieldsNotSyncedCheck is explicitly disabled for this managed, committed native tree; all 19 remaining checks pass. This is a configuration-workflow warning, not a disabled dependency/security check.
 
-## Validation so far
+## Validation
 
 - All workspace SDK builds and typechecks pass on TypeScript 6.
 - 352 existing mobile tests and 5 security/CLI compatibility checks pass.
 - Expo Doctor: 19/19 enabled checks pass.
 - Android Hermes export: 1,607 modules, successful.
-- Local native Android assembly and isolated emulator smoke are in progress. The x86_64 Rust .so is staged from the existing local build; this migration does not rebuild Rust or claim fresh Rust artifact provenance.
+- Native Android assembly passes. All 31 x86_64 APK libraries have LOAD alignment >=16,384 bytes; SDK zipalign -c -P 16 also passes.
+- Rust FFI rebuilt from the current locked dependencies with NDK 28.0.13004108 for x86_64 and ARM64. Both fresh libraries have 16 KB alignment. APK merge/strip outputs match the freshly built x86_64 library, excluding reuse of the older local binary.
+- NativeKeystoreCompatibilityTest passes on the Pixel_10_Pro emulator: pageSize=16,384, JNA=5.19.1, disposable wallet creation, encrypted backup/address recovery and wrong-password rejection. It uses no RPC or real vault.
+- The isolated .securitycheck app launches its embedded JS bundle through the supported dev launcher, reaching the Create new wallet / Import wallet welcome screen after Nearby Devices permission is denied. The real wallet package is preserved.
+- preReleaseBuild fails closed when no operator upload key is configured. Two prebuild runs produce an identical root Gradle policy.
+- Windows CMake object staging uses C:\.ancap-cxx/<project-path hash>/<module> and CMAKE_OBJECT_PATH_MAX=240, registered before React's root plugin evaluates child projects. This avoids Ninja MAX_PATH errors without changing Windows registry or disabling New Architecture. Override the cache root with -Pancap.nativeBuildRoot if needed. See https://docs.swmansion.com/react-native-reanimated/docs/guides/building-on-windows/.
+- Machine-readable evidence: evidence/mobile-security-sdk58-2026-10-26.json (code revision 0682b2f12fc86862197f16ab57c77623117c87f5).
 - iOS/Xcode and physical NFC/Bluetooth/biometric validation remain separate release gates; Windows cannot establish those results.
 
 No production deployment, store upload, funded transaction or wallet-data reset is part of this migration.
+
+### Re-run the native check
+
+Stage current Rust libraries with scripts/build-android-native.ps1 first. In apps/acp-wallet-expo/android run `gradlew :app:assembleDebug :expo-acp-core:assembleDebugAndroidTest -PreactNativeArchitectures=x86_64 -Pancap.testApplicationIdSuffix=.securitycheck`. Install the module's debug androidTest APK with `adb -s <test-emulator> install -t <test-apk>`, then run `adb -s <test-emulator> shell am instrument -w -e class expo.modules.acpcore.NativeKeystoreCompatibilityTest expo.modules.acpcore.test/androidx.test.runner.AndroidJUnitRunner`. Check that the target test packages are absent before installing; do not reset or replace a real wallet. The test creates keys only in memory and never funds them.

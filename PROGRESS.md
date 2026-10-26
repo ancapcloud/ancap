@@ -2,7 +2,7 @@
 
 - Upgraded the mobile workspace to Expo 58 / RN 0.88 / React 19.3 / TypeScript 6.
 - Removed image-size, upgraded Zod, and backported the unreleased Forge fix with install-time integrity checks and regression tests. Registry audit still reports the backported Forge advisory; details and sources are in docs/mobile/MOBILE_SECURITY_MIGRATION_2026-10-26.md.
-- 352 existing tests + 5 security/CLI checks, workspace builds/typechecks, 19 enabled Expo Doctor checks and Android Hermes export pass. Native Android/emulator validation is in progress.
+- 352 existing tests + 5 security/CLI checks, workspace builds/typechecks, 19 enabled Expo Doctor checks and Android Hermes export pass. Native Android assembly, 16 KB ELF/ZIP alignment, embedded-bundle UI launch and encrypted-backup JNI test pass on the 16 KB emulator. Fresh Rust libraries were built for x86_64/ARM64. Release signing fails closed as expected. Evidence: docs/mobile/evidence/mobile-security-sdk58-2026-10-26.json. Physical/iOS sign-off remains open.
 - Previous repair PR #123: all 18 GitHub checks passed for 6f6776811ff38e680efd16ae4fb11a924d9cfa47.
 
 
