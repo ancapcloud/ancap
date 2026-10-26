@@ -19,4 +19,9 @@ describe("retail catalogue", () => {
       expect(bundle.discount_percent).toBe(Math.floor((1 - Number(bundle.price.amount) / total) * 100));
     }
   });
+  it("uses correct subscription keys with hyphens", () => {
+    const monthly = fallbackWorkflowTemplates.find(item => item.slug === "aeterna-m-receptor-subscription-monthly")!;
+    expect(monthly).toBeDefined();
+    expect(monthly.price.amount).toBe("19");
+  });
 });

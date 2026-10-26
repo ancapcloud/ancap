@@ -82,13 +82,13 @@
   "merchant-qr-pack": "49",
   "aeterna-longevity-pack": "89",
   "markets-intel-pack": "39",
-  "aeterna-m-receptor-subscription:monthly": "19",
-  "aeterna-m-receptor-subscription:quarterly": "49",
-  "aeterna-m-receptor-subscription:annual": "190",
-  "aeterna-pulmopure-subscription:monthly": "19",
-  "aeterna-pulmopure-subscription:quarterly": "49",
-  "aeterna-pulmopure-subscription:annual": "190",
-  "stardust-weather-control-subscription:monthly": "29",
-  "stardust-weather-control-subscription:quarterly": "79",
-  "stardust-weather-control-subscription:annual": "290"
+  "aeterna-m-receptor-subscription-monthly": "19",
+  "aeterna-m-receptor-subscription-quarterly": "49",
+  "aeterna-m-receptor-subscription-annual": "190",
+  "aeterna-pulmopure-subscription-monthly": "19",
+  "aeterna-pulmopure-subscription-quarterly": "49",
+  "aeterna-pulmopure-subscription-annual": "190",
+  "stardust-weather-control-subscription-monthly": "29",
+  "stardust-weather-control-subscription-quarterly": "79",
+  "stardust-weather-control-subscription-annual": "290"
 }
