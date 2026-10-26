@@ -1,3 +1,16 @@
+
+## Repair after Theodore — 2026-10-26 (local, awaiting GitHub CI)
+
+- Integrated origin/master through 80159c7 with local Theodore commit 110a13e.
+- Restored colon-delimited subscription price keys in both catalogs; added coverage for all billing periods and frontend/backend parity.
+- Fixed TypeScript errors in newly tracked translation scripts (typed audit report and explicit TS import support with noEmit).
+- Updated ctutils 0.4.4, rustls-webpki 0.103.16, webpki-roots 1.0.10 and zstd-sys 2.1.2. cargo audit exits successfully; seven existing maintenance/unsoundness warnings remain.
+- Added the missing cstdint header to the Crypto CI C++ compilation flags for bundled RocksDB with newer GCC. Linux verification is pending CI.
+- Browser CI: give the full onboarding/copy/jobs integration scenario an explicit 120s budget; offer navigation waits for DOMContentLoaded rather than external image completion.
+- Local evidence: 77 frontend tests, 9 pricing tests, TypeScript, ESLint and Next production build pass. Default PQC Rust tests pass. Further browser and classical/FFI checks in progress.
+- OpenClaw development schedule paused during repair to prevent overlapping writes. Existing check_migration.py is preserved locally and excluded from commits.
+- No deployment or master push performed. Next: finish browser and GitHub checks; resume the development schedule after verification.
+
 # PROGRESS.md
 
 ## Run Summary

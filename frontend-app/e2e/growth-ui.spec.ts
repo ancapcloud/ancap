@@ -3,6 +3,8 @@ import { test, expect } from "@playwright/test";
 import { createPasswordUserSession, seedAuthenticatedPage } from "./support/auth";
 
 test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page, request }) => {
+  // This scenario creates users, runs onboarding, copies a strategy and executes all jobs.
+  test.setTimeout(120_000);
   const baseUrl =
     process.env.PLAYWRIGHT_UI_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
   const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api/v1";

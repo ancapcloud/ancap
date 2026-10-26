@@ -1,5 +1,7 @@
 # ANCAP Master Roadmap
 
+> 2026-10-26 repair: subscription catalog regression and frontend type errors corrected locally; Rust security dependencies updated. GitHub CI verification pending; not deployed. See PROGRESS.md.
+
 Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
 
 ## Smart Pay WeVisOne-VL adapter — 2026-10-25 (PR #119 merged; production verification pending)
