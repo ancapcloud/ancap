@@ -1,5 +1,0 @@
-# Copy to local.properties (gitignored) before opening in Android Studio.
-# Or run: ..\..\..\scripts\prepare-android-studio.ps1
-
-sdk.dir=C\:\\Users\\YOUR_USER\\AppData\\Local\\Android\\Sdk
-node.dir=C\:\\Program Files\\nodejs

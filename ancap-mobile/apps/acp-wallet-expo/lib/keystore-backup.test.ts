@@ -8,7 +8,7 @@ const { fs, picker, sharing, platform } = vi.hoisted(() => ({
   sharing: { isAvailableAsync: vi.fn(), shareAsync: vi.fn() },
   platform: { OS: "android" },
 }));
-vi.mock("expo-file-system", () => fs);
+vi.mock("expo-file-system/legacy", () => fs);
 vi.mock("expo-document-picker", () => picker);
 vi.mock("expo-sharing", () => sharing);
 vi.mock("react-native", () => ({ Platform: platform }));

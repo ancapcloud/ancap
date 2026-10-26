@@ -23,7 +23,7 @@ const { fileSystem } = vi.hoisted(() => {
   };
 });
 
-vi.mock("expo-file-system", () => fileSystem);
+vi.mock("expo-file-system/legacy", () => fileSystem);
 
 import {
   KEYSTORE_EXPORT_FILENAME,

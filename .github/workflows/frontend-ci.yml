@@ -75,7 +75,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: ancap-mobile/package-lock.json
 
@@ -87,6 +87,15 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+
+      - name: Check Expo SDK compatibility
+        working-directory: ancap-mobile/apps/acp-wallet-expo
+        run: npx expo-doctor
+
+      - name: Bundle Android application
+        working-directory: ancap-mobile/apps/acp-wallet-expo
+        run: npx expo export --platform android --output-dir .expo-test-export
 
 
   e2e-tests:

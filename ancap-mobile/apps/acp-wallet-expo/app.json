@@ -44,7 +44,8 @@
         {
           "cameraPermission": "Allow ANCAP ACP Wallet to scan QR payment codes for Smart Pay."
         }
-      ]
+      ],
+      "./plugins/with-wallet-android"
     ],
     "experiments": {
       "typedRoutes": true

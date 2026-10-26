@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import type { ExchangeAsset, ExchangeCatalog, ExchangeQuote, ExchangeTicket } from "@ancap/acp-api-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi } from "@/lib/api";

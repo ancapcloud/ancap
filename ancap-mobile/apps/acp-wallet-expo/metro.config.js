@@ -1,23 +1,4 @@
-const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 
-const projectRoot = __dirname;
-const monorepoRoot = path.resolve(projectRoot, "../..");
-
-const config = getDefaultConfig(projectRoot);
-
-config.watchFolders = [monorepoRoot];
-config.resolver.disableHierarchicalLookup = true;
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(monorepoRoot, "node_modules"),
-];
-config.resolver.extraNodeModules = {
-  react: path.resolve(monorepoRoot, "node_modules/react"),
-  "react-native": path.resolve(monorepoRoot, "node_modules/react-native"),
-  expo: path.resolve(projectRoot, "node_modules/expo"),
-  "react-native-screens": path.resolve(projectRoot, "node_modules/react-native-screens"),
-  "react-native-svg": path.resolve(projectRoot, "node_modules/react-native-svg"),
-};
-
-module.exports = config;
+// Expo resolves npm workspaces and shared native modules automatically.
+module.exports = getDefaultConfig(__dirname);

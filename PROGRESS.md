@@ -1,3 +1,10 @@
+## Mobile security migration — 2026-10-26
+
+- Upgraded the mobile workspace to Expo 58 / RN 0.88 / React 19.3 / TypeScript 6.
+- Removed image-size, upgraded Zod, and backported the unreleased Forge fix with install-time integrity checks and regression tests. Registry audit still reports the backported Forge advisory; details and sources are in docs/mobile/MOBILE_SECURITY_MIGRATION_2026-10-26.md.
+- 352 existing tests + 5 security/CLI checks, workspace builds/typechecks, 19 enabled Expo Doctor checks and Android Hermes export pass. Native Android/emulator validation is in progress.
+- Previous repair PR #123: all 18 GitHub checks passed for 6f6776811ff38e680efd16ae4fb11a924d9cfa47.
+
 
 ## Repair after Theodore — 2026-10-26 (local, awaiting GitHub CI)
 

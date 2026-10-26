@@ -1,5 +1,7 @@
 # ANCAP Production Roadmap
 
+> 2026-10-26 mobile security: Expo 58 / RN 0.88 migration passes JS/types/security tests and Android bundle export; native build verification in progress. Forge advisory mitigated by a verified source backport until upstream release. See docs/mobile/MOBILE_SECURITY_MIGRATION_2026-10-26.md.
+
 > 2026-10-26 repair: subscription catalog regression and frontend type errors corrected locally; Rust security dependencies updated. GitHub CI verification pending; not deployed. See PROGRESS.md.
 
 Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
