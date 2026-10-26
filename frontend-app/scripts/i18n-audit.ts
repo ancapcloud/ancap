@@ -42,7 +42,7 @@ const ALLOW = new Set([
   "Staking",
   "Agent API",
   "OpenAPI / Swagger",
-  "ACP → BSC (wACP)",
+  "ACP â†’ BSC (wACP)",
   "ACP -> BSC (wACP)",
   "AETERNA",
   "Pro",
@@ -50,7 +50,10 @@ const ALLOW = new Set([
 ]);
 
 const en = flat(translations.en as Record<string, unknown>);
-const report: Record<string, unknown> = { enKeys: Object.keys(en).length, locales: {} };
+type LocaleAudit = { keys: number; missing: string[]; extra: string[]; sameAsEn: string[]; sameCount: number };
+const report: { enKeys: number; locales: Partial<Record<Language, LocaleAudit>> } = {
+  enKeys: Object.keys(en).length, locales: {},
+};
 
 for (const loc of ["ru", "uk", "de", "zh-Hant"] as Language[]) {
   const f = flat(translations[loc] as Record<string, unknown>);

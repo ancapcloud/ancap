@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import prices from "./catalogPrices.json";
+import backendPrices from "../../../app/services/catalog_prices.json";
 import { catalogPriceLabel, fallbackWorkflowBundles, fallbackWorkflowTemplates } from "./workflowStore";
 
 describe("retail catalogue", () => {
@@ -19,9 +21,20 @@ describe("retail catalogue", () => {
       expect(bundle.discount_percent).toBe(Math.floor((1 - Number(bundle.price.amount) / total) * 100));
     }
   });
-  it("uses correct subscription keys with hyphens", () => {
-    const monthly = fallbackWorkflowTemplates.find(item => item.slug === "aeterna-m-receptor-subscription-monthly")!;
-    expect(monthly).toBeDefined();
-    expect(monthly.price.amount).toBe("19");
+  it("keeps backend and frontend prices aligned, including server-only subscriptions", () => {
+    expect(prices).toEqual(backendPrices);
+    for (const [period, amount] of Object.entries({ monthly: "29", quarterly: "79", annual: "290" })) {
+      expect(prices[`stardust-weather-control-subscription:${period}` as keyof typeof prices]).toBe(amount);
+    }
+  });
+  it.each([
+    ["aeterna-m-receptor-subscription", ["19", "49", "190"]],
+    ["aeterna-pulmopure-subscription", ["19", "49", "190"]],
+  ])("uses USD prices for every billing period of %s", (slug, amounts) => {
+    const template = fallbackWorkflowTemplates.find(item => item.slug === slug)!;
+    expect(template).toBeDefined();
+    for (const [index, period] of (["monthly", "quarterly", "annual"] as const).entries()) {
+      expect(template[`subscription_price_${period}`]).toEqual({ amount: amounts[index], currency: "USD" });
+    }
   });
 });
