@@ -21,5 +21,25 @@ allprojects {
   }
 }
 
+// ANCAP Windows native object paths
+// Keep Ninja object paths under Windows MAX_PATH, including deep npm workspaces.
+if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    def nativeCacheRoot = rootProject.findProperty("ancap.nativeBuildRoot") ?:
+        new File(System.getenv("SystemDrive") + File.separator, ".ancap-cxx")
+    def nativeProjectKey = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(rootProject.projectDir.canonicalPath.getBytes("UTF-8")).encodeHex().toString().substring(0, 12)
+    subprojects { nativeProject ->
+        ["com.android.library", "com.android.application"].each { pluginId ->
+            nativeProject.plugins.withId(pluginId) {
+                def nativeAndroid = nativeProject.extensions.getByName("android")
+                nativeAndroid.externalNativeBuild.cmake.buildStagingDirectory =
+                    new File(new File(nativeCacheRoot.toString(), nativeProjectKey), nativeProject.name)
+                nativeAndroid.defaultConfig.externalNativeBuild.cmake.arguments.add("-DCMAKE_OBJECT_PATH_MAX=240")
+            }
+        }
+    }
+}
+// End ANCAP Windows native object paths
+
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"

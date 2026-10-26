@@ -1,4 +1,4 @@
-const { withAppBuildGradle, withMainApplication } = require("expo/config-plugins");
+const { withAppBuildGradle, withMainApplication, withProjectBuildGradle } = require("expo/config-plugins");
 
 // Keep wallet build constraints reproducible when Expo regenerates Android.
 module.exports = function withWalletAndroid(config) {
@@ -35,6 +35,42 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
 }
 `;
     }
+    return mod;
+  });
+  config = withProjectBuildGradle(config, (mod) => {
+    const marker = "// ANCAP Windows native object paths";
+    const endMarker = "// End ANCAP Windows native object paths";
+    const start = mod.modResults.contents.indexOf(marker);
+    if (start >= 0) {
+      const end = mod.modResults.contents.indexOf(endMarker, start);
+      const before = mod.modResults.contents.slice(0, start).trimEnd();
+      const after = end >= 0 ? mod.modResults.contents.slice(end + endMarker.length).trimStart() : "";
+      mod.modResults.contents = before + "\n\n" + after;
+    }
+    const block = `${marker}
+// Keep Ninja object paths under Windows MAX_PATH, including deep npm workspaces.
+if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    def nativeCacheRoot = rootProject.findProperty("ancap.nativeBuildRoot") ?:
+        new File(System.getenv("SystemDrive") + File.separator, ".ancap-cxx")
+    def nativeProjectKey = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(rootProject.projectDir.canonicalPath.getBytes("UTF-8")).encodeHex().toString().substring(0, 12)
+    subprojects { nativeProject ->
+        ["com.android.library", "com.android.application"].each { pluginId ->
+            nativeProject.plugins.withId(pluginId) {
+                def nativeAndroid = nativeProject.extensions.getByName("android")
+                nativeAndroid.externalNativeBuild.cmake.buildStagingDirectory =
+                    new File(new File(nativeCacheRoot.toString(), nativeProjectKey), nativeProject.name)
+                nativeAndroid.defaultConfig.externalNativeBuild.cmake.arguments.add("-DCMAKE_OBJECT_PATH_MAX=240")
+            }
+        }
+    }
+}
+${endMarker}
+`;
+    const entry = 'apply plugin: "expo-root-project"';
+    if (!mod.modResults.contents.includes(entry)) throw new Error("Review Windows native staging for this Expo template.");
+    // React's root plugin evaluates the app early. Register these callbacks first.
+    mod.modResults.contents = mod.modResults.contents.replace(entry, block + "\n" + entry).trimEnd() + "\n";
     return mod;
   });
   return withMainApplication(config, (mod) => {
