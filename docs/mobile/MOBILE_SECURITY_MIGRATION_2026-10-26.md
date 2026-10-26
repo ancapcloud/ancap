@@ -19,9 +19,9 @@ Sources: https://github.com/advisories/GHSA-86w9-cpqp-85rv ; https://github.com/
 
 ## Native build and configuration
 
-Android is regenerated from the SDK 58 template with New Architecture. expo-acp-core uses expo-module-gradle-plugin, retaining JNA/UniFFI and the staged Rust library. No wallet serialization or chain protocol change is made.
+Android is regenerated from the SDK 58 template with New Architecture, compile API 37 and target API 36. expo-acp-core uses expo-module-gradle-plugin, retaining UniFFI and the staged Rust library. JNA is upgraded from 5.14.0 to 5.19.1, including the Android 16 KB page-size fixes (https://github.com/java-native-access/jna/blob/master/CHANGES.md). No wallet serialization or chain protocol change is made.
 
-plugins/with-wallet-android.js reapplies embedded debug bundles and fail-closed release signing. A release must have a distinct operator upload key; the generated template's debug key is cleared. The optional Gradle property ancap.testApplicationIdSuffix is debug-only and allows an emulator smoke under .securitycheck without replacing an existing wallet.
+expo-dev-client enables its supported embeddedBundle option (the launcher offers Load embedded bundle). plugins/with-wallet-android.js reapplies embedded debug bundles and fail-closed release signing. A release must have a distinct operator upload key; the generated template's debug key is cleared. The optional Gradle property ancap.testApplicationIdSuffix is debug-only and allows an emulator smoke under .securitycheck without replacing an existing wallet.
 
 The project commits generated Android files. npm run android invokes prebuild:android before the native build, and the config plugin preserves wallet constraints when regenerating. Expo Doctor's appConfigFieldsNotSyncedCheck is explicitly disabled for this managed, committed native tree; all 19 remaining checks pass. This is a configuration-workflow warning, not a disabled dependency/security check.
 

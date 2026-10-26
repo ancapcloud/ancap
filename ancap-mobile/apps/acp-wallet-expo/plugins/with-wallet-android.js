@@ -3,6 +3,12 @@ const { withAppBuildGradle, withMainApplication } = require("expo/config-plugins
 // Keep wallet build constraints reproducible when Expo regenerates Android.
 module.exports = function withWalletAndroid(config) {
   config = withAppBuildGradle(config, (mod) => {
+    // Remove the unsafe template assignment itself, as well as clearing the
+    // effective configuration below, so generated sources are safe to inspect.
+    mod.modResults.contents = mod.modResults.contents.replace(
+      /(release\s*\{[\s\S]*?)signingConfig signingConfigs\.debug/,
+      "$1// Release signing must be supplied by the operator.",
+    );
     const marker = "// ANCAP wallet build constraints";
     if (!mod.modResults.contents.includes(marker)) {
       mod.modResults.contents += `
@@ -32,10 +38,12 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     return mod;
   });
   return withMainApplication(config, (mod) => {
-    mod.modResults.contents = mod.modResults.contents.replace(
-      "context = applicationContext,",
-      "context = applicationContext,\n      useDevSupport = false,",
-    );
+    if (!mod.modResults.contents.includes("useDevSupport = false,")) {
+      mod.modResults.contents = mod.modResults.contents.replace(
+        "context = applicationContext,",
+        "context = applicationContext,\n      useDevSupport = false,",
+      );
+    }
     return mod;
   });
 };

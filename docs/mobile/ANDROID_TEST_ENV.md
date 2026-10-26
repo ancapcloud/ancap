@@ -73,3 +73,9 @@ Do not copy freshly generated raw Kotlin into the module without that fix.
 Native RPC uses bundled WebPKI roots with TLS validation enabled. Chain ID is
 read through public getbestblockhash/getblock; getnetworkinfo is operator-only.
 Never put ACP_RPC_TOKEN into an Expo public variable or the mobile binary.
+
+## SDK 58 migration environment (2026-10-26)
+
+The mobile-security branch uses Node 24, JDK 21 (Android Studio JBR), Gradle 9.4.1, compile API 37 and target API 36. This supersedes SDK 52's JDK 17 / target 34 build settings above. Run `npm run prebuild:android` before raw Gradle builds; `npm run android` does this automatically. The committed config plugin retains release-signing enforcement and an embedded debug JS bundle. The supported dev-client `embeddedBundle` option exposes Load embedded bundle when Metro is absent.
+
+For a disposable emulator installation, pass `-Pancap.testApplicationIdSuffix=.securitycheck` to `:app:assembleDebug`. This only adds a debug application ID suffix and does not replace cloud.ancap.acpwallet. Do not reset the real app's data. JNA 5.19.1 replaces 5.14.0 to support 16 KB Android pages. See MOBILE_SECURITY_MIGRATION_2026-10-26.md for validation limits and the Forge backport.
