@@ -1,3 +1,11 @@
+## Workflow acceptance/value and Research Operations — 2026-10-27
+
+- Added version-bound owner assessments, read-only reviewed-result snapshots/history and private `/ai/value` with five-language copy. Unique run/hash constraint and row locking prevent overwriting concurrent reviews; stale result versions stop contributing to current metrics.
+- Added optional paired effort/rate estimates with negative savings retained and units separated. Actual ledger captures are separate from these estimates and do not establish external revenue or ROI. Private JSON omits results, notes and identity; summary covers newest 200 completed results in an explicit 1–90 day window, with truncation metadata.
+- Added migration 091; isolated PostgreSQL upgrade/downgrade/upgrade passed. Tests cover account isolation, immutable/concurrent reviews, stale result rejection, historical snapshot retrieval/integrity, bounded scope, unchanged balances on assessment and independent refund accounting.
+- Consolidated the supplied strategy into docs/WORKFLOW_VALUE_ROADMAP.md and active roadmaps: one recurring Research Operations pilot, actual cost/payment provenance, renewals and stage-based capital before platform expansion. Existing subscription/repeat/API/team foundations are preserved; business targets remain hypotheses.
+- Validation: 73 targeted backend/documentation tests passed on isolated PostgreSQL, including 22 value/estimate tests; 97 frontend unit tests, TypeScript and ESLint pass. Production build and ten five-language/mobile/error/history/export Chromium checks are recorded with the feature PR. Upgrade/downgrade/upgrade of migration 091 passed. Next: actual provider/manual-work cost attribution and reconciled external-payment classification; source monitoring/team reports/commercial exports remain gated work, not shipped claims.
+
 ## Capital execution and top-up monetary integrity — 2026-10-27
 
 - Added the supplied 12-month/90-day capital plan with lean budgeting, two-offer pilot targets, 13-week cash-flow, corporate/IP/PSP gates and a source-checked grants register. Goals remain proposed and opening cash/round ask unknown; no outreach/application/funded operation performed.
