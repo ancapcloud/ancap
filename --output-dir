@@ -1,0 +1,184 @@
+{
+  "total": 25,
+  "success": 0,
+  "empty": 0,
+  "error": 25,
+  "by_language": {},
+  "images": [
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_de_0001.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_de_0002.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_de_0003.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_de_0004.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_de_0005.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_en_0001.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_en_0002.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_en_0003.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_en_0004.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_en_0005.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_ru_0001.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_ru_0002.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_ru_0003.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_ru_0004.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_ru_0005.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_uk_0001.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_uk_0002.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_uk_0003.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_uk_0004.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_uk_0005.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_zh-Hant_0001.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_zh-Hant_0002.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_zh-Hant_0003.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_zh-Hant_0004.png"
+    },
+    {
+      "status": "error",
+      "text": "",
+      "confidence": 0.0,
+      "error": "422 Client Error: Unprocessable Entity for url: http://127.0.0.1:8097/v1/payment-ocr",
+      "image": "invoice_zh-Hant_0005.png"
+    }
+  ]
+}
