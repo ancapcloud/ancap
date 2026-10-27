@@ -97,6 +97,28 @@ GitHub permissions check (run via `gh api repos/ancapcloud/ancap --jq .permissio
 
 **Дальше:** Задача 3: Улучшение распознавания zh-Hant (P1) — создать расширенный тестовый набор и исследовать причины ошибок.
 
+## 2026-10-27 — Локальный коммит завершён
+
+**Сделано:** Создан локальный коммит проверенных изменений для задачи документирования результатов.
+
+**Изменения:**
+- `docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-27.md` — новый файл отчёта с результатами тестирования
+- Обновлён `PROGRESS.md` с записью о завершении задачи 4
+
+**Команда:**
+```powershell
+git add docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-27.md PROGRESS.md
+git commit -m "docs(theodore): document zh-Hant recognition results and optimization recommendations"
+```
+
+**Результат:** Локальный коммит создан, изменения изолированы в ветке theodore/development-20261027.
+
+**Ограничения:**
+- Не выполнено push (согласно правилам: только локальные коммиты для незавершённой работы)
+- Untracked файлы (--output-dir, .env.wevisone-local и др.) не включены в коммит
+
+**Следующий шаг:** Задача 3 — Улучшение распознавания zh-Hant (P1)
+
 ## Next Steps
 
 No new tasks assigned. Next launch should review roadmap for next unchecked items.
