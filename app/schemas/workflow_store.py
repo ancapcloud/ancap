@@ -136,6 +136,7 @@ class WorkflowRunReceiptPublic(BaseModel):
 
 
 class WorkflowRunPublic(BaseModel):
+    result_hash: Optional[str] = None
     id: str
     workflow_slug: str
     title: str
