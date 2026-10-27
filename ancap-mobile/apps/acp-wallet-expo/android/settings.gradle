@@ -1,180 +1,39 @@
 pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+  def reactNativeGradlePlugin = new File(
+    providers.exec {
+      workingDir(rootDir)
+      commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+    }.standardOutput.asText.get().trim()
+  ).getParentFile().absolutePath
+  includeBuild(reactNativeGradlePlugin)
 
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "com.android.application" || requested.id.id == "com.android.library") {
-                useVersion("8.8.2")
-            }
-        }
-    }
-
-    def nodeBin = {
-
-        def nodeEnv = System.getenv("NODE_BINARY")
-
-        if (nodeEnv != null && !nodeEnv.isEmpty()) {
-
-            return nodeEnv
-
-        }
-
-        def localProps = new Properties()
-
-        def localPropsFile = new File(rootDir, "local.properties")
-
-        if (localPropsFile.exists()) {
-
-            localPropsFile.withInputStream { localProps.load(it) }
-
-            def nodeDir = localProps.getProperty("node.dir")
-
-            if (nodeDir) {
-
-                for (def name : ["node.exe", "node"]) {
-
-                    def candidate = new File(nodeDir, name)
-
-                    if (candidate.exists()) {
-
-                        return candidate.absolutePath
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-
-            def programFiles = System.getenv("ProgramFiles")
-
-            if (programFiles) {
-
-                def pfNode = new File(programFiles, "nodejs/node.exe")
-
-                if (pfNode.exists()) {
-
-                    return pfNode.absolutePath
-
-                }
-
-            }
-
-            return "node.exe"
-
-        }
-
-        return "node"
-
-    }() as String
-
-
-
-    def appRootJsPath = rootDir.parentFile.absolutePath.replace("\\", "\\\\")
-
-
-
-    def nodeResolve = { String spec ->
-
-        def cmd = [
-
-            nodeBin,
-
-            "--print",
-
-            "require.resolve('${spec}', { paths: ['${appRootJsPath}'] })"
-
-        ]
-
-        def result = cmd.execute(null, rootDir)
-
-        result.waitFor()
-
-        if (result.exitValue() != 0) {
-
-            throw new GradleException("nodeResolve failed for ${spec}: ${result.err.text}")
-
-        }
-
-        return result.text.trim()
-
-    }
-
-
-
-    gradle.ext.nodeExecutable = nodeBin
-
-    includeBuild(new File(nodeResolve("@react-native/gradle-plugin/package.json")).getParentFile().toString())
-
+  def expoPluginsPath = new File(
+    providers.exec {
+      workingDir(rootDir)
+      commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
+    }.standardOutput.asText.get().trim(),
+    "../android/expo-gradle-plugin"
+  ).absolutePath
+  includeBuild(expoPluginsPath)
 }
 
-plugins { id("com.facebook.react.settings") }
-
-
-
-apply from: new File(rootDir, "gradle/nodeResolve.gradle")
-
-def nodeBin = gradle.ext.nodeExecutable as String
-
-def nodeResolve = ext.nodeResolve
-
-
+plugins {
+  id("com.facebook.react.settings")
+  id("expo-autolinking-settings")
+}
 
 extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
-
   if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
-
     ex.autolinkLibrariesFromCommand()
-
   } else {
-
-    def appRootJsPath = rootDir.parentFile.absolutePath.replace("\\", "\\\\")
-
-    def command = [
-
-      nodeBin,
-
-      '--no-warnings',
-
-      '--eval',
-
-      "require(require.resolve('expo-modules-autolinking', { paths: ['${appRootJsPath}'] }))(process.argv.slice(1))",
-
-      'react-native-config',
-
-      '--json',
-
-      '--platform',
-
-      'android'
-
-    ].collect { it.toString() }
-
-    ex.autolinkLibrariesFromCommand(command)
-
+    ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand)
   }
-
 }
-
-
+expoAutolinking.useExpoModules()
 
 rootProject.name = 'ANCAP ACP Wallet'
 
-apply from: new File(nodeResolve("expo/package.json"), "../scripts/autolinking.gradle");
-
-useExpoModules()
-
-
+expoAutolinking.useExpoVersionCatalog()
 
 include ':app'
-
-includeBuild(new File(nodeResolve("@react-native/gradle-plugin/package.json")).getParentFile())
-
-
+includeBuild(expoAutolinking.reactNativeGradlePlugin)

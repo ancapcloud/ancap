@@ -1,5 +1,11 @@
 # ANCAP Production Roadmap
 
+> 2026-10-27 review: pricing parity, locale regeneration and Android release binding/ABI corrections are being verified together with PRs #123/#124. Deployment is authorized and pending final CI; see PROGRESS.md.
+
+> 2026-10-26 mobile security: Expo 58 / RN 0.88 migration verified: JS/types/security tests, native Android APK, 31 aligned libraries, and encrypted-backup JNI test on 16 KB emulator pass. Forge advisory mitigated by a verified source backport until upstream release. See docs/mobile/MOBILE_SECURITY_MIGRATION_2026-10-26.md.
+
+> 2026-10-26 repair: subscription catalog regression and frontend type errors corrected locally; Rust security dependencies updated. GitHub CI verification pending; not deployed. See PROGRESS.md.
+
 Release recovery: bound wallet compilation to two jobs and build API/frontend sequentially after VPS resource exhaustion. Production activation remains unverified until health, build provenance and real GPU OCR pass.
 
 ## Smart Pay WeVisOne-VL — 2026-10-25 (PR #119 merged; production verification pending)

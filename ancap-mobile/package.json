@@ -2,7 +2,7 @@
   "name": "ancap-mobile",
   "private": true,
   "version": "0.1.0",
-  "description": "ANCAP ACP Wallet \u00e2\u20ac\u201d React Native monorepo",
+  "description": "ANCAP ACP Wallet — React Native monorepo",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "build": "npm run build -w @ancap/acp-wallet-sdk && npm run build -w @ancap/acp-api-client && npm run build -w @ancap/acp-bridge-client && npm run build -w @ancap/acp-bsc-client",
-    "postinstall": "npm run build",
-    "test": "npm run test --workspaces --if-present",
+    "postinstall": "node scripts/apply-security-patches.cjs && npm run test:security && npm run build",
+    "test": "npm run test:security && npm run test --workspaces --if-present",
     "test:expo": "npm run test -w @ancap/acp-wallet-expo --",
     "test:expo:smart-pay": "npm run test -w @ancap/acp-wallet-expo -- smart-pay",
     "test:api-client": "npm run test -w @ancap/acp-api-client --",
@@ -19,40 +19,27 @@
     "typecheck:expo": "npm run typecheck -w @ancap/acp-wallet-expo",
     "typecheck:api-client": "npm run typecheck -w @ancap/acp-api-client",
     "app:start": "npm run start -w @ancap/acp-wallet-expo",
-    "app:expo": "npm run start -w @ancap/acp-wallet-expo"
+    "app:expo": "npm run start -w @ancap/acp-wallet-expo",
+    "test:security": "node --test scripts/node-forge-security.test.cjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
   },
   "dependencies": {
-    "expo": "~52.0.28",
-    "react": "18.3.1",
-    "react-native": "0.76.6",
-    "react-native-nfc-manager": "^3.17.2"
+    "expo": "~58.0.19",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-nfc-manager": "^4.1.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@types/react": "~18.3.12",
-    "typescript": "^5.7.2",
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3",
     "vitest": "^4.1.11"
   },
   "overrides": {
-    "react-native": "0.76.6",
-    "react": "18.3.1",
-    "react-native-svg": "15.8.0",
-    "@xmldom/xmldom": "^0.9.10",
-    "ajv": "8.20.0",
-    "expo-dev-launcher": {
-      "ajv": "8.20.0"
-    },
-    "esbuild": "^0.25.0",
-    "js-yaml": "^4.1.2",
-    "postcss": "^8.5.10",
-    "tar": "^7.5.22",
-    "undici": "^6.27.0",
-    "uuid": "^11.1.1",
-    "vite": "^6.4.4",
-    "shell-quote": "^1.12.0",
-    "brace-expansion@1": "^1.1.21",
-    "browserslist": "4.28.7"
+    "@expo/cli": {
+      "zod": "^4.6.7"
+    }
   }
 }

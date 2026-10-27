@@ -219,7 +219,8 @@ test("investor and test-project overviews support the light theme", async ({ pag
 test("project offers link directly to the correct workflow or bundle", async ({ page }) => {
   await page.goto("/agency");
   await expect(page.locator('aside a[href="/ai/bundles/launch-pack"]')).toBeVisible();
-  await page.goto("/markets");
+  // Validate the rendered offer without waiting for third-party token images.
+  await page.goto("/markets", { waitUntil: "domcontentloaded" });
   await expect(page.locator('aside a[href="/ai/run/market-direction-brief"]')).toBeVisible();
 });
 

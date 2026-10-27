@@ -1,0 +1,600 @@
+{
+  "pages_total": 119,
+  "pages_with_useLanguage": [
+    "src/app/acp/page.tsx",
+    "src/app/agents/page.tsx",
+    "src/app/dashboard/analytics/page.tsx",
+    "src/app/dashboard/page.tsx",
+    "src/app/flows/page.tsx",
+    "src/app/funds/page.tsx",
+    "src/app/pools/page.tsx",
+    "src/app/projects/page.tsx",
+    "src/app/register/page.tsx",
+    "src/app/strategies/[id]/page.tsx",
+    "src/app/strategies/page.tsx",
+    "src/app/verticals/page.tsx"
+  ],
+  "pages_with_count": 12,
+  "pages_without_count": 107,
+  "other_components_with_useLanguage": [
+    "src/app/HomePage.tsx",
+    "src/app/login/LoginForm.tsx",
+    "src/components/CookieConsent.tsx",
+    "src/components/HomeMcpSection.tsx",
+    "src/components/LanguageProvider.tsx",
+    "src/components/LanguageSwitcher.tsx",
+    "src/components/Navigation.tsx",
+    "src/components/WalletConnectCard.tsx"
+  ],
+  "unique_english_groups_est": 1700,
+  "top_files": [
+    {
+      "n": 107,
+      "p": "src/app/wallet/acp/page.tsx"
+    },
+    {
+      "n": 83,
+      "p": "src/app/ai/runs/[id]/page.tsx"
+    },
+    {
+      "n": 65,
+      "p": "src/components/OtcIntakeDesk.tsx"
+    },
+    {
+      "n": 51,
+      "p": "src/app/dashboard/page.tsx"
+    },
+    {
+      "n": 46,
+      "p": "src/components/workflow/WorkflowRunPanel.tsx"
+    },
+    {
+      "n": 42,
+      "p": "src/app/sample-reports/[slug]/page.tsx"
+    },
+    {
+      "n": 42,
+      "p": "src/app/marketplace/page.tsx"
+    },
+    {
+      "n": 42,
+      "p": "src/app/dashboard/seller/page.tsx"
+    },
+    {
+      "n": 38,
+      "p": "src/app/wallet/credits/page.tsx"
+    },
+    {
+      "n": 35,
+      "p": "src/app/strategy-builder/page.tsx"
+    },
+    {
+      "n": 35,
+      "p": "src/app/developers/webhooks/page.tsx"
+    },
+    {
+      "n": 33,
+      "p": "src/app/projects/page.tsx"
+    },
+    {
+      "n": 31,
+      "p": "src/app/acp/page.tsx"
+    },
+    {
+      "n": 30,
+      "p": "src/app/bridge/acp-bsc/page.tsx"
+    },
+    {
+      "n": 29,
+      "p": "src/app/admin/overview/page.tsx"
+    },
+    {
+      "n": 28,
+      "p": "src/app/dashboard/analytics/page.tsx"
+    },
+    {
+      "n": 28,
+      "p": "src/app/billing/page.tsx"
+    },
+    {
+      "n": 27,
+      "p": "src/app/organizations/[id]/page.tsx"
+    },
+    {
+      "n": 27,
+      "p": "src/app/governance/page.tsx"
+    },
+    {
+      "n": 27,
+      "p": "src/app/contracts/[id]/page.tsx"
+    },
+    {
+      "n": 26,
+      "p": "src/app/dashboard/seller/earnings/page.tsx"
+    },
+    {
+      "n": 24,
+      "p": "src/app/contracts/new/page.tsx"
+    },
+    {
+      "n": 23,
+      "p": "src/app/whitepaper/acp/page.tsx"
+    },
+    {
+      "n": 23,
+      "p": "src/app/treasury/page.tsx"
+    },
+    {
+      "n": 22,
+      "p": "src/app/strategies/[id]/page.tsx"
+    },
+    {
+      "n": 22,
+      "p": "src/app/developers/page.tsx"
+    },
+    {
+      "n": 22,
+      "p": "src/app/ai-console/page.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/components/AssayGcDesk.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/app/reset-password/page.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/app/referrals/page.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/app/proof-center/page.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/app/docs/mobile/security/page.tsx"
+    },
+    {
+      "n": 20,
+      "p": "src/app/ai/workflows/page.tsx"
+    },
+    {
+      "n": 19,
+      "p": "src/app/login/LoginForm.tsx"
+    },
+    {
+      "n": 18,
+      "p": "src/app/pricing/page.tsx"
+    },
+    {
+      "n": 18,
+      "p": "src/app/ai/bundles/[bundle]/page.tsx"
+    },
+    {
+      "n": 18,
+      "p": "src/app/aeterna/page.tsx"
+    },
+    {
+      "n": 18,
+      "p": "src/app/acp/tx/[txid]/page.tsx"
+    },
+    {
+      "n": 17,
+      "p": "src/app/HomePage.tsx"
+    },
+    {
+      "n": 16,
+      "p": "src/app/merchant/page.tsx"
+    },
+    {
+      "n": 16,
+      "p": "src/app/docs/wacp/page.tsx"
+    },
+    {
+      "n": 15,
+      "p": "src/app/token-snapshot/page.tsx"
+    },
+    {
+      "n": 15,
+      "p": "src/app/legal/cookies/page.tsx"
+    },
+    {
+      "n": 15,
+      "p": "src/app/feed/page.tsx"
+    },
+    {
+      "n": 15,
+      "p": "src/app/explorer/page.tsx"
+    },
+    {
+      "n": 14,
+      "p": "src/app/whitepaper/page.tsx"
+    },
+    {
+      "n": 14,
+      "p": "src/app/ai/run/[template]/page.tsx"
+    },
+    {
+      "n": 13,
+      "p": "src/components/WalletProvider.tsx"
+    },
+    {
+      "n": 13,
+      "p": "src/components/Navigation.tsx"
+    },
+    {
+      "n": 13,
+      "p": "src/app/listings/[id]/page.tsx"
+    }
+  ],
+  "critical": {
+    "pricing": {
+      "path": "src/app/pricing/page.tsx",
+      "count": 18,
+      "samples": [
+        "ANCAP Pricing | Paid AI workflows for crypto teams",
+        "API keys, MCP, spend caps",
+        "Buy proof-backed AI workflow execution for crypto launch, listing, growth, risk, and agent API monetization.",
+        "Creator",
+        "Custom",
+        "Developer",
+        "Enterprise",
+        "Free"
+      ]
+    },
+    "marketplace": {
+      "path": "src/app/marketplace/page.tsx",
+      "count": 42,
+      "samples": [
+        "ACP-first",
+        "Add an optional note for the seller...",
+        "All",
+        "Annual",
+        "Any",
+        "Billing period",
+        "Category",
+        "Confirm and pay"
+      ]
+    },
+    "billing": {
+      "path": "src/app/billing/page.tsx",
+      "count": 28,
+      "samples": [
+        "ACP wallet",
+        "API products",
+        "API usage",
+        "Buy workflow",
+        "Credits balance",
+        "Export CSV",
+        "Fund wallet / confirm payment for first paid run",
+        "Loading billing state..."
+      ]
+    },
+    "legal_cookies": {
+      "path": "src/app/legal/cookies/page.tsx",
+      "count": 15,
+      "samples": [
+        "ANCAP cookie and local storage policy with necessary, analytics, and marketing preference categories.",
+        "Analytics",
+        "Campaign source, referral attribution, partner code, paid-run attribution.",
+        "Consent memory, login/session state, security checks, wallet connection state, language, theme, service-worker support.",
+        "Consent:",
+        "Cookie Policy",
+        "Cookie and storage preferences",
+        "Cookie policy"
+      ]
+    },
+    "legal_privacy": {
+      "path": "src/app/legal/privacy/page.tsx",
+      "count": 11,
+      "samples": [
+        "AI providers",
+        "ANCAP privacy notice for accounts, wallets, paid workflows, API usage, proof receipts, and analytics preferences.",
+        "Contact and legal basis",
+        "Crypto and public proofs",
+        "Data we process",
+        "How ANCAP handles data",
+        "Privacy Notice",
+        "Privacy notice"
+      ]
+    },
+    "legal_terms": {
+      "path": "src/app/legal/terms/page.tsx",
+      "count": 4,
+      "samples": [
+        "ANCAP User Agreement",
+        "ANCAP user agreement for paid AI workflows, ACP payments, creator listings, API usage, and proof receipts.",
+        "Legal agreement",
+        "User Agreement"
+      ]
+    },
+    "wallet_acp": {
+      "path": "src/app/wallet/acp/page.tsx",
+      "count": 107,
+      "samples": [
+        "ACP",
+        "ACP wallet recovery mode",
+        "ACP → BSC mint",
+        "API error 401",
+        "API error 502",
+        "API error 503",
+        "API error 504",
+        "Account"
+      ]
+    },
+    "wallet_credits": {
+      "path": "src/app/wallet/credits/page.tsx",
+      "count": 38,
+      "samples": [
+        "ACP wallet",
+        "Available balances",
+        "Awaiting approval",
+        "Billing overview",
+        "Choose a saved card or enter a new card",
+        "Create invoice",
+        "Creating...",
+        "Credit account"
+      ]
+    },
+    "wallet_simple": {
+      "path": "src/app/wallet/simple/page.tsx",
+      "count": 3,
+      "samples": [
+        "Email OTP and internal ACP credits — embedded wallet preview.",
+        "Simple wallet mode",
+        "Simple wallet mode | ANCAP"
+      ]
+    },
+    "onboarding": {
+      "path": "src/app/onboarding/page.tsx",
+      "count": 7,
+      "samples": [
+        "Agent (optional)",
+        "Failed to load agents",
+        "Faucet claim failed",
+        "Onboarding",
+        "Quickstart run failed",
+        "Select an agent first",
+        "Starter pack assign failed"
+      ]
+    },
+    "reset_password": {
+      "path": "src/app/reset-password/page.tsx",
+      "count": 20,
+      "samples": [
+        "ACP wallet recovery path",
+        "Complete the captcha first",
+        "Complete the captcha first, then connect the linked wallet.",
+        "Connect the linked wallet first",
+        "Linked wallet on file:",
+        "Loading...",
+        "Open ACP wallet",
+        "Open wallet recovery login"
+      ]
+    },
+    "buy_acp": {
+      "path": "src/app/buy-acp/page.tsx",
+      "count": 3,
+      "samples": [
+        "Buy ACP credits",
+        "Buy ACP | Top up credits",
+        "Top up ACP credits with card (Stripe) or bridge from wACP."
+      ]
+    },
+    "status": {
+      "path": "src/app/status/page.tsx",
+      "count": 9,
+      "samples": [
+        "ACP chain",
+        "API",
+        "Checking…",
+        "Operational",
+        "Platform status",
+        "Public API and ACP node health.",
+        "Status unavailable",
+        "Synced"
+      ]
+    },
+    "home": {
+      "path": "src/app/HomePage.tsx",
+      "count": 17,
+      "samples": [
+        "ACP checkout",
+        "ACP wallet",
+        "AETERNA",
+        "BusinessApplication",
+        "Buy paid AI workflows",
+        "Create and publish paid AI workflows",
+        "Developers",
+        "Earn from workflow runs"
+      ]
+    },
+    "login": {
+      "path": "src/app/login/LoginForm.tsx",
+      "count": 19,
+      "samples": [
+        "ACP wallet recovery login",
+        "ACP wallet recovery note",
+        "After login you will be sent straight to the ACP wallet password rotation section.",
+        "After login, ANCAP will open the ACP wallet and focus the",
+        "Complete the captcha first",
+        "Complete the captcha to continue.",
+        "Continue to wallet recovery",
+        "Enter your email first"
+      ]
+    },
+    "nav": {
+      "path": "src/components/Navigation.tsx",
+      "count": 13,
+      "samples": [
+        "ACP",
+        "ANCAP",
+        "ArrowLeft",
+        "ArrowRight",
+        "Close menu",
+        "End",
+        "Home",
+        "Language"
+      ]
+    },
+    "cookie": {
+      "path": "src/components/CookieConsent.tsx",
+      "count": 0,
+      "samples": []
+    },
+    "wallet_card": {
+      "path": "src/components/WalletConnectCard.tsx",
+      "count": 4,
+      "samples": [
+        "Complete the captcha first",
+        "MetaMask",
+        "Network",
+        "Wallet sign-in failed"
+      ]
+    },
+    "seller": {
+      "path": "src/app/dashboard/seller/page.tsx",
+      "count": 42,
+      "samples": [
+        "Agent JSON",
+        "Balance",
+        "Billing",
+        "Build flow",
+        "Build or attach the execution flow",
+        "Build workflow",
+        "Captured revenue",
+        "Category"
+      ]
+    },
+    "bridge_bsc": {
+      "path": "src/app/bridge/acp-bsc/page.tsx",
+      "count": 30,
+      "samples": [
+        "ACP checkpoint",
+        "ACP payout floor:",
+        "ACP smallest units:",
+        "ACP → BSC (wACP)",
+        "BRIDGE_RAIL_ENABLED",
+        "BSC checkpoint",
+        "Counts by status",
+        "Create intent"
+      ]
+    },
+    "admin_overview": {
+      "path": "src/app/admin/overview/page.tsx",
+      "count": 29,
+      "samples": [
+        "Admin access is not configured yet.",
+        "Admin access required for refund approval.",
+        "Admin access required for refund rejection.",
+        "Admin access required for this page.",
+        "Admin access required for top-up approval.",
+        "Approve",
+        "Approved from admin overview",
+        "Approving..."
+      ]
+    },
+    "admin_audit": {
+      "path": "src/app/admin/audit/page.tsx",
+      "count": 9,
+      "samples": [
+        "Admin access is not configured yet.",
+        "Admin access required for the audit log.",
+        "All",
+        "Audit Log",
+        "Bridge",
+        "Decisions",
+        "Governance",
+        "Loading..."
+      ]
+    },
+    "admin_orbital": {
+      "path": "src/app/admin/orbital-edge/page.tsx",
+      "count": 8,
+      "samples": [
+        "Admin / Orbital edge",
+        "FF_ORBITAL_EDGE",
+        "Failed to load orbital edge",
+        "Feature",
+        "Next gate",
+        "Nodes",
+        "Sealed orbital edge",
+        "Verified attestations"
+      ]
+    },
+    "access": {
+      "path": "src/app/access/page.tsx",
+      "count": 1,
+      "samples": [
+        "Failed to load access grants"
+      ]
+    },
+    "business": {
+      "path": "src/app/business/page.tsx",
+      "count": 11,
+      "samples": [
+        "ANCAP Business | Treasury & merchant",
+        "Business & Treasury",
+        "Business treasury, merchant subscriptions, batch payouts, and compliance-ready invoicing.",
+        "Compliance",
+        "Custom SLA and treasury",
+        "Enterprise",
+        "Merchant dashboard",
+        "MiCA-safe utility asset messaging"
+      ]
+    },
+    "creators": {
+      "path": "src/app/creators/page.tsx",
+      "count": 3,
+      "samples": [
+        "ANCAP Creators | Publish and earn",
+        "Creator program",
+        "Publish paid workflows, track earnings, and request ACP payouts."
+      ]
+    },
+    "workflow_store": {
+      "path": "src/app/workflow-store/page.tsx",
+      "count": 0,
+      "samples": []
+    },
+    "pay": {
+      "path": "src/app/pay/page.tsx",
+      "count": 4,
+      "samples": [
+        "ANCAP Pay",
+        "ANCAP Pay | Payment links and invoices",
+        "Create payment links, crypto invoices, and QR checkout with proof receipts.",
+        "Get paid in ACP with proof"
+      ]
+    },
+    "search": {
+      "path": "src/app/search/page.tsx",
+      "count": 9,
+      "samples": [
+        "Agents",
+        "All",
+        "Listings",
+        "Loading search…",
+        "Search",
+        "Search workflows, agents, strategies...",
+        "Searching...",
+        "Strategies"
+      ]
+    },
+    "notifications": {
+      "path": "src/app/notifications/page.tsx",
+      "count": 5,
+      "samples": [
+        "Failed to load notifications",
+        "Failed to mark read",
+        "No notifications.",
+        "Notifications",
+        "Refresh"
+      ]
+    }
+  },
+  "translation_key_unique_est": 0,
+  "translation_prefixes": []
+}

@@ -1,0 +1,21 @@
+﻿{
+  "enKeys": 265,
+  "summary": {
+    "ru": {
+      "sameCount": 19,
+      "missing": 0
+    },
+    "uk": {
+      "sameCount": 19,
+      "missing": 0
+    },
+    "de": {
+      "sameCount": 53,
+      "missing": 0
+    },
+    "zh-Hant": {
+      "sameCount": 4,
+      "missing": 0
+    }
+  }
+}

@@ -1,5 +1,1 @@
-Secondary ACP full node on Oracle Always Free (Zurich).
-
-It peers acp1 over JSON-RPC and serves a public read endpoint so the chain is not a single-home stack. Tip matched the 210M hard-cap regenesis at go-live.
-
-https://github.com/dragoncattrx-hub/ancap/blob/master/docs/ORACLE_CLOUD_ACP_NODE_PLAN.md
+Homepage dialog now pins one OpenRouter free model for the whole thread, so the reply path does not bounce mid-conversation. Smart Pay sits beside that input as a hop, not a pitch.

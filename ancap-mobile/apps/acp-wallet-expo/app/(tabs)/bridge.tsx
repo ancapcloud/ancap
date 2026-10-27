@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import type { BridgeIntent, RedeemQuote, ReserveProof, WacpStatus } from "@ancap/acp-bridge-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { loadVaultAddress } from "@/lib/vault";

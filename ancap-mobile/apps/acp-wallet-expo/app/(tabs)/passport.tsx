@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import type { DigitalPassportRecord } from "@ancap/acp-api-client";
 import { safeErrorMessage } from "@ancap/acp-wallet-sdk";
 import { getApi, hasApiAuthHeader } from "@/lib/api";

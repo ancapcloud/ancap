@@ -27,6 +27,9 @@ jobs:
   acp-crypto:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # RocksDB 8.10 relies on transitive integer headers removed by newer GCC.
+      CXXFLAGS: "-include cstdint"
     defaults:
       run:
         working-directory: ACP-crypto

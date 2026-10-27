@@ -1,78 +1,45 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-if (!gradle.ext.has("nodeExecutable")) {
-    apply from: file("gradle/nodeExecutable.gradle")
-    gradle.ext.nodeExecutable = ext.nodeExecutable
-}
-apply from: file("gradle/nodeResolve.gradle")
-def nodeBin = gradle.ext.nodeExecutable
-def nodeResolve = ext.nodeResolve
-rootProject.ext.nodeExecutable = nodeBin
-rootProject.ext.nodeResolve = nodeResolve
-rootProject.ext.nodeResolveModule = ext.nodeResolveModule
-
-ext {
-    buildToolsVersion = findProperty('android.buildToolsVersion') ?: '35.0.0'
-    minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
-    compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '35')
-    targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
-    kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.24'
-    ndkVersion = "27.1.12297006"
-}
-
 buildscript {
-    ext {
-        buildToolsVersion = findProperty('android.buildToolsVersion') ?: '35.0.0'
-        minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
-        compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '35')
-        targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
-        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.24'
-        ndkVersion = "27.1.12297006"
-    }
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        // 8.8.2 is stable with Expo SDK 52 / RN 0.76.
-        classpath('com.android.tools.build:gradle:8.8.2')
-        classpath('com.facebook.react:react-native-gradle-plugin')
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    }
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath('com.android.tools.build:gradle')
+    classpath('com.facebook.react:react-native-gradle-plugin')
+    def kotlinVersion = findProperty('android.kotlinVersion')
+    classpath(kotlinVersion ? "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion" : 'org.jetbrains.kotlin:kotlin-gradle-plugin')
+  }
 }
 
-subprojects { subproject ->
-    subproject.buildscript {
-        // react-native-nfc-manager and similar libs only declare mavenCentral();
-        // AGP 8.8.2 is published on Google Maven, not Maven Central.
-        repositories {
-            google()
-            mavenCentral()
-        }
-        configurations.configureEach {
-            if (it.name == "classpath") {
-                it.resolutionStrategy.force "com.android.tools.build:gradle:8.8.2"
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+  }
+}
+
+// ANCAP Windows native object paths
+// Keep Ninja object paths under Windows MAX_PATH, including deep npm workspaces.
+if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    def nativeCacheRoot = rootProject.findProperty("ancap.nativeBuildRoot") ?:
+        new File(System.getenv("SystemDrive") + File.separator, ".ancap-cxx")
+    def nativeProjectKey = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(rootProject.projectDir.canonicalPath.getBytes("UTF-8")).encodeHex().toString().substring(0, 12)
+    subprojects { nativeProject ->
+        ["com.android.library", "com.android.application"].each { pluginId ->
+            nativeProject.plugins.withId(pluginId) {
+                def nativeAndroid = nativeProject.extensions.getByName("android")
+                nativeAndroid.externalNativeBuild.cmake.buildStagingDirectory =
+                    new File(new File(nativeCacheRoot.toString(), nativeProjectKey), nativeProject.name)
+                nativeAndroid.defaultConfig.externalNativeBuild.cmake.arguments.add("-DCMAKE_OBJECT_PATH_MAX=240")
             }
         }
     }
 }
+// End ANCAP Windows native object paths
 
+apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
-
-allprojects {
-    repositories {
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url(new File(nodeResolve('react-native/package.json'), '../android'))
-        }
-        maven {
-            // Android JSC is installed from npm
-            def rnDir = new File(nodeResolve("react-native/package.json")).parentFile.absolutePath.replace("\\", "\\\\")
-            url(new File([nodeBin, "--print", "require.resolve('jsc-android/package.json', { paths: ['${rnDir}'] })"].execute(null, rootDir).text.trim(), "../dist"))
-        }
-
-        google()
-        mavenCentral()
-        maven { url 'https://www.jitpack.io' }
-    }
-}

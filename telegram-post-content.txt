@@ -1,8 +1,7 @@
-ANCAP — secondary ACP node is live
+ANCAP update
 
-Independent Always Free full node in Oracle eu-zurich-1, peering the primary network.
+Smart Pay now has a model on the homepage path — ask from the dialog, then jump straight into Smart Pay.
 
-Public read RPC: http://152.67.79.206:8545/rpc
-Synced to regenesis v3 / 210M hard cap (same tip family as acp1.ancap.cloud).
+Also on the homepage: a free chat that auto-picks OpenRouter free models for every visitor. One model stays pinned for the whole conversation. This is permanent, not a promo window.
 
-Plan: https://github.com/dragoncattrx-hub/ancap/blob/master/docs/ORACLE_CLOUD_ACP_NODE_PLAN.md
+https://ancap.cloud/

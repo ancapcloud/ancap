@@ -17,7 +17,8 @@
       [
         "expo-dev-client",
         {
-          "launchMode": "most-recent"
+          "launchMode": "most-recent",
+          "embeddedBundle": true
         }
       ],
       "expo-router",
@@ -44,7 +45,8 @@
         {
           "cameraPermission": "Allow ANCAP ACP Wallet to scan QR payment codes for Smart Pay."
         }
-      ]
+      ],
+      "./plugins/with-wallet-android"
     ],
     "experiments": {
       "typedRoutes": true
