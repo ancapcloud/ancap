@@ -31,8 +31,25 @@ def upgrade():
         sa.CheckConstraint("hourly_rate >= 0 AND (hourly_rate IS NULL OR baseline_minutes IS NOT NULL)", name="ck_workflow_assessment_rate_time"),
     )
     op.create_index("ix_workflow_assessment_owner_created", "workflow_result_assessments", ["owner_user_id", "created_at"])
+    # Retention must also hold during rollback to an older worker, or when another
+    # lifecycle path clears the base result without using the new service helper.
+    op.execute("""CREATE FUNCTION ancap_purge_workflow_assessments() RETURNS trigger
+        LANGUAGE plpgsql AS $$
+        BEGIN
+            IF NEW.result_json IS NULL OR jsonb_typeof(NEW.result_json) = 'null' THEN
+                DELETE FROM workflow_result_assessments WHERE workflow_run_id = NEW.id;
+            END IF;
+            RETURN NEW;
+        END;
+        $$""")
+    op.execute("""CREATE TRIGGER workflow_result_assessment_redaction
+        AFTER UPDATE OF result_json ON workflow_runs
+        FOR EACH ROW EXECUTE FUNCTION ancap_purge_workflow_assessments()""")
+
 
 
 def downgrade():
+    op.execute("DROP TRIGGER workflow_result_assessment_redaction ON workflow_runs")
+    op.execute("DROP FUNCTION ancap_purge_workflow_assessments()")
     op.drop_index("ix_workflow_assessment_owner_created", table_name="workflow_result_assessments")
     op.drop_table("workflow_result_assessments")
