@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { WorkflowResultAssessment } from "@/components/WorkflowResultAssessment";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -18,6 +19,7 @@ type WorkflowRunTimelineItem = {
 };
 
 type WorkflowRun = {
+  result_hash?: string | null;
   id: string;
   workflow_slug: string;
   title: string;
@@ -691,6 +693,7 @@ export default function WorkflowRunDetailPage() {
               <div className="mt-6">
                 <div className="text-xs uppercase tracking-[0.18em] text-white/45">{t("workflowRunDetail.resultShell")}</div>
                 <pre className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/78">{JSON.stringify(run.result, null, 2)}</pre>
+                {run.status === "completed" && run.result_hash && <div className="mt-6"><WorkflowResultAssessment runId={run.id} resultHash={run.result_hash} /></div>}
               </div>
             </section>
 

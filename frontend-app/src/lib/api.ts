@@ -1,3 +1,4 @@
+import type { AssessmentHistory, AssessedResult, AssessmentInput, AssessmentState, WorkflowAssessment, ValueSummary } from "./workflowValue";
 // Prefer an explicit URL if provided.
 // Fallbacks:
 // - development: same-origin /api/v1 (proxied to localhost:8001/v1 by next.config.ts)
@@ -2659,4 +2660,23 @@ export const api = {
   settlements,
   autonomy,
   economy,
+};
+
+
+export const workflowValue = {
+  async assessment(runId: string): Promise<AssessmentState> {
+    return apiFetch(`/workflow-store/runs/${encodeURIComponent(runId)}/assessment`);
+  },
+  async assess(runId: string, body: AssessmentInput): Promise<WorkflowAssessment> {
+    return apiFetch(`/workflow-store/runs/${encodeURIComponent(runId)}/assessment`, { method: "POST", body: JSON.stringify(body) });
+  },
+  async history(runId: string): Promise<AssessmentHistory> {
+    return apiFetch(`/workflow-store/runs/${encodeURIComponent(runId)}/assessments`);
+  },
+  async assessedResult(assessmentId: string): Promise<AssessedResult> {
+    return apiFetch(`/workflow-store/assessments/${encodeURIComponent(assessmentId)}/result`);
+  },
+  async summary(days = 30): Promise<ValueSummary> {
+    return apiFetch(`/workflow-store/value?days=${days}`);
+  },
 };
