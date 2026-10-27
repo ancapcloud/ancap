@@ -1,0 +1,227 @@
+[
+  {
+    "language": "en",
+    "filename": "invoice_en_0001.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_en_0001.png",
+    "address": "123 Main St, Springfield, IL 62704, USA",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:42.287504",
+    "status": "generated"
+  },
+  {
+    "language": "en",
+    "filename": "invoice_en_0002.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_en_0002.png",
+    "address": "123 Main St, Springfield, IL 62704, USA",
+    "amount": "1000.00 ACP",
+    "created_at": "2026-10-27T19:36:42.325693",
+    "status": "generated"
+  },
+  {
+    "language": "en",
+    "filename": "invoice_en_0003.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_en_0003.png",
+    "address": "123 Main St, Springfield, IL 62704, USA",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.362161",
+    "status": "generated"
+  },
+  {
+    "language": "en",
+    "filename": "invoice_en_0004.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_en_0004.png",
+    "address": "123 Main St, Springfield, IL 62704, USA",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:42.399553",
+    "status": "generated"
+  },
+  {
+    "language": "en",
+    "filename": "invoice_en_0005.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_en_0005.png",
+    "address": "123 Main St, Springfield, IL 62704, USA",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:42.436790",
+    "status": "generated"
+  },
+  {
+    "language": "ru",
+    "filename": "invoice_ru_0001.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_ru_0001.png",
+    "address": "ул. Ленина, д. 10, г. Москва, 101000, Россия",
+    "amount": "1000.00 ACP",
+    "created_at": "2026-10-27T19:36:42.476107",
+    "status": "generated"
+  },
+  {
+    "language": "ru",
+    "filename": "invoice_ru_0002.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_ru_0002.png",
+    "address": "ул. Ленина, д. 10, г. Москва, 101000, Россия",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:42.514318",
+    "status": "generated"
+  },
+  {
+    "language": "ru",
+    "filename": "invoice_ru_0003.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_ru_0003.png",
+    "address": "ул. Ленина, д. 10, г. Москва, 101000, Россия",
+    "amount": "12.50 ACP",
+    "created_at": "2026-10-27T19:36:42.553686",
+    "status": "generated"
+  },
+  {
+    "language": "ru",
+    "filename": "invoice_ru_0004.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_ru_0004.png",
+    "address": "ул. Ленина, д. 10, г. Москва, 101000, Россия",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:42.592779",
+    "status": "generated"
+  },
+  {
+    "language": "ru",
+    "filename": "invoice_ru_0005.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_ru_0005.png",
+    "address": "ул. Ленина, д. 10, г. Москва, 101000, Россия",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.631229",
+    "status": "generated"
+  },
+  {
+    "language": "uk",
+    "filename": "invoice_uk_0001.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_uk_0001.png",
+    "address": "вул. Хрещатик, 24, м. Київ, 01001, Україна",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:42.665935",
+    "status": "generated"
+  },
+  {
+    "language": "uk",
+    "filename": "invoice_uk_0002.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_uk_0002.png",
+    "address": "вул. Хрещатик, 24, м. Київ, 01001, Україна",
+    "amount": "12.50 ACP",
+    "created_at": "2026-10-27T19:36:42.706007",
+    "status": "generated"
+  },
+  {
+    "language": "uk",
+    "filename": "invoice_uk_0003.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_uk_0003.png",
+    "address": "вул. Хрещатик, 24, м. Київ, 01001, Україна",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.744309",
+    "status": "generated"
+  },
+  {
+    "language": "uk",
+    "filename": "invoice_uk_0004.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_uk_0004.png",
+    "address": "вул. Хрещатик, 24, м. Київ, 01001, Україна",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.782027",
+    "status": "generated"
+  },
+  {
+    "language": "uk",
+    "filename": "invoice_uk_0005.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_uk_0005.png",
+    "address": "вул. Хрещатик, 24, м. Київ, 01001, Україна",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:42.820592",
+    "status": "generated"
+  },
+  {
+    "language": "de",
+    "filename": "invoice_de_0001.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_de_0001.png",
+    "address": "Hauptstraße 42, 10115 Berlin, Deutschland",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:42.857936",
+    "status": "generated"
+  },
+  {
+    "language": "de",
+    "filename": "invoice_de_0002.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_de_0002.png",
+    "address": "Hauptstraße 42, 10115 Berlin, Deutschland",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.895895",
+    "status": "generated"
+  },
+  {
+    "language": "de",
+    "filename": "invoice_de_0003.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_de_0003.png",
+    "address": "Hauptstraße 42, 10115 Berlin, Deutschland",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.932633",
+    "status": "generated"
+  },
+  {
+    "language": "de",
+    "filename": "invoice_de_0004.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_de_0004.png",
+    "address": "Hauptstraße 42, 10115 Berlin, Deutschland",
+    "amount": "50.00 ACP",
+    "created_at": "2026-10-27T19:36:42.970075",
+    "status": "generated"
+  },
+  {
+    "language": "de",
+    "filename": "invoice_de_0005.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_de_0005.png",
+    "address": "Hauptstraße 42, 10115 Berlin, Deutschland",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:43.007536",
+    "status": "generated"
+  },
+  {
+    "language": "zh-Hant",
+    "filename": "invoice_zh-Hant_0001.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_zh-Hant_0001.png",
+    "address": "台北市中正區中山南路 22 號，台灣",
+    "amount": "25.75 ACP",
+    "created_at": "2026-10-27T19:36:43.053071",
+    "status": "generated"
+  },
+  {
+    "language": "zh-Hant",
+    "filename": "invoice_zh-Hant_0002.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_zh-Hant_0002.png",
+    "address": "台北市中正區中山南路 22 號，台灣",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:43.097556",
+    "status": "generated"
+  },
+  {
+    "language": "zh-Hant",
+    "filename": "invoice_zh-Hant_0003.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_zh-Hant_0003.png",
+    "address": "台北市中正區中山南路 22 號，台灣",
+    "amount": "100.25 ACP",
+    "created_at": "2026-10-27T19:36:43.142178",
+    "status": "generated"
+  },
+  {
+    "language": "zh-Hant",
+    "filename": "invoice_zh-Hant_0004.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_zh-Hant_0004.png",
+    "address": "台北市中正區中山南路 22 號，台灣",
+    "amount": "12.50 ACP",
+    "created_at": "2026-10-27T19:36:43.186847",
+    "status": "generated"
+  },
+  {
+    "language": "zh-Hant",
+    "filename": "invoice_zh-Hant_0005.png",
+    "filepath": "C:/Users/drago/Desktop/ANCAP/evidence\\invoice_zh-Hant_0005.png",
+    "address": "台北市中正區中山南路 22 號，台灣",
+    "amount": "12.50 ACP",
+    "created_at": "2026-10-27T19:36:43.232206",
+    "status": "generated"
+  }
+]

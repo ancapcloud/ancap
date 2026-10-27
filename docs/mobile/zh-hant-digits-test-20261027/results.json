@@ -1,0 +1,86 @@
+[
+  {
+    "sample": 1,
+    "title": "发票 #LOCAL-1",
+    "passed": false,
+    "seconds": 11.84,
+    "status": 200,
+    "preview": {
+      "detected_network": null,
+      "address": null,
+      "amount": null,
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.5,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected currency hint: ACP"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.",
+        "Сумма или валюта не определены. Уточните их до оплаты.",
+        "Прямая оплата в ACP недоступна: нужны ACP-адрес и сумма в ACP. Для банковского/валютного счёта нужен подтверждённый маршрут конвертации."
+      ],
+      "can_pay_acp": false
+    }
+  },
+  {
+    "sample": 2,
+    "title": "發票 #LOCAL-2",
+    "passed": false,
+    "seconds": 24.66,
+    "status": 200,
+    "preview": {
+      "detected_network": null,
+      "address": null,
+      "amount": null,
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.5,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected currency hint: ACP"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.",
+        "Сумма или валюта не определены. Уточните их до оплаты.",
+        "Прямая оплата в ACP недоступна: нужны ACP-адрес и сумма в ACP. Для банковского/валютного счёта нужен подтверждённый маршрут конвертации."
+      ],
+      "can_pay_acp": false
+    }
+  },
+  {
+    "sample": 3,
+    "title": "發票 #LOCAL-3",
+    "passed": false,
+    "seconds": 20.56,
+    "status": 200,
+    "preview": {
+      "detected_network": null,
+      "address": null,
+      "amount": null,
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.5,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected currency hint: ACP"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.",
+        "Сумма или валюта не определены. Уточните их до оплаты.",
+        "Прямая оплата в ACP недоступна: нужны ACP-адрес и сумма в ACP. Для банковского/валютного счёта нужен подтверждённый маршрут конвертации."
+      ],
+      "can_pay_acp": false
+    }
+  }
+]

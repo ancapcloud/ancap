@@ -1,0 +1,9 @@
+{
+  "filename": "invoice_zh-Hant_0004.png",
+  "filepath": "C:\\Users\\drago\\Desktop\\ANCAP\\evidence\\invoice_zh-Hant_0004.png",
+  "status": "error (401)",
+  "elapsed_seconds": 0.02,
+  "preview": {
+    "error": "{\"detail\":\"Not authenticated\"}"
+  }
+}

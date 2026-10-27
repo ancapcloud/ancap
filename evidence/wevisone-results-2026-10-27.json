@@ -1,0 +1,27 @@
+[
+  {
+    "seconds": 27.49,
+    "language": "en",
+    "passed": true
+  },
+  {
+    "seconds": 17.95,
+    "language": "ru",
+    "passed": true
+  },
+  {
+    "seconds": 18.17,
+    "language": "uk",
+    "passed": true
+  },
+  {
+    "seconds": 16.27,
+    "language": "de",
+    "passed": true
+  },
+  {
+    "seconds": 16.27,
+    "language": "zh-Hant",
+    "passed": false
+  }
+]

@@ -1,0 +1,66 @@
+[
+  {
+    "language": "en",
+    "passed": false,
+    "seconds": 35.3,
+    "status": 200,
+    "preview": {
+      "detected_network": null,
+      "address": null,
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": "LOCAL-1",
+      "confidence": 0.62,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "Detected invoice/receipt label"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.",
+        "Прямая оплата в ACP недоступна: нужны ACP-адрес и сумма в ACP. Для банковского/валютного счёта нужен подтверждённый маршрут конвертации."
+      ],
+      "can_pay_acp": false
+    }
+  },
+  {
+    "language": "ru",
+    "passed": false,
+    "seconds": 60.03,
+    "status": 503,
+    "preview": {
+      "detail": "Vision OCR request failed"
+    }
+  },
+  {
+    "language": "uk",
+    "passed": false,
+    "seconds": 0.05,
+    "status": 503,
+    "preview": {
+      "detail": "WeVisOne OCR request failed"
+    }
+  },
+  {
+    "language": "de",
+    "passed": false,
+    "seconds": 0.05,
+    "status": 503,
+    "preview": {
+      "detail": "WeVisOne OCR request failed"
+    }
+  },
+  {
+    "language": "zh-Hant",
+    "passed": false,
+    "seconds": 0.05,
+    "status": 503,
+    "preview": {
+      "detail": "WeVisOne OCR request failed"
+    }
+  }
+]

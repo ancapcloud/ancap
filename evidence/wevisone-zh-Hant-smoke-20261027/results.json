@@ -1,0 +1,145 @@
+[
+  {
+    "language": "en",
+    "passed": true,
+    "seconds": 55.31,
+    "status": 200,
+    "preview": {
+      "detected_network": "acp",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": "LOCAL-1",
+      "confidence": 0.75,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected ACP address in free text",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "Detected invoice/receipt label",
+        "OCR receipt fields matched address and amount"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Можно подготовить оплату в ACP. Кошелёк покажет комиссию и запросит отдельное подтверждение."
+      ],
+      "can_pay_acp": true
+    }
+  },
+  {
+    "language": "ru",
+    "passed": true,
+    "seconds": 40.19,
+    "status": 200,
+    "preview": {
+      "detected_network": "acp",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.75,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected ACP address in free text",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "OCR receipt fields matched address and amount"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Можно подготовить оплату в ACP. Кошелёк покажет комиссию и запросит отдельное подтверждение."
+      ],
+      "can_pay_acp": true
+    }
+  },
+  {
+    "language": "uk",
+    "passed": true,
+    "seconds": 37.22,
+    "status": 200,
+    "preview": {
+      "detected_network": "acp",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.75,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected ACP address in free text",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "OCR receipt fields matched address and amount"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Можно подготовить оплату в ACP. Кошелёк покажет комиссию и запросит отдельное подтверждение."
+      ],
+      "can_pay_acp": true
+    }
+  },
+  {
+    "language": "de",
+    "passed": true,
+    "seconds": 35.38,
+    "status": 200,
+    "preview": {
+      "detected_network": "acp",
+      "address": "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9",
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.75,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected ACP address in free text",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "OCR receipt fields matched address and amount"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Можно подготовить оплату в ACP. Кошелёк покажет комиссию и запросит отдельное подтверждение."
+      ],
+      "can_pay_acp": true
+    }
+  },
+  {
+    "language": "zh-Hant",
+    "passed": false,
+    "seconds": 35.49,
+    "status": 200,
+    "preview": {
+      "detected_network": "acp",
+      "address": null,
+      "amount": "12.5",
+      "currency": "ACP",
+      "label": null,
+      "confidence": 0.45,
+      "requires_manual_confirm": true,
+      "parse_notes": [
+        "Extracted from uploaded photo via AI OCR",
+        "OCR/receipt text normalization applied",
+        "Detected ACP address in free text",
+        "Extracted one payment amount",
+        "Detected currency hint: ACP",
+        "OCR receipt fields matched address and amount",
+        "OCR ACP address checksum failed; paste the verified recipient address manually"
+      ],
+      "recommendations": [
+        "Сверьте получателя, сумму и назначение с оригиналом документа и подтвердите реквизиты у отправителя.",
+        "Платёжный ACP-адрес не найден. Запросите реквизиты у получателя.",
+        "Прямая оплата в ACP недоступна: нужны ACP-адрес и сумма в ACP. Для банковского/валютного счёта нужен подтверждённый маршрут конвертации."
+      ],
+      "can_pay_acp": false
+    }
+  }
+]

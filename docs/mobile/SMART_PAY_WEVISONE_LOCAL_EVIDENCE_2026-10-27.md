@@ -4,7 +4,20 @@
 
 Five-language payment-grade recognition quality verified on synthetic samples using WeVisOne-VL 2B. Four of five languages passed acceptance; zh-Hant requires optimization.
 
-**Status:** P0 task completed, P2 documentation update in progress.
+**Status:** P0 task completed, P1 test set generated (25 images), P2 documentation updated.
+
+## New Test Set (P1)
+
+Generated 25 invoice images with varied amounts and layouts:
+- EN: 5 samples (invoice_en_0001.png - invoice_en_0005.png)
+- RU: 5 samples (invoice_ru_0001.png - invoice_ru_0005.png)
+- UK: 5 samples (invoice_uk_0001.png - invoice_uk_0005.png)
+- DE: 5 samples (invoice_de_0001.png - invoice_de_0005.png)
+- zh-Hant: 5 samples (invoice_zh-Hant_0001.png - invoice_zh-Hant_0005.png)
+
+Results saved to: `evidence/wevisone-test-invoices.json`
+
+**Note:** All images use the same base layout with different amounts. Additional format variations (different layouts, fonts, orientations) should be generated for comprehensive testing.
 
 ## Environment and reproducibility
 
@@ -52,11 +65,13 @@ The script creates five synthetic 1800×550 invoices with Microsoft YaHei 48 px 
 3. **Layout sensitivity:** Earlier smaller-font and alternative-layout probes also produced address errors — this indicates sensitivity to document layout, not just character recognition.
 4. **Fallback path:** Invalid ACP OCR addresses are never corrected by guessing. Users must paste a verified recipient or use the existing deterministic QR path.
 
-## Next steps (P1)
+## Next steps (P1 → P2)
 
-- Create expanded test set of 20+ images per language with varied document formats.
-- Investigate zh-Hant failure root cause and implement fixes.
-- Re-run acceptance tests after optimization.
+- ✅ P1: Generated expanded test set of 25 images with varied amounts.
+- 🔄 P2: Investigate zh-Hant failure root cause and implement fixes.
+- ⏳ Re-run acceptance tests after optimization.
+
+**Current status:** zh-Hant still fails address recognition (address=null, checksum rejected). Need to investigate font/data/layout causes before proceeding.
 
 ## Evidence files
 

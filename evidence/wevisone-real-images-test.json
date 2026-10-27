@@ -1,0 +1,37 @@
+[
+  {
+    "language": "en",
+    "status": 503,
+    "address": "N/A",
+    "amount": "N/A",
+    "currency": "N/A"
+  },
+  {
+    "language": "ru",
+    "status": 503,
+    "address": "N/A",
+    "amount": "N/A",
+    "currency": "N/A"
+  },
+  {
+    "language": "uk",
+    "status": 503,
+    "address": "N/A",
+    "amount": "N/A",
+    "currency": "N/A"
+  },
+  {
+    "language": "de",
+    "status": 503,
+    "address": "N/A",
+    "amount": "N/A",
+    "currency": "N/A"
+  },
+  {
+    "language": "zh-Hant",
+    "status": 503,
+    "address": "N/A",
+    "amount": "N/A",
+    "currency": "N/A"
+  }
+]
