@@ -1,3 +1,12 @@
+## Capital execution and top-up monetary integrity — 2026-10-27
+
+- Added the supplied 12-month/90-day capital plan with lean budgeting, two-offer pilot targets, 13-week cash-flow, corporate/IP/PSP gates and a source-checked grants register. Goals remain proposed and opening cash/round ask unknown; no outreach/application/funded operation performed.
+- Added explicit fiat_price/pricing_version for credit packages and frozen pricing_snapshot on new manual/Stripe top-ups. Capture/refund accounting now uses recorded order terms even if the catalog changes or removes a package. Legacy missing/corrupt terms fail closed for reconciliation; existing balances are not migrated.
+- Wallet card prices use explicit fiat prices; Stripe remains USD-only and README now matches. Existing numerical package prices, ACP credit quantities and wACP discount are preserved, not economically re-certified.
+- Blocked ledger-only Stripe refund approval: it previously could mark an intent refunded without executing a provider refund. Requests remain pending; provider-confirmed orchestration/recovery remains P0.
+- Updated dnspython to 2.9.0 for GHSA-45c3-73f7-pv4m; regenerated only that lock section with pip-tools in Linux Python 3.11.
+- Validation: 85 targeted backend tests passed against isolated PostgreSQL; 28 payment/snapshot tests repeated after final changes passed; 33 documentation/Stripe-truth checks passed; 85 frontend unit tests, ESLint, TypeScript and production build passed; two Chromium scenarios passed with no page errors (explicit fiat price/missing-price disable and currency-isolated analytics). Final CI/release evidence is tracked in the pull request. Next: durable provider idempotency/timeout recovery, external refund reconciliation and a qualified customer pilot; no phase is closed by a code-only test.
+
 ## Revenue execution priorities — 2026-10-27
 
 - Added docs/REVENUE_EXECUTION_PLAN.md and linked the active queue from both roadmaps and STATUS.md. Existing implemented functions are distinguished from missing adoption evidence; numerical goals are hypotheses.
