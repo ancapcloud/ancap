@@ -3,6 +3,7 @@
 - Added docs/REVENUE_EXECUTION_PLAN.md and linked the active queue from both roadmaps and STATUS.md. Existing implemented functions are distinguished from missing adoption evidence; numerical goals are hypotheses.
 - Fixed mixed-currency margin/cost/referral cards and workflow rankings. Cost-only currencies remain visible; empty amounts show an unavailable marker. Added ledger/estimated-cost coverage notice.
 - Verification: 85 frontend unit tests passed; lint, TypeScript and Next production build passed; targeted Chromium currency-isolation scenario passed with no page errors; documentation checks 60 passed / 5 platform-dependent skips. GitHub CI and deployment pending. No funded payment or financial configuration change is included.
+- CI follow-up: aligned Expo 58.0.20, camera 58.0.13, dev-client 58.0.16, file-system 58.0.12 and router 58.0.27 after fresh Expo compatibility recommendations. The dependency update resolves node-forge 1.4.2; removed the obsolete 1.4.0 source backport and retained all defensive regression tests. Mobile types, workspace builds, 352 unit tests + 5 security/CLI checks, all 19 enabled Expo Doctor checks and Android Hermes export pass. Native APK/device/store acceptance is not re-certified by these JS checks.
 - Next: durable source/cohort-aware activation events and one selected workflow's failure/retry/refund acceptance. Theodore's separate checkout and uncommitted files are preserved.
 
 ## Mobile security migration — 2026-10-26
