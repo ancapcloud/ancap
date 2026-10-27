@@ -98,7 +98,8 @@ async def value_summary(session, owner_id: str, days: int) -> ValueSummary:
     owner = UUID(owner_id)
     rows = list((await session.execute(select(WorkflowRunRecord.id, WorkflowRunRecord.result_json).where(
         WorkflowRunRecord.owner_user_id == owner, WorkflowRunRecord.status == "completed",
-        WorkflowRunRecord.result_json.is_not(None), WorkflowRunRecord.created_at >= since,
+        WorkflowRunRecord.result_json.is_not(None), func.jsonb_typeof(WorkflowRunRecord.result_json) != "null",
+        WorkflowRunRecord.created_at >= since,
         WorkflowRunRecord.created_at <= now).order_by(WorkflowRunRecord.created_at.desc(), WorkflowRunRecord.id.desc()).limit(VALUE_RUN_LIMIT + 1))).all())
     truncated = len(rows) > VALUE_RUN_LIMIT
     rows = rows[:VALUE_RUN_LIMIT]
@@ -126,6 +127,8 @@ async def value_summary(session, owner_id: str, days: int) -> ValueSummary:
 
 async def assessment_history(session, owner_id: str, run_id: str) -> AssessmentHistory:
     run = await owned_run(session, owner_id, run_id, completed=False)
+    if run.result_json is None:
+        return AssessmentHistory(items=[], has_more=False)
     rows = list((await session.execute(select(WorkflowResultAssessment).options(defer(WorkflowResultAssessment.result_snapshot_json)).where(
         WorkflowResultAssessment.workflow_run_id == run.id, WorkflowResultAssessment.owner_user_id == UUID(owner_id))
         .order_by(WorkflowResultAssessment.created_at.desc(), WorkflowResultAssessment.id.desc()).limit(51))).scalars())
@@ -140,7 +143,8 @@ async def assessed_result(session, owner_id: str, assessment_id: str) -> Assesse
     row = (await session.execute(select(WorkflowResultAssessment).join(WorkflowRunRecord,
         WorkflowRunRecord.id == WorkflowResultAssessment.workflow_run_id).where(
         WorkflowResultAssessment.id == parsed, WorkflowResultAssessment.owner_user_id == UUID(owner_id),
-        WorkflowRunRecord.owner_user_id == UUID(owner_id)))).scalar_one_or_none()
+        WorkflowRunRecord.owner_user_id == UUID(owner_id),
+        func.jsonb_typeof(WorkflowRunRecord.result_json) != "null"))).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
     if workflow_result_hash(row.result_snapshot_json) != row.result_hash:

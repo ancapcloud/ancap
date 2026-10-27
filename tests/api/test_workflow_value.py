@@ -1,5 +1,6 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
+import pytest
 from decimal import Decimal
 from uuid import uuid4
 
@@ -158,3 +159,64 @@ def test_value_keeps_acceptance_separate_from_captured_and_refunded_credits(clie
     finally:
         monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
         get_settings.cache_clear()
+
+
+@pytest.mark.parametrize("purge", ["delete_project", "expire"])
+def test_operation_content_lifecycle_removes_all_review_copies(client, db_cursor, monkeypatch, purge):
+    from app.config import get_settings
+    headers = register(client)
+    run_id, digest = completed_run(client, db_cursor, headers)
+    owner = client.get("/v1/users/me", headers=headers).json()["id"]
+    project = client.post("/v1/workflow-ops/projects", json={"name": "Retention fixture", "context": "Private retained content", "retention_days": 1}, headers=headers)
+    assert project.status_code == 201, project.text
+    project_id = project.json()["id"]
+    automation = client.post("/v1/workflow-ops/automations", json={"name": "Retention fixture", "project_id": project_id, "steps": [{"slug": "token-listing-pack"}], "require_review": True}, headers=headers)
+    assert automation.status_code == 201, automation.text
+    operation_id = str(uuid4())
+    db_cursor.execute("""INSERT INTO workflow_operation_runs (id,owner_user_id,automation_id,request_key,request_hash,kind,state,snapshot_json,progress_json,cost_acp,max_cost_acp,created_at,expires_at)
+        VALUES (%s,%s,%s,%s,%s,'manual','completed','{}'::jsonb,%s::jsonb,3,3,now(),now()+interval '1 day')""",
+        (operation_id, owner, automation.json()["id"], str(uuid4()), "a"*64, json.dumps({"items": [{"run_id": run_id}]})))
+    db_cursor.connection.commit()
+    saved = client.post(f"/v1/workflow-store/runs/{run_id}/assessment", json={"result_hash": digest, "verdict": "accepted", "note": "Private retained review"}, headers=headers)
+    assert saved.status_code == 201, saved.text
+    archived_url = f"/v1/workflow-store/assessments/{saved.json()['id']}/result"
+    assert client.get(archived_url, headers=headers).status_code == 200
+    try:
+        if purge == "delete_project":
+            result = client.delete(f"/v1/workflow-ops/projects/{project_id}", headers=headers)
+        else:
+            db_cursor.execute("UPDATE workflow_operation_runs SET expires_at=now()-interval '1 minute' WHERE id=%s", (operation_id,))
+            db_cursor.connection.commit()
+            monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", owner)
+            get_settings.cache_clear()
+            result = client.post("/v1/workflow-ops/tick", headers=headers)
+        assert result.status_code == 200, result.text
+        assert client.get(archived_url, headers=headers).status_code == 404
+        history = client.get(f"/v1/workflow-store/runs/{run_id}/assessments", headers=headers)
+        assert history.status_code == 200 and history.json()["items"] == []
+        db_cursor.execute("SELECT count(*) FROM workflow_result_assessments WHERE workflow_run_id=%s", (run_id,))
+        assert db_cursor.fetchone()[0] == 0
+        db_cursor.execute("SELECT state,cost_acp FROM workflow_operation_runs WHERE id=%s", (operation_id,))
+        state, amount = db_cursor.fetchone()
+        assert state == "expired" and amount == Decimal("3")
+        db_cursor.execute("SELECT count(*) FROM workflow_runs WHERE id=%s", (run_id,))
+        assert db_cursor.fetchone()[0] == 1
+        assert client.get("/v1/workflow-store/value", headers=headers).json()["completed_count"] == 0
+    finally:
+        monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", "")
+        get_settings.cache_clear()
+
+
+@pytest.mark.parametrize("literal", ["NULL", "'null'::jsonb"])
+def test_database_redaction_removes_archives_even_without_new_worker_helper(client, db_cursor, literal):
+    headers = register(client)
+    run_id, digest = completed_run(client, db_cursor, headers)
+    saved = client.post(f"/v1/workflow-store/runs/{run_id}/assessment", json={"result_hash": digest, "verdict": "accepted", "note": "Private redaction fixture"}, headers=headers)
+    assert saved.status_code == 201, saved.text
+    # The SQL fragment is a fixed test parameter, never request input.
+    db_cursor.execute("UPDATE workflow_runs SET result_json=" + literal + " WHERE id=%s", (run_id,))
+    db_cursor.connection.commit()
+    db_cursor.execute("SELECT count(*) FROM workflow_result_assessments WHERE workflow_run_id=%s", (run_id,))
+    assert db_cursor.fetchone()[0] == 0
+    assert client.get(f"/v1/workflow-store/assessments/{saved.json()['id']}/result", headers=headers).status_code == 404
+    assert client.get("/v1/workflow-store/value", headers=headers).json()["completed_count"] == 0
