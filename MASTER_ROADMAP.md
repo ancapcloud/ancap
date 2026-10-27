@@ -1,5 +1,7 @@
 # ANCAP Master Roadmap
 
+> Verified 2026-10-27: PR #125 merged and web release e2e88ed deployed successfully. All PR/master checks pass; live build, API health/readiness and five pages verified. See docs/RELEASE_VERIFICATION_2026-10-27.md. Earlier pending-release notes below are historical snapshots.
+
 > 2026-10-27 review: corrected Theodore's pricing checker and unverified progress claims; resolved translation regeneration and Android native release review findings. Release preparation is in progress; see PROGRESS.md for verification and deployment evidence.
 
 > 2026-10-26 mobile security: Expo 58 / RN 0.88 migration verified: JS/types/security tests, native Android APK, 31 aligned libraries, and encrypted-backup JNI test on 16 KB emulator pass. Forge advisory mitigated by a verified source backport until upstream release. See docs/mobile/MOBILE_SECURITY_MIGRATION_2026-10-26.md.

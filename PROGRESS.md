@@ -69,3 +69,12 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Android native module release AAR builds successfully; its packaged proguard.txt contains the JNA/UniFFI consumer keep rules. Expo prebuild preserves the restricted ABI list. This is build/packaging evidence, not a signed minified APK device acceptance test.
 - Updated the development test tools to close GHSA-6w46-j5rx-g56g (pytest <9.0.3). Final GitHub CI and deployment remain pending in PR #125; no release success is claimed yet. PR #125 contains #123/#124 and their review corrections in a single release.
 - User explicitly authorized push and deployment on 2026-10-27. OpenClaw ANCAP job temporarily paused during review/release; restore after verification. No funded payments or OCR quality acceptance run performed.
+
+## 2026-10-27 — Verified production release and Theodore handoff
+
+- PR #125 merged into master as e2e88edca121c0677fe1801859953ee5b56e02ee after all 18 checks passed. All triggered master workflows subsequently passed. Deployment run 40471722354 completed successfully.
+- Public frontend reports e2e88ed; API health=ok, readiness=ready (database/Redis true), and homepage, workflow catalogue, pricing, payment scanner and login return 200. The homepage was also checked in the browser after reloading. See docs/RELEASE_VERIFICATION_2026-10-27.md.
+- Pricing and locale regressions, CodeQL prototype pollution, native release keep rules/ABI mismatch and pytest advisory are fixed. GitHub now reports only the known source-backported node-forge advisory. No paid provider or funded payment was used for these checks.
+- The standard recover deployment rebuilt API/frontend; the existing ACP node container was preserved. Physical mobile/iOS and payment-grade OCR acceptance remain open; do not claim them complete.
+- Main checkout fast-forwarded to the published release on dedicated branch theodore/development-20261027. Original unverified reports/checker are backed up outside the repo and in Git stash; the original repair branch and nested worktrees remain preserved. Local excludes prevent old nested worktrees/build caches from polluting searches or accidental commits. Theodore's untracked THEODORE_QUEUE.md was preserved separately.
+- These results supersede the earlier pending-CI/deployment snapshots. Continue a small roadmap task; do not repeat release investigation or claim new verification without current command output.

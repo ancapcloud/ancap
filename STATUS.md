@@ -1,9 +1,11 @@
 # ANCAP Status
 
-> Updated: 2026-10-16
+> Updated: 2026-10-27
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
+
+**Verified web release (2026-10-27):** PR #125 merged as `e2e88edca121c0677fe1801859953ee5b56e02ee`. All 18 PR checks and all triggered master workflows passed, including deployment. Public frontend build is `e2e88ed`; API health/ready and five public pages passed. Pricing parity, translation regeneration and Android release binding/ABI review findings are fixed. Nine of ten prior dependency alerts closed; node-forge remains reported upstream with a verified source backport. See [release evidence](docs/RELEASE_VERIFICATION_2026-10-27.md). Earlier pending-release notes are historical snapshots, not current blockers. Physical mobile/iOS/OCR acceptance remains open.
 
 **Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
 
