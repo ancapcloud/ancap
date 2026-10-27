@@ -49,6 +49,46 @@ GitHub permissions check (run via `gh api repos/ancapcloud/ancap --jq .permissio
 - Per task Rule 2 (priority — do not parallel run if another run already works on the project): no parallel development started.
 - `gh api repos/ancapcloud/ancap --jq .permissions` returned full admin/maintain/pull/push/triage — no restriction blocking local work.
 
+## 2026-10-27 — Задача 1 завершена: Анализ качества распознавания по языкам (P0)
+
+**Сделано:** Проведено тестирование распознавания на синтетических образцах для всех 5 языков (EN/RU/UK/DE/zh-Hant) с использованием WeVisOne-VL 2B.
+
+**Результаты:**
+- EN: passed, 20.66 сек, адрес/сумма/валюта точно распознаны
+- RU: passed, 17.42 сек, все поля точны
+- UK: passed, 17.98 сек, все поля точны
+- DE: passed, 16.22 сек, все поля точны
+- zh-Hant: failed, 16.0 сек, address=null, checksum rejected (адрес не распознан)
+
+**Вывод:** Модель работает на 4 из 5 языков. Китайский (zh-Hant) требует отдельной оптимизации — вероятно, проблема в шрифте или подготовке данных для традиционного китайского.
+
+**Проверено:**
+- Команда: `python scripts/smoke_wevisone_local.py --font C:/Windows/Fonts/msyh.ttc`
+- Создано 5 синтетических изображений на каждый язык (1800×550, Microsoft YaHei 48 px)
+- Отчёт сохранён в `docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-27.md`
+
+**Проблемы:** zh-Hant не прошёл проверку (адрес распознан неверно, checksum ACP отклонён). Требует оптимизации.
+
+## 2026-10-27 — Задача 4 завершена: Документирование результатов (P2)
+
+**Сделано:** Обновлена документация с результатами тестирования и рекомендациями по оптимизации zh-Hant.
+
+**Изменения:**
+- Создан файл `docs/mobile/SMART_PAY_WEVISONE_LOCAL_EVIDENCE_2026-10-27.md` с:
+  - Таблицей результатов по всем 5 языкам
+  - Выводом о работе модели на 4 из 5 языков
+  - Рекомендациями по оптимизации zh-Hant (замена шрифта, подготовка данных)
+  - Ограничениями и следующим шагом (P1: расширенный тестовый набор)
+
+**Проверено:**
+- Файл создан с полным содержимым отчёта
+- Включены рекомендации по оптимизации zh-Hant
+- Зафиксированы ограничения (требуется ручной подтверждение, строгий acceptance exits 1 для zh-Hant)
+
+**Проблемы:** Нет. zh-Hant требует дальнейшей работы (P1: расширенный тестовый набор из 20+ изображений).
+
+**Дальше:** Задача 3: Улучшение распознавания zh-Hant (P1) — создать расширенный тестовый набор и исследовать причины ошибок.
+
 ## Next Steps
 
 No new tasks assigned. Next launch should review roadmap for next unchecked items.
