@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.services.credit_pricing import build_topup_pricing_snapshot, package_for_topup_intent
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
@@ -925,6 +926,7 @@ async def create_credit_top_up_intent(
         payment_reference=f"topup:{package.slug}:{uuid4().hex[:12]}",
         provider_payload_json={
             "package_slug": package.slug,
+            "pricing_snapshot": build_topup_pricing_snapshot(package, quoted_amount, body.payment_currency),
             "package_title": package.title,
             "credit_amount": package.credit_amount.model_dump(),
             "price": {"amount": str(quoted_amount), "currency": body.payment_currency},
@@ -943,11 +945,7 @@ async def create_credit_top_up_intent(
 
 
 def _package_for_top_up_intent(intent: PaymentIntent) -> WorkflowCreditPackagePublic:
-    package_slug = str((intent.provider_payload_json or {}).get("package_slug") or "")
-    package = find_credit_package(package_slug)
-    if package is None:
-        raise HTTPException(status_code=400, detail="Credit package metadata is invalid")
-    return package
+    return package_for_topup_intent(intent)
 
 
 async def _capture_credit_top_up_intent(

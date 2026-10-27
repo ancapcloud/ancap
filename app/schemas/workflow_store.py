@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -174,6 +174,8 @@ class WorkflowBundleCheckoutResponse(BaseModel):
 
 
 class WorkflowCreditPackagePublic(BaseModel):
+    fiat_price: Optional[Money] = None
+    pricing_version: str = "credit-packages-v1"
     slug: str
     title: str
     description: str
@@ -182,6 +184,12 @@ class WorkflowCreditPackagePublic(BaseModel):
     accepted_currencies: list[str] = Field(default_factory=list)
     bonus_percent: int = 0
     recommended_for: list[str] = Field(default_factory=list)
+
+
+class CreditTopUpPricingSnapshot(BaseModel):
+    schema_version: Literal[1] = 1
+    package: WorkflowCreditPackagePublic
+    payment_amount: Money
 
 
 class WorkflowCreditPackagesResponse(BaseModel):

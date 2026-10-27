@@ -185,6 +185,12 @@ async def approve_refund_request(
     if intent.refund_ledger_event_id:
         raise HTTPException(status_code=409, detail="Payment intent is already refunded")
 
+    if intent.payment_method == "stripe":
+        raise HTTPException(
+            status_code=409,
+            detail="Stripe refund approval is unavailable: provider-confirmed reconciliation is not implemented",
+        )
+
     user_acc = await get_or_create_account(session, "user", UUID(str(row.user_id)))
     platform_acc = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
     if intent.intent_type == "credit_topup":
