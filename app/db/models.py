@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime
 from sqlalchemy import (
     String,
+    UniqueConstraint,
+    CheckConstraint,
     Text,
     Integer,
     BigInteger,
@@ -479,6 +481,32 @@ class WorkflowRunRecord(Base):
     __table_args__ = (
         Index("ix_workflow_runs_owner_created", "owner_user_id", "created_at"),
         Index("ix_workflow_runs_owner_slug", "owner_user_id", "workflow_slug"),
+    )
+
+
+
+class WorkflowResultAssessment(Base):
+    __tablename__ = "workflow_result_assessments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    workflow_run_id = Column(UUID(as_uuid=True), ForeignKey("workflow_runs.id", ondelete="CASCADE"), nullable=False)
+    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    result_hash = Column(String(64), nullable=False)
+    result_snapshot_json = Column(JSONB, nullable=False)
+    verdict = Column(String(32), nullable=False)
+    baseline_minutes = Column(Numeric(12, 2), nullable=True)
+    assisted_minutes = Column(Numeric(12, 2), nullable=True)
+    hourly_rate = Column(Numeric(18, 6), nullable=True)
+    hourly_currency = Column(String(10), nullable=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    __table_args__ = (
+        UniqueConstraint("workflow_run_id", "result_hash", name="uq_workflow_assessment_version"),
+        CheckConstraint("verdict IN ('accepted', 'revision_requested', 'rejected')", name="ck_workflow_assessment_verdict"),
+        CheckConstraint("(baseline_minutes IS NULL) = (assisted_minutes IS NULL)", name="ck_workflow_assessment_time_pair"),
+        CheckConstraint("baseline_minutes >= 0 AND assisted_minutes >= 0", name="ck_workflow_assessment_nonnegative_time"),
+        CheckConstraint("(hourly_rate IS NULL) = (hourly_currency IS NULL)", name="ck_workflow_assessment_rate_pair"),
+        CheckConstraint("hourly_rate >= 0 AND (hourly_rate IS NULL OR baseline_minutes IS NOT NULL)", name="ck_workflow_assessment_rate_time"),
+        Index("ix_workflow_assessment_owner_created", "owner_user_id", "created_at"),
     )
 
 

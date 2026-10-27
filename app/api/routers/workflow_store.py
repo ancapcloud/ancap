@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.services.workflow_value import workflow_result_hash
 from app.services.credit_pricing import build_topup_pricing_snapshot, package_for_topup_intent
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
@@ -121,6 +122,7 @@ def _serialize_run(row: WorkflowRunRecord) -> WorkflowRunPublic:
         inputs=row.inputs_json or {},
         preview=row.preview_json or {},
         result=row.result_json,
+        result_hash=workflow_result_hash(row.result_json) if row.result_json is not None else None,
         receipt=WorkflowRunReceiptPublic(
             workflow_slug=row.workflow_slug,
             payment_currency=row.payment_currency,
