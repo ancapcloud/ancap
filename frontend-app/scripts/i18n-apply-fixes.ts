@@ -5,53 +5,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
-import { translations, type Language } from "../src/locales/translations.ts";
+import { type Language } from "../src/locales/translations.ts";
 import { pageKeys } from "./i18n-page-keys.ts";
 
-type Tree = { [k: string]: string | Tree };
-
-export function setPath(root: Tree, path: string, value: string) {
-  const parts = path.split(".");
-  for (const part of parts) {
-    if (!part || part === "__proto__" || part === "constructor" || part === "prototype") {
-      throw new Error("Unsafe translation path");
-    }
-  }
-  let cur: Tree = root;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const p = parts[i]!;
-    // Guard at the property traversal as well, so static analysis can prove
-    // that no inherited prototype property reaches the next tree node.
-    if (p === "__proto__" || p === "constructor" || p === "prototype") {
-      throw new Error("Unsafe translation path");
-    }
-    if (typeof cur[p] !== "object" || cur[p] === null) cur[p] = {};
-    cur = cur[p] as Tree;
-  }
-  const leaf = parts[parts.length - 1]!;
-  if (leaf === "__proto__" || leaf === "constructor" || leaf === "prototype") {
-    throw new Error("Unsafe translation path");
-  }
-  cur[leaf] = value;
-}
-
-function emitKey(k: string): string {
-  return /^[A-Za-z_$][\w$]*$/.test(k) ? k : JSON.stringify(k);
-}
-
-function emit(value: unknown, indent: number): string {
-  const pad = "  ".repeat(indent);
-  if (typeof value === "string") return JSON.stringify(value);
-  const obj = value as Tree;
-  const keys = Object.keys(obj);
-  const lines = ["{"];
-  keys.forEach((k, idx) => {
-    const comma = idx < keys.length - 1 ? "," : "";
-    lines.push(`${pad}  ${emitKey(k)}: ${emit(obj[k], indent + 1)}${comma}`);
-  });
-  lines.push(`${pad}}`);
-  return lines.join("\n");
-}
+import { applyTranslationPatch } from "../src/locales/translationPatch";
+export { applyTranslationPatch as setPath } from "../src/locales/translationPatch";
 
 const patches: Record<Exclude<Language, "en">, Record<string, string>> = {
   ru: {
@@ -262,26 +220,34 @@ const cookieKeys: Record<Language, Record<string, string>> = {
   },
 };
 
-const next = structuredClone(translations) as Record<Language, Tree>;
-
-for (const [lang, map] of Object.entries(patches) as [Exclude<Language, "en">, Record<string, string>][]) {
-  for (const [path, value] of Object.entries(map)) setPath(next[lang], path, value);
-}
-for (const [lang, map] of Object.entries(cookieKeys) as [Language, Record<string, string>][]) {
-  for (const [path, value] of Object.entries(map)) setPath(next[lang], path, value);
-}
-for (const [lang, map] of Object.entries(pageKeys) as [Language, Record<string, string>][]) {
-  for (const [path, value] of Object.entries(map)) setPath(next[lang], path, value);
-}
-
-// Keep the real resolver, module imports and English fallback when regenerating.
 const sourcePath = new URL("../src/locales/translations.ts", import.meta.url);
-export function generateTranslationSource(): string {
-  const source = readFileSync(sourcePath, "utf8");
-  const declaration = "export const translations: Record<Language, TranslationTree> = ";
-  const boundary = source.indexOf(declaration);
-  if (boundary < 0) throw new Error("Translation declaration missing; refusing to overwrite module");
-  return source.slice(0, boundary) + declaration + emit(next, 0) + ";\n";
+const beginMarker = "// BEGIN ANCAP generated translation patches";
+const endMarker = "// END ANCAP generated translation patches";
+const patchImport = 'import { applyTranslationPatch } from "./translationPatch";';
+
+export function generateTranslationSource(source = readFileSync(sourcePath, "utf8")): string {
+  if (!source.includes("export const translations: Record<Language, TranslationTree> = ")) {
+    throw new Error("Translation declaration missing; refusing to overwrite module");
+  }
+  const start = source.indexOf(beginMarker);
+  if (start >= 0) {
+    const end = source.indexOf(endMarker, start);
+    if (end < 0) throw new Error("Incomplete generated patch block; refusing to overwrite module");
+    source = source.slice(0, start) + source.slice(end + endMarker.length);
+  }
+  source = source.replace(patchImport + "\r\n", "").replace(patchImport + "\n", "").trimEnd();
+  const statements: string[] = [];
+  for (const maps of [patches, cookieKeys, pageKeys]) {
+    for (const [lang, map] of Object.entries(maps)) {
+      for (const [path, value] of Object.entries(map)) {
+        applyTranslationPatch({}, path, value);
+        statements.push(`applyTranslationPatch(translations[${JSON.stringify(lang)}], ${JSON.stringify(path)}, ${JSON.stringify(value)});`);
+      }
+    }
+  }
+  // Keep the entire initializer, including legalByLang.en and all other live
+  // domain references. Only the explicitly requested leaf keys are overridden.
+  return `${patchImport}\n${source}\n\n${beginMarker}\n${statements.join("\n")}\n${endMarker}\n`;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
