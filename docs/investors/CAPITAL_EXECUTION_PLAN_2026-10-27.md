@@ -1,5 +1,9 @@
 # Capital and commercial execution — 2026-10-27
 
+## Current product sequencing
+
+The [Research Operations/value roadmap](../WORKFLOW_VALUE_ROADMAP.md) now narrows commercial testing to one recurring research process for one agency/team segment, with an entry/onboarding offer rather than unrelated product expansion. It adds reviewed-version acceptance/history and personal value estimates as a technical baseline, not confirmed business outcomes. Test a 15–18 month post-close runway scenario using actual cash/quotes; keep the 12-month operating plan and rolling 13-week cash-flow. No additional round size, valuation or investor interest is established.
+
 ## Decision and evidence boundary
 
 12-month planning horizon, first operating gate at 90 days. Choose a lean team, two offers for one customer segment, reliable payment/delivery and repeat B2B purchases. Raise money for the next evidenced milestone rather than the entire exploratory portfolio. This is a planning decision, not a committed round, valuation, guaranteed return or legal classification.
