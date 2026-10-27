@@ -775,7 +775,7 @@ export default function WalletCreditsPage() {
                         </div>
                         <div style={{ textAlign: "center" }}>
                           <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("creditsPage.stripeCheckoutLabel")}</div>
-                          <strong style={{ color: "var(--text)" }}>{creditPackage.price.amount} {stripeCurrency}</strong>
+                          <strong style={{ color: "var(--text)" }}>{creditPackage.fiat_price?.currency === stripeCurrency ? `${creditPackage.fiat_price.amount} ${creditPackage.fiat_price.currency}` : "—"}</strong>
                         </div>
                         <div style={{ textAlign: "right" }}>
                           <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t("creditsPage.receive")}</div>
@@ -804,7 +804,7 @@ export default function WalletCreditsPage() {
                           className="btn btn-ghost"
                           style={{ width: "100%" }}
                           onClick={() => void openStripeCheckout(creditPackage)}
-                          disabled={stripeConfigured === false || stripeLoadingSlug === creditPackage.slug}
+                          disabled={stripeConfigured === false || stripeLoadingSlug === creditPackage.slug || creditPackage.fiat_price?.currency !== stripeCurrency}
                         >
                           {stripeLoadingSlug === creditPackage.slug ? t("creditsPage.preparingStripeBtn") : t("creditsPage.payWithStripe")}
                         </button>
