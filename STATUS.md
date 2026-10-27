@@ -1,9 +1,12 @@
 # ANCAP Status
 
-> Updated: 2026-10-16
+> Updated: 2026-10-27
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
+
+**Execution priorities (2026-10-27):** [Revenue execution board](docs/REVENUE_EXECUTION_PLAN.md) is the active work order. This change separates currencies in margin/cost/referral cards and workflow rankings. Customer revenue remains unverified. Durable cohort measurement, a golden pilot and repeat-use validation remain open. Existing subscriptions, creator earnings and API billing are implemented foundations. PR #125 is merged; pre-change production baseline is `e2e88ed`. Older entries below are dated historical evidence.
+
 
 **Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
 
