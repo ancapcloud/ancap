@@ -1,3 +1,10 @@
+## Revenue execution priorities — 2026-10-27
+
+- Added docs/REVENUE_EXECUTION_PLAN.md and linked the active queue from both roadmaps and STATUS.md. Existing implemented functions are distinguished from missing adoption evidence; numerical goals are hypotheses.
+- Fixed mixed-currency margin/cost/referral cards and workflow rankings. Cost-only currencies remain visible; empty amounts show an unavailable marker. Added ledger/estimated-cost coverage notice.
+- Verification: 85 frontend unit tests passed; lint, TypeScript and Next production build passed; targeted Chromium currency-isolation scenario passed with no page errors; documentation checks 60 passed / 5 platform-dependent skips. GitHub CI and deployment pending. No funded payment or financial configuration change is included.
+- Next: durable source/cohort-aware activation events and one selected workflow's failure/retry/refund acceptance. Theodore's separate checkout and uncommitted files are preserved.
+
 ## Mobile security migration — 2026-10-26
 
 - Upgraded the mobile workspace to Expo 58 / RN 0.88 / React 19.3 / TypeScript 6.
