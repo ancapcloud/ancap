@@ -42,6 +42,8 @@ export type WorkflowBundle = {
 };
 
 export type WorkflowCreditPackage = {
+  fiat_price?: { amount: string; currency: string } | null;
+  pricing_version?: string;
   slug: string;
   title: string;
   description: string;
@@ -1129,6 +1131,8 @@ export const fallbackWorkflowCreditPackages: WorkflowCreditPackage[] = [
     title: "Starter Credits",
     description: "Enough balance to run one launch workflow or test the paid execution loop.",
     price: { amount: "25", currency: "ACP" },
+    fiat_price: { amount: "25", currency: "USD" },
+    pricing_version: "credit-packages-v1",
     credit_amount: { amount: "25", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     bonus_percent: 0,
@@ -1139,6 +1143,8 @@ export const fallbackWorkflowCreditPackages: WorkflowCreditPackage[] = [
     title: "Launch Credits",
     description: "Best fit for the Launch Pack plus one or two follow-up reruns.",
     price: { amount: "95", currency: "ACP" },
+    fiat_price: { amount: "95", currency: "USD" },
+    pricing_version: "credit-packages-v1",
     credit_amount: { amount: "100", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     bonus_percent: 5,
@@ -1149,6 +1155,8 @@ export const fallbackWorkflowCreditPackages: WorkflowCreditPackage[] = [
     title: "Growth Credits",
     description: "A larger balance for repeated launch, growth, and risk workflows.",
     price: { amount: "225", currency: "ACP" },
+    fiat_price: { amount: "225", currency: "USD" },
+    pricing_version: "credit-packages-v1",
     credit_amount: { amount: "250", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     bonus_percent: 11,
