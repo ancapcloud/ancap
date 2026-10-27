@@ -26,6 +26,7 @@ on:
       - ".githooks/**"
       - "scripts/bootstrap_ancap_docs_repo.py"
       - "scripts/check_secret_hygiene.py"
+      - "scripts/check_pricing_sync.py"
       - "scripts/deploy-ancap-cloud.sh"
       - "scripts/ensure-acp1-host-proxy.sh"
       - "scripts/verify-genesis-keystores.py"
@@ -64,6 +65,7 @@ on:
       - ".githooks/**"
       - "scripts/bootstrap_ancap_docs_repo.py"
       - "scripts/check_secret_hygiene.py"
+      - "scripts/check_pricing_sync.py"
       - "scripts/deploy-ancap-cloud.sh"
       - "scripts/ensure-acp1-host-proxy.sh"
       - "scripts/verify-genesis-keystores.py"
@@ -127,6 +129,9 @@ jobs:
 
       - name: Run backend tests
         run: pytest -q
+
+      - name: Verify frontend and backend catalogue parity
+        run: python scripts/check_pricing_sync.py
 
       - name: Docs export / public-trust regression
         run: pytest tests/test_export_ancap_docs.py tests/test_public_trust_docs.py tests/test_status_summary.py tests/test_ancap_docs_split_ci_guard.py tests/test_bootstrap_ancap_docs_repo.py tests/test_generate_ancap_docs_live_followup.py -q

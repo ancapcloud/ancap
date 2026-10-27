@@ -9,6 +9,7 @@ version = '0.1.0'
 android {
   namespace "expo.modules.acpcore"
   defaultConfig {
+    consumerProguardFiles "consumer-rules.pro"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     versionCode 1
     versionName "0.1.0"

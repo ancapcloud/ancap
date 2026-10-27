@@ -1,7 +1,14 @@
-const { withAppBuildGradle, withMainApplication, withProjectBuildGradle } = require("expo/config-plugins");
+const { withAppBuildGradle, withMainApplication, withProjectBuildGradle, withGradleProperties } = require("expo/config-plugins");
 
 // Keep wallet build constraints reproducible when Expo regenerates Android.
 module.exports = function withWalletAndroid(config) {
+  config = withGradleProperties(config, (mod) => {
+    const architectures = mod.modResults.find((entry) => entry.type === "property" && entry.key === "reactNativeArchitectures");
+    if (!architectures) throw new Error("Missing React Native architecture property");
+    // Only advertise ABIs with a staged, validated Rust wallet library.
+    architectures.value = "arm64-v8a,x86_64";
+    return mod;
+  });
   config = withAppBuildGradle(config, (mod) => {
     // Remove the unsafe template assignment itself, as well as clearing the
     // effective configuration below, so generated sources are safe to inspect.

@@ -2,14 +2,21 @@
  * Apply correct translations for leftover EN strings + cookie consent keys.
  * Rewrites src/locales/translations.ts
  */
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { translations, type Language } from "../src/locales/translations.ts";
 import { pageKeys } from "./i18n-page-keys.ts";
 
 type Tree = { [k: string]: string | Tree };
 
-function setPath(root: Tree, path: string, value: string) {
+export function setPath(root: Tree, path: string, value: string) {
   const parts = path.split(".");
+  for (const part of parts) {
+    if (!part || part === "__proto__" || part === "constructor" || part === "prototype") {
+      throw new Error("Unsafe translation path");
+    }
+  }
   let cur: Tree = root;
   for (let i = 0; i < parts.length - 1; i++) {
     const p = parts[i]!;
@@ -258,41 +265,17 @@ for (const [lang, map] of Object.entries(pageKeys) as [Language, Record<string, 
   for (const [path, value] of Object.entries(map)) setPath(next[lang], path, value);
 }
 
-const header = `export type Language = "en" | "ru" | "uk" | "de" | "zh-Hant";
-
-type TranslationTree = {
-  [key: string]: string | TranslationTree;
-};
-
-export const SUPPORTED_LANGUAGES: Language[] = ["en", "ru", "uk", "de", "zh-Hant"];
-
-export function isSupportedLanguage(value: string | null | undefined): value is Language {
-  return (
-    value === "en" ||
-    value === "ru" ||
-    value === "uk" ||
-    value === "de" ||
-    value === "zh-Hant"
-  );
+// Keep the real resolver, module imports and English fallback when regenerating.
+const sourcePath = new URL("../src/locales/translations.ts", import.meta.url);
+export function generateTranslationSource(): string {
+  const source = readFileSync(sourcePath, "utf8");
+  const declaration = "export const translations: Record<Language, TranslationTree> = ";
+  const boundary = source.indexOf(declaration);
+  if (boundary < 0) throw new Error("Translation declaration missing; refusing to overwrite module");
+  return source.slice(0, boundary) + declaration + emit(next, 0) + ";\n";
 }
 
-export function t(lang: Language, key: string): string {
-  const keys = key.split(".");
-  let value: string | TranslationTree | undefined = translations[lang];
-
-  for (const k of keys) {
-    if (value && typeof value === "object") {
-      value = value[k];
-    } else {
-      return key;
-    }
-  }
-
-  return typeof value === "string" ? value : key;
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  writeFileSync(sourcePath, generateTranslationSource(), "utf8");
+  console.log("rewrote translations.ts");
 }
-
-export const translations: Record<Language, TranslationTree> = `;
-
-const body = emit(next, 0) + ";\n";
-writeFileSync("src/locales/translations.ts", header + body, "utf8");
-console.log("rewrote translations.ts");

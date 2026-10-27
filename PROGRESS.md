@@ -57,3 +57,12 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 
 - Previous run (prior launch): work in flight with uncommitted changes; completed cleanly with working tree preserved.
 - No new changes made in this run.
+
+## 2026-10-27 — Theodore review and authorized release preparation
+
+- Supersedes the unverified cron claims about master integration and database-backed pricing checks. The extra worktrees were detached at 80159c7; pricing tests explicitly do not use a database. Existing local artifacts remain preserved.
+- Corrected the pricing parity checker: compare values and missing/extra keys, fail closed on invalid/empty JSON, resolve defaults relative to the script. Eight CLI regression cases pass; both real catalogues have 92 identical price entries. Added the actual parity check to Backend CI.
+- Fixed GitHub review findings: translation regeneration keeps the existing resolver/imports and English fallback; dangerous prototype path segments are rejected before mutation. Six regression cases pass, including evaluating the generated module.
+- Android release consumers now retain reflected JNA/UniFFI classes and members; Expo prebuild advertises only arm64-v8a/x86_64, matching the validated native artifacts. Prebuild regeneration completed successfully.
+- Validation so far: 21 targeted Python checks, all 83 frontend tests and ESLint pass. Production build, native release AAR, final GitHub CI and deployment are pending; no release success is claimed yet.
+- User explicitly authorized push and deployment on 2026-10-27. OpenClaw ANCAP job temporarily paused during review/release; restore after verification. No funded payments or OCR quality acceptance run performed.
