@@ -20,10 +20,19 @@ export function setPath(root: Tree, path: string, value: string) {
   let cur: Tree = root;
   for (let i = 0; i < parts.length - 1; i++) {
     const p = parts[i]!;
+    // Guard at the property traversal as well, so static analysis can prove
+    // that no inherited prototype property reaches the next tree node.
+    if (p === "__proto__" || p === "constructor" || p === "prototype") {
+      throw new Error("Unsafe translation path");
+    }
     if (typeof cur[p] !== "object" || cur[p] === null) cur[p] = {};
     cur = cur[p] as Tree;
   }
-  cur[parts[parts.length - 1]!] = value;
+  const leaf = parts[parts.length - 1]!;
+  if (leaf === "__proto__" || leaf === "constructor" || leaf === "prototype") {
+    throw new Error("Unsafe translation path");
+  }
+  cur[leaf] = value;
 }
 
 function emitKey(k: string): string {
