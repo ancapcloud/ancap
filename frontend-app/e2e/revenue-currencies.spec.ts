@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("analytics keeps currencies separate including cost-only currencies", async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem("ancap_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, marketing: false })));
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.route("**/v1/**", route => {
@@ -24,6 +25,8 @@ test("analytics keeps currencies separate including cost-only currencies", async
   await expect(page.getByRole("region", { name: "Captured ACP", exact: true })).toContainText("acp-workflow");
   await expect(page.getByRole("region", { name: "Captured USD", exact: true })).toContainText("usd-workflow");
   await expect(page.getByText("Gross 0.00 · Margin 0.00 · Cost 2.00 · Referral 0.00")).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Currency", exact: true })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "USD", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
   await page.screenshot({ path: testInfo.outputPath("currency-analytics.png"), fullPage: true });
 });

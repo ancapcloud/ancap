@@ -325,6 +325,7 @@ export default function AnalyticsPage() {
                       <tr className="border-b border-[var(--border)] text-left">
                         <th className="px-4 py-3 font-medium opacity-60">Workflow</th>
                         <th className="px-4 py-3 font-medium opacity-60">Category</th>
+                        <th className="px-4 py-3 font-medium opacity-60">Currency</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Quotes</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Paid</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Captured</th>
@@ -340,6 +341,7 @@ export default function AnalyticsPage() {
                             <span className="font-mono text-xs">{sku.workflow_slug}</span>
                           </td>
                           <td className="px-4 py-3 text-xs opacity-60">{sku.category || "—"}</td>
+                          <td className="px-4 py-3 font-mono text-xs">{sku.currency}</td>
                           <td className="px-4 py-3 text-right font-mono">{sku.quote_count}</td>
                           <td className="px-4 py-3 text-right font-mono text-green-400">{sku.captured_count}</td>
                           <td className="px-4 py-3 text-right font-mono font-bold text-[var(--accent)]">
