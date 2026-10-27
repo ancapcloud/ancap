@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { Navigation } from "@/components/Navigation";
 import { ApiError, workflowStore } from "@/lib/api";
+import { topWorkflowsByCurrency } from "@/lib/revenueAnalytics";
 
 const DAYS_OPTIONS = [
   { label: "7 days", value: 7 },
@@ -135,19 +136,18 @@ export default function AnalyticsPage() {
     referralTotals[r.currency] = parseFloat(r.amount);
   }
 
-  const totalCaptured = Object.values(grossByCurrency).reduce((a: number, b: number) => a + b, 0);
-  const totalMargin = Object.values(marginTotals).reduce((a: number, b: number) => a + b, 0);
-  const totalCost = Object.values(costTotals).reduce((a: number, b: number) => a + b, 0);
-  const totalReferral = Object.values(referralTotals).reduce((a: number, b: number) => a + b, 0);
-
   const runStatusCounts: Record<string, number> = (revenue?.run_status_counts as Record<string, number> | undefined) || {};
   const paymentStatusCounts: Record<string, number> = (revenue?.payment_status_counts as Record<string, number> | undefined) || {};
   const totalRuns = Object.values(runStatusCounts).reduce((a: number, b: number) => a + b, 0);
   const completedRuns = runStatusCounts["completed"] || 0;
 
-  const topSkus = (revenue?.skus || []).slice(0, 10);
+  const skuGroups = topWorkflowsByCurrency(revenue?.skus || []);
+  const topSkus = skuGroups.flatMap((group) => group.items);
 
-  const currencyList = Object.keys(grossByCurrency);
+  const currencyList = Array.from(new Set([
+    ...Object.keys(grossByCurrency), ...Object.keys(marginTotals),
+    ...Object.keys(costTotals), ...Object.keys(referralTotals),
+  ])).sort();
 
   const runStatusData = Object.entries(runStatusCounts).map(([status, count]) => ({
     label: status,
@@ -160,7 +160,6 @@ export default function AnalyticsPage() {
     value: count as number,
   }));
 
-  const maxSkuCaptured = Math.max(...topSkus.map((s: any) => parseFloat(s.captured_amount || "0")), 1);
 
   return (
     <>
@@ -202,6 +201,10 @@ export default function AnalyticsPage() {
 
         {!loading && !error && revenue && (
           <>
+            <p className="text-sm opacity-60" role="note">
+              Internal ledger captures and estimated costs. Test or internal credits may be included;
+              these figures do not establish external customer revenue. Currencies are shown separately.
+            </p>
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {currencyList.length === 0 ? (
@@ -213,7 +216,7 @@ export default function AnalyticsPage() {
                   <div key={curr} className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 space-y-1">
                     <div className="text-xs opacity-60 uppercase tracking-wider">Gross Captured</div>
                     <div className="text-2xl font-mono font-bold text-[var(--accent)]">
-                      {grossByCurrency[curr].toFixed(2)}
+                      {(grossByCurrency[curr] || 0).toFixed(2)}
                     </div>
                     <div className="text-xs opacity-60">{curr}</div>
                   </div>
@@ -222,23 +225,29 @@ export default function AnalyticsPage() {
               <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 space-y-1">
                 <div className="text-xs opacity-60 uppercase tracking-wider">Est. Margin</div>
                 <div className="text-2xl font-mono font-bold">
-                  {totalMargin.toFixed(2)}
+                  {Object.entries(marginTotals).map(([currency, amount]) => (
+                    <div key={currency}>{amount.toFixed(2)} <span className="text-xs opacity-60">{currency}</span></div>
+                  ))}
+                  {Object.keys(marginTotals).length === 0 && <span>—</span>}
                 </div>
-                <div className="text-xs opacity-60">ACP</div>
               </div>
               <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 space-y-1">
                 <div className="text-xs opacity-60 uppercase tracking-wider">Est. LLM Cost</div>
                 <div className="text-2xl font-mono font-bold text-orange-400">
-                  {totalCost.toFixed(2)}
+                  {Object.entries(costTotals).map(([currency, amount]) => (
+                    <div key={currency}>{amount.toFixed(2)} <span className="text-xs opacity-60">{currency}</span></div>
+                  ))}
+                  {Object.keys(costTotals).length === 0 && <span>—</span>}
                 </div>
-                <div className="text-xs opacity-60">ACP</div>
               </div>
               <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 space-y-1">
                 <div className="text-xs opacity-60 uppercase tracking-wider">Referral Paid</div>
                 <div className="text-2xl font-mono font-bold text-blue-400">
-                  {totalReferral.toFixed(2)}
+                  {Object.entries(referralTotals).map(([currency, amount]) => (
+                    <div key={currency}>{amount.toFixed(2)} <span className="text-xs opacity-60">{currency}</span></div>
+                  ))}
+                  {Object.keys(referralTotals).length === 0 && <span>—</span>}
                 </div>
-                <div className="text-xs opacity-60">ACP</div>
               </div>
             </div>
 
@@ -276,7 +285,7 @@ export default function AnalyticsPage() {
             {/* Top SKUs */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h3 className="font-semibold">Top Workflows by Revenue</h3>
+                <h3 className="font-semibold">Top Workflows by Captured Amount</h3>
                 <button
                   type="button"
                   onClick={handleExportCsv}
@@ -291,16 +300,17 @@ export default function AnalyticsPage() {
                   {exportError}
                 </div>
               )}
-              {topSkus.length > 0 ? (
-                <BarChart
-                  data={topSkus.map((s: any) => ({
-                    label: s.workflow_slug,
-                    value: parseFloat(s.captured_amount || "0"),
-                    color: "#00d4aa",
-                  }))}
-                  label="Captured"
-                  maxValue={maxSkuCaptured}
-                />
+              {skuGroups.length > 0 ? (
+                skuGroups.map(({ currency, items }) => (
+                  <section key={currency} className="mb-6" aria-label={`Captured ${currency}`}>
+                    <h4 className="text-sm mb-2">{currency}</h4>
+                    <BarChart
+                      data={items.map((s) => ({ label: s.workflow_slug, value: Number(s.captured_amount || "0"), color: "#00d4aa" }))}
+                      label={`Captured ${currency}`}
+                      maxValue={Math.max(...items.map((s) => Number(s.captured_amount || "0")), 1)}
+                    />
+                  </section>
+                ))
               ) : (
                 <p className="text-sm opacity-50">No workflow revenue in this window</p>
               )}
@@ -315,6 +325,7 @@ export default function AnalyticsPage() {
                       <tr className="border-b border-[var(--border)] text-left">
                         <th className="px-4 py-3 font-medium opacity-60">Workflow</th>
                         <th className="px-4 py-3 font-medium opacity-60">Category</th>
+                        <th className="px-4 py-3 font-medium opacity-60">Currency</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Quotes</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Paid</th>
                         <th className="px-4 py-3 font-medium opacity-60 text-right">Captured</th>
@@ -325,11 +336,12 @@ export default function AnalyticsPage() {
                     </thead>
                     <tbody>
                       {topSkus.map((sku: any) => (
-                        <tr key={sku.workflow_slug} className="border-b border-[var(--border)]/50 hover:bg-white/5">
+                        <tr key={`${sku.currency}:${sku.workflow_slug}`} className="border-b border-[var(--border)]/50 hover:bg-white/5">
                           <td className="px-4 py-3">
                             <span className="font-mono text-xs">{sku.workflow_slug}</span>
                           </td>
                           <td className="px-4 py-3 text-xs opacity-60">{sku.category || "—"}</td>
+                          <td className="px-4 py-3 font-mono text-xs">{sku.currency}</td>
                           <td className="px-4 py-3 text-right font-mono">{sku.quote_count}</td>
                           <td className="px-4 py-3 text-right font-mono text-green-400">{sku.captured_count}</td>
                           <td className="px-4 py-3 text-right font-mono font-bold text-[var(--accent)]">
@@ -358,11 +370,11 @@ export default function AnalyticsPage() {
                 <h3 className="font-semibold mb-3">Margin Breakdown</h3>
                 <div className="space-y-2">
                   {currencyList.map((curr) => {
-                    const gross = grossByCurrency[curr];
+                    const gross = grossByCurrency[curr] || 0;
                     const margin = marginTotals[curr] || 0;
                     const cost = costTotals[curr] || 0;
                     const referral = referralTotals[curr] || 0;
-                    const marginPct = gross > 0 ? (margin / gross) * 100 : 0;
+                    const marginPct = gross > 0 ? (margin / gross) * 100 : null;
                     return (
                       <div key={curr} className="space-y-1">
                         <div className="flex flex-col gap-1 text-xs opacity-60 sm:flex-row sm:justify-between">
@@ -390,7 +402,7 @@ export default function AnalyticsPage() {
                             </>
                           )}
                         </div>
-                        <div className="text-xs font-mono text-right">{marginPct.toFixed(1)}% margin</div>
+                        <div className="text-xs font-mono text-right">{marginPct === null ? "—" : `${marginPct.toFixed(1)}%`} margin</div>
                       </div>
                     );
                   })}

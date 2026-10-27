@@ -2,7 +2,7 @@
   "name": "ancap-mobile",
   "private": true,
   "version": "0.1.0",
-  "description": "ANCAP ACP Wallet — React Native monorepo",
+  "description": "ANCAP ACP Wallet \u00e2\u20ac\u201d React Native monorepo",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "npm run build -w @ancap/acp-wallet-sdk && npm run build -w @ancap/acp-api-client && npm run build -w @ancap/acp-bridge-client && npm run build -w @ancap/acp-bsc-client",
-    "postinstall": "node scripts/apply-security-patches.cjs && npm run test:security && npm run build",
+    "postinstall": "npm run test:security && npm run build",
     "test": "npm run test:security && npm run test --workspaces --if-present",
     "test:expo": "npm run test -w @ancap/acp-wallet-expo --",
     "test:expo:smart-pay": "npm run test -w @ancap/acp-wallet-expo -- smart-pay",
@@ -26,11 +26,11 @@
     "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
   },
   "dependencies": {
-    "expo": "~58.0.19",
+    "expo": "~58.0.20",
     "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-native": "0.88.0",
-    "react-native-nfc-manager": "^4.1.0",
-    "react-dom": "19.3.0"
+    "react-native-nfc-manager": "^4.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",

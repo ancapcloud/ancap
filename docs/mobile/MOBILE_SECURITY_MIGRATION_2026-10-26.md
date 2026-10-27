@@ -1,3 +1,5 @@
+> Update 2026-10-27: the revenue-execution release aligns the latest Expo 58 patch recommendations and locks node-forge 1.4.2. The obsolete 1.4.0 source backport is removed; the RSA malformed-DigestAlgorithm regression tests remain and pass against upstream code. npm audit reports zero mobile dependency vulnerabilities at this check. [Upstream release](https://github.com/digitalbazaar/forge/releases/tag/v1.4.2). Native APK/16 KB/device evidence below applies to the dated 2026-10-26 dependency set; it is not a new native/store sign-off for these patches.
+
 # Mobile security migration — 2026-10-26
 
 ## Scope

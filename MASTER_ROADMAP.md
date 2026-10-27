@@ -1,5 +1,13 @@
 # ANCAP Master Roadmap
 
+## Active priorities — 2026-10-27
+
+The active order is [revenue validation and reliable paid workflows](docs/REVENUE_EXECUTION_PLAN.md). Subscriptions, creator earnings and API billing are implemented foundations to verify and improve. Currency-isolated analytics is the first implemented slice; durable cohort measurement and customer validation remain open. Financial targets are hypotheses. Speculative expansion is deferred behind this queue.
+
+Previous repair was merged in PR #125; the pre-change production baseline is `e2e88ed`. Historical pending notes below describe earlier snapshots. GPU OCR quality, funded-payment verification and physical/iOS sign-off remain open.
+
+## Historical implementation notes
+
 > Verified 2026-10-27: PR #125 merged and web release e2e88ed deployed successfully. All PR/master checks pass; live build, API health/readiness and five pages verified. See docs/RELEASE_VERIFICATION_2026-10-27.md. Earlier pending-release notes below are historical snapshots.
 
 > 2026-10-27 review: corrected Theodore's pricing checker and unverified progress claims; resolved translation regeneration and Android native release review findings. Release preparation is in progress; see PROGRESS.md for verification and deployment evidence.

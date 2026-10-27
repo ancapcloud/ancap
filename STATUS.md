@@ -5,6 +5,9 @@
 
 ## Current truth
 
+**Execution priorities (2026-10-27):** [Revenue execution board](docs/REVENUE_EXECUTION_PLAN.md) is the active work order. This change separates currencies in margin/cost/referral cards and workflow rankings. Customer revenue remains unverified. Durable cohort measurement, a golden pilot and repeat-use validation remain open. Existing subscriptions, creator earnings and API billing are implemented foundations. PR #125 is merged; pre-change production baseline is `e2e88ed`. Older entries below are dated historical evidence.
+
+
 **Verified web release (2026-10-27):** PR #125 merged as `e2e88edca121c0677fe1801859953ee5b56e02ee`. All 18 PR checks and all triggered master workflows passed, including deployment. Public frontend build is `e2e88ed`; API health/ready and five public pages passed. Pricing parity, translation regeneration and Android release binding/ABI review findings are fixed. Nine of ten prior dependency alerts closed; node-forge remains reported upstream with a verified source backport. See [release evidence](docs/RELEASE_VERIFICATION_2026-10-27.md). Earlier pending-release notes are historical snapshots, not current blockers. Physical mobile/iOS/OCR acceptance remains open.
 
 **Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
