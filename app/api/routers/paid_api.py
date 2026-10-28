@@ -6,6 +6,7 @@ from uuid import UUID
 
 import csv
 import hashlib
+import hmac
 import io
 import json
 
@@ -819,13 +820,14 @@ class PaidApiChallengeResponse(BaseModel):
     currency: str
     expires_at: str
     signature_input: str
+    signature_algorithm: str = "hmac-sha256"
 
 
 class PaidApiSettleRequest(BaseModel):
     challenge_id: str
     nonce: str
     product_slug: str
-    signature: str
+    signature: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
 class PaidApiConsumeRequest(BaseModel):
@@ -839,7 +841,7 @@ _paid_api_settlements: dict[str, dict] = {}
 
 def _challenge_signature(secret: str, challenge_id: str, nonce: str, product_slug: str, amount: str) -> str:
     payload = f"{challenge_id}:{nonce}:{product_slug}:{amount}"
-    return hashlib.sha256(f"{secret}:{payload}".encode()).hexdigest()
+    return hmac.new(secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 @router.get("/challenge", response_model=PaidApiChallengeResponse)
@@ -904,7 +906,7 @@ async def paid_api_settle(
         raise HTTPException(status_code=403, detail="API key mismatch")
 
     expected = _challenge_signature(x_api_key, body.challenge_id, body.nonce, body.product_slug, challenge["amount"])
-    if body.signature != expected:
+    if not hmac.compare_digest(body.signature, expected):
         raise HTTPException(status_code=403, detail="Invalid signature")
 
     settle_id = _secrets.token_urlsafe(18)

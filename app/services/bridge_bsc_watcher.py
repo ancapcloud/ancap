@@ -1,5 +1,6 @@
 """BSC JSON-RPC watcher checkpoint + mint confirmation progression."""
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import logging
 from typing import Any
@@ -254,7 +255,7 @@ async def tick_bsc_checkpoint(session: AsyncSession) -> dict[str, Any]:
                 try:
                     op.bsc_log_index = int(logs[0].get("logIndex"), 16)
                 except Exception:
-                    pass
+                    report_optional_failure('app.services.bridge_bsc_watcher:tick_bsc_checkpoint:int', quiet=False)
             await append_transition(
                 session,
                 op,

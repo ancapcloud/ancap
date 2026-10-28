@@ -1002,7 +1002,6 @@ def test_smart_pay_recover_keeps_existing_structured_ref_metadata_when_plain_dup
 
 def test_smart_pay_payment_history_lists_latest_executions_with_receipts(client):
     first_addr = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
-    second_addr = "acp1qg7l6f5d9s4lm7v3x0j6l3r0f8c0q5t7t2k7d3m4"
 
     first_parsed = client.post(
         "/v1/mobile/smart-pay/parse",

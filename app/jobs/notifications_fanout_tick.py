@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, select, update
 
 from app.db.models import NotificationEvent, User
@@ -17,7 +17,7 @@ async def notifications_fanout_tick(session: AsyncSession, *, max_events: int = 
     Email is sent for high-priority notifications where the user has opted in.
     Redis pub/sub broadcasts all processed events so any connected client can receive them.
     """
-    settings = get_settings()
+    get_settings()
     processed = 0
     email_sent = 0
     redis_published = 0
@@ -34,7 +34,6 @@ async def notifications_fanout_tick(session: AsyncSession, *, max_events: int = 
     for notif in notifications:
         try:
             # Resolve user email for email fanout
-            email_sent_this = 0
             if notif.recipient_user_id:
                 user_result = await session.execute(
                     select(User.email).where(User.id == notif.recipient_user_id)
@@ -51,7 +50,6 @@ async def notifications_fanout_tick(session: AsyncSession, *, max_events: int = 
                         text_body=text_body,
                         html_body=html_body,
                     ):
-                        email_sent_this = 1
                         email_sent += 1
 
             # Publish to Redis pub/sub for real-time in-app delivery

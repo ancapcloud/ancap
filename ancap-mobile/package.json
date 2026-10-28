@@ -2,7 +2,7 @@
   "name": "ancap-mobile",
   "private": true,
   "version": "0.1.0",
-  "description": "ANCAP ACP Wallet \u00e2\u20ac\u201d React Native monorepo",
+  "description": "ANCAP ACP Wallet â€” React Native monorepo",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -20,7 +20,7 @@
     "typecheck:api-client": "npm run typecheck -w @ancap/acp-api-client",
     "app:start": "npm run start -w @ancap/acp-wallet-expo",
     "app:expo": "npm run start -w @ancap/acp-wallet-expo",
-    "test:security": "node --test scripts/node-forge-security.test.cjs"
+    "test:security": "node --test scripts/node-forge-security.test.cjs scripts/deepmerge-security.test.cjs"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
@@ -30,7 +30,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.0",
-    "react-native-nfc-manager": "^4.1.0"
+    "react-native-nfc-manager": "^4.1.0",
+    "deepmerge": "file:./vendor/deepmerge-safe"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
@@ -40,6 +41,7 @@
   "overrides": {
     "@expo/cli": {
       "zod": "^4.6.7"
-    }
+    },
+    "deepmerge": "$deepmerge"
   }
 }

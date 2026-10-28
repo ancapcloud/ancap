@@ -1,9 +1,10 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from uuid import UUID
 
 from sqlalchemy import select
@@ -16,11 +17,8 @@ from app.db.models import (
     StrategyVersion,
     Vertical,
     VerticalSpec,
-    Listing,
     Pool,
     LedgerEvent,
-    Review,
-    RiskPolicy,
     RiskProfileEnum,
 )
 from app.engine.actions.base_vertical import BASE_VERTICAL_ACTIONS
@@ -259,7 +257,7 @@ async def _flow1(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, param
         try:
             mint_builder += Decimal(settings.listing_fee_amount or "0")
         except Exception:
-            pass
+            report_optional_failure('app.scenarios.runner:_flow1:256', quiet=True)
     await mint(session, owner_type="agent", owner_id=UUID(str(builder.id)), currency=currency, amount=str(mint_builder), reference="flow1-builder-mint")
 
     if float(settings.stake_to_activate_amount or "0") > 0:
@@ -619,7 +617,7 @@ async def _simulation(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, 
                     amount_value=Decimal(settings.stake_to_activate_amount),
                 )
             except Exception:
-                pass
+                report_optional_failure('app.scenarios.runner:_simulation:611', quiet=True)
 
     sellers = agents[: max(1, agents_n // 2)]
     buyers = agents[max(1, agents_n // 2) :]
@@ -655,7 +653,7 @@ async def _simulation(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, 
         buyer = rng.choice(buyers) if buyers else rng.choice(agents)
         item = rng.choice(listings)
         try:
-            order = await place_order(
+            await place_order(
                 OrderPlaceRequest(
                     listing_id=item["listing_id"],
                     buyer_type="agent",
@@ -689,7 +687,7 @@ async def _simulation(session: AsyncSession, ctx: _RunCtx, *, seed: int | None, 
                 if created_runs <= 5:
                     ctx.ref("run", run.id, url="/runs", sim_sample=True)
             except Exception:
-                pass
+                report_optional_failure('app.scenarios.runner:_simulation:672', quiet=True)
 
         if (k + 1) % max(1, tick_every) == 0:
             await tick_jobs_best_effort(session)

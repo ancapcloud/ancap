@@ -1,7 +1,8 @@
-﻿import re, os, json
+from pathlib import Path
+import re, os, json
 from collections import Counter
 
-tt = open("src/locales/translations.ts", encoding="utf-8", errors="replace").read()
+tt = Path("src/locales/translations.ts").read_text(encoding='utf-8', errors='replace')
 # Find en: { ... } block roughly - look for keys inside en section
 m = re.search(r'\ben\s*:\s*\{', tt)
 print("en_anchor", bool(m), "at", m.start() if m else None)
@@ -21,7 +22,7 @@ str_lit = re.compile(r"(?<![\w.])([\"'])([A-Z][^\"']{2,120})\1")
 skip_line = re.compile(r"^\s*(import|export|//|className|href=|from )")
 
 def collect(path):
-    lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+    lines = Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
     hits=set()
     for line in lines:
         if skip_line.search(line):
@@ -101,7 +102,7 @@ for dp,_,fs in os.walk('src/app'):
   for f in fs:
     if f!='page.tsx': continue
     path=os.path.join(dp,f)
-    txt=open(path,encoding='utf-8',errors='replace').read()
+    txt=Path(path).read_text(encoding='utf-8', errors='replace')
     rel=path.replace('\\','/')
     (pages_with if 'useLanguage' in txt else pages_without).append(rel)
 
@@ -112,7 +113,7 @@ for dp,_,fs in os.walk('src'):
     if not f.endswith('.tsx'): continue
     path=os.path.join(dp,f)
     if path.endswith('page.tsx'): continue
-    txt=open(path,encoding='utf-8',errors='replace').read()
+    txt=Path(path).read_text(encoding='utf-8', errors='replace')
     if 'useLanguage' in txt:
       other_ul.append(path.replace('\\','/'))
 
@@ -128,6 +129,6 @@ result={
   "translation_key_unique_est": len(set(all_keys)),
   "translation_prefixes": prefs.most_common(40),
 }
-open('tmp-i18n-hardcoded-audit.json','w',encoding='utf-8').write(json.dumps(result, indent=2, ensure_ascii=False))
+Path('tmp-i18n-hardcoded-audit.json').write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding='utf-8')
 print('wrote tmp-i18n-hardcoded-audit.json')
 print('unique', len(unique), 'pages_with', len(pages_with), 'without', len(pages_without), 'keys', len(set(all_keys)))

@@ -1,19 +1,17 @@
 from logging.config import fileConfig
 
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Connection
 
 from alembic import context
 
 from app.config import get_settings
-from app.db.base import Base
-from app.db import models  # noqa: F401 - register all models
+from app.db import models
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = models.Base.metadata
 
 
 def get_url():

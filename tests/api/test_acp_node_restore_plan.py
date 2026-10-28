@@ -104,7 +104,7 @@ def test_history_warming_returns_status_not_silent_empty(client, monkeypatch):
 
     monkeypatch.setattr(wallet_acp, "_chain_transactions_for_address", _cold)
     # Need wallet address — balance endpoint may create/bind; deposit_address often initializes
-    dep = client.api_route if False else client.get("/v1/wallet/acp/deposit_address", headers=headers)
+    dep = client.get("/v1/wallet/acp/deposit_address", headers=headers)
     if dep.status_code not in (200, 201):
         # If wallet not ready, skip soft
         return

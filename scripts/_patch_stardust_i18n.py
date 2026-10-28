@@ -217,10 +217,6 @@ def patch_nav() -> None:
             print("nav already patched")
             return
     # Insert after quantumSim or lunar in each language nav object
-    replacements = [
-        ('quantumSim: "Quantum SIM",', 'quantumSim: "Quantum SIM",\n    stardust: "Stardust",'),
-        ('quantumSim: "Quantum SIM",', None),  # already handled
-    ]
     # Find nav blocks - look for pattern after lunar or quantumSim keys
     markers = [
         ('    lunar: "Lunar",\n', '    lunar: "Lunar",\n    stardust: "Stardust",\n'),

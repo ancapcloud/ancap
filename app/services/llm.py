@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import hashlib
 from contextvars import ContextVar
@@ -130,7 +131,7 @@ def _parse_model_json(text: str) -> dict[str, Any]:
         if isinstance(parsed, dict):
             return parsed
     except Exception:
-        pass
+        report_optional_failure('app.services.llm:_parse_model_json:128', quiet=True)
     return {
         "status": "completed",
         "deliverable": {
@@ -319,7 +320,7 @@ async def execute_paid_workflow_with_llm(
 
     if template.slug in _COMPLIANCE_LOCKED_SLUGS:
         fallback = execute_workflow_template(template, inputs or {})
-        latency_ms = int((time.perf_counter() - started) * 1000)
+        int((time.perf_counter() - started) * 1000)
         fallback["llm_usage"] = {
             "status": "compliance_locked",
             "provider": provider,
@@ -341,7 +342,7 @@ async def execute_paid_workflow_with_llm(
 
     if provider == "disabled":
         fallback = execute_workflow_template(template, inputs or {})
-        latency_ms = int((time.perf_counter() - started) * 1000)
+        int((time.perf_counter() - started) * 1000)
         fallback["llm_usage"] = {
             "status": "disabled",
             "provider": provider,

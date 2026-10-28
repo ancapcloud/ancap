@@ -29,3 +29,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index("ix_accounts_account_kind", table_name="accounts")
     op.drop_column("accounts", "account_kind")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

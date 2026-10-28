@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from uuid import UUID
 
 from fastapi import APIRouter, Query
@@ -23,7 +24,7 @@ async def list_grants(
         try:
             q = q.where(AccessGrant.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if grantee_type:
         q = q.where(AccessGrant.grantee_type == grantee_type)
     if grantee_id:

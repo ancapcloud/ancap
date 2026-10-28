@@ -66,7 +66,7 @@ async def test_official_endpoint_never_follows_redirects(monkeypatch, response_s
             if response_status == 502:
                 return httpx.Response(502, text="not-json upstream content")
             return httpx.Response(response_status, headers={"location": "https://evil.example"}, json={"id": "pi_fixture"})
-    monkeypatch.setattr(stripe_payments, "get_settings", lambda: settings())
+    monkeypatch.setattr(stripe_payments, "get_settings", settings)
     monkeypatch.setattr(stripe_payments.httpx, "AsyncClient", FakeClient)
     if response_status >= 300:
         with pytest.raises(HTTPException) as caught:
@@ -81,7 +81,7 @@ async def test_official_endpoint_never_follows_redirects(monkeypatch, response_s
 @pytest.mark.parametrize("path", ["//evil.example", "/../customers", "/customers?x=1", "/%2e%2e/customers", "/payment_methods/pm_x/customers", "/payment_intents/pm_wrong_kind"])
 @pytest.mark.asyncio
 async def test_endpoint_paths_cannot_escape_api_prefix(monkeypatch, path):
-    monkeypatch.setattr(stripe_payments, "get_settings", lambda: settings())
+    monkeypatch.setattr(stripe_payments, "get_settings", settings)
     def forbidden_client(**kwargs):
         pytest.fail("Invalid paths must be rejected before creating an HTTP client")
     monkeypatch.setattr(stripe_payments.httpx, "AsyncClient", forbidden_client)

@@ -1951,7 +1951,7 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
     goals = payload.get("goals") if isinstance(payload.get("goals"), list) else []
     channels = payload.get("channels") if isinstance(payload.get("channels"), list) else []
     token_symbol = str(payload.get("token_symbol") or payload.get("symbol") or "TOKEN")
-     
+
     primary_cta = str(payload.get("primary_cta") or "Book a call / request a workflow")
     posting_style = str(payload.get("posting_style") or "direct, proof-driven, anti-hype")
     reward_budget = str(payload.get("reward_budget") or "to be defined")
@@ -2241,7 +2241,7 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
         }
     elif template.slug == "ai-iso-governance-readiness-pack":
         ai_system = str(payload.get("ai_system") or payload.get("workflow_name") or project_name)
-        intended_use = str(payload.get("intended_use") or "paid AI workflow execution")
+        str(payload.get("intended_use") or "paid AI workflow execution")
         risk_level = str(payload.get("risk_level") or "medium")
         owner = str(payload.get("owner") or "platform owner")
         deliverable = {

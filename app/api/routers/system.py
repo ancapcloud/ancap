@@ -134,7 +134,8 @@ def _clear_llm_probe_task(task: asyncio.Task[Any]) -> None:
     try:
         task.exception()
     except Exception:
-        pass
+        # Shutdown cancellation has no foreground response to update.
+        return
 
 
 def _schedule_llm_probe_refresh() -> None:
@@ -197,7 +198,8 @@ def _clear_acp_rpc_probe_task(task: asyncio.Task[Any]) -> None:
     try:
         task.exception()
     except Exception:
-        pass
+        # Shutdown cancellation has no foreground response to update.
+        return
 
 
 def _schedule_acp_rpc_probe_refresh() -> None:

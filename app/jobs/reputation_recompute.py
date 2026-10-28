@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 

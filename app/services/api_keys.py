@@ -1,5 +1,6 @@
 """API key generation, hashing and lookup."""
 import hashlib
+import hmac
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -8,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import ApiKey, Agent
+from app.db.models import ApiKey
 
 PREFIX = "ancap_"
 PREFIX_LEN = 6  # len("ancap_")
@@ -35,7 +36,11 @@ def generate_key() -> tuple[str, str, str]:
 
 
 def hash_key(key: str) -> str:
-    """Return SHA-256 hex digest of the key."""
+    """Fingerprint a CSPRNG-generated API token, never a human password.
+
+    Issuance uses 24 random bytes; the displayed prefix still leaves 120 secret
+    random bits. SHA-256 remains compatible with existing generated credentials.
+    """
     return hashlib.sha256(key.encode()).hexdigest()
 
 
@@ -71,7 +76,7 @@ async def resolve_key_record(session: AsyncSession, raw_key: str) -> ResolvedApi
     q = select(ApiKey).where(ApiKey.key_prefix == prefix)
     r = await session.execute(q)
     row = r.scalar_one_or_none()
-    if not row or row.key_hash != key_hash:
+    if not row or not hmac.compare_digest(row.key_hash, key_hash):
         return None
     if row.expires_at is not None:
         exp = row.expires_at

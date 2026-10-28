@@ -1,9 +1,6 @@
 """Ledger: deposit, withdraw, balance, allocate, events."""
 import uuid
-from decimal import Decimal
 
-import pytest
-from sqlalchemy import text
 
 from tests.conftest import unique_email, unique_name
 

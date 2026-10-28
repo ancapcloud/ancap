@@ -39,7 +39,7 @@ async def register_agent(
             if r.scalar_one_or_none():
                 attestation_id = aid
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid attestation ID") from None
     # L3 stake-to-activate: when required, activation only via stake (not attestation)
     stake_required = float(settings.stake_to_activate_amount or "0") > 0
     activated_at = None if stake_required else (datetime.utcnow() if attestation_id else None)
@@ -102,14 +102,14 @@ async def list_agents(
         try:
             q = q.where(Agent.owner_user_id == UUID(user_id))
         except ValueError:
-            pass
+            raise HTTPException(status_code=401, detail="Invalid authenticated user ID") from None
     elif owner_user_id:
         q = q.where(Agent.owner_user_id == owner_user_id)
     if cursor:
         try:
             q = q.where(Agent.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

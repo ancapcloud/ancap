@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import json
 from typing import Any, Callable, Awaitable
 from uuid import UUID
 
-from app.config import get_settings
 from app.services.cache import get_redis_client
 
 

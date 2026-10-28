@@ -91,3 +91,6 @@ def downgrade() -> None:
     op.drop_column("runs", "inputs_hash")
     op.execute("DELETE FROM vertical_specs WHERE vertical_id IN (SELECT id FROM verticals WHERE name = 'BaseVertical')")
     op.execute("DELETE FROM verticals WHERE name = 'BaseVertical'")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

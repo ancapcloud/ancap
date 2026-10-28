@@ -3,7 +3,6 @@ from __future__ import annotations
 from decimal import Decimal
 from uuid import uuid4
 
-import pytest
 
 from app.config import get_settings
 

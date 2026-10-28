@@ -24,7 +24,7 @@ def rename_event_key(logger: WrappedLogger, method_name: str, event_dict: EventD
 
 
 def configure_logging() -> None:
-    settings = get_settings()
+    get_settings()
 
     processors = [
         structlog.contextvars.merge_contextvars,

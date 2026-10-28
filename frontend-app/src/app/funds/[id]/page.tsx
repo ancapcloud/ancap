@@ -14,7 +14,7 @@ export default function FundDetailPage() {
 
   const [fund, setFund] = useState<any | null>(null);
   const [performance, setPerformance] = useState<any | null>(null);
-  const [strategiesList, setStrategiesList] = useState<any[]>([]);
+  const [, setStrategiesList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 

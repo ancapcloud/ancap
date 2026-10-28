@@ -7,11 +7,11 @@ import { Navigation } from "@/components/Navigation";
 import { orders, listings } from "@/lib/api";
 
 export default function OrdersPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const [items, setItems] = useState<any[]>([]);
-  const [listingsMap, setListingsMap] = useState<Record<string, any>>({});
+  const [, setListingsMap] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -125,7 +125,7 @@ export default function OrdersPage() {
           ) : (
             <div className="responsive-grid responsive-grid-3">
               {items.map((o) => {
-                const listing = listingsMap[o.listing_id];
+
                 const price = o.amount;
                 return (
                   <div key={o.id} className="card">

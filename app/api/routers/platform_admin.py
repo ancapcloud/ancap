@@ -1,5 +1,6 @@
 """Hidden platform-admin console APIs — gated by require_platform_admin."""
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
@@ -184,7 +185,7 @@ async def admin_list_users(
             UUID(q.strip())
             filt = or_(filt, User.id == q.strip())
         except ValueError:
-            pass
+            report_optional_failure('app.api.routers.platform_admin:admin_list_users:UUID', quiet=False)
         base = base.where(filt)
         count_q = count_q.where(filt)
 

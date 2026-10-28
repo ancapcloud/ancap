@@ -1,3 +1,4 @@
+from app.services.recoverable_errors import report_optional_failure
 import json
 import os
 import subprocess
@@ -18,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.api.deps import require_auth
-from app.services.cache import cache_get_json, cache_get_json_sync, cache_set_json, cache_set_json_sync
+from app.services.cache import cache_get_json, cache_get_json_sync, cache_set_json_sync
 from app.db.models import (
     Agent,
     Stake,
@@ -1023,7 +1024,7 @@ def _probe_role_wallet(address: str, *, timeout_s: int) -> tuple[Decimal, int, b
                 True,
             )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.wallet_acp:_probe_role_wallet:fallback', quiet=False)
 
     rpc_url = _require_acp_rpc_url()
     try:
@@ -1163,7 +1164,7 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
                 )
                 return dict(indexed)
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.wallet_acp:_load_balance_result:fallback', quiet=False)
         timeout_s = (
             _OPERATOR_ROLE_WALLETD_TIMEOUT_S
             if target in OPERATOR_ROLE_ADDRESSES
@@ -1201,7 +1202,7 @@ def _load_balance_result(address: str, *, interactive: bool = True) -> dict:
         if indexed is not None and not _probe_source_failed(indexed):
             return dict(indexed)
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.wallet_acp:_load_balance_result:fallback', quiet=False)
     # Do not sticky-cache empty results after a timeout — that made real hot
     # floats look like 0 / tiny until the process restarted.
     # Mark source so decorate never treats empty error payloads as live zeros.
@@ -1362,7 +1363,7 @@ def _load_or_create_hot_mnemonic() -> str:
         try:
             p.rename(p.with_suffix(p.suffix + ".bad"))
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.wallet_acp:_load_or_create_hot_mnemonic:p.rename', quiet=False)
     p.parent.mkdir(parents=True, exist_ok=True)
     created = _run_walletd(["new"])
     mnemonic = _normalize_mnemonic_text(str(created["mnemonic"]))
@@ -1387,7 +1388,7 @@ def _load_or_create_valid_hot_mnemonic() -> str:
             try:
                 p.rename(p.with_suffix(p.suffix + ".bad"))
             except Exception:
-                pass
+                report_optional_failure('app.api.routers.wallet_acp:_load_or_create_valid_hot_mnemonic:p.rename', quiet=False)
         created = _run_walletd(["new"])
         new_mnemonic = _normalize_mnemonic_text(str(created["mnemonic"]))
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -1546,7 +1547,7 @@ def _warm_chain_scan_cache() -> None:
             best_height, out_index, _tx_index = data
             utxo_idx.seed_from_out_index(out_index, height=int(best_height or 0))
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.wallet_acp:_warm_chain_scan_cache:fallback', quiet=False)
     except Exception:
         # Keep previous cache if any; interactive callers already returned [].
         pass
@@ -1770,7 +1771,7 @@ async def _bind_view_wire(session: AsyncSession, wallet, wallet_password: str | 
         try:
             return bytes.fromhex(cached)
         except ValueError:
-            pass
+            report_optional_failure('app.api.routers.wallet_acp:_bind_view_wire:bytes.fromhex', quiet=False)
     if not wallet_password:
         raise HTTPException(
             status_code=400,
@@ -2113,7 +2114,7 @@ def _store_withdraw_job(job_id: str, payload: dict) -> None:
     try:
         cache_set_json_sync(_withdraw_job_key(job_id), payload, ttl_seconds=_WITHDRAW_JOB_TTL_S)
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.wallet_acp:_store_withdraw_job:cache_set_json_sync', quiet=False)
 
 
 def _read_withdraw_job(job_id: str) -> dict | None:

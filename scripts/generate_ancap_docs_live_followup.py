@@ -399,12 +399,16 @@ def main(argv: list[str] | None = None) -> int:
         args.repo = validate_repo_argument(args.repo)
     except ValueError as exc:
         parser.error(str(exc))
+        return 2
 
+    basename = ""
+    date_label = ""
     try:
         basename = _validate_filename_component(args.basename, flag_name="--basename")
         date_label = _validate_filename_component(args.date_label, flag_name="--date-label")
     except ValueError as exc:
         parser.error(str(exc))
+        return 2
 
     bootstrap_script = Path(args.bootstrap_script)
     if not bootstrap_script.exists():
@@ -439,6 +443,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
+        return 2
 
     common_command = [
         sys.executable,

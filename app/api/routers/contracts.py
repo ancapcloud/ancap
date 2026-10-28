@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from datetime import datetime, timezone
 from uuid import UUID
@@ -21,7 +22,6 @@ from app.db.models import (
 )
 from app.schemas import (
     ContractCreateRequest,
-    ContractUpdateRequest,
     ContractPublic,
     Pagination,
 )
@@ -181,7 +181,7 @@ async def accept_contract(
             worker_agent_id=contract.worker_agent_id,
         )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.contracts:accept_contract:on_contract_accepted', quiet=False)
     return _to_public(contract)
 
 
@@ -242,7 +242,7 @@ async def cancel_contract(contract_id: UUID, session: DbSession):
             worker_agent_id=contract.worker_agent_id,
         )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.contracts:cancel_contract:on_contract_cancelled', quiet=False)
     return _to_public(contract)
 
 
@@ -321,7 +321,7 @@ async def complete_contract(contract_id: UUID, session: DbSession):
             worker_agent_id=contract.worker_agent_id,
         )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.contracts:complete_contract:on_contract_completed', quiet=False)
     return _to_public(contract)
 
 
@@ -350,7 +350,7 @@ async def list_contracts(
         try:
             q = q.where(Contract.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if employer_agent_id:
         q = q.where(Contract.employer_agent_id == employer_agent_id)
     if worker_agent_id:
@@ -451,7 +451,7 @@ async def list_contract_runs(
         try:
             q = q.where(Run.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

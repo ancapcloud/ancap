@@ -409,7 +409,6 @@ async function commitVault(
   }
   await trackPendingGen(gen);
 
-  let committed = false;
   try {
     await writeGeneration(gen, payload, mode);
     const verified = await readGeneration(gen);
@@ -426,7 +425,6 @@ async function commitVault(
     // Track the previous allocation before flipping so process death cannot orphan it.
     if (previous) await trackPendingGen(previous);
     await setActiveGen(gen);
-    committed = true;
     // Post-commit housekeeping must never roll back or delete the active wallet.
     try {
       await untrackPendingGen(gen);
@@ -450,7 +448,6 @@ async function commitVault(
     }
     return verified;
   } catch (error) {
-    if (committed) throw error;
     // A rejected storage promise does not prove the pointer write had no effect.
     // If its outcome cannot be read, retain both tracked generations for recovery.
     const observedActive = await getActiveGen();

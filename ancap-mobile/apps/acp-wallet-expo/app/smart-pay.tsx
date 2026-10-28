@@ -96,7 +96,6 @@ import {
   getSmartPayHistorySourceLabel,
   getSmartPayRecoverHint,
   getSmartPayRefreshOrRecoverHint,
-  hasSmartPayLiveSessionAccess,
   canSmartPayRecoverExecution,
   resolveSmartPayExecutionSessionToken,
 } from "@/lib/smart-pay-history-view";

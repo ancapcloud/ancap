@@ -21,7 +21,6 @@ from app.services.acp_tokenomics import CUSTODIAL_HOT_ADDRESS
 
 logger = logging.getLogger(__name__)
 
-_UNITS_PER_ACP = Decimal("100000000")
 
 
 def _parse_decimal(value: object) -> Decimal:

@@ -1,5 +1,4 @@
 from decimal import Decimal
-from uuid import UUID
 
 from tests.conftest import unique_name
 from tests.conftest import unique_email

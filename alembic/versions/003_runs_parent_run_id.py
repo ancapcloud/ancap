@@ -35,3 +35,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_constraint("fk_runs_parent_run_id", "runs", type_="foreignkey")
     op.drop_column("runs", "parent_run_id")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

@@ -3,15 +3,13 @@ import hashlib
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from sqlalchemy import create_engine, select as sync_select
 from sqlalchemy.orm import Session
 
 from app.api.routers import auth as auth_router
 from app.db.models import PasswordResetToken, User, UserAcpWallet, UserEvmWallet
-from app.services.acp_wallet import decrypt_mnemonic, decrypt_wallet_secret_with_password, password_recovery_ready
-from app.services.rate_limit import clear_rate_limit_state
+from app.services.acp_wallet import decrypt_wallet_secret_with_password, password_recovery_ready
 from tests.conftest import _sync_database_url, unique_email
 
 

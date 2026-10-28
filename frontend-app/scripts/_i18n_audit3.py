@@ -1,4 +1,5 @@
-﻿import re, os, json
+from pathlib import Path
+import re, os, json
 from collections import Counter
 
 def flatten(obj, prefix=""):
@@ -11,7 +12,7 @@ def flatten(obj, prefix=""):
         out.append((prefix, obj))
     return out
 
-text=open('src/locales/translations.ts',encoding='utf-8').read()
+text=Path('src/locales/translations.ts').read_text(encoding='utf-8')
 idx=text.find('en: {')
 i=idx+len('en:')
 while text[i]!='{': i+=1
@@ -79,7 +80,7 @@ for base in ['src/app','src/components']:
       if not f.endswith('.tsx'): continue
       if 'Language' in f: continue
       path=os.path.join(dp,f)
-      lines=open(path,encoding='utf-8',errors='replace').read().splitlines()
+      lines=Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
       local=set()
       for line in lines:
         if skip.search(line): continue
@@ -106,7 +107,7 @@ for n,p,b in sorted(file_scores, reverse=True)[:25]:
 
 for p in ['src/app/HomePage.tsx','src/components/Navigation.tsx','src/components/CookieConsent.tsx','src/app/login/LoginForm.tsx','src/app/register/page.tsx']:
     h=set()
-    lines=open(p,encoding='utf-8',errors='replace').read().splitlines()
+    lines=Path(p).read_text(encoding='utf-8', errors='replace').splitlines()
     for line in lines:
         if skip.search(line): continue
         if "t('" in line or 't("' in line: continue

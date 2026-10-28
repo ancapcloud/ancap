@@ -135,7 +135,7 @@ def install_git_hooks(*, repo_root: Path, hooks_path: str, force: bool, dry_run:
         print(f"Git hooks already point at {normalized_hooks_path}.")
         return 0
 
-    if normalized_current and normalized_current != expected_hooks_key and not force:
+    if normalized_current and not force:
         current_display = _display_hooks_path(current_hooks_path)
         print(
             "Refusing to overwrite existing git hooksPath without --force: "

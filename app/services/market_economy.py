@@ -52,7 +52,6 @@ _GT_TOKEN = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
 _GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_GT_TOKEN}"
 
 _ORACLE: dict[str, Any] = {"at": 0.0, "price": None, "source": "none"}
-_Q_SPOT = Decimal("0.00000000000001")
 _Q_RATE = Decimal("0.00000001")
 _Q_ACP = Decimal("0.01")
 CATALOG_USD_PRICES = json.loads(Path(__file__).with_name("catalog_prices.json").read_text())

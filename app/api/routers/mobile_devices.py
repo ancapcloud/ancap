@@ -1,4 +1,4 @@
-﻿"""Device registration endpoint for mobile push notifications (Phase 6.2).
+"""Device registration endpoint for mobile push notifications (Phase 6.2).
 
 See docs/mobile/API_MOBILE.md.
 """
@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession, get_current_user_id
 from app.db.models import MobileDevice

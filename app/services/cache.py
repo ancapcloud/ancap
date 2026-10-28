@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import json
 from functools import lru_cache
@@ -90,7 +91,7 @@ def cache_set_json_sync(key: str, value: Any, *, ttl_seconds: int) -> None:
             try:
                 client.close()
             except Exception:
-                pass
+                report_optional_failure('app.services.cache:cache_set_json_sync:client.close', quiet=True)
 
 
 def cache_get_json_sync(key: str) -> Any | None:
@@ -112,4 +113,4 @@ def cache_get_json_sync(key: str) -> Any | None:
             try:
                 client.close()
             except Exception:
-                pass
+                report_optional_failure('app.services.cache:cache_get_json_sync:client.close', quiet=True)

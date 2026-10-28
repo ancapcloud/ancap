@@ -67,3 +67,25 @@ Long-horizon infra:
 
 Neither blocks near-term commerce polish or Phase 6 mobile.
 
+
+
+## Paid API challenge signature update — 2026-10-28
+
+`GET /v1/paid-api/challenge` advertises `signature_algorithm: "hmac-sha256"`.
+Clients must sign the exact UTF-8 `signature_input` with their API key as the
+HMAC key and submit the lowercase 64-character hexadecimal digest to
+`POST /v1/paid-api/settle`, together with the original challenge ID, nonce and
+product slug. Do not log the key or signature. For example:
+
+```python
+signature = hmac.new(
+    api_key.encode("utf-8"),
+    challenge["signature_input"].encode("utf-8"),
+    hashlib.sha256,
+).hexdigest()
+```
+
+The old SHA-256 of a secret-prefixed string is no longer accepted. Pending
+in-memory challenges have a 180-second lifetime; clients should request a new
+challenge after an upgrade. This update does not execute a workflow or establish
+payment by itself; existing consumption/authorization rules remain in force.

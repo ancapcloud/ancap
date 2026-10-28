@@ -197,7 +197,7 @@ export default function OrganizationDetailPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => void load()}
-                  disabled={loading || deletingOrg}
+                  disabled={deletingOrg}
                   className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Refresh

@@ -82,7 +82,7 @@ async def list_accounts(
         try:
             q = q.where(Account.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if owner_id is not None:
         if not owner_type:
             raise HTTPException(status_code=400, detail="owner_type is required when owner_id is provided")
@@ -248,7 +248,7 @@ async def list_events(
         try:
             q = q.where(LedgerEvent.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if account_id:
         acc = await session.get(Account, account_id)
         if not acc:

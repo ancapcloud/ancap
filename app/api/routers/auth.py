@@ -1,3 +1,4 @@
+from app.services.recoverable_errors import report_optional_failure
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -167,7 +168,7 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
     try:
         await send_login_alert(user=user, request=request, via="password")
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.auth:login:167', quiet=True)
     _set_auth_cookie(response, token, request)
     # Never return mnemonics on login — register (or explicit recover) is the one-shot path.
     return AuthLoginResponse(
@@ -237,7 +238,7 @@ async def wallet_verify(body: WalletAuthVerifyRequest, request: Request, respons
     try:
         await send_login_alert(user=user, request=request, via="wallet")
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.auth:wallet_verify:237', quiet=True)
     _set_auth_cookie(response, token, request)
     return AuthLoginResponse(
         access_token=token,
@@ -260,7 +261,7 @@ async def wallet_link(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     try:
-        _token, _linked_user = await verify_wallet_auth_and_issue_token(
+        await verify_wallet_auth_and_issue_token(
             session,
             challenge_id=body.challenge_id,
             address=body.address,
@@ -359,7 +360,7 @@ async def password_forgot(body: PasswordForgotRequest, request: Request, session
             try:
                 await send_password_reset_email(request, user, raw_token)
             except Exception:
-                pass
+                report_optional_failure('app.api.routers.auth:password_forgot:359', quiet=True)
     return PasswordForgotResponse(success=True)
 
 

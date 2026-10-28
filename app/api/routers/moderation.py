@@ -1,3 +1,4 @@
+from app.services.recoverable_errors import report_optional_failure
 from decimal import Decimal
 from uuid import UUID
 
@@ -56,7 +57,7 @@ async def apply_moderation_action(
             reason=body.reason,
         )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.moderation:apply_moderation_action:on_moderation_action', quiet=False)
     # L3: slashing when moderating an agent
     if body.target_type == "agent" and body.action in ("suspend", "quarantine", "reject"):
         settings = get_settings()
@@ -71,7 +72,7 @@ async def apply_moderation_action(
                     reason=f"moderation:{body.action}" + (f": {body.reason}" if body.reason else ""),
                 )
             except Exception:
-                pass
+                report_optional_failure('app.api.routers.moderation:apply_moderation_action:fallback', quiet=False)
     return {"ok": True}
 
 

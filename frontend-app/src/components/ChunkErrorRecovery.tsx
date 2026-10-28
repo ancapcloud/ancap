@@ -13,7 +13,7 @@ function isChunkLoadError(reason: unknown): boolean {
         ? String((reason as { message?: unknown }).message ?? "")
         : "";
   const name =
-    typeof reason === "object" && reason && "name" in reason
+    typeof reason === "object" && "name" in reason
       ? String((reason as { name?: unknown }).name ?? "")
       : "";
   return (

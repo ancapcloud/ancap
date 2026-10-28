@@ -1,3 +1,4 @@
+from app.services.recoverable_errors import report_optional_failure
 import base64
 import hashlib
 import json
@@ -196,7 +197,7 @@ def decode_wallet_secret(secret_text: str) -> tuple[str, str | None]:
             if mnemonic and keystore_json:
                 return mnemonic, keystore_json
     except Exception:
-        pass
+        report_optional_failure('app.services.acp_wallet:decode_wallet_secret:json.loads', quiet=True)
     return text, None
 
 

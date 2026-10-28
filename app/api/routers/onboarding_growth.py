@@ -13,7 +13,6 @@ from app.schemas import (
     RunRequest,
     RunPublic,
 )
-from app.db.models import FaucetClaim, StarterPackAssignment
 from app.services.faucet import claim_faucet
 from app.services.starter_pack import assign_starter_pack, activate_starter_pack
 from app.services.quickstart import provision_quickstart

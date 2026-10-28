@@ -56,3 +56,6 @@ def downgrade() -> None:
     op.drop_index("ix_agent_relationships_target_agent_id", "agent_relationships")
     op.drop_index("ix_agent_relationships_source_agent_id", "agent_relationships")
     op.drop_table("agent_relationships")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

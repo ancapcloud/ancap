@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import asyncio
 import csv
@@ -69,7 +70,7 @@ from app.services.auth import decode_token
 from app.services.pubsub import publish_workflow_run_event
 from app.services.webhook_dispatcher import (
     emit_run_completed, emit_payment_captured, emit_payment_refunded,
-    emit_receipt_ready, emit_user_registered,
+    emit_receipt_ready,
 )
 from app.services.workflow_execution import (
     WORKFLOW_BUNDLES,
@@ -1284,13 +1285,13 @@ async def get_workflow_store_revenue_summary(
                 sku["estimated_cost_amount"] = Decimal(sku["estimated_cost_amount"]) + Decimal(str(estimated_cost.get("amount", "0")))
                 estimated_cost_totals[row.payment_currency] = estimated_cost_totals.get(row.payment_currency, Decimal(0)) + Decimal(str(estimated_cost.get("amount", "0")))
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.workflow_store:get_workflow_store_revenue_summary:Decimal', quiet=False)
         try:
             if estimated_margin:
                 sku["estimated_margin_amount"] = Decimal(sku["estimated_margin_amount"]) + Decimal(str(estimated_margin.get("amount", "0")))
                 estimated_margin_totals[row.payment_currency] = estimated_margin_totals.get(row.payment_currency, Decimal(0)) + Decimal(str(estimated_margin.get("amount", "0")))
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.workflow_store:get_workflow_store_revenue_summary:Decimal', quiet=False)
         commission_amount = referral_commission_by_run_id.get(str(row.id), Decimal(0))
         if commission_amount > 0:
             sku["referral_commission_amount"] = Decimal(sku["referral_commission_amount"]) + commission_amount
@@ -2132,7 +2133,7 @@ async def update_workflow_run_status(
                 owner_user_id=owner_id,
             )
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.workflow_store:update_workflow_run_status:str', quiet=False)
     elif target_status in {WorkflowRunStatus.failed, WorkflowRunStatus.cancelled}:
         await _refund_reserved_workflow_payment(session, row, f"Workflow run moved to {target_status.value}.")
         try:
@@ -2147,7 +2148,7 @@ async def update_workflow_run_status(
                     owner_user_id=str(row.owner_user_id),
                 )
         except Exception:
-            pass
+            report_optional_failure('app.api.routers.workflow_store:update_workflow_run_status:_latest_payment_intent', quiet=False)
 
     await session.flush()
     await session.refresh(row)
