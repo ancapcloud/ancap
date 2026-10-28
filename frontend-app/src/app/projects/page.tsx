@@ -6,7 +6,7 @@ import { SolutionAreas, WorkflowFooter, presentationStyles as s } from "@/compon
 import { positioningByLang } from "@/locales/positioning";
 import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
 import { TestProjectsSection } from "@/components/TestProjectsSection";
-import { CreatorEarningsSection } from "@/components/CreatorEarningsSection";
+import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 export default function ProjectsPage() {
   const { lang } = useLanguage();
@@ -20,6 +20,6 @@ export default function ProjectsPage() {
     <PeopleAiEconomySection />
     <TestProjectsSection />
     <ReviewTrustSection />
-    <CreatorEarningsSection />
+    <CardInfoSection />
   </main><WorkflowFooter /></div>;
 }
