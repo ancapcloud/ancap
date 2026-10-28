@@ -14,7 +14,7 @@ from app.services.workflow_execution import find_workflow_template
 from app.services.workflow_ops_support import now, digest, bounded_json, unseal, quality_passport, market_snapshot, deliver
 from app.services.llm import execute_paid_workflow_with_llm, workflow_provider_credentials
 
-from app.services.workflow_ops_access import owned, project_access
+from app.services.workflow_ops_access import owned, project_access, run_access
 
 OPS_SLUGS = frozenset({"token-listing-pack", "crypto-campaign-builder", "telegram-growth-kit", "airdrop-bounty-builder", "token-risk-report", "token-launch-audit-pack", "exchange-listing-submission-pack", "kol-telegram-campaign-builder", "token-risk-report-pro", "agent-api-readiness-pack", "ai-iso-governance-readiness-pack", "market-direction-brief", "crypto-cycle-momentum-scan", "commodity-price-outlook"})
 WORKER_HEALTH = {"last_tick": None, "last_error_type": None}
@@ -67,7 +67,7 @@ async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled
     if existing:
         if existing.request_hash != request_hash:
             raise HTTPException(409, "Idempotency key used for different inputs")
-        return existing
+        return await run_access(session, owner, existing.id)
     from app.services.market_economy import get_wacp_usd_oracle
     await get_wacp_usd_oracle()
     # Use the same live quote construction as direct purchases, never an assumed FX rate.
@@ -82,7 +82,7 @@ async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled
     row = (await session.execute(select(WorkflowOperationRun).where(WorkflowOperationRun.owner_user_id == str(owner), WorkflowOperationRun.request_key == body.idempotency_key))).scalar_one()
     if row.request_hash != request_hash:
         raise HTTPException(409, "Idempotency key conflict")
-    return row
+    return await run_access(session, owner, row.id)
 
 
 async def _process_item(session, operation):

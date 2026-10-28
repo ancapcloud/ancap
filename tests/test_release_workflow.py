@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -15,7 +16,7 @@ def test_release_workflow_runs_on_tags_and_drafts_github_release():
     assert 'frontend-release-check:' in workflow_text
     assert 'draft-release:' in workflow_text
     assert 'needs:' in workflow_text
-    assert 'softprops/action-gh-release@v1' in workflow_text
+    assert re.search(r'uses: softprops/action-gh-release@[0-9a-f]{40}\b', workflow_text)
     assert 'generate_release_notes: true' in workflow_text
     assert 'draft: true' in workflow_text
     assert 'docker build -t ancap:release-check .' in workflow_text

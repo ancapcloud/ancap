@@ -213,3 +213,28 @@ def test_retry_and_cancel_do_not_disclose_inaccessible_packets(client, db_cursor
     assert 'research_packets' not in cancelled.text
     db_cursor.execute("SELECT state FROM workflow_operation_runs WHERE id=%s", (op,))
     assert db_cursor.fetchone()[0] == 'queued'
+
+
+def test_idempotent_enqueue_cannot_return_expired_packet(client, db_cursor, monkeypatch):
+    from app.schemas.workflow_ops import EnqueueRequest
+    from app.services.workflow_ops_support import digest
+    owner, headers, _, base, sid, _, op, _ = fixture(client, db_cursor, monkeypatch)
+    attach(client, headers, base, sid, op)
+    db_cursor.execute("SELECT automation_id FROM workflow_operation_runs WHERE id=%s", (op,))
+    aid = str(db_cursor.fetchone()[0])
+    body = EnqueueRequest(kind="test", idempotency_key="packet-"+op, max_cost_acp="1")
+    request_hash = digest({"automation_id": aid, **body.model_dump(mode="json")})
+    db_cursor.execute("UPDATE workflow_operation_runs SET kind='test',request_hash=%s WHERE id=%s", (request_hash, op))
+    db_cursor.connection.commit()
+    url = f'/v1/workflow-ops/automations/{aid}/runs'
+    active = client.post(url, headers=headers, json=body.model_dump(mode="json"))
+    assert active.status_code == 202, active.text
+    assert active.headers['cache-control'] == 'private, no-store'
+    assert active.json()['id'] == op
+    db_cursor.execute("UPDATE workflow_operation_runs SET expires_at=NOW()-interval '1 second' WHERE id=%s", (op,))
+    db_cursor.connection.commit()
+    replay = client.post(url, headers=headers, json=body.model_dump(mode="json"))
+    assert replay.status_code == 404
+    assert 'research_packets' not in replay.text
+    db_cursor.execute("SELECT count(*) FROM workflow_operation_runs WHERE owner_user_id=%s AND request_key=%s", (owner['id'], body.idempotency_key))
+    assert db_cursor.fetchone()[0] == 1

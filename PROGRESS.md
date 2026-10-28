@@ -110,3 +110,8 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 
 - GitHub review found a packet disclosure through retry-delivery after project access revocation. Retry and cancellation now enforce project membership and packet expiry before any mutation/response; retry also revalidates the approved evidence. Added revoked-owner and expired-packet regressions: all 20 Studio/packet tests pass.
 
+
+- Closed the second review path: matching idempotent enqueue responses now recheck research packet access/expiry, including concurrent insert returns. Added a valid replay then expiry regression and private no-store response headers. All 23 focused Studio/packet/QR/release-workflow tests pass.
+- GitHub full backend run exposed a legacy release test that required a mutable action tag. Updated it to require a 40-character commit pin. The previous run otherwise had 1189 passes and 40 skips; it is not reported as a green run.
+- Local Windows QR failure was a missing tzdata package; installed tzdata in the test environment and the QR regression now passes. Deployment CI uses Linux timezone data. Operator approved PR #130 in this chat on 2026-10-28; merge/deployment still wait for exact-head CI and review fixes.
+

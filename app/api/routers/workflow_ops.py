@@ -151,7 +151,8 @@ async def schedule(row_id: str, body: ScheduleWrite, session: DbSession, user_id
 
 
 @router.post("/automations/{row_id}/runs", status_code=202)
-async def enqueue_run(row_id: str, body: EnqueueRequest, session: DbSession, user_id: str = Depends(require_auth)):
+async def enqueue_run(row_id: str, body: EnqueueRequest, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     await enforce_rate_limit(key=f"workflow-ops-enqueue:{user_id}", limit=15, window_seconds=60)
     row = await ops.owned(session, WorkflowAutomation, user_id, row_id, lock=True)
     pending = await session.scalar(select(func.count()).select_from(WorkflowOperationRun).where(WorkflowOperationRun.owner_user_id == user_id, WorkflowOperationRun.state == "queued"))
