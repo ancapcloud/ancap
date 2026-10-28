@@ -107,3 +107,6 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Exact release checkout validation: 101 targeted backend/security tests, all 97 frontend unit tests, lint and Next production build pass. Full backend/remote CI are still running.
 - Initial GitHub snapshot: 372 open CodeQL findings (342 quality notes, 18 high and 12 medium security-classified alerts); no open Dependabot or Secret Scanning alerts. This is an inventory, not a claim that all old alerts are exploitable or resolved. Historical wallet-storage/protocol and quality findings require separate review; no findings were mass-dismissed.
 
+
+- GitHub review found a packet disclosure through retry-delivery after project access revocation. Retry and cancellation now enforce project membership and packet expiry before any mutation/response; retry also revalidates the approved evidence. Added revoked-owner and expired-packet regressions: all 20 Studio/packet tests pass.
+

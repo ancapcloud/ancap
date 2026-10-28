@@ -169,8 +169,10 @@ async def get_run(row_id: str, response: Response, session: DbSession, user_id: 
 
 
 @router.post("/runs/{row_id}/cancel")
-async def cancel_run(row_id: str, session: DbSession, user_id: str = Depends(require_auth)):
+async def cancel_run(row_id: str, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     row = await ops.owned(session, WorkflowOperationRun, user_id, row_id, lock=True)
+    await access.run_access(session, user_id, row_id, write=True)
     if row.state != "queued":
         raise HTTPException(409, "Only queued work can be cancelled")
     row.state = "cancelled"
@@ -223,14 +225,19 @@ async def share_project(row_id: str, body: ProjectMemberWrite, session: DbSessio
 
 
 @router.post("/runs/{row_id}/retry-delivery")
-async def retry_delivery(row_id: str, body: DeliveryRetry, session: DbSession, user_id: str = Depends(require_auth)):
+async def retry_delivery(row_id: str, body: DeliveryRetry, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     row = await ops.owned(session, WorkflowOperationRun, user_id, row_id, lock=True)
+    await access.run_access(session, user_id, row_id, write=True)
     if row.state != "completed" or not body.confirm_retry:
         raise HTTPException(409, "Explicit retry confirmation required after completion")
     progress = dict(row.progress_json)
     found = [d for d in progress.get("deliveries", []) if d["connection_id"] == body.connection_id and d["state"] == "unknown_or_failed"]
     if not found:
         raise HTTPException(409, "No failed delivery to retry")
+    if progress.get("research_packets"):
+        from app.services.research_packets import validate_delivery
+        await validate_delivery(session, row)
     progress["delivery_history"] = [*progress.get("delivery_history", []), *found]
     progress["deliveries"] = [d for d in progress.get("deliveries", []) if d["connection_id"] != body.connection_id]
     row.progress_json = progress

@@ -181,3 +181,35 @@ def test_text_shortening_channels_cannot_receive_research_packets(client,db_curs
     r=client.post(base+'/packets',headers=headers,json={'operation_id':op,'source_ids':[sid],
         'expected_review_hash':get(client,headers,op)['review_hash']})
     assert r.status_code==409
+
+
+@pytest.mark.parametrize("denial", ["revoked", "expired"])
+def test_retry_and_cancel_do_not_disclose_inaccessible_packets(client, db_cursor, monkeypatch, denial):
+    _, headers, pid, base, sid, _, op, _ = fixture(client, db_cursor, monkeypatch, connection=True)
+    attach(client, headers, base, sid, op)
+    approved = approve(client, headers, op)
+    assert approved.status_code == 200
+    db_cursor.execute("SELECT snapshot_json->'definition'->'connection_ids'->>0 FROM workflow_operation_runs WHERE id=%s", (op,))
+    cid = db_cursor.fetchone()[0]
+    db_cursor.execute("UPDATE workflow_operation_runs SET state='completed',progress_json=jsonb_set(progress_json,'{deliveries}',%s::jsonb) WHERE id=%s",
+        (json.dumps([{'connection_id': cid, 'state': 'unknown_or_failed'}]), op))
+    if denial == "revoked":
+        new_owner, _ = register(client)
+        db_cursor.execute("UPDATE workflow_projects SET owner_user_id=%s,members_json='{}'::jsonb WHERE id=%s", (new_owner['id'], pid))
+    else:
+        db_cursor.execute("UPDATE workflow_operation_runs SET expires_at=NOW()-interval '1 second' WHERE id=%s", (op,))
+    db_cursor.connection.commit()
+    retry = client.post(f'/v1/workflow-ops/runs/{op}/retry-delivery', headers=headers,
+        json={'connection_id': cid, 'confirm_retry': True})
+    assert retry.status_code == 404
+    assert 'research_packets' not in retry.text
+    db_cursor.execute("SELECT state,progress_json->'deliveries' FROM workflow_operation_runs WHERE id=%s", (op,))
+    state, deliveries = db_cursor.fetchone()
+    assert state == 'completed' and deliveries[0]['state'] == 'unknown_or_failed'
+    db_cursor.execute("UPDATE workflow_operation_runs SET state='queued' WHERE id=%s", (op,))
+    db_cursor.connection.commit()
+    cancelled = client.post(f'/v1/workflow-ops/runs/{op}/cancel', headers=headers)
+    assert cancelled.status_code == 404
+    assert 'research_packets' not in cancelled.text
+    db_cursor.execute("SELECT state FROM workflow_operation_runs WHERE id=%s", (op,))
+    assert db_cursor.fetchone()[0] == 'queued'
