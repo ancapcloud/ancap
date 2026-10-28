@@ -25,6 +25,37 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 
+class WorkflowCostEvidence(Base):
+    __tablename__ = "workflow_cost_evidence"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source = Column(String(64), nullable=False)
+    document_id = Column(String(200), nullable=False)
+    line_id = Column(String(100), nullable=False)
+    document_sha256 = Column(String(64), nullable=False)
+    category = Column(String(32), nullable=False)
+    currency = Column(String(10), nullable=False)
+    amount = Column(Numeric(36, 18), nullable=False)
+    review_note = Column(Text, nullable=False)
+    recorded_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    __table_args__ = (
+        UniqueConstraint("source", "document_id", "line_id", name="uq_workflow_cost_source_line"),
+        CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_workflow_cost_amount"),
+        CheckConstraint("category IN ('model','data','infrastructure','review','support','payment_fee','creator_payout')", name="ck_workflow_cost_category"),
+    )
+
+
+class WorkflowCostAllocation(Base):
+    __tablename__ = "workflow_cost_allocations"
+    evidence_id = Column(UUID(as_uuid=True), ForeignKey("workflow_cost_evidence.id", ondelete="CASCADE"), primary_key=True)
+    workflow_run_id = Column(UUID(as_uuid=True), ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
+    amount = Column(Numeric(36, 18), nullable=False)
+    __table_args__ = (
+        CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_workflow_cost_allocation_amount"),
+        Index("ix_workflow_cost_allocation_run", "workflow_run_id"),
+    )
+
+
 # --- Enums (Python enum for DB layer) ---
 class AgentStatusEnum(str, enum.Enum):
     active = "active"

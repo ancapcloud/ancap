@@ -47,6 +47,40 @@ Local validation: `python -m pytest tests/unit/test_workflow_costs.py
 tests/unit/test_workflow_value_estimates.py -q` — 29 passed. No database migration,
 deployment or real payment was performed for this calculation-only slice.
 
+2026-10-28 persistence slice: migration `092_workflow_cost_evidence` stores
+operator-attested document source lines, SHA-256 references, review notes,
+reviewer IDs/timestamps and per-run allocations. Admin-only
+`POST /v1/workflow-store/admin/cost-evidence` accepts a complete immutable
+distribution of one source line (at most 200 runs); duplicate source/document/line
+keys return 409, including concurrent requests. Invalid distributions and missing
+runs leave no partial records. There is no update/delete/reallocation API.
+`GET /v1/workflow-store/admin/runs/{run_id}/costs` returns currency-separated
+totals, evidenced/missing categories and an explicit independent-verification
+false flag. Empty coverage is unknown; category coverage is not proof all costs
+were captured. Both endpoints use platform-admin authentication and no-store.
+
+Operators must use canonical supplier/document/line IDs and review the source
+document before entry. A document hash is a reference, not proof of authenticity;
+renamed sources/documents cannot be detected automatically. Raw documents are
+not uploaded or fetched. Provider imports, evidence-file retention/access,
+correction/reversal workflow, independent reconciliation, automated source
+identity and SKU/client contribution remain open. Do not import a creator payout
+again as an additional expense under another category. Run deletion cascades its
+allocations; source evidence remains reserved and cannot be reused. Reviewer
+deletion clears the user reference while retaining the record timestamp.
+
+Deploy requires migration 092. Routine rollback leaves accounting tables intact;
+destructive downgrade is only for a disposable test database, never routine
+production rollback. This slice does not mutate balances or payment intents.
+
+Local verification on a dedicated disposable PostgreSQL 16 database:
+`pytest tests/api/test_workflow_cost_evidence_api.py tests/api/test_workflow_value.py
+tests/unit/test_workflow_costs.py tests/unit/test_workflow_value_estimates.py -q`
+— **44 passed**, including private access, conflicting/concurrent writes,
+precision, invalid-batch rejection, split allocations, run deletion and prior
+assessment regressions. Alembic `092 -> 091 -> 092` succeeded. These are local
+checks; CI, deployment and real provider-document reconciliation are pending.
+
 | Priority | Work | Owner | Acceptance / dependency | State |
 | --- | --- | --- | --- | --- |
 | P0 | Actual cost per execution: model/data/infrastructure/retries/review/support/payment fees | Engineer + finance | Provider billing and real manual-work evidence, separate estimates; contribution by SKU/client without double counting creator payouts | Open; existing margin snapshots are estimates |

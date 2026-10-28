@@ -2,6 +2,11 @@
 
 ## Active priorities — 2026-10-27
 
+2026-10-28 local implementation: migration 092 adds admin-only operator-attested
+workflow cost evidence and per-run totals. Deployment requires `alembic upgrade
+head`; provider reconciliation and independent verification remain open.
+See [cost evidence scope](docs/WORKFLOW_VALUE_ROADMAP.md).
+
 [Workflow value and Research Operations](docs/WORKFLOW_VALUE_ROADMAP.md) adds version-bound acceptance, private reviewed-result history and `/ai/value` (migration 091). This release implements the quality/estimate baseline; actual cost attribution, external-payment provenance and paid renewal validation remain P0/P1 gates. Primary commercial hypothesis is now one recurring Research Operations process for agencies; existing reports are entry offers, not proof of recurring demand.
 
 The [12-month capital/commercial plan](docs/investors/CAPITAL_EXECUTION_PLAN_2026-10-27.md) adds P0 monetary semantics, order snapshots, provider-confirmed refunds/reconciliation and corporate/IP gates; lean budgeting and two paid offers precede scale. Bank balances, round size and customer traction are unverified. New top-up snapshots and explicit USD prices are implemented in this change; external acceptance gates remain open.

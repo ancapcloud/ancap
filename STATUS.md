@@ -5,6 +5,12 @@
 
 ## Current truth
 
+**Cost evidence (2026-10-28, local):** migration 092 and admin-only source-line
+recording/per-run cost totals are implemented; 44 targeted tests and disposable
+PostgreSQL migration rollback/reapply passed. Records are operator-attested,
+not independently verified. Provider imports, reconciliation and SKU/client
+contribution remain open. See [scope](docs/WORKFLOW_VALUE_ROADMAP.md).
+
 **Workflow value (2026-10-27):** [Acceptance/history and Research Operations queue](docs/WORKFLOW_VALUE_ROADMAP.md). New owner-only acceptance binds to the exact result hash, preserves reviewed snapshots and excludes stale assessments from current totals. `/ai/value` separates user time/labor estimates from ledger captures, with private aggregate JSON and explicit bounded scope. This is not an organization report, external-payment audit, cash ROI or commercial traction proof. Migration 091 and release verification are tracked with the implementation PR. Actual costs and payment-source classification remain open.
 
 

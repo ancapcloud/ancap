@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.workflow_costs import COST_CATEGORIES, ReconciledCostAllocation
+from app.schemas.workflow_costs import COST_CATEGORIES, CostEvidenceCreate, ReconciledCostAllocation
 from app.services.workflow_costs import reconcile_run_costs
 
 
@@ -59,3 +59,19 @@ def test_large_precise_amounts_are_not_rounded():
 def test_invalid_or_estimated_input_rejected(change):
     with pytest.raises(ValidationError):
         allocation(uuid4(), **change)
+
+
+def test_evidence_batch_validates_full_distribution_at_database_precision():
+    body = dict(source="provider", document_id="invoice-1", line_id="1", document_sha256="b" * 64,
+        category="model", currency="USD", amount="999999999999999999.999999999999999999",
+        review_note="Reviewed source document", allocations=[
+            dict(workflow_run_id=uuid4(), allocated_amount="999999999999999999.999999999999999998"),
+            dict(workflow_run_id=uuid4(), allocated_amount="0.000000000000000001")])
+    assert len(CostEvidenceCreate(**body).allocations) == 2
+    with pytest.raises(ValidationError, match="over-allocated"):
+        CostEvidenceCreate(**{**body, "amount": "999999999999999999.999999999999999998"})
+    with pytest.raises(ValidationError, match="Duplicate"):
+        CostEvidenceCreate(**{**body, "allocations": [body["allocations"][0]] * 2})
+    for change in ({"allocations": []}, {"document_sha256": "invalid"}, {"recorded_by_user_id": uuid4()}):
+        with pytest.raises(ValidationError):
+            CostEvidenceCreate(**{**body, **change})
