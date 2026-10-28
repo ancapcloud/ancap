@@ -12,14 +12,34 @@ from app.schemas.workflow_costs import CostEvidenceReceipt
 
 def test_get_cost_evidence_success(client, db_cursor):
     """GET /admin/cost-evidence/{evidence_id} returns the record."""
-    # Create a test cost-evidence record via direct SQL
+    # Create a test user first to get a valid owner_user_id
+    email = f"test-success-{uuid4()}@example.com"
+    password = "password123"
+    user_response = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "test_success_user"},
+        headers={"Authorization": ""}
+    )
+    assert user_response.status_code in (200, 201), f"Failed to create test user: {user_response.text}"
+    
+    login_response = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""}
+    )
+    assert login_response.status_code == 200, f"Failed to login: {login_response.text}"
+    user_token = login_response.json().get("access_token")
+    
+    # Set default token for this client session
+    client.default_token = user_token
+    
     evidence_id = str(uuid4())
     run_id = str(uuid4())  # Use a valid workflow_run_id to avoid FK violation
     # First create the workflow_run record so FK constraint is satisfied
     db_cursor.execute("""
         INSERT INTO workflow_runs (id, owner_user_id, workflow_slug, title, category, status, quoted_amount, quoted_currency, payment_currency, unlock_full_result, inputs_json, preview_json, result_json, receipt_json, created_at, updated_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (run_id, None, "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
+    """, (run_id, str(uuid4()), "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
     db_cursor.connection.commit()
     
     db_cursor.execute("""
@@ -67,13 +87,34 @@ def test_get_cost_evidence_cache_control(client):
 
 def test_get_cost_evidence_returns_operator_attested(client, db_cursor):
     """verification_basis is always operator_attested."""
+    # Create a test user first to get a valid owner_user_id
+    email = f"test-operator-attested-{uuid4()}@example.com"
+    password = "password123"
+    user_response = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "test_operator_attested_user"},
+        headers={"Authorization": ""}
+    )
+    assert user_response.status_code in (200, 201), f"Failed to create test user: {user_response.text}"
+    
+    login_response = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""}
+    )
+    assert login_response.status_code == 200, f"Failed to login: {login_response.text}"
+    user_token = login_response.json().get("access_token")
+    
+    # Set default token for this client session
+    client.default_token = user_token
+    
     evidence_id = str(uuid4())
     run_id = str(uuid4())  # Use a valid workflow_run_id to avoid FK violation
     # First create the workflow_run record so FK constraint is satisfied
     db_cursor.execute("""
         INSERT INTO workflow_runs (id, owner_user_id, workflow_slug, title, category, status, quoted_amount, quoted_currency, payment_currency, unlock_full_result, inputs_json, preview_json, result_json, receipt_json, created_at, updated_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (run_id, None, "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
+    """, (run_id, str(uuid4()), "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
     db_cursor.connection.commit()
     
     db_cursor.execute("""
@@ -94,13 +135,34 @@ def test_get_cost_evidence_returns_operator_attested(client, db_cursor):
 
 def test_get_cost_evidence_no_mutations(client, db_cursor):
     """GET endpoint does not mutate the database."""
+    # Create a test user first to get a valid owner_user_id
+    email = f"test-no-mutations-{uuid4()}@example.com"
+    password = "password123"
+    user_response = client.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "test_no_mutations_user"},
+        headers={"Authorization": ""}
+    )
+    assert user_response.status_code in (200, 201), f"Failed to create test user: {user_response.text}"
+    
+    login_response = client.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""}
+    )
+    assert login_response.status_code == 200, f"Failed to login: {login_response.text}"
+    user_token = login_response.json().get("access_token")
+    
+    # Set default token for this client session
+    client.default_token = user_token
+    
     evidence_id = str(uuid4())
     run_id = str(uuid4())  # Use a valid workflow_run_id to avoid FK violation
     # First create the workflow_run record so FK constraint is satisfied
     db_cursor.execute("""
         INSERT INTO workflow_runs (id, owner_user_id, workflow_slug, title, category, status, quoted_amount, quoted_currency, payment_currency, unlock_full_result, inputs_json, preview_json, result_json, receipt_json, created_at, updated_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (run_id, None, "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
+    """, (run_id, str(uuid4()), "test-workflow", "Test Workflow", "ml", "succeeded", 10.0, "USD", "USD", False, '{}', '{}', '{}', '{}', '2026-10-28T07:38:00Z', '2026-10-28T07:38:00Z'))
     db_cursor.connection.commit()
     
     original_note = "Original note"
