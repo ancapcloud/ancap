@@ -5,6 +5,9 @@
 
 ## Current truth
 
+**Workflow value (2026-10-27):** [Acceptance/history and Research Operations queue](docs/WORKFLOW_VALUE_ROADMAP.md). New owner-only acceptance binds to the exact result hash, preserves reviewed snapshots and excludes stale assessments from current totals. `/ai/value` separates user time/labor estimates from ledger captures, with private aggregate JSON and explicit bounded scope. This is not an organization report, external-payment audit, cash ROI or commercial traction proof. Migration 091 and release verification are tracked with the implementation PR. Actual costs and payment-source classification remain open.
+
+
 **Capital execution (2026-10-27):** [12-month operating plan](docs/investors/CAPITAL_EXECUTION_PLAN_2026-10-27.md) sets monetary integrity and corporate/IP/PSP gates ahead of paid pilots and lean fundraising. New top-ups separate explicit fiat price from ACP price/credited quantity and retain order-time terms. Legacy missing evidence requires reconciliation. Stripe ledger-only refund approval is blocked until provider-confirmed orchestration is implemented. Existing balances and token economics are unchanged. No verified funding ask, legal entity group or customer revenue is claimed.
 
 

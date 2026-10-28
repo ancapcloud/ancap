@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
+import { workflowValueCopy } from "@/locales/workflowValue";
 import { workflowStore } from "@/lib/api";
 
 type WorkflowRun = {
@@ -34,6 +36,7 @@ type WorkflowRun = {
 
 export default function WorkflowRunsPage() {
   const router = useRouter();
+  const { lang } = useLanguage();
   const { isAuthenticated, isLoading } = useAuth();
   const [items, setItems] = useState<WorkflowRun[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +74,7 @@ export default function WorkflowRunsPage() {
             <div className="text-xs uppercase tracking-[0.18em] text-white/45">Workflow Store</div>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">My workflow runs</h1>
           </div>
+          <Link href="/ai/value" className="btn btn-ghost">{workflowValueCopy[lang].title}</Link>
           <Link href="/ai/workflows" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-white/30 hover:text-white">
             Browse workflows
           </Link>
