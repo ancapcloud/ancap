@@ -26,7 +26,6 @@ _SYMBOLS = {
     "solana": "SOL",
 }
 # Official wACP on BSC + canonical PancakeSwap V2 pool (GeckoTerminal).
-_WACP_BSC = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
 _OFFICIAL_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
 
 

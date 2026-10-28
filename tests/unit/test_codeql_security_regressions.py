@@ -85,3 +85,29 @@ def test_auth_probe_selects_only_metadata_and_excludes_raw_tokens(monkeypatch):
     assert '{active, login, scopes, tokenSource}' in observed[0][-1]
     assert 'private-token-must-not-leak' not in json.dumps(result)
     assert result['login'] == 'fixture'
+
+
+@pytest.mark.asyncio
+async def test_lifespan_waits_for_cancelled_worker_cleanup(monkeypatch):
+    import asyncio
+    import app.main as main
+    from app.api.routers import wallet_acp
+    from app.services import workflow_ops, acp_utxo_index
+    started = asyncio.Event()
+    finished = asyncio.Event()
+    async def blocked_tick(**kwargs):
+        started.set()
+        try:
+            await asyncio.Event().wait()
+        finally:
+            # A mere cancel() cannot satisfy this: shutdown must await the task.
+            await asyncio.sleep(0)
+            finished.set()
+    monkeypatch.setattr(main, 'get_settings', lambda: SimpleNamespace(workflow_operations_worker_enabled=True))
+    monkeypatch.setattr(workflow_ops, 'workflow_ops_tick', blocked_tick)
+    monkeypatch.setattr(wallet_acp, '_schedule_chain_scan_warm', lambda: None)
+    monkeypatch.setattr(acp_utxo_index, 'schedule_utxo_index_catchup', lambda: None)
+    async with main.lifespan(main.app):
+        await asyncio.wait_for(started.wait(), timeout=2)
+        assert not finished.is_set()
+    assert finished.is_set()

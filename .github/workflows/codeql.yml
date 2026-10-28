@@ -6,6 +6,9 @@ on:
     branches: ["master"]
     paths:
       - "app/**"
+      - "alembic/**"
+      - "scripts/**"
+      - "tests/**"
       - "frontend-app/**"
       - "ancap-mobile/**"
       - ".github/workflows/**"
@@ -13,6 +16,9 @@ on:
     branches: ["master"]
     paths:
       - "app/**"
+      - "alembic/**"
+      - "scripts/**"
+      - "tests/**"
       - "frontend-app/**"
       - "ancap-mobile/**"
       - ".github/workflows/**"

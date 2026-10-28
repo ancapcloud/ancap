@@ -36,7 +36,11 @@ def generate_key() -> tuple[str, str, str]:
 
 
 def hash_key(key: str) -> str:
-    """Return SHA-256 hex digest of the key."""
+    """Fingerprint a CSPRNG-generated API token, never a human password.
+
+    Issuance uses 24 random bytes; the displayed prefix still leaves 120 secret
+    random bits. SHA-256 remains compatible with existing generated credentials.
+    """
     return hashlib.sha256(key.encode()).hexdigest()
 
 

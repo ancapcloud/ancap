@@ -266,7 +266,8 @@ async def get_block(block_id: str):
         if height < tip:
             next_hash = await acp_rpc_call("getblockhash", {"height": height + 1})
     except RuntimeError:
-        tip = height
+        # An unavailable tip means the next block is unknown, not the current height.
+        next_hash = None
     time_v = header.get("time") or block.get("time")
     size_v = block.get("size") or block.get("bytes")
     return ExplorerBlockDetailResponse(

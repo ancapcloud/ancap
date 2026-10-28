@@ -73,6 +73,7 @@ os.environ["REGISTRATION_SIGNAL_MAX_PER_DEVICE"] = "1000"
 from app.config import get_settings
 from app.db.session import Base, get_db, async_session_maker
 from app.services.rate_limit import clear_rate_limit_state
+from app.services.recoverable_errors import report_optional_failure
 
 # Ensure Settings reflects the env vars above (get_settings is lru_cached).
 get_settings.cache_clear()
@@ -151,7 +152,7 @@ def _run_migrations_or_create_all(sync_url: str):
         if r.returncode == 0:
             return
     except Exception:
-        r = None
+        report_optional_failure("tests.initialize_schema:alembic")
 
     # Fallback for local/dev test DB drift: wipe the schema, recreate current tables,
     # seed required baseline rows, and stamp the DB to the current Alembic head so
