@@ -7,18 +7,11 @@ from app.db.base import Base
 
 # Use the same URL builder as conftest.py to ensure consistency
 def _make_async_connection_string():
-    """Build async connection string with proper encoding."""
+    """Build async connection string."""
     url = os.environ.get("DATABASE_URL", "")
     if "+asyncpg" not in url:
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    # Add client_encoding for Windows compatibility
-    import urllib.parse
-    parsed = urllib.parse.urlparse(url)
-    params = urllib.parse.parse_qs(parsed.query)
-    if 'client_encoding' not in params:
-        params['client_encoding'] = 'utf8'
-    new_query = urllib.parse.urlencode(params, doseq=True)
-    return urllib.parse.urlunparse(parsed._replace(query=new_query))
+    return url
 
 settings = get_settings()
 
