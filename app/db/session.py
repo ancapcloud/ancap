@@ -54,3 +54,6 @@ async def get_db():
             await session.close()
 
 
+
+# Stable imports used by application startup, migrations and test utilities.
+__all__ = ["Base", "engine", "async_session_maker", "SessionLocal", "get_db"]
