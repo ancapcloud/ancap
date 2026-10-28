@@ -1,8 +1,12 @@
 # ANCAP Master Roadmap
 
+## Expo SDK 58 CI maintenance — 2026-10-28
+
+[~] Align the 11 newly required Expo SDK 58 patch versions in the mobile workspace and lockfile. The previous Frontend CI failure was dependency compatibility; frontend tests, browser tests, backend and security checks passed. Local expo-doctor (19/19), workspace type checks, 352 workspace tests, 13 security regression tests and Android export passed. A green replacement GitHub run is pending. Native device acceptance remains separate.
+
 ## ANCAP Card — 2026-10-28
 
-[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation remains open. Production release is authorised; deployment verification is pending.
+[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation remains open. Card release 86fb055 deployed successfully via PR #132; public build and all five home/projects locales verified. The mobile CI dependency patch alignment is tracked below.
 
 
 2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
