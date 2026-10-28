@@ -7,7 +7,7 @@ from app.services import webid_kyc as webid
 def test_webid_status_fail_closed_by_default(monkeypatch):
     monkeypatch.setattr(
         "app.services.webid_kyc.get_settings",
-        lambda: type(
+        type(
             "S",
             (),
             {
@@ -16,7 +16,7 @@ def test_webid_status_fail_closed_by_default(monkeypatch):
                 "webid_client_id": "",
                 "webid_client_secret": "",
             },
-        )(),
+        ),
     )
     assert webid.webid_is_configured() is False
     status = webid.webid_public_status()
@@ -31,7 +31,7 @@ def test_webid_status_fail_closed_by_default(monkeypatch):
 def test_webid_enabled_still_fail_closed_without_credentials(monkeypatch):
     monkeypatch.setattr(
         "app.services.webid_kyc.get_settings",
-        lambda: type(
+        type(
             "S",
             (),
             {
@@ -40,7 +40,7 @@ def test_webid_enabled_still_fail_closed_without_credentials(monkeypatch):
                 "webid_client_id": "",
                 "webid_client_secret": "",
             },
-        )(),
+        ),
     )
     assert webid.webid_is_configured() is False
     status = webid.webid_public_status()

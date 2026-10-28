@@ -11,7 +11,7 @@ from app.services import helio_commerce as helio
 def test_helio_status_fail_closed_without_env(monkeypatch):
     monkeypatch.setattr(
         "app.services.helio_commerce.get_settings",
-        lambda: type(
+        type(
             "S",
             (),
             {
@@ -24,7 +24,7 @@ def test_helio_status_fail_closed_without_env(monkeypatch):
                 "helio_default_amount": "10",
                 "helio_currency_hint": "USDC",
             },
-        )(),
+        ),
     )
     assert helio.helio_is_configured() is False
     status = helio.helio_public_status()
@@ -35,7 +35,7 @@ def test_helio_status_fail_closed_without_env(monkeypatch):
 def test_helio_status_exposes_paylink_when_configured(monkeypatch):
     monkeypatch.setattr(
         "app.services.helio_commerce.get_settings",
-        lambda: type(
+        type(
             "S",
             (),
             {
@@ -48,7 +48,7 @@ def test_helio_status_exposes_paylink_when_configured(monkeypatch):
                 "helio_default_amount": "25",
                 "helio_currency_hint": "USDC",
             },
-        )(),
+        ),
     )
     assert helio.helio_is_configured() is True
     status = helio.helio_public_status()
@@ -63,7 +63,7 @@ def test_verify_helio_webhook_signature(monkeypatch):
     sig = hmac.new(token.encode("utf-8"), body, hashlib.sha256).hexdigest()
     monkeypatch.setattr(
         "app.services.helio_commerce.get_settings",
-        lambda: type("S", (), {"helio_webhook_shared_token": token})(),
+        type("S", (), {"helio_webhook_shared_token": token}),
     )
     assert helio.verify_helio_webhook_signature(body, sig) is True
     assert helio.verify_helio_webhook_signature(body, "deadbeef") is False

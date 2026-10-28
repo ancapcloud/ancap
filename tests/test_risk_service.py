@@ -1,5 +1,4 @@
 """Unit tests for risk policy DSL (ROADMAP 2.4)."""
-import pytest
 
 from app.services.risk import (
     merge_policy,

@@ -68,7 +68,7 @@ async def balance_for_account(
         q = q.where(LedgerEvent.amount_currency == currency)
     q = q.group_by(LedgerEvent.amount_currency)
     r = await session.execute(q)
-    rows = r.all()
+    r.all()
     # Simplified: credit = dst, debit = src
     credits = await session.execute(
         select(LedgerEvent.amount_currency, func.sum(LedgerEvent.amount_value)).where(

@@ -4,7 +4,7 @@ from datetime import date
 from concurrent.futures import ThreadPoolExecutor
 import pytest
 pytest.importorskip("aiosqlite")
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.db.models import QrDailyCount

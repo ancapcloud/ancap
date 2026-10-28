@@ -1,5 +1,6 @@
-﻿import re
-text=open("src/components/Navigation.tsx",encoding="utf-8").read()
+from pathlib import Path
+import re
+text=Path("src/components/Navigation.tsx").read_text(encoding='utf-8')
 missing=[]
 for block in re.finditer(r"\{[^{}]*\}", text):
     b=block.group(0)

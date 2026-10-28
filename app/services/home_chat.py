@@ -45,7 +45,7 @@ _MODE_HINTS = {
     "earn": "Explain how creators earn on ANCAP by selling workflow runs. Mention the seller workspace when useful. Do not promise earnings.",
 }
 # Free models (esp. Nemotron) sometimes echo classifier tags into the reply body.
-_router_disabled = False
+_router_state = {"disabled": False}
 
 
 class HomeChatError(Exception):
@@ -63,8 +63,7 @@ class HomeChatResult:
 
 
 def clear_home_chat_state() -> None:
-    global _router_disabled
-    _router_disabled = False
+    _router_state["disabled"] = False
 
 
 def home_chat_status() -> dict[str, Any]:
@@ -278,7 +277,6 @@ async def complete_home_chat(
     lang: str = "en",
     session_model: str | None = None,
 ) -> HomeChatResult:
-    global _router_disabled
     settings = get_settings()
     if not settings.home_chat_enabled:
         raise HomeChatError("DISABLED", 503)
@@ -293,7 +291,7 @@ async def complete_home_chat(
     candidates: list[str] = []
     if pinned:
         candidates.append(pinned)
-    elif _router_disabled:
+    elif _router_state["disabled"]:
         candidates.extend((await _load_free_ids())[:2])
     else:
         candidates.append(_FREE_ROUTER)
@@ -341,7 +339,7 @@ async def complete_home_chat(
         if status == 429:
             saw_rate_limit = True
         if model == _FREE_ROUTER and _unknown_model(status, payload):
-            _router_disabled = True
+            _router_state["disabled"] = True
         if status in {401, 403}:
             raise HomeChatError("UPSTREAM", 502)
         if index == 0 and (status == 429 or _unknown_model(status, payload) or status >= 500):

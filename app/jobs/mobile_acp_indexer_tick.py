@@ -23,7 +23,6 @@ logger = logging.getLogger("mobile_acp_indexer")
 
 
 # Reuse the same cache TTL as the wallet_acp router
-_CHAIN_SCAN_CACHE_TTL_S = 300
 
 
 async def build_address_watchlist(session: AsyncSession) -> list[str]:

@@ -1,3 +1,4 @@
+from app.services.recoverable_errors import report_optional_failure
 import hashlib
 import json
 from datetime import datetime
@@ -22,7 +23,7 @@ from sqlalchemy import desc
 from app.engine.interpreter import run_workflow
 from app.engine.actions.base_vertical import BASE_VERTICAL_ACTIONS
 from app.services.risk import merge_policy, make_risk_callback, get_effective_limits, get_reputation_gate, get_graph_gate, get_step_scorers
-from app.services.step_quality import compute_step_quality, get_step_quality
+from app.services.step_quality import get_step_quality
 from app.services.evaluation import update_evaluation_for_version
 from app.services.reputation_events import on_run_completed, on_evaluation_scored
 from app.services.agent_graph_metrics import get_agent_graph_metrics
@@ -228,7 +229,7 @@ async def _run_workflow_and_persist(
                         contract.status = ContractStatusEnum.completed
                         await session.flush()
             except Exception:
-                pass
+                report_optional_failure('app.api.routers.runs:_run_workflow_and_persist:session.get', quiet=False)
 
     try:
         await on_run_completed(
@@ -252,7 +253,7 @@ async def _run_workflow_and_persist(
                     created_at=ev.updated_at,
                 )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.runs:_run_workflow_and_persist:on_run_completed', quiet=False)
 
     await session.refresh(run)
     return RunPublic(
@@ -759,7 +760,7 @@ async def list_runs(
         try:
             q = q.where(Run.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if strategy_version_id:
         q = q.where(Run.strategy_version_id == strategy_version_id)
     if pool_id:
@@ -929,7 +930,7 @@ async def get_run_logs(
         try:
             q = q.where(RunLog.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

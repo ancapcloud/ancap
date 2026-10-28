@@ -9,7 +9,7 @@ from sqlalchemy import desc, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession, get_current_user_id
-from app.db.models import Agent, AgentProfile, User, AgentFollow, Strategy, StrategyFollow
+from app.db.models import Agent, AgentProfile, User, AgentFollow, Strategy
 
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])

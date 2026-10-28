@@ -1,7 +1,8 @@
-﻿import re, os
+from pathlib import Path
+import re, os
 from collections import Counter
 
-tt = open("src/locales/translations.ts", encoding="utf-8", errors="replace").read()
+tt = Path("src/locales/translations.ts").read_text(encoding='utf-8', errors='replace')
 all_keys = re.findall(r'^\s*["\']([\w.-]+)["\']\s*:', tt, re.M)
 prefs = Counter(k.split(".")[0] for k in all_keys)
 print("EN_KEYS", len(set(all_keys)))
@@ -16,7 +17,7 @@ for dirpath, _, files in os.walk("src/app"):
             pages.append(os.path.join(dirpath, f))
 with_ul, without = [], []
 for p in pages:
-    txt = open(p, encoding="utf-8", errors="replace").read()
+    txt = Path(p).read_text(encoding='utf-8', errors='replace')
     (with_ul if "useLanguage" in txt else without).append(p.replace("\\", "/"))
 print("PAGES", len(pages), "WITH", len(with_ul), "WITHOUT", len(without))
 print("WITH_LIST")
@@ -28,7 +29,7 @@ str_lit = re.compile(r"(?<![\w.])([\"'])([A-Z][^\"']{2,120})\1")
 skip_line = re.compile(r"^\s*(import|export|//|className|href=|from )")
 
 def score(path):
-    lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+    lines = Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
     hits = set()
     for line in lines:
         if skip_line.search(line):
@@ -78,7 +79,7 @@ for base in ["src/app", "src/components"]:
             if not f.endswith(".tsx"):
                 continue
             path = os.path.join(dirpath, f)
-            txt = open(path, encoding="utf-8", errors="replace").read()
+            txt = Path(path).read_text(encoding='utf-8', errors='replace')
             if "useLanguage" in txt and path.endswith(("HomePage.tsx","Navigation.tsx","CookieConsent.tsx","LoginForm.tsx","LanguageSwitcher.tsx","WalletConnectCard.tsx","HomeMcpSection.tsx")):
                 # still count leftover
                 pass

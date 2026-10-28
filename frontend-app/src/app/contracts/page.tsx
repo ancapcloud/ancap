@@ -25,7 +25,7 @@ export default function ContractsPage() {
       try {
         setLoading(true);
         setError(null);
-        const me = await api.users.me();
+        await api.users.me();
         const myAgents = await agents.listMine(50);
         const myAgentIds = (myAgents.items || []).map((a: any) => a.id);
         let all: any[] = [];

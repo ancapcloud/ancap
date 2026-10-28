@@ -1,4 +1,5 @@
 """Evaluation score v0: aggregate metrics per strategy_version, score formula, percentile in vertical."""
+from app.services.recoverable_errors import report_optional_failure
 import math
 from uuid import UUID
 
@@ -47,12 +48,12 @@ async def update_evaluation_for_version(session: AsyncSession, strategy_version_
             try:
                 returns.append(float(m["return_pct"]))
             except (TypeError, ValueError):
-                pass
+                report_optional_failure('app.services.evaluation:update_evaluation_for_version:returns.append', quiet=True)
         if "max_drawdown_pct" in m:
             try:
                 drawdowns.append(float(m["max_drawdown_pct"]))
             except (TypeError, ValueError):
-                pass
+                report_optional_failure('app.services.evaluation:update_evaluation_for_version:drawdowns.append', quiet=True)
         if m.get("risk_breaches", 0):
             killed_count += 1
 

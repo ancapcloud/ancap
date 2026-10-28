@@ -6,6 +6,7 @@ Auth: Authorization: Bearer <API_KEY>
 Custom IMAP/SMTP provider_code = 1
 """
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from typing import Any
 
@@ -62,7 +63,7 @@ async def _request(method: str, path: str, *, json: dict[str, Any] | None = None
             payload = res.json()
             detail = str(payload.get("message") or payload.get("error") or payload.get("detail") or detail)
         except Exception:
-            pass
+            report_optional_failure('app.services.instantly:_request:res.json', quiet=False)
         raise HTTPException(status_code=502, detail=f"Instantly error {res.status_code}: {detail}")
     if res.status_code == 204 or not res.content:
         return None

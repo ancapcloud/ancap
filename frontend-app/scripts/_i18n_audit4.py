@@ -1,4 +1,5 @@
-﻿import re, os
+from pathlib import Path
+import re, os
 from collections import defaultdict
 
 jsx_text=re.compile(r'>([^<{]{4,160})<')
@@ -12,7 +13,7 @@ def is_copy(s):
     if not re.search(r'[A-Za-z]', s): return False
     # exclude pure CSS-ish
     if re.search(r'(px|rem|em|%|vh|vw|rgba?\(|var\(--)', s) and not re.search(r'\s[a-z]{3,}\s', s.lower()):
-        if re.match(r'^[\d\s\.\,\%pxremvhvw/#\(\)\-]+$', s): return False
+        if re.match(r'^[\d\s.,%pxremvhw/#()\-]+$', s): return False
         if 'solid' in s or 'flex' in s or 'border' in s: return False
     if s.startswith('http') or s.startswith('/') or s.startswith('M') and ' ' in s and len(s)>40: return False
     if s in {'use client','use server'}: return False
@@ -42,7 +43,7 @@ for base in ['src/app','src/components']:
       if f in ('LanguageProvider.tsx','LanguageSwitcher.tsx'): continue
       path=os.path.join(dp,f)
       local=set()
-      for line in open(path,encoding='utf-8',errors='replace'):
+      for line in Path(path).read_text(encoding='utf-8', errors='replace').splitlines(keepends=True):
         if skip.search(line): continue
         if "t('" in line or 't("' in line: continue
         if 'i18nKey' in line: continue
@@ -81,7 +82,7 @@ print('CRITICAL_PHRASES')
 for p in crit:
   if not os.path.exists(p): continue
   local=set()
-  for line in open(p,encoding='utf-8',errors='replace'):
+  for line in Path(p).read_text(encoding='utf-8', errors='replace').splitlines(keepends=True):
     if skip.search(line): continue
     if "t('" in line or 't("' in line: continue
     for m in jsx_text.finditer(line):

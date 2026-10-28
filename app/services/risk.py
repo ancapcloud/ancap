@@ -19,7 +19,7 @@ Policy JSON schema (declarative; keys optional):
   record_quality_score: bool — if true, add step_scorers placeholder "quality" (ROADMAP §5)
   step_scorers: list[str] — e.g. ["quality"]; for each step write RunStepScore with score_value=0.5 (placeholder)
 """
-from typing import Any
+from app.services.recoverable_errors import report_optional_failure
 
 from app.engine.interpreter import RunResult
 
@@ -104,12 +104,12 @@ def get_effective_limits(policy: dict, run_limits: dict | None) -> dict:
                 try:
                     out[k] = int(policy[k])
                 except (TypeError, ValueError):
-                    pass
+                    report_optional_failure('app.services.risk:get_effective_limits:int', quiet=True)
         if "max_position_size_pct" in policy and policy["max_position_size_pct"] is not None:
             try:
                 out["max_position_size_pct"] = float(policy["max_position_size_pct"])
             except (TypeError, ValueError):
-                pass
+                report_optional_failure('app.services.risk:get_effective_limits:float', quiet=True)
     if run_limits:
         for k in ("max_steps", "max_runtime_ms", "max_action_calls", "max_external_calls"):
             if k in run_limits and run_limits[k] is not None:
@@ -136,14 +136,14 @@ def get_reputation_gate(policy: dict) -> dict | None:
             if 0 <= t <= 1:
                 out["min_trust_score"] = t
         except (TypeError, ValueError):
-            pass
+            report_optional_failure('app.services.risk:get_reputation_gate:float', quiet=True)
     if min_rep is not None:
         try:
             r = float(min_rep)
             if 0 <= r <= 100:
                 out["min_reputation_score"] = r
         except (TypeError, ValueError):
-            pass
+            report_optional_failure('app.services.risk:get_reputation_gate:float', quiet=True)
     if out["min_trust_score"] is None and out["min_reputation_score"] is None:
         return None
     return out
@@ -160,21 +160,21 @@ def get_graph_gate(policy: dict) -> dict | None:
             if 0 <= v <= 1:
                 out["max_reciprocity_score"] = v
     except (TypeError, ValueError):
-        pass
+        report_optional_failure('app.services.risk:get_graph_gate:policy.get', quiet=True)
     try:
         if policy.get("max_suspicious_density") is not None:
             v = float(policy["max_suspicious_density"])
             if 0 <= v <= 1:
                 out["max_suspicious_density"] = v
     except (TypeError, ValueError):
-        pass
+        report_optional_failure('app.services.risk:get_graph_gate:policy.get', quiet=True)
     try:
         if policy.get("max_cluster_size") is not None:
             v = int(policy["max_cluster_size"])
             if v >= 1:
                 out["max_cluster_size"] = v
     except (TypeError, ValueError):
-        pass
+        report_optional_failure('app.services.risk:get_graph_gate:policy.get', quiet=True)
     if policy.get("block_if_in_cycle") is True:
         out["block_if_in_cycle"] = True
     return out if out else None

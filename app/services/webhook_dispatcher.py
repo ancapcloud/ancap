@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import hmac
 import json
@@ -9,7 +8,7 @@ from typing import Any
 from uuid import UUID
 
 import httpx
-from sqlalchemy import select, desc
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import WebhookEndpoint, WebhookDelivery

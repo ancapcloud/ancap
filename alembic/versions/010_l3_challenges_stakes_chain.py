@@ -100,3 +100,6 @@ def downgrade() -> None:
 
     # PostgreSQL: cannot remove enum values easily; leave ledgereventtypeenum as-is
     # op.execute("ALTER TYPE ledgereventtypeenum DROP VALUE 'stake'")  # not supported in PG
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

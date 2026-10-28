@@ -5,7 +5,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, HTTPException, Depends
 from sqlalchemy import select, or_, and_, desc
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.reputation import (
     ReputationGetResponse,
@@ -16,7 +15,7 @@ from app.schemas.reputation import (
     ReputationRecomputeRequest,
 )
 from app.api.deps import DbSession, require_platform_admin
-from app.db.models import Reputation, ReputationSnapshot, TrustScore, ReputationEvent
+from app.db.models import ReputationSnapshot, TrustScore, ReputationEvent
 from app.utils.cursor import CursorKeys, encode_cursor, decode_cursor
 from app.config import get_settings
 

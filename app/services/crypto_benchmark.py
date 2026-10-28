@@ -1,5 +1,6 @@
 """Compose QOBLIB-style crypto benchmark scorecard from live rails."""
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -57,7 +58,7 @@ async def _bridge_counts(session: AsyncSession) -> dict[str, int]:
         for st, c in rows.all():
             counts[str(st)] = int(c)
     except Exception:
-        pass
+        report_optional_failure('app.services.crypto_benchmark:_bridge_counts:session.execute', quiet=False)
     return counts
 
 

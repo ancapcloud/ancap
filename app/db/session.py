@@ -2,7 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from app.config import get_settings
-from app.db.base import Base
+from app.db.base import Base as Base
 
 settings = get_settings()
 

@@ -76,7 +76,7 @@ async def list_anchors(
         try:
             q = q.where(ChainAnchor.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if payload_type:
         q = q.where(ChainAnchor.payload_type == payload_type)
     if chain_id:

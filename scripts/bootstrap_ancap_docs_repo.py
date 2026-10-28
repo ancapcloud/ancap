@@ -1060,6 +1060,8 @@ def fetch_active_github_auth_context(
                 hostname,
                 "--json",
                 "hosts",
+                "--jq",
+                "{hosts: (.hosts | with_entries(.value |= map({active, login, scopes, tokenSource})))}",
             ]
         )
     except (subprocess.CalledProcessError, json.JSONDecodeError):

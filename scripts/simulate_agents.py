@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import asyncio
 import random
 from dataclasses import dataclass
@@ -122,7 +123,7 @@ async def simulate(agents_count: int, steps: int, seed: int) -> None:
                         },
                     )
                 except httpx.HTTPStatusError:
-                    pass
+                    logging.getLogger(__name__).warning("Simulation deposit failed; continuing without claiming funding")
                 try:
                     await _post(
                         client,

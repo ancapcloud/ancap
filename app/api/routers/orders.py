@@ -273,7 +273,7 @@ async def list_orders(
         try:
             q = q.where(Order.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if buyer_type:
         q = q.where(Order.buyer_type == buyer_type)
     if buyer_id:

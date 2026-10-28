@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import and_, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import (
@@ -20,7 +20,6 @@ from app.db.models import (
 )
 from app.schemas.dating import (
     BLE_SERVICE_UUID,
-    DEVICE_NAME_PREFIX,
     DatingAccessPointCreate,
     DatingCatalogPublic,
     DatingMessageCreate,

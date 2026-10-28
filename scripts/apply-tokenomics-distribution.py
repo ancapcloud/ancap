@@ -6,6 +6,7 @@ Validator reserve: receives genesis remainder after Creator/Public/Ecosystem ful
 Does NOT sweep custodial hot (user wallet) except optional explicit remainder pass.
 """
 from __future__ import annotations
+from pathlib import Path
 
 import json
 import os
@@ -50,9 +51,8 @@ def acp_units(s: str) -> float:
 
 
 def transfer_ks(ks_path: str, to: str, amount_acp: str, use_json: bool = False) -> dict:
-    args = ["transfer", "--rpc", RPC, "--to", to, "--amount-acp", amount_acp]
     if use_json:
-        ks = open(ks_path, encoding="utf-8").read()
+        ks = Path(ks_path).read_text(encoding='utf-8')
         args = ["transfer", "--rpc", RPC, "--keystore-json", ks, "--to", to, "--amount-acp", amount_acp]
     else:
         args = ["transfer", "--rpc", RPC, "--keystore-file", ks_path, "--to", to, "--amount-acp", amount_acp]

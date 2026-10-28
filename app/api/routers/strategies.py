@@ -58,7 +58,7 @@ async def list_strategies(
         try:
             query = query.where(Strategy.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if vertical_id:
         query = query.where(Strategy.vertical_id == vertical_id)
     if owner_agent_id:
@@ -120,7 +120,7 @@ async def list_versions(
         try:
             query = query.where(StrategyVersion.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(query)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

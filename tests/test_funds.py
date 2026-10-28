@@ -92,7 +92,7 @@ def test_fund_not_found(client, base_vertical_id):
     vid = base_vertical_id
     r = client.get(f"/v1/funds/{uuid.uuid4()}")
     assert r.status_code == 404
-    pool = client.post("/v1/pools", json={"name": unique_name("np"), "risk_profile": "low"})
+    client.post("/v1/pools", json={"name": unique_name("np"), "risk_profile": "low"})
     agent = client.post(
         "/v1/agents",
         json={"display_name": unique_name("na"), "public_key": "n" * 32, "roles": ["seller"]},

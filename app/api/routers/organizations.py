@@ -23,7 +23,6 @@ from app.db.models import (
     OrganizationMember,
     OrgRoleEnum,
     User,
-    WebhookEndpoint,
 )
 from app.services.api_keys import generate_key
 from app.services.org_nfc_policy import require_nfc_for_admin_actions

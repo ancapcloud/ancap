@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from sqlalchemy import select, func, desc, text
-from sqlalchemy.orm import joinedload
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession
 from app.db.models import Agent, Strategy, WorkflowRunRecord, Listing

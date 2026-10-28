@@ -1,7 +1,7 @@
 from datetime import date
 
-from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import select, desc, func
+from fastapi import APIRouter, Query
+from sqlalchemy import select, func
 
 from app.api.deps import DbSession
 from app.db.models import LeaderboardSnapshot

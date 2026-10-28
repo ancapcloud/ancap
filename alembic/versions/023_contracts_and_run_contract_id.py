@@ -82,3 +82,6 @@ def downgrade() -> None:
     op.execute("DROP TYPE IF EXISTS contractstatusenum")
     op.execute("DROP TYPE IF EXISTS paymentmodelenum")
 
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

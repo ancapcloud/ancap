@@ -5,6 +5,7 @@ keeps a per-process + Redis-backed unspent map for watched addresses and advance
 it in chunks from jobs/tick (and a startup catch-up thread).
 """
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import json
 import logging
@@ -127,7 +128,7 @@ def get_indexed_balance(address: str) -> dict[str, Any] | None:
             if cached_h > 0 and cached_h >= local_wm:
                 return dict(cached)
     except Exception:
-        pass
+        report_optional_failure('app.services.acp_utxo_index:get_indexed_balance:fallback', quiet=False)
     with _lock:
         wm = int(_state.get("wm") or 0)
         if wm <= 0:
@@ -148,7 +149,7 @@ def get_indexed_balance_sync_prefer_redis(address: str) -> dict[str, Any] | None
         if isinstance(cached, dict) and str(cached.get("address") or "").strip() == target:
             return dict(cached)
     except Exception:
-        pass
+        report_optional_failure('app.services.acp_utxo_index:get_indexed_balance_sync_prefer_redis:fallback', quiet=False)
     return get_indexed_balance(target)
 
 
@@ -199,7 +200,7 @@ def _redis_load_sync() -> None:
             try:
                 client.close()
             except Exception:
-                pass
+                report_optional_failure('app.services.acp_utxo_index:_redis_load_sync:client.close', quiet=False)
 
 
 def list_indexed_utxos(address: str) -> list[dict[str, Any]]:
@@ -496,7 +497,7 @@ def _catchup_loop() -> None:
 
             asyncio.run(_redis_save())
         except Exception:
-            pass
+            report_optional_failure('app.services.acp_utxo_index:_catchup_loop:fallback', quiet=False)
     finally:
         with _lock:
             _state["catchup_inflight"] = False

@@ -363,13 +363,6 @@ def patch_aeterna() -> None:
         print("aeterna already patched")
         return
     # Insert after each language's teStep4Body block (last te key before next section)
-    markers = {
-        "en": '    teStep4Body: "ACP buys a fiction brief and partner match — not hardware title.",\n',
-        "ru": None,
-        "uk": None,
-        "de": None,
-        "zh": None,
-    }
     # Find teStep4Body occurrences in order (en, ru, uk, de, zh)
     langs = ["en", "ru", "uk", "de", "zh"]
     needle = "teStep4Body:"

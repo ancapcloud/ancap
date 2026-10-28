@@ -1,4 +1,5 @@
 """Circuit breaker by metric (ROADMAP 2.4): evaluate policy circuit_breaker and set halted."""
+from app.services.recoverable_errors import report_optional_failure
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
@@ -37,7 +38,7 @@ async def _daily_loss_for_pool(session: AsyncSession, pool_id: UUID) -> float | 
             else:
                 returns.append(float(value))
         except (TypeError, ValueError):
-            pass
+            report_optional_failure('app.jobs.circuit_breaker_by_metric:_daily_loss_for_pool:isinstance', quiet=False)
     if not returns:
         return None
     return sum(returns) / len(returns)  # avg return_pct

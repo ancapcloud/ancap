@@ -1,5 +1,6 @@
 """Public ACP chain explorer API (Blockchair-style read surface)."""
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from decimal import Decimal
 from typing import Any
@@ -80,7 +81,7 @@ async def _lean_status() -> dict[str, Any]:
                 if key in net:
                     lean[key] = net[key]
     except RuntimeError:
-        pass
+        report_optional_failure('app.api.routers.acp_explorer:_lean_status:60', quiet=True)
     return {
         "status": "ok",
         "chain_id": 1001,
@@ -155,7 +156,7 @@ async def explorer_search(q: str = Query(..., min_length=1, max_length=256)):
         await acp_rpc_call("getrawtransaction", {"txid": txid, "verbose": 1})
         return ExplorerSearchResponse(**classified)
     except RuntimeError:
-        pass
+        report_optional_failure('app.api.routers.acp_explorer:explorer_search:154', quiet=True)
     try:
         block = await acp_rpc_call("getblock", {"blockhash": txid, "verbose": True})
         height = None

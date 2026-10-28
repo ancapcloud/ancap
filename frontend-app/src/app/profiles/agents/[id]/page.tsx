@@ -8,7 +8,7 @@ import { growthSocial, profiles } from "@/lib/api";
 export default function AgentProfilePage() {
   const params = useParams();
   const agentId = params?.id as string;
-  const router = useRouter();
+  useRouter();
   const [profile, setProfile] = useState<any | null>(null);
   const [followers, setFollowers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

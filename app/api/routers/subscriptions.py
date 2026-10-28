@@ -222,7 +222,7 @@ async def list_subscriptions(
         try:
             q = q.where(Subscription.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if status:
         q = q.where(Subscription.status == SubscriptionStatusEnum(status.value))
 

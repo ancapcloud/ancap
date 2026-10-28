@@ -1,5 +1,6 @@
-"""Weather API tests (AccuWeather proxy)."""
 from __future__ import annotations
+from urllib.parse import urlsplit
+"""Weather API tests (AccuWeather proxy)."""
 
 from app.main import app
 
@@ -51,7 +52,7 @@ def test_weather_current_fallback_without_key(client, monkeypatch):
     assert res.status_code == 200, res.text
     body = res.json()
     assert body["provider"] == "accuweather"
-    assert "accuweather.com" in body["accuweather_url"]
+    assert urlsplit(body["accuweather_url"]).hostname == "www.accuweather.com"
     assert body["temperature_c"] == 12.5
     assert body["forecast_today"]["max_c"] == 14.0
 
@@ -121,4 +122,4 @@ def test_wmo_icon_and_open_meteo_fallback_shape(monkeypatch):
     assert payload["weather_icon"] == 7
     assert payload["forecast_today"]["max_c"] == 13.0
     assert payload["next_hour"]["temperature_c"] == 10.5
-    assert "awxcdn.com" in (payload["weather_icon_url"] or "")
+    assert urlsplit(payload["weather_icon_url"] or "").hostname == "www.awxcdn.com"

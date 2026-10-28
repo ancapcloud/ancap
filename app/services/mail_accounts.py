@@ -1,5 +1,6 @@
 """Connect and verify user IMAP/SMTP provider accounts (single account)."""
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import base64
 import hashlib
@@ -35,7 +36,7 @@ def _utcnow() -> datetime:
 def _secret_key_bytes() -> bytes:
     from app.services.crypto_secrets import resolve_secret_material
 
-    settings = get_settings()
+    get_settings()
     material = resolve_secret_material(
         dedicated=None,
         secret_key_suffix=b"|mail-provider-accounts-v1",
@@ -82,7 +83,7 @@ def _test_imap(
         try:
             client.logout()
         except Exception:
-            pass
+            report_optional_failure('app.services.mail_accounts:_test_imap:82', quiet=True)
 
 
 def _test_smtp(
@@ -109,7 +110,7 @@ def _test_smtp(
         try:
             server.quit()
         except Exception:
-            pass
+            report_optional_failure('app.services.mail_accounts:_test_smtp:109', quiet=True)
 
 
 def defaults() -> MailProviderDefaultsPublic:

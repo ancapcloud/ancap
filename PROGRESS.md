@@ -119,3 +119,13 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Review follow-up: no-change source checks now reuse the immutable packet when evidence bindings, workflow versions and report output match. Freshness timestamps no longer exhaust the three-version limit. Regression performs four unchanged checks, then confirms a real source change still creates version two; all 11 packet tests pass.
 - The initial local full-suite run completed with 1215 passes, 8 skips and two failures (missing Windows timezone data and old mutable-tag expectation), both separately corrected and covered by the passing focused reruns. It is not labeled a clean full run; exact-head Linux CI remains authoritative for this release.
 
+
+
+## 2026-10-28 — CodeQL backlog and deepmerge remediation (in validation)
+
+- Work from production master 00c1e04 in an isolated branch, preserving concurrent Theodore work. Inventory starts at 356 CodeQL findings and mobile deepmerge GHSA-gcqx-w48m-w2h4.
+- Keep Alembic metadata as explicit public exports; remove scoped dead imports/locals without dropping awaited mutations. Replace unclosed text files with Path APIs and clarify query/error control flow. Optional failures now report static operation labels without sensitive exception payloads; malformed pagination cursors return 422.
+- Use HMAC-SHA256 and constant-time comparison for paid API challenge signatures; advertise signature_algorithm=hmac-sha256 and reject non-hex signatures before comparison. Challenge clients must adopt the advertised algorithm; ephemeral pending challenges expire. Existing random 192-bit API key SHA-256 fingerprints remain compatible, with constant-time verification.
+- Restore script passes decrypted keystore through stdin instead of writing plaintext or exposing it in argv. No transfer or funded transaction was executed. GitHub auth probes request only allowlisted metadata before report generation.
+- deepmerge remains unfixed upstream. Added an explicitly named private MIT-licensed security fork with upstream source fingerprint, blocked prototype-control keys in both loops, own-property definitions and fail-closed proxy checks. Expo resolves the installed local override. Normal merge/custom/array/symbol behavior and all advisory regression cases pass; npm audit reports zero vulnerabilities locally.
+- Current local evidence: 79 targeted backend/docs/security tests pass (5 optional/live skips); all 97 frontend unit tests and lint pass; npm ci/postinstall, mobile tests and workspace type checks pass. Exact-head CodeQL/full CI and default-branch closure are still pending. No query exclusions, alert bulk dismissal or fake upstream version used.

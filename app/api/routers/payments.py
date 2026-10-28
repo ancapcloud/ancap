@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -275,7 +276,7 @@ async def approve_refund_request(
             owner_user_id=str(row.user_id),
         )
     except Exception:
-        pass
+        report_optional_failure('app.api.routers.payments:approve_refund_request:emit_payment_refunded', quiet=False)
     await session.flush()
     await session.refresh(row)
     return _serialize_refund_request(row)

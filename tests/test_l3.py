@@ -1,7 +1,6 @@
 """L3: Onboarding (challenge/attest), chain anchors, stakes (basic)."""
 import hashlib
 
-import pytest
 from tests.conftest import unique_name
 
 

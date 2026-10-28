@@ -1,6 +1,7 @@
 """Step-level quality scorer (ROADMAP §5). Built-in heuristic; optional HTTP callback when quality_scorer_url is set."""
 
 from __future__ import annotations
+from app.services.recoverable_errors import report_optional_failure
 
 import httpx
 
@@ -59,5 +60,5 @@ async def get_step_quality(
                     if 0 <= s <= 1:
                         return round(s, 4)
     except Exception:
-        pass
+        report_optional_failure('app.services.step_quality:get_step_quality:httpx.AsyncClient', quiet=False)
     return compute_step_quality(step_id, action, state, duration_ms, result_summary)

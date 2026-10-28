@@ -2,21 +2,15 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import json
 import secrets
 import uuid
-from datetime import datetime, timezone, timedelta
-from typing import Any
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import desc, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id
 from app.db.models import WebhookEndpoint, WebhookDelivery
-from app.config import get_settings
 from app.services.webhook_url_policy import UnsafeWebhookUrl, validate_webhook_url_async
 
 

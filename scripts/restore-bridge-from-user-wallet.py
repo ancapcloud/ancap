@@ -21,14 +21,13 @@ WALLET_PASSWORD = os.environ.get("WALLET_PASSWORD", "")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 BRIDGE_RESERVE = "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz"
 CUSTODIAL_HOT = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
-HOT_KS_PATH = "/run/secrets/custodial-hot.keystore.json"
 RPC = "http://acp-node:8545/rpc"
 RESTORE_ACP = os.environ.get("RESTORE_ACP", "800999.999999")
 WALLETD = os.environ.get("ACP_WALLETD_PATH", "walletd")
 
 
-def walletd(args: list[str]) -> dict:
-    r = subprocess.run([WALLETD, *args], capture_output=True, text=True, timeout=180)
+def walletd(args: list[str], *, keystore_json: str | None = None) -> dict:
+    r = subprocess.run([WALLETD, *args], input=keystore_json, capture_output=True, text=True, timeout=180)
     out = (r.stdout or "").strip()
     payload = json.loads(out) if out else {}
     if r.returncode != 0 or not payload.get("ok"):
@@ -57,27 +56,25 @@ async def main() -> int:
         if row is None:
             print(f"No ACP wallet for {EMAIL}", file=sys.stderr)
             return 1
-        wallet, email = row
+        wallet, _ = row
         if wallet.address != CUSTODIAL_HOT:
             print(f"Unexpected wallet address {wallet.address}", file=sys.stderr)
             return 1
 
         secret = decrypt_wallet_secret_with_password(wallet, WALLET_PASSWORD)
-        mnemonic, keystore_json = decode_wallet_secret(secret)
+        _, keystore_json = decode_wallet_secret(secret)
         if not keystore_json:
             print("Wallet secret has no keystore_json", file=sys.stderr)
             return 1
 
-        derived = walletd(["address", "--keystore-json", keystore_json])["address"]
+        derived = walletd(["address", "--keystore-file", "/dev/stdin"], keystore_json=keystore_json)["address"]
         if derived != CUSTODIAL_HOT:
             print(f"Keystore derives {derived}, expected {CUSTODIAL_HOT}", file=sys.stderr)
             return 1
 
-        os.makedirs(os.path.dirname(HOT_KS_PATH), exist_ok=True)
-        with open(HOT_KS_PATH, "w", encoding="utf-8") as f:
-            f.write(keystore_json)
-        print(f"[OK] custodial hot keystore written for {email} -> {derived}")
-
+        # The encrypted database remains the source of truth. Feed the decrypted
+        # keystore through a private subprocess pipe; never persist a plaintext
+        # copy or expose it through argv/process listings.
         hot_before = walletd(["balance", "--rpc", RPC, "--address", CUSTODIAL_HOT])
         bridge_before = walletd(["balance", "--rpc", RPC, "--address", BRIDGE_RESERVE])
         print("Hot before:", json.dumps(hot_before))
@@ -88,13 +85,14 @@ async def main() -> int:
                 "transfer",
                 "--rpc",
                 RPC,
-                "--keystore-json",
-                keystore_json,
+                "--keystore-file",
+                "/dev/stdin",
                 "--to",
                 BRIDGE_RESERVE,
                 "--amount-acp",
                 RESTORE_ACP,
-            ]
+            ],
+            keystore_json=keystore_json,
         )
         print("Transfer:", json.dumps(res))
         if not res.get("accepted"):

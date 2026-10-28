@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
 } from "react-native";
 import { assertAcpAddress, safeErrorMessage, signAndPrepareTransfer } from "@ancap/acp-wallet-sdk";
 import { loadVault } from "@/lib/vault";

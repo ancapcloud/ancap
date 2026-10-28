@@ -36,21 +36,10 @@ function BarChart({ data, label, maxValue }: { data: { label: string; value: num
     </div>
   );
 }
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    captured: "bg-green-900/50 text-green-400 border-green-800",
-    reserved: "bg-yellow-900/50 text-yellow-400 border-yellow-800",
-    refunded: "bg-red-900/50 text-red-400 border-red-800",
-    failed: "bg-red-900/50 text-red-400 border-red-800",
-    requires_payment: "bg-blue-900/50 text-blue-400 border-blue-800",
-    cancelled: "bg-gray-800/50 text-gray-400 border-gray-700",
-  };
-  const cls = colors[status] || "bg-gray-800/50 text-gray-400 border-gray-700";
-  return <span className={`px-2 py-0.5 rounded text-xs border ${cls}`}>{status}</span>;
-}
+
 
 export default function AnalyticsPage() {
-  const { t } = useLanguage();
+  useLanguage();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [days, setDays] = useState(30);
@@ -139,7 +128,7 @@ export default function AnalyticsPage() {
   const runStatusCounts: Record<string, number> = (revenue?.run_status_counts as Record<string, number> | undefined) || {};
   const paymentStatusCounts: Record<string, number> = (revenue?.payment_status_counts as Record<string, number> | undefined) || {};
   const totalRuns = Object.values(runStatusCounts).reduce((a: number, b: number) => a + b, 0);
-  const completedRuns = runStatusCounts["completed"] || 0;
+
 
   const skuGroups = topWorkflowsByCurrency(revenue?.skus || []);
   const topSkus = skuGroups.flatMap((group) => group.items);

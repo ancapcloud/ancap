@@ -80,7 +80,7 @@ export default function RunsPage() {
 
       const versionsData = await strategies.getVersions(formData.strategy_id, 1);
       const latestVersion = versionsData.items?.[0];
-      
+
       if (!latestVersion) {
         throw new Error("Strategy has no versions");
       }
@@ -91,7 +91,7 @@ export default function RunsPage() {
         dry_run: formData.dry_run,
         params: {},
       });
-      
+
       setShowCreateModal(false);
       setFormData({ strategy_id: "", pool_id: "", dry_run: true });
       await loadData();
@@ -106,19 +106,11 @@ export default function RunsPage() {
     return null;
   }
 
-  const getStatusColor = (state: string) => {
-    switch (state) {
-      case "completed": return "var(--accent)";
-      case "running": return "#3b82f6";
-      case "failed": return "#ef4444";
-      case "killed": return "#f59e0b";
-      default: return "var(--text-muted)";
-    }
-  };
+
 
   return (
     <>
-      
+
       <div className="min-h-screen">
         <Navigation />
 

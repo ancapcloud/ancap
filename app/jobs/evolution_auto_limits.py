@@ -1,5 +1,4 @@
 """L3: Self-evolution — auto-adjust risk limits from reputation (trust_score)."""
-from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

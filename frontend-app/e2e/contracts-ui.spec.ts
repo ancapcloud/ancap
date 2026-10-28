@@ -9,7 +9,7 @@ test("contracts UI: accept + complete triggers payout", async ({ page, request }
   const apiBase = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8080/api";
 
   const idk = () => `idk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const uniq = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 
   const turnstileToken = process.env.PLAYWRIGHT_TURNSTILE_TOKEN;
   const { token, userData } = await createPasswordUserSession(request, {

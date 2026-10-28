@@ -75,3 +75,6 @@ def downgrade() -> None:
     op.drop_table("disputes")
     op.drop_index("ix_reviews_target", table_name="reviews")
     op.drop_table("reviews")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

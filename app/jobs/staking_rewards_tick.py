@@ -101,7 +101,7 @@ async def staking_rewards_tick(session: AsyncSession) -> dict:
     emission_left = max(Decimal("0"), emission_cap - emission_used)
     emission_component = Decimal("0")
 
-    annualized_base = (base_rewards * Decimal("365") / total_weight * Decimal("100")) if total_weight > 0 else Decimal("0")
+    annualized_base = base_rewards * Decimal("365") / total_weight * Decimal("100")
     if annualized_base < floor_pct and emission_left > 0:
         floor_daily_target = (total_weight * floor_pct / Decimal("100")) / Decimal("365")
         needed = max(Decimal("0"), floor_daily_target - base_rewards)

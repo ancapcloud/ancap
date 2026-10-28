@@ -28,9 +28,6 @@ _SYMBOLS = {
 # Official wACP on BSC + canonical PancakeSwap V2 pool (GeckoTerminal).
 _WACP_BSC = "0x349797e2f1a4fd722af2db181ab1c4ed7606f402"
 _OFFICIAL_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"
-_GT_TOKEN_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}"
-_GT_POOL_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/pools/{_OFFICIAL_POOL}"
-_GT_POOLS_URL = f"https://api.geckoterminal.com/api/v2/networks/bsc/tokens/{_WACP_BSC}/pools"
 
 
 def _api_key() -> str:

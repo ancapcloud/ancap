@@ -4,14 +4,13 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 
 from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import PayoutRequest, PayoutRequestStatusEnum
 from app.schemas import (
     Money,
-    PayoutMethod,
     PayoutRequestActionRequest,
     PayoutRequestCreateRequest,
     PayoutRequestPublic,
@@ -180,7 +179,7 @@ async def approve_payout_request(
     if row.status != PayoutRequestStatusEnum.pending:
         raise HTTPException(status_code=409, detail=f"Payout request is already {row.status.value}")
 
-    user_acc = await get_or_create_account(session, "user", UUID(str(row.user_id)))
+    await get_or_create_account(session, "user", UUID(str(row.user_id)))
     approval_event = await append_event(
         session,
         LedgerEventTypeEnum.transfer,

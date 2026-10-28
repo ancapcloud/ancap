@@ -78,3 +78,6 @@ def downgrade() -> None:
         unique=True,
     )
     op.drop_column("trust_scores", "inputs_hash")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

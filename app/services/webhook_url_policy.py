@@ -37,6 +37,7 @@ class ValidatedWebhookTarget:
             if isinstance(ip_obj, ipaddress.IPv6Address):
                 host = f"[{host}]"
         except ValueError:
+            # A DNS hostname is valid here; only literal IPv6 addresses need brackets.
             pass
         netloc = f"{host}:{self.port}"
         parsed = urlparse(self.url)

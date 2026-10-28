@@ -27,3 +27,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("job_watermarks")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

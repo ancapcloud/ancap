@@ -356,15 +356,6 @@ def main() -> None:
 
     de = {}
     zh = {}
-    de_full = {
-        "buyer": "Käufer",
-        "task": "Aufgabe",
-        "inputs": "Eingaben",
-        "aiResult": "KI-Ergebnis",
-        "constraints": "Grenzen",
-        "payment": "Zahlung",
-        "receipt": "Beleg",
-    }
     # Better: copy EN and apply known DE translations for each href from a compact table built from EN meaning.
     # Use EN values as fallback only if missing — tests require non-empty and lang completeness.
     # We'll translate each EN string via a look-up table of full offer copies for DE/ZH created below.

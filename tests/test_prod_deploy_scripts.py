@@ -15,7 +15,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 _DB_USER = "post" + "gres"
 _DB_PASS = "post" + "gres"
 _BUNDLED_DB_HOST = "post" + "gres"
-_INSECURE_DEFAULT_LABEL = f"{_DB_USER}:{_DB_PASS}"
 _INSECURE_DEFAULT_DB_URL = f"postgresql+asyncpg://{_DB_USER}:{_DB_PASS}@{_BUNDLED_DB_HOST}:5432/ancap"
 
 VALID_PROD_ENV = {

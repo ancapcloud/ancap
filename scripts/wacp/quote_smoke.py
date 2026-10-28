@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 import urllib.request
 
 GT_POOL = "0xf391ca2bcbab93afa23326ebf1e35db950841601"

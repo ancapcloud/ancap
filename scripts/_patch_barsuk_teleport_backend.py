@@ -33,7 +33,6 @@ def patch_schemas() -> None:
     )
 '''
     # insert before end of AeternaStatusPublic class - after pulmopure_note block
-    marker = '        "ANCAP, not ozone therapy, not medical-gas compounding, and not a guaranteed tar-clearance or "\n        "\'clean lungs\' outcome."\n    )\n'
     # find pulmopure_note closing more reliably
     idx = t.rfind("pulmopure_note:")
     if idx < 0:
@@ -41,12 +40,11 @@ def patch_schemas() -> None:
     # find end of that field (next class or blank after closing paren)
     end = t.find("\n\n\nclass ", idx)
     if end < 0:
-        end = t.find("\nclass Aeterna", idx + 20)
+        t.find("\nclass Aeterna", idx + 20)
     # Actually AeternaStatusPublic ends and next may be different - look for closing of last note
-    close = t.find("\n)", idx)
+    t.find("\n)", idx)
     # better: after the pulmopure_note field's closing paren that ends with clean lungs
     needle = 'not a guaranteed tar-clearance or "\n        "\'clean lungs\' outcome."\n    )'
-    alt = "not a guaranteed tar-clearance or '\n        \"'clean lungs' outcome.\"\n    )"
     if needle in t:
         t = t.replace(needle, needle + "\n" + note, 1)
     else:

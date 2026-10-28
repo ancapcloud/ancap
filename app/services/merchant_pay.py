@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 

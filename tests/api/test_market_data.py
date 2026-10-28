@@ -1,6 +1,7 @@
+from __future__ import annotations
+from urllib.parse import urlsplit
 """CoinGecko market-data client tests (mocked HTTP)."""
 
-from __future__ import annotations
 
 from decimal import Decimal
 
@@ -81,7 +82,7 @@ async def test_fetch_market_board_acp_tracks_wacp(monkeypatch):
 
         async def get(self, url, params=None, headers=None):
             url_s = str(url)
-            if "geckoterminal.com" in url_s and "pools/0xf391" in url_s:
+            if urlsplit(url_s).hostname == "api.geckoterminal.com" and "pools/0xf391" in url_s:
                 return _Resp(
                     200,
                     {
@@ -90,7 +91,7 @@ async def test_fetch_market_board_acp_tracks_wacp(monkeypatch):
                         }
                     },
                 )
-            if "geckoterminal.com" in url_s:
+            if urlsplit(url_s).hostname == "api.geckoterminal.com":
                 return _Resp(404, {})
             return _Resp(
                 200,

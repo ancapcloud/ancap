@@ -122,7 +122,7 @@ async def list_reviews(
         try:
             q = q.where(Review.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None
@@ -172,7 +172,7 @@ async def list_disputes(
         try:
             q = q.where(Dispute.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     r = await session.execute(q)
     rows = r.scalars().all()
     next_cursor = str(rows[-1].id) if len(rows) > limit else None

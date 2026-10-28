@@ -164,7 +164,7 @@ def test_complete_home_chat_scrubs_safety_noise(monkeypatch):
             ],
         }
 
-    monkeypatch.setattr("app.services.home_chat.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.home_chat.get_settings", _settings)
     monkeypatch.setattr("app.services.home_chat._openrouter_request", fake_request)
 
     async def _run() -> HomeChatResult:
@@ -208,7 +208,7 @@ def test_fallback_skips_paid_models(monkeypatch):
         assert isinstance(model, str) and model.endswith(":free")
         return 200, {"model": model, "choices": [{"message": {"content": "Готово"}}]}
 
-    monkeypatch.setattr("app.services.home_chat.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.home_chat.get_settings", _settings)
     monkeypatch.setattr("app.services.home_chat._openrouter_request", fake_request)
 
     async def _run() -> HomeChatResult:
@@ -236,7 +236,7 @@ def test_session_model_stays_pinned(monkeypatch):
             "choices": [{"message": {"content": f"ok:{len(calls)}"}}],
         }
 
-    monkeypatch.setattr("app.services.home_chat.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.home_chat.get_settings", _settings)
     monkeypatch.setattr("app.services.home_chat._openrouter_request", fake_request)
 
     async def _run() -> None:

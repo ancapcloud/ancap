@@ -31,7 +31,7 @@ export default function LedgerPage() {
   const [events, setEvents] = useState<LedgerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [highlightEventId, setHighlightEventId] = useState(() => {
+  const [highlightEventId] = useState(() => {
     if (typeof window === "undefined") return "";
     return new URLSearchParams(window.location.search).get("event") || "";
   });

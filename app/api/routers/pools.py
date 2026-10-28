@@ -55,7 +55,7 @@ async def list_pools(
         try:
             q = q.where(Pool.id < UUID(cursor))
         except ValueError:
-            pass
+            raise HTTPException(status_code=422, detail="Invalid pagination cursor") from None
     if risk_profile:
         q = q.where(Pool.risk_profile == risk_profile)
     if status:

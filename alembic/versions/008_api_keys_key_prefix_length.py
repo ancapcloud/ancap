@@ -33,3 +33,6 @@ def downgrade() -> None:
         existing_type=String(24),
         type_=String(16),
     )
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

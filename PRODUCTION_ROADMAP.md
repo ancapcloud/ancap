@@ -5,7 +5,9 @@
 packets to exact result/source hashes, human review and the durable outbox.
 Only one consented full-JSON webhook is eligible; source/result/role changes
 block approval and dispatch. Recipient export omits internal provenance notes.
-Production build/CI/deployment, live delivery and paid validation remain open.
+Release 00c1e04 deployed successfully via PR #130; production build, CI,
+migrations 092/093 and public health/readiness checks passed. Live recipient
+delivery, customer-source quality and paid validation remain open.
 See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
 
 ## Active priorities — 2026-10-28

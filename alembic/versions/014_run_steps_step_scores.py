@@ -24,3 +24,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("run_steps", "score_type")
     op.drop_column("run_steps", "score_value")
+
+# Alembic loads these names as the migration module public interface.
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on", "upgrade", "downgrade"]

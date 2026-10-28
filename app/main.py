@@ -1,5 +1,4 @@
 """ANCAP Core API - AI-Native Capital Allocation Platform."""
-import logging
 import time
 from uuid import uuid4
 from contextlib import asynccontextmanager
