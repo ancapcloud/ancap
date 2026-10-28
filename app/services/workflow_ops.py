@@ -2,7 +2,7 @@
 from __future__ import annotations
 from datetime import timedelta
 from decimal import Decimal
-from uuid import UUID, uuid4
+from uuid import uuid4
 from sqlalchemy import delete, select, func, text
 from sqlalchemy.dialects.postgresql import insert
 from fastapi import HTTPException
@@ -14,22 +14,10 @@ from app.services.workflow_execution import find_workflow_template
 from app.services.workflow_ops_support import now, digest, bounded_json, unseal, quality_passport, market_snapshot, deliver
 from app.services.llm import execute_paid_workflow_with_llm, workflow_provider_credentials
 
+from app.services.workflow_ops_access import owned, project_access, run_access
+
 OPS_SLUGS = frozenset({"token-listing-pack", "crypto-campaign-builder", "telegram-growth-kit", "airdrop-bounty-builder", "token-risk-report", "token-launch-audit-pack", "exchange-listing-submission-pack", "kol-telegram-campaign-builder", "token-risk-report-pro", "agent-api-readiness-pack", "ai-iso-governance-readiness-pack", "market-direction-brief", "crypto-cycle-momentum-scan", "commodity-price-outlook"})
 WORKER_HEALTH = {"last_tick": None, "last_error_type": None}
-
-
-async def owned(session, model, owner, row_id, lock=False):
-    try:
-        row_id = str(UUID(str(row_id)))
-    except ValueError:
-        raise HTTPException(404, "Not found") from None
-    query = select(model).where(model.id == row_id, model.owner_user_id == str(owner))
-    if lock:
-        query = query.with_for_update()
-    row = (await session.execute(query)).scalar_one_or_none()
-    if row is None:
-        raise HTTPException(404, "Not found")
-    return row
 
 
 async def validate_definition(session, owner, body: AutomationWrite):
@@ -66,10 +54,6 @@ def public_automation(row):
     return {"id": str(row.id), "owner_user_id": str(row.owner_user_id), "project_id": str(row.project_id), "name": row.name, "versions": row.versions_json, "published_version": row.published_version, "enabled": row.enabled, "interval_minutes": row.interval_minutes, "monthly_budget_acp": str(row.monthly_budget_acp), "spent_acp": str(row.spent_acp), "budget_month": row.budget_month, "next_run_at": row.next_run_at}
 
 
-def public_run(row):
-    return {"id": str(row.id), "owner_user_id": str(row.owner_user_id), "automation_id": str(row.automation_id) if row.automation_id else None, "kind": row.kind, "state": row.state, "progress": row.progress_json, "cost_acp": str(row.cost_acp), "max_cost_acp": str(row.max_cost_acp), "created_at": row.created_at, "expires_at": row.expires_at}
-
-
 async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled=False):
     version_number = (automation.versions_json[-1]["version"] if body.kind == "test" else automation.published_version)
     if not version_number:
@@ -83,7 +67,7 @@ async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled
     if existing:
         if existing.request_hash != request_hash:
             raise HTTPException(409, "Idempotency key used for different inputs")
-        return existing
+        return await run_access(session, owner, existing.id)
     from app.services.market_economy import get_wacp_usd_oracle
     await get_wacp_usd_oracle()
     # Use the same live quote construction as direct purchases, never an assumed FX rate.
@@ -98,7 +82,7 @@ async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled
     row = (await session.execute(select(WorkflowOperationRun).where(WorkflowOperationRun.owner_user_id == str(owner), WorkflowOperationRun.request_key == body.idempotency_key))).scalar_one()
     if row.request_hash != request_hash:
         raise HTTPException(409, "Idempotency key conflict")
-    return row
+    return await run_access(session, owner, row.id)
 
 
 async def _process_item(session, operation):
@@ -184,6 +168,9 @@ async def _process_item(session, operation):
 
 
 async def _process_delivery(session, operation):
+    if operation.progress_json.get("research_packets"):
+        from app.services.research_packets import validate_delivery
+        await validate_delivery(session, operation)
     progress = dict(operation.progress_json)
     definition = operation.snapshot_json["definition"]
     completed = {entry["connection_id"] for entry in progress.get("deliveries", [])}
@@ -211,6 +198,17 @@ async def _send_prepared_delivery(claim):
         if not any(d.get("attempt_id") == claim["attempt_id"] and d["state"] == "attempting" for d in attempts):
             return
         cid = claim["connection_id"]
+        if progress.get("research_packets"):
+            from app.services.research_packets import validate_delivery
+            try:
+                await validate_delivery(session, operation)
+            except HTTPException:
+                operation.state = "failed"
+                progress["deliveries"] = [{**entry, "state": "blocked", "message": "Research evidence or permissions changed; not sent"}
+                    if entry.get("attempt_id") == claim["attempt_id"] else entry for entry in attempts]
+                operation.progress_json = progress
+                await session.commit()
+                return
         try:
             connection = await owned(session, WorkflowConnection, operation.owner_user_id, cid)
             if not connection.allow_delivery:
@@ -286,6 +284,8 @@ async def workflow_ops_tick(max_items=2):
         for project in projects:
             if project.created_at + timedelta(days=project.retention_days) <= now() and project.context_json:
                 project.context_json = {}
+        from app.services.research_ops import purge_expired
+        await purge_expired(session)
         await session.commit()
     WORKER_HEALTH.update(last_tick=now().isoformat(), last_error_type=None)
     return summary
@@ -308,39 +308,6 @@ async def scrub_operation(session, operation):
     operation.snapshot_json = {}
     operation.progress_json = {"retention": "Content deleted; billing totals retained"}
     operation.state = "expired"
-
-
-async def project_access(session, user_id, project_id, write=False):
-    try:
-        project_id = str(UUID(str(project_id)))
-    except ValueError:
-        raise HTTPException(404, "Not found") from None
-    row = (await session.execute(select(WorkflowProject).where(WorkflowProject.id == project_id))).scalar_one_or_none()
-    if row is None:
-        raise HTTPException(404, "Not found")
-    role = "owner" if str(row.owner_user_id) == str(user_id) else (row.members_json or {}).get(str(user_id))
-    if role not in ({"owner", "editor"} if write else {"owner", "editor", "viewer"}):
-        raise HTTPException(404, "Not found")
-    return row
-
-
-async def run_access(session, user_id, run_id, write=False):
-    try:
-        run_id = str(UUID(str(run_id)))
-    except ValueError:
-        raise HTTPException(404, "Not found") from None
-    query = select(WorkflowOperationRun).where(WorkflowOperationRun.id == run_id)
-    if write:
-        query = query.with_for_update()
-    row = (await session.execute(query)).scalar_one_or_none()
-    if row is None:
-        raise HTTPException(404, "Not found")
-    if str(row.owner_user_id) != str(user_id):
-        automation = await session.get(WorkflowAutomation, row.automation_id) if row.automation_id else None
-        if automation is None:
-            raise HTTPException(404, "Not found")
-        await project_access(session, user_id, automation.project_id, write=write)
-    return row
 
 
 async def trial(session, owner, body, ip_hash):

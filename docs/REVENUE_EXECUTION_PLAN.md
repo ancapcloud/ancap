@@ -2,6 +2,11 @@
 
 ## Current product focus
 
+2026-10-28 execution detail: [bounded Research Operations pilot](RESEARCH_OPERATIONS_PILOT_ROADMAP.md)
+incorporates the supplied strategy without treating its unverified market facts
+or proposed EUR 600 offer as validated pricing. Reuse current platform features;
+the first local source/claim/draft slice is not a completed paid pilot or renewal.
+
 [Workflow value and Research Operations](WORKFLOW_VALUE_ROADMAP.md) is the implementation and commercial sequence: one recurring process → external payments → version-bound accepted results → actual costs → renewals → repeatable sales → stage financing → platform expansion. This release supplies private acceptance/history/estimates; it does not claim verified ROI or paying demand. The latest strategy narrows earlier two-offer testing to one Research Operations core service and one entry/onboarding variant. Existing subscriptions, repeats, roles, API and webhooks remain foundations to validate, not missing systems to rebuild.
 
 ## Capital-plan extension

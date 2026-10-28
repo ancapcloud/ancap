@@ -2,8 +2,26 @@ from fastapi import APIRouter, Depends, Query, Response
 from app.api.deps import DbSession, require_auth
 from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary
 from app.services import workflow_value
+from uuid import UUID
+from app.api.deps import require_platform_admin
+from app.schemas.workflow_costs import CostEvidenceCreate, CostEvidenceReceipt, ReconciledRunCosts
+from app.services import workflow_costs
 
 router = APIRouter(prefix="/workflow-store", tags=["Private Workflow Value"])
+
+
+@router.post("/admin/cost-evidence", response_model=CostEvidenceReceipt, status_code=201)
+async def record_cost_evidence(body: CostEvidenceCreate, session: DbSession, response: Response,
+                               reviewer_id: str = Depends(require_platform_admin)):
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_costs.record_cost_evidence(session, reviewer_id, body)
+
+
+@router.get("/admin/runs/{run_id}/costs", response_model=ReconciledRunCosts)
+async def get_run_costs(run_id: UUID, session: DbSession, response: Response,
+                        reviewer_id: str = Depends(require_platform_admin)):
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_costs.stored_run_costs(session, run_id)
 
 
 @router.get("/value", response_model=ValueSummary)

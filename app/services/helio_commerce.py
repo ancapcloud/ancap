@@ -89,7 +89,7 @@ def summarize_helio_webhook(payload: dict[str, Any]) -> dict[str, Any]:
         "status": str(tx.get("status") or "") or None,
     }
     logger.info(
-        "helio_webhook event=%s transaction_id=%s paylink_id=%s status=%s",
+        "helio_webhook event=%r transaction_id=%r paylink_id=%r status=%r",
         _safe_log_token(meta.get("event")),
         _safe_log_token(meta.get("transaction_id")),
         _safe_log_token(meta.get("paylink_id")),

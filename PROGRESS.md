@@ -95,3 +95,27 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Android native module release AAR builds successfully; its packaged proguard.txt contains the JNA/UniFFI consumer keep rules. Expo prebuild preserves the restricted ABI list. This is build/packaging evidence, not a signed minified APK device acceptance test.
 - Updated the development test tools to close GHSA-6w46-j5rx-g56g (pytest <9.0.3). Final GitHub CI and deployment remain pending in PR #125; no release success is claimed yet. PR #125 contains #123/#124 and their review corrections in a single release.
 - User explicitly authorized push and deployment on 2026-10-27. OpenClaw ANCAP job temporarily paused during review/release; restore after verification. No funded payments or OCR quality acceptance run performed.
+
+## 2026-10-28 - Research Operations release preparation
+
+- Assemble cost evidence (migration 092), bounded sources (093), claim drafts and exact Studio-reviewed client packets from verified feature work onto current origin/master. Exclude inherited OCR experiments and local runtime files.
+- Prior isolated validation: 51 targeted backend tests and 13 Chromium scenarios, TypeScript and focused ESLint pass. CI and production rollout are pending for this exact release branch.
+
+
+- Release follow-up: restored the referenced release-verification document, extracted shared Studio access/serialization to remove research import cycles, and removed mutating calls from assert expressions flagged by CodeQL.
+- Hardened long-text parsing, recovery-wrapper trimming, service-worker message origin, external-field log formatting and randomized e2e credentials. Pin deployment/Foundry/release actions to upstream commit SHAs; the top-up example no longer logs client-secret fragments.
+- Exact release checkout validation: 101 targeted backend/security tests, all 97 frontend unit tests, lint and Next production build pass. Full backend/remote CI are still running.
+- Initial GitHub snapshot: 372 open CodeQL findings (342 quality notes, 18 high and 12 medium security-classified alerts); no open Dependabot or Secret Scanning alerts. This is an inventory, not a claim that all old alerts are exploitable or resolved. Historical wallet-storage/protocol and quality findings require separate review; no findings were mass-dismissed.
+
+
+- GitHub review found a packet disclosure through retry-delivery after project access revocation. Retry and cancellation now enforce project membership and packet expiry before any mutation/response; retry also revalidates the approved evidence. Added revoked-owner and expired-packet regressions: all 20 Studio/packet tests pass.
+
+
+- Closed the second review path: matching idempotent enqueue responses now recheck research packet access/expiry, including concurrent insert returns. Added a valid replay then expiry regression and private no-store response headers. All 23 focused Studio/packet/QR/release-workflow tests pass.
+- GitHub full backend run exposed a legacy release test that required a mutable action tag. Updated it to require a 40-character commit pin. The previous run otherwise had 1189 passes and 40 skips; it is not reported as a green run.
+- Local Windows QR failure was a missing tzdata package; installed tzdata in the test environment and the QR regression now passes. Deployment CI uses Linux timezone data. Operator approved PR #130 in this chat on 2026-10-28; merge/deployment still wait for exact-head CI and review fixes.
+
+
+- Review follow-up: no-change source checks now reuse the immutable packet when evidence bindings, workflow versions and report output match. Freshness timestamps no longer exhaust the three-version limit. Regression performs four unchanged checks, then confirms a real source change still creates version two; all 11 packet tests pass.
+- The initial local full-suite run completed with 1215 passes, 8 skips and two failures (missing Windows timezone data and old mutable-tag expectation), both separately corrected and covered by the passing focused reruns. It is not labeled a clean full run; exact-head Linux CI remains authoritative for this release.
+

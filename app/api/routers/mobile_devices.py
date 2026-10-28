@@ -64,7 +64,7 @@ async def register_device(
         msg = "Device registered"
 
     await session.flush()
-    logger.info("mobile_device_register: user=%s platform=%s active=%s", user_id, body.platform, device.is_active)
+    logger.info("mobile_device_register: active=%s", bool(device.is_active))
 
     return MobileDeviceRegisterResponse(device_id=str(device.id), registered=True, message=msg)
 
@@ -91,7 +91,7 @@ async def unregister_device(
     if device:
         device.is_active = False
         await session.flush()
-        logger.info("mobile_device_unregister: user=%s device=%s", user_id, device.id)
+        logger.info("mobile_device_unregister")
         return {"ok": True, "message": "Device deactivated"}
     return {"ok": True, "message": "Device not found"}
 

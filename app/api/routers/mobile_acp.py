@@ -822,8 +822,8 @@ def _explorer_url_for_network(network: str, txid: str) -> str | None:
 
 def _trim_recovery_locator_token(value: str) -> str:
     trimmed = value.strip()
-    trimmed = re.sub(r'^["\'`<([{]+', "", trimmed)
-    trimmed = re.sub(r'["\'`>)}\],;:.]+$', "", trimmed)
+    trimmed = trimmed.lstrip("\"'`<([{")
+    trimmed = trimmed.rstrip("\"'`>)}],;:.")
     return trimmed
 
 

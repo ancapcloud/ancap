@@ -1,6 +1,27 @@
 # ANCAP Master Roadmap
 
-## Active priorities — 2026-10-27
+
+2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
+packets to exact result/source hashes, human review and the durable outbox.
+Only one consented full-JSON webhook is eligible; source/result/role changes
+block approval and dispatch. Recipient export omits internal provenance notes.
+Production build/CI/deployment, live delivery and paid validation remain open.
+See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+
+## Active priorities — 2026-10-28
+
+2026-10-28: the operator's Research Operations strategy is incorporated in the
+[bounded agency-pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+ROP-01 adds project-approved public HTML sources, checked versions/text changes,
+manual source-bound claims and a private draft packet in Studio (migration 093).
+Commercial validation, live reviewed-release delivery, schedules and renewal evidence
+remain explicit gates; the supplied strategy is not a verified market audit.
+
+2026-10-28: actual-cost P0 now includes an evidence-allocation reconciler and
+admin-only persistent operator-attested source lines (migration 092), with
+atomic distribution, source-line uniqueness and private per-run totals.
+Provider reconciliation and full contribution accounting remain open; see
+[scope and limits](docs/WORKFLOW_VALUE_ROADMAP.md).
 
 [Workflow value and Research Operations](docs/WORKFLOW_VALUE_ROADMAP.md) adds version-bound acceptance, private reviewed-result history and `/ai/value` (migration 091). This release implements the quality/estimate baseline; actual cost attribution, external-payment provenance and paid renewal validation remain P0/P1 gates. Primary commercial hypothesis is now one recurring Research Operations process for agencies; existing reports are entry offers, not proof of recurring demand.
 
@@ -11,6 +32,8 @@ The active order is [revenue validation and reliable paid workflows](docs/REVENU
 Previous repair was merged in PR #125; the pre-change production baseline is `e2e88ed`. Historical pending notes below describe earlier snapshots. GPU OCR quality, funded-payment verification and physical/iOS sign-off remain open.
 
 ## Historical implementation notes
+
+> Verified 2026-10-27: PR #125 merged and web release e2e88ed deployed successfully. All PR/master checks pass; live build, API health/readiness and five pages verified. See docs/RELEASE_VERIFICATION_2026-10-27.md. Earlier pending-release notes below are historical snapshots.
 
 > 2026-10-27 review: corrected Theodore's pricing checker and unverified progress claims; resolved translation regeneration and Android native release review findings. Release preparation is in progress; see PROGRESS.md for verification and deployment evidence.
 

@@ -157,12 +157,11 @@ export async function apiFetch(path: string, options: RequestInit = {}, includeJ
         detail = String(maybeJson?.message || "").trim();
       }
     } catch {
-      // If upstream/proxy returns HTML/plain text, expose short readable snippet.
+      // Upstream snippets are plain text for React text nodes, never HTML.
       const raw = (await res.text().catch(() => "")).trim();
       if (raw) {
         detail = raw
           .replace(/\s+/g, " ")
-          .replace(/<[^>]+>/g, "")
           .slice(0, 180)
           .trim();
       }

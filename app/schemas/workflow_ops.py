@@ -72,6 +72,7 @@ class ReviewWrite(BaseModel):
     decision: Literal["approve", "reject"]
     note: str = Field(default="", max_length=1000)
     edited_output: dict[str, Any] | None = None
+    expected_review_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class TrialWrite(BaseModel):

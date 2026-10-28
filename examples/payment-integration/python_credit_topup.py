@@ -63,7 +63,7 @@ def main() -> int:
         print(f"  package: {created['package']['slug']}")
         print(f"  stripe_payment_intent_id: {stripe['payment_intent_id']}")
         print(f"  stripe_status: {stripe['status']}")
-        print(f"  client_secret: {stripe['client_secret'][:18]}...")
+        print("  client_secret: [redacted; use only in the authorized checkout]")
 
         print("\nPolling ANCAP intent status 3 times (webhook-safe fallback example)...")
         for attempt in range(1, 4):
