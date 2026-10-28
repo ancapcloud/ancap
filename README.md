@@ -137,8 +137,9 @@ Required env vars for the adapter:
 - optional `STRIPE_API_BASE` (defaults to `https://api.stripe.com/v1`)
 
 Current first-slice Stripe currencies:
-- `USD`
-- `EUR`
+- `USD` only. EUR is not supported until an explicit FX/pricing path is implemented.
+
+Card prices use the package `fiat_price`; the ACP package price and credited ACP quantity are separate terms. New top-up orders retain a versioned pricing snapshot for capture/refund accounting. Legacy orders use their recorded terms; missing evidence requires reconciliation. Stripe refund requests can be recorded, but ledger-only approval is blocked until provider-confirmed refund/reconciliation is implemented; do not treat a ledger change as a card refund.
 
 If those values are empty, Stripe endpoints fail closed with `503` and ACP/manual flows stay available. Unsupported Stripe currencies fail closed with `400` instead of silently creating mismatched checkout intents.
 

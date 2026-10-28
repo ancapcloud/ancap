@@ -3,10 +3,10 @@ from __future__ import annotations
 from datetime import timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4
-from sqlalchemy import select, func, text
+from sqlalchemy import delete, select, func, text
 from sqlalchemy.dialects.postgresql import insert
 from fastapi import HTTPException
-from app.db.models import WorkflowProject, WorkflowConnection, WorkflowAutomation, WorkflowOperationRun, WorkflowRunRecord
+from app.db.models import WorkflowProject, WorkflowConnection, WorkflowAutomation, WorkflowOperationRun, WorkflowRunRecord, WorkflowResultAssessment
 from app.db.session import async_session_maker
 from app.schemas.workflow_ops import AutomationWrite, EnqueueRequest
 from app.schemas.workflow_store import WorkflowRunPaymentIntentCreateRequest
@@ -293,8 +293,15 @@ async def workflow_ops_tick(max_items=2):
 
 async def scrub_operation(session, operation):
     for item in operation.progress_json.get("items", []):
-        base = await session.get(WorkflowRunRecord, item.get("run_id"))
+        # Use the same base-run lock as assessment creation. A concurrent review
+        # must finish before purge, or observe the scrubbed result and fail closed.
+        base = (await session.execute(select(WorkflowRunRecord).where(
+            WorkflowRunRecord.id == item.get("run_id"),
+            WorkflowRunRecord.owner_user_id == operation.owner_user_id).with_for_update())).scalar_one_or_none()
         if base and str(base.owner_user_id) == str(operation.owner_user_id):
+            await session.execute(delete(WorkflowResultAssessment).where(
+                WorkflowResultAssessment.workflow_run_id == base.id,
+                WorkflowResultAssessment.owner_user_id == operation.owner_user_id))
             base.inputs_json = {}
             base.result_json = None
             base.preview_json = {}

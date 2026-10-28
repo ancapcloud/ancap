@@ -1,3 +1,21 @@
+## Workflow acceptance/value and Research Operations — 2026-10-27
+
+- Added version-bound owner assessments, read-only reviewed-result snapshots/history and private `/ai/value` with five-language copy. Unique run/hash constraint and row locking prevent overwriting concurrent reviews; stale result versions stop contributing to current metrics.
+- Added optional paired effort/rate estimates with negative savings retained and units separated. Actual ledger captures are separate from these estimates and do not establish external revenue or ROI. Private JSON omits results, notes and identity; summary covers newest 200 completed results in an explicit 1–90 day window, with truncation metadata.
+- Added migration 091; isolated PostgreSQL upgrade/downgrade/upgrade passed. Tests cover account isolation, immutable/concurrent reviews, stale result rejection, historical snapshot retrieval/integrity, bounded scope, unchanged balances on assessment and independent refund accounting.
+- Consolidated the supplied strategy into docs/WORKFLOW_VALUE_ROADMAP.md and active roadmaps: one recurring Research Operations pilot, actual cost/payment provenance, renewals and stage-based capital before platform expansion. Existing subscription/repeat/API/team foundations are preserved; business targets remain hypotheses.
+- Review follow-up: project deletion/operation expiry now purge assessment notes and snapshots under the same base-run lock as creation. A database redaction trigger covers old-worker rollback and other clearers; SQL NULL and JSON null results are excluded from summaries. Existing billing records remain intact. Fresh migration upgrade/downgrade/upgrade and 37 value/operations regression tests pass.
+- Validation: 73 targeted backend/documentation tests passed on isolated PostgreSQL, including 22 value/estimate tests; 97 frontend unit tests, TypeScript and ESLint pass. Production build and ten five-language/mobile/error/history/export Chromium checks are recorded with the feature PR. Upgrade/downgrade/upgrade of migration 091 passed. Next: actual provider/manual-work cost attribution and reconciled external-payment classification; source monitoring/team reports/commercial exports remain gated work, not shipped claims.
+
+## Capital execution and top-up monetary integrity — 2026-10-27
+
+- Added the supplied 12-month/90-day capital plan with lean budgeting, two-offer pilot targets, 13-week cash-flow, corporate/IP/PSP gates and a source-checked grants register. Goals remain proposed and opening cash/round ask unknown; no outreach/application/funded operation performed.
+- Added explicit fiat_price/pricing_version for credit packages and frozen pricing_snapshot on new manual/Stripe top-ups. Capture/refund accounting now uses recorded order terms even if the catalog changes or removes a package. Legacy missing/corrupt terms fail closed for reconciliation; existing balances are not migrated.
+- Wallet card prices use explicit fiat prices; Stripe remains USD-only and README now matches. Existing numerical package prices, ACP credit quantities and wACP discount are preserved, not economically re-certified.
+- Blocked ledger-only Stripe refund approval: it previously could mark an intent refunded without executing a provider refund. Requests remain pending; provider-confirmed orchestration/recovery remains P0.
+- Updated dnspython to 2.9.0 for GHSA-45c3-73f7-pv4m; regenerated only that lock section with pip-tools in Linux Python 3.11.
+- Validation: 85 targeted backend tests passed against isolated PostgreSQL; 28 payment/snapshot tests repeated after final changes passed; 33 documentation/Stripe-truth checks passed; 85 frontend unit tests, ESLint, TypeScript and production build passed; two Chromium scenarios passed with no page errors (explicit fiat price/missing-price disable and currency-isolated analytics). Final CI/release evidence is tracked in the pull request. Next: durable provider idempotency/timeout recovery, external refund reconciliation and a qualified customer pilot; no phase is closed by a code-only test.
+
 ## Revenue execution priorities — 2026-10-27
 
 - Added docs/REVENUE_EXECUTION_PLAN.md and linked the active queue from both roadmaps and STATUS.md. Existing implemented functions are distinguished from missing adoption evidence; numerical goals are hypotheses.

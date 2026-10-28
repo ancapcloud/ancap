@@ -1,3 +1,5 @@
+> 2026-10-27 planning decision: use lean as the baseline under the [capital execution plan](CAPITAL_EXECUTION_PLAN_2026-10-27.md). These remain unquoted assumptions, not a final round ask. Actual opening cash, obligations, employer charges and cross-border quotes are required; do not add a second reserve to totals already including it.
+
 # ANCAP — 12-month operating budget (assumptions)
 
 Date: 2026-10-14.  

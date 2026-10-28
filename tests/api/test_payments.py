@@ -53,7 +53,9 @@ async def _fake_create_intent(session, user, body):
         amount_value=Decimal("19.99"),
         payment_reference=f"stripe:{stripe_payment_intent_id}",
         stripe_payment_intent_id=stripe_payment_intent_id,
-        provider_payload_json={"package_slug": body.package_slug, "mode": "stripe"},
+        provider_payload_json={"package_slug": body.package_slug, "mode": "stripe",
+            "price": {"amount": "19.99", "currency": "USD"},
+            "credit_amount": {"amount": "100", "currency": "ACP"}},
     )
     session.add(intent)
     await session.flush()

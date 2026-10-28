@@ -26,6 +26,7 @@ from app.schemas import (
     WorkflowCreditPackagePublic,
 )
 from app.services.workflow_execution import find_credit_package
+from app.services.credit_pricing import build_topup_pricing_snapshot
 
 _ZERO_DECIMAL_CURRENCIES = {
     "bif",
@@ -100,9 +101,16 @@ def quote_stripe_credit_package_amount(
     package: WorkflowCreditPackagePublic,
     currency: str,
 ) -> Decimal:
-    normalize_stripe_currency(currency)
-    # First Stripe slice: keep package sticker price as the fiat adapter baseline.
-    return Decimal(package.price.amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    normalized = normalize_stripe_currency(currency)
+    if package.fiat_price is None or package.fiat_price.currency != normalized:
+        raise HTTPException(status_code=409, detail="Credit package has no explicit price in this fiat currency")
+    amount = Decimal(package.fiat_price.amount)
+    if not amount.is_finite() or amount <= 0:
+        raise HTTPException(status_code=409, detail="Credit package fiat price is invalid")
+    rounded = amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    if rounded <= 0:
+        raise HTTPException(status_code=409, detail="Credit package fiat price is below the minimum unit")
+    return rounded
 
 
 def amount_to_minor_units(amount: Decimal, currency: str) -> int:
@@ -240,6 +248,7 @@ async def create_stripe_credit_topup_intent(
 
     currency = normalize_stripe_currency(body.currency or "USD")
     quoted_amount = quote_stripe_credit_package_amount(package, currency)
+    pricing_snapshot = build_topup_pricing_snapshot(package, quoted_amount, currency)
     customer_id = await get_or_create_stripe_customer(session, user)
     payment_method_selection = "saved_method" if body.payment_method_id else "new_card"
 
@@ -289,6 +298,7 @@ async def create_stripe_credit_topup_intent(
         stripe_payment_intent_id=stripe_payment_intent_id,
         provider_payload_json={
             "package_slug": package.slug,
+            "pricing_snapshot": pricing_snapshot,
             "package_title": package.title,
             "credit_amount": package.credit_amount.model_dump(),
             "price": {"amount": str(quoted_amount), "currency": currency},

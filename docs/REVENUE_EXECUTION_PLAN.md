@@ -1,5 +1,13 @@
 # Revenue execution plan — 2026-10-27
 
+## Current product focus
+
+[Workflow value and Research Operations](WORKFLOW_VALUE_ROADMAP.md) is the implementation and commercial sequence: one recurring process → external payments → version-bound accepted results → actual costs → renewals → repeatable sales → stage financing → platform expansion. This release supplies private acceptance/history/estimates; it does not claim verified ROI or paying demand. The latest strategy narrows earlier two-offer testing to one Research Operations core service and one entry/onboarding variant. Existing subscriptions, repeats, roles, API and webhooks remain foundations to validate, not missing systems to rebuild.
+
+## Capital-plan extension
+
+[Capital and commercial execution](investors/CAPITAL_EXECUTION_PLAN_2026-10-27.md) adds the 12-month calendar, 13-week cash-flow, corporate/IP/PSP gates and proposed 30-conversation / 5-pilot / 3-repeat-buyer 90-day experiment. Monetary semantics and provider-confirmed refund/reconciliation gates take P0 precedence. Existing percentage targets below are secondary hypotheses until cohort denominators and sample volume exist. Current code adds explicit USD prices and frozen top-up terms; full FX quote expiry, provider retry recovery and external refund orchestration remain open.
+
 ## Current priority
 
 Validate repeatable paid workflow usage before expanding infrastructure. ACP-first commerce remains the product contract; ACP, wACP and sACP remain distinct. Existing subscriptions, creator earnings, API billing, checkout and admin revenue analytics are implemented foundations, not missing features to rebuild. No verified customer revenue dataset was supplied. Historical network heights/node counts are not current observations.
@@ -8,7 +16,7 @@ This board is the active order; the phase roadmaps remain the implementation inv
 
 | Priority / window | Deliverable | Owner | Acceptance evidence / metric | Dependency | State |
 | --- | --- | --- | --- | --- | --- |
-| P0 / week 1 | Currency-isolated revenue cards and rankings | Coding agent | Unit tests, frontend build, release checks; never sum or rank different currencies | Standard release checks | Implemented; local unit/build/browser checks passed; GitHub/deployment pending |
+| P0 / week 1 | Currency-isolated revenue cards and rankings | Coding agent | Unit tests, frontend build, release checks; never sum or rank different currencies | Standard release checks | Implemented and merged in PR #126; release evidence is tracked with that PR |
 | P0 / weeks 1–2 | Durable registration → wallet → workflow → quote → capture → completed paid run → repeat events | Coding agent | Idempotent events, immutable timestamps, source/test tags, admin-only cohort aggregates, unknown/empty states | Existing browser events are local only; ledger captures do not establish external funding | Open |
 | P0 / weeks 1–2 | One golden paid workflow | Product owner + coding agent | Select an existing SKU; preview, insufficient balance, duplicate submission, timeout, bounded retry and refund tests; dated pilot evidence separately | Owner selects customer/pilot; funded actions require explicit authorization | Open |
 | P0 / weeks 1–3 | Payment integrity review | Coding agent + reviewer | Capture/webhook replay and ordering, currency, refunds and double-charge checks; ACP acceptance, Stripe sandbox separately | Live capture/saved-card validation requires operator authorization | Open |
