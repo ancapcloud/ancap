@@ -6,6 +6,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { apiFetch } from "@/lib/api";
 import { workflowOpsCopy } from "@/locales/workflowOps";
+import { ResearchPanel } from "./ResearchPanel";
+import { researchPacketCopy, researchClientExportCopy } from "@/locales/researchOps";
 import {
   downloadWorkflowJson,
   parseWorkflowCsv,
@@ -60,8 +62,12 @@ type Operation = {
   automation_id: string | null;
   kind: string;
   state: string;
+  review_hash?: string;
   cost_acp: string;
   progress: {
+    research_packets?: {version:number;hash:string;packet:unknown}[];
+    research_approval?: {packet_hash:string};
+    reviewed_output?: unknown;
     cursor?: number;
     output?: unknown;
     items?: {
@@ -618,6 +624,7 @@ export function WorkflowStudio() {
             </section>
           </div>
         )}
+        {tab === "projects" && projectId && <ResearchPanel key={projectId} projectId={projectId} canEdit={canEditProject} onPacket={load} reviewableRuns={data.runs.filter(run=>run.state==="awaiting_review" && run.review_hash && data.automations.some(automation=>automation.id===run.automation_id && automation.project_id===projectId)).map(run=>({id:run.id,review_hash:run.review_hash!}))} />}
         {tab === "connections" && (
           <div className="grid gap-6 lg:grid-cols-2">
             <section className={panel}>
@@ -1317,6 +1324,13 @@ export function WorkflowStudio() {
                     {resultSummary(run.progress.output)}
                   </p>
                 )}
+                {run.progress.research_packets?.map(packet=><details className="mt-4" key={`${packet.version}:${packet.hash}`} open>
+                  <summary>{researchPacketCopy[lang].title} · {packet.version}</summary>
+                  <p className="my-2 text-sm">{researchPacketCopy[lang].info}</p>
+                  <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify(packet.packet,null,2)}</pre>
+                </details>)}
+                {run.progress.research_approval && <p className="mt-3 break-all text-xs">{researchPacketCopy[lang].title}: {run.progress.research_approval.packet_hash}</p>}
+                {run.progress.research_approval && run.progress.reviewed_output != null && <button className={`${button} mt-3`} onClick={()=>downloadWorkflowJson(`research-client-packet-${run.progress.research_approval!.packet_hash.slice(0,12)}.json`,run.progress.reviewed_output)}>{researchClientExportCopy[lang]}</button>}
                 {run.progress.quality != null && (
                   <details className="mt-4">
                     <summary>{c.quality}</summary>
@@ -1402,6 +1416,7 @@ export function WorkflowStudio() {
                             action(async () => {
                               await request(`/runs/${run.id}/review`, {
                                 decision,
+                                expected_review_hash: run.review_hash,
                                 note: reviewNotes[run.id] || "",
                                 edited_output: editedResults[run.id]
                                   ? JSON.parse(editedResults[run.id])

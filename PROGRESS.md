@@ -95,3 +95,9 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Android native module release AAR builds successfully; its packaged proguard.txt contains the JNA/UniFFI consumer keep rules. Expo prebuild preserves the restricted ABI list. This is build/packaging evidence, not a signed minified APK device acceptance test.
 - Updated the development test tools to close GHSA-6w46-j5rx-g56g (pytest <9.0.3). Final GitHub CI and deployment remain pending in PR #125; no release success is claimed yet. PR #125 contains #123/#124 and their review corrections in a single release.
 - User explicitly authorized push and deployment on 2026-10-27. OpenClaw ANCAP job temporarily paused during review/release; restore after verification. No funded payments or OCR quality acceptance run performed.
+
+## 2026-10-28 - Research Operations release preparation
+
+- Assemble cost evidence (migration 092), bounded sources (093), claim drafts and exact Studio-reviewed client packets from verified feature work onto current origin/master. Exclude inherited OCR experiments and local runtime files.
+- Prior isolated validation: 51 targeted backend tests and 13 Chromium scenarios, TypeScript and focused ESLint pass. CI and production rollout are pending for this exact release branch.
+

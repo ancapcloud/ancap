@@ -1,9 +1,30 @@
 # ANCAP Status
 
-> Updated: 2026-10-27
+
+2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
+packets to exact result/source hashes, human review and the durable outbox.
+Only one consented full-JSON webhook is eligible; source/result/role changes
+block approval and dispatch. Recipient export omits internal provenance notes.
+Production build/CI/deployment, live delivery and paid validation remain open.
+See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+
+> Updated: 2026-10-28
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
+
+**Research Operations (2026-10-28, local):** migration 093, public HTML source
+register/checks, version-bound manual claim links and private draft JSON/text
+exports in Studio are implemented. The
+[pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md) separates implemented
+foundation from approved delivery, recurring collection, payments and renewals.
+No live-source acceptance, deployment, paid pilot or valuation increase is claimed.
+
+**Cost evidence (2026-10-28, local):** migration 092 and admin-only source-line
+recording/per-run cost totals are implemented; 44 targeted tests and disposable
+PostgreSQL migration rollback/reapply passed. Records are operator-attested,
+not independently verified. Provider imports, reconciliation and SKU/client
+contribution remain open. See [scope](docs/WORKFLOW_VALUE_ROADMAP.md).
 
 **Workflow value (2026-10-27):** [Acceptance/history and Research Operations queue](docs/WORKFLOW_VALUE_ROADMAP.md). New owner-only acceptance binds to the exact result hash, preserves reviewed snapshots and excludes stale assessments from current totals. `/ai/value` separates user time/labor estimates from ledger captures, with private aggregate JSON and explicit bounded scope. This is not an organization report, external-payment audit, cash ROI or commercial traction proof. Migration 091 and release verification are tracked with the implementation PR. Actual costs and payment-source classification remain open.
 
@@ -13,6 +34,8 @@
 
 **Execution priorities (2026-10-27):** [Revenue execution board](docs/REVENUE_EXECUTION_PLAN.md) is the active work order. This change separates currencies in margin/cost/referral cards and workflow rankings. Customer revenue remains unverified. Durable cohort measurement, a golden pilot and repeat-use validation remain open. Existing subscriptions, creator earnings and API billing are implemented foundations. PR #125 is merged; pre-change production baseline is `e2e88ed`. Older entries below are dated historical evidence.
 
+
+**Verified web release (2026-10-27):** PR #125 merged as `e2e88edca121c0677fe1801859953ee5b56e02ee`. All 18 PR checks and all triggered master workflows passed, including deployment. Public frontend build is `e2e88ed`; API health/ready and five public pages passed. Pricing parity, translation regeneration and Android release binding/ABI review findings are fixed. Nine of ten prior dependency alerts closed; node-forge remains reported upstream with a verified source backport. See [release evidence](docs/RELEASE_VERIFICATION_2026-10-27.md). Earlier pending-release notes are historical snapshots, not current blockers. Physical mobile/iOS/OCR acceptance remains open.
 
 **Homepage applications framing (2026-10-16):** Home hero reframed around people + AI applications and earning on paid workflow runs; featured **Smart Pay** (document/photo → AI decode → ACP quote → confirmed transfer) linking to `/payment-scanner`; People + AI section full; six areas as today’s map. `FF_PROJECT_ECONOMY` still false. Catalog `/economy` remains preview (3n3rgy demos).
 

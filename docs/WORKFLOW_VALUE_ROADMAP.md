@@ -1,5 +1,13 @@
 # Workflow acceptance, private value and Research Operations
 
+
+2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
+packets to exact result/source hashes, human review and the durable outbox.
+Only one consented full-JSON webhook is eligible; source/result/role changes
+block approval and dispatch. Recipient export omits internal provenance notes.
+Production build/CI/deployment, live delivery and paid validation remain open.
+See [pilot scope](RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+
 ## Release scope
 
 This release implements owner-only result assessment, archived reviewed versions and `/ai/value`. It supports the commercial validation order in [the active execution board](REVENUE_EXECUTION_PLAN.md) and [capital plan](investors/CAPITAL_EXECUTION_PLAN_2026-10-27.md). It does not establish paid demand, business ROI, external audit or increased company/token valuation.
@@ -32,6 +40,61 @@ Ledger charge figures include positive captured workflow intents with capture-le
 Deployment enables the owner UI after `alembic upgrade head`. Rollback uses the previous application image while leaving this additive table intact; do not downgrade/drop assessment data in production as routine rollback. Export/backup and explicit data-loss approval precede any destructive downgrade. No wallet, token or existing balance migration is required.
 
 ## Next work, in execution order
+
+The operator-provided strategy is now sequenced in
+[Research Operations pilot](RESEARCH_OPERATIONS_PILOT_ROADMAP.md): ROP-01 sources,
+version-linked claims and private draft packet; ROP-02 existing review-bound
+release/delivery; ROP-03 bounded schedules/evaluations; ROP-04 evidenced economics
+and renewals; ROP-05 proven onboarding reuse. Sources and draft links do not
+replace existing accepted workflow versions or establish revenue or demand.
+
+2026-10-28 implementation slice: `app/services/workflow_costs.py` provides an
+offline evidence-allocation reconciler with strict input schemas. It rejects
+duplicate source-line/run allocations, conflicting currency/category/source
+amounts and cross-run over-allocation; keeps currencies separate and missing
+categories unknown; includes creator payout once and distinct retry evidence.
+Explicit zero requires evidence. Decimal accumulation preserves database-scale
+precision. Callers must supply the complete allocation set for each source line.
+This is a calculation foundation, not a public ingestion endpoint or verified
+actual-cost dashboard. Persistence, authenticated evidence review, provider
+imports, completeness verification and SKU/client contribution remain open.
+Local validation: `python -m pytest tests/unit/test_workflow_costs.py
+tests/unit/test_workflow_value_estimates.py -q` — 29 passed. No database migration,
+deployment or real payment was performed for this calculation-only slice.
+
+2026-10-28 persistence slice: migration `092_workflow_cost_evidence` stores
+operator-attested document source lines, SHA-256 references, review notes,
+reviewer IDs/timestamps and per-run allocations. Admin-only
+`POST /v1/workflow-store/admin/cost-evidence` accepts a complete immutable
+distribution of one source line (at most 200 runs); duplicate source/document/line
+keys return 409, including concurrent requests. Invalid distributions and missing
+runs leave no partial records. There is no update/delete/reallocation API.
+`GET /v1/workflow-store/admin/runs/{run_id}/costs` returns currency-separated
+totals, evidenced/missing categories and an explicit independent-verification
+false flag. Empty coverage is unknown; category coverage is not proof all costs
+were captured. Both endpoints use platform-admin authentication and no-store.
+
+Operators must use canonical supplier/document/line IDs and review the source
+document before entry. A document hash is a reference, not proof of authenticity;
+renamed sources/documents cannot be detected automatically. Raw documents are
+not uploaded or fetched. Provider imports, evidence-file retention/access,
+correction/reversal workflow, independent reconciliation, automated source
+identity and SKU/client contribution remain open. Do not import a creator payout
+again as an additional expense under another category. Run deletion cascades its
+allocations; source evidence remains reserved and cannot be reused. Reviewer
+deletion clears the user reference while retaining the record timestamp.
+
+Deploy requires migration 092. Routine rollback leaves accounting tables intact;
+destructive downgrade is only for a disposable test database, never routine
+production rollback. This slice does not mutate balances or payment intents.
+
+Local verification on a dedicated disposable PostgreSQL 16 database:
+`pytest tests/api/test_workflow_cost_evidence_api.py tests/api/test_workflow_value.py
+tests/unit/test_workflow_costs.py tests/unit/test_workflow_value_estimates.py -q`
+— **44 passed**, including private access, conflicting/concurrent writes,
+precision, invalid-batch rejection, split allocations, run deletion and prior
+assessment regressions. Alembic `092 -> 091 -> 092` succeeded. These are local
+checks; CI, deployment and real provider-document reconciliation are pending.
 
 | Priority | Work | Owner | Acceptance / dependency | State |
 | --- | --- | --- | --- | --- |

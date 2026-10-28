@@ -67,7 +67,8 @@ def public_automation(row):
 
 
 def public_run(row):
-    return {"id": str(row.id), "owner_user_id": str(row.owner_user_id), "automation_id": str(row.automation_id) if row.automation_id else None, "kind": row.kind, "state": row.state, "progress": row.progress_json, "cost_acp": str(row.cost_acp), "max_cost_acp": str(row.max_cost_acp), "created_at": row.created_at, "expires_at": row.expires_at}
+    from app.services.research_packets import review_hash
+    return {"id": str(row.id), "owner_user_id": str(row.owner_user_id), "automation_id": str(row.automation_id) if row.automation_id else None, "kind": row.kind, "state": row.state, "progress": row.progress_json, "review_hash": review_hash(row), "cost_acp": str(row.cost_acp), "max_cost_acp": str(row.max_cost_acp), "created_at": row.created_at, "expires_at": row.expires_at}
 
 
 async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled=False):
@@ -184,6 +185,9 @@ async def _process_item(session, operation):
 
 
 async def _process_delivery(session, operation):
+    if operation.progress_json.get("research_packets"):
+        from app.services.research_packets import validate_delivery
+        await validate_delivery(session, operation)
     progress = dict(operation.progress_json)
     definition = operation.snapshot_json["definition"]
     completed = {entry["connection_id"] for entry in progress.get("deliveries", [])}
@@ -211,6 +215,17 @@ async def _send_prepared_delivery(claim):
         if not any(d.get("attempt_id") == claim["attempt_id"] and d["state"] == "attempting" for d in attempts):
             return
         cid = claim["connection_id"]
+        if progress.get("research_packets"):
+            from app.services.research_packets import validate_delivery
+            try:
+                await validate_delivery(session, operation)
+            except HTTPException:
+                operation.state = "failed"
+                progress["deliveries"] = [{**entry, "state": "blocked", "message": "Research evidence or permissions changed; not sent"}
+                    if entry.get("attempt_id") == claim["attempt_id"] else entry for entry in attempts]
+                operation.progress_json = progress
+                await session.commit()
+                return
         try:
             connection = await owned(session, WorkflowConnection, operation.owner_user_id, cid)
             if not connection.allow_delivery:
@@ -286,6 +301,8 @@ async def workflow_ops_tick(max_items=2):
         for project in projects:
             if project.created_at + timedelta(days=project.retention_days) <= now() and project.context_json:
                 project.context_json = {}
+        from app.services.research_ops import purge_expired
+        await purge_expired(session)
         await session.commit()
     WORKER_HEALTH.update(last_tick=now().isoformat(), last_error_type=None)
     return summary
@@ -335,6 +352,11 @@ async def run_access(session, user_id, run_id, write=False):
     row = (await session.execute(query)).scalar_one_or_none()
     if row is None:
         raise HTTPException(404, "Not found")
+    packets = row.progress_json.get("research_packets", [])
+    if packets:
+        if row.expires_at and row.expires_at <= now():
+            raise HTTPException(404, "Not found")
+        await project_access(session, user_id, packets[-1]["packet"]["research"]["project_id"], write=write)
     if str(row.owner_user_id) != str(user_id):
         automation = await session.get(WorkflowAutomation, row.automation_id) if row.automation_id else None
         if automation is None:

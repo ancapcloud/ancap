@@ -2,7 +2,7 @@
 from uuid import uuid4
 from datetime import timedelta
 from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select, func, or_
 from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import WorkflowProject, WorkflowConnection, WorkflowAutomation, WorkflowOperationRun
@@ -22,7 +22,8 @@ async def capabilities():
 
 
 @router.get("")
-async def index(session: DbSession, user_id: str = Depends(require_auth)):
+async def index(response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     result = {}
     projects = (await session.execute(select(WorkflowProject).where(or_(WorkflowProject.owner_user_id == user_id, WorkflowProject.members_json.has_key(user_id))).limit(100))).scalars().all()
     project_ids = [row.id for row in projects]
@@ -37,6 +38,10 @@ async def index(session: DbSession, user_id: str = Depends(require_auth)):
         if model is WorkflowOperationRun:
             predicate = or_(predicate, model.automation_id.in_(shared_automations))
         rows = (await session.execute(select(model).where(predicate).order_by(model.created_at.desc()).limit(100))).scalars().all()
+        if model is WorkflowOperationRun:
+            rows = [row for row in rows if not row.progress_json.get("research_packets") or (
+                row.progress_json["research_packets"][-1]["packet"]["research"]["project_id"] in project_ids
+                and (not row.expires_at or row.expires_at > now()))]
         result[key] = [serialize(row) for row in rows]
     result["user_id"] = user_id
     from app.api.deps import is_platform_admin_user
@@ -157,7 +162,8 @@ async def enqueue_run(row_id: str, body: EnqueueRequest, session: DbSession, use
 
 
 @router.get("/runs/{row_id}")
-async def get_run(row_id: str, session: DbSession, user_id: str = Depends(require_auth)):
+async def get_run(row_id: str, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     return ops.public_run(await ops.run_access(session, user_id, row_id))
 
 
@@ -171,13 +177,23 @@ async def cancel_run(row_id: str, session: DbSession, user_id: str = Depends(req
 
 
 @router.post("/runs/{row_id}/review")
-async def review(row_id: str, body: ReviewWrite, session: DbSession, user_id: str = Depends(require_auth)):
+async def review(row_id: str, body: ReviewWrite, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
+    response.headers["Cache-Control"] = "private, no-store"
     row = await ops.run_access(session, user_id, row_id, write=True)
     if row.state != "awaiting_review":
         raise HTTPException(409, "Run is not awaiting review")
+    from app.services.research_packets import review_hash, approve_packet
+    if (row.progress_json.get("research_packets") and not body.expected_review_hash) or (
+        body.expected_review_hash is not None and body.expected_review_hash != review_hash(row)):
+        raise HTTPException(409, "Report version changed; reload before review")
     progress = dict(row.progress_json)
     progress["review"] = {"decision": body.decision, "note": body.note, "reviewer_user_id": user_id, "at": now().isoformat()}
-    if body.edited_output is not None:
+    if progress.get("research_packets") and body.decision == "approve":
+        approved = await approve_packet(session, row, user_id, body.edited_output)
+        progress["reviewed_output"] = approved["output"]
+        progress["reviewed_output_hash"] = digest(approved["output"])
+        progress["research_approval"] = approved["approval"]
+    elif body.edited_output is not None:
         progress["reviewed_output"] = bounded_json(body.edited_output, 100000)
         progress["reviewed_output_hash"] = digest(body.edited_output)
     row.progress_json = progress
