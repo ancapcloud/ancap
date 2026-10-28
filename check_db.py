@@ -1,13 +1,10 @@
-import asyncpg
 import asyncio
+import asyncpg
 
-async def check():
-    try:
-        conn = await asyncpg.connect('postgresql://postgres:postgres@localhost:5432/ancap_test')
-        result = await conn.execute('SELECT 1')
-        print(f'DB OK: {result}')
-        await conn.close()
-    except Exception as e:
-        print(f'DB error: {e}')
+async def main():
+    conn = await asyncpg.connect(host='localhost', database='postgres', user='postgres')
+    rows = await conn.fetch("SELECT datname FROM pg_database WHERE datname = 'ancap_test';")
+    print(rows)
+    await conn.close()
 
-asyncio.run(check())
+asyncio.run(main())

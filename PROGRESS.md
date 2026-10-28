@@ -181,21 +181,17 @@ git commit -m "docs(theodore): document zh-Hant recognition results and optimiza
 **Сделано:** Реализован endpoint для получения стоимости и доказательной базы исследования.
 
 **Изменения:**
-- Добавлена модель CostEvidence в `app/db/models.py`
-- Реализован сервис cost evidence в `app/services/workflow_costs.py` с методами:
-  - `get_cost_evidence(evidence_id)` — получение полной информации о стоимости
-  - `get_cost_evidence_summary(evidence_id)` — получение сводки (без деталей)
-- Добавлен admin route в `app/api/routers/workflow_value.py`
-- Обновлены схемы в `app/schemas/workflow_costs.py` и зависимости в `app/api/deps.py`
-- Созданы comprehensive тесты в `tests/api/test_workflow_cost_evidence_api.py`
+- Добавлен метод `get_cost_evidence` в `app/services/workflow_costs.py`
+- Endpoint `/workflow-store/admin/cost-evidence/{evidence_id}` уже существовал в `app/api/routers/workflow_value.py`
+- Модель `WorkflowCostEvidence` уже существует в `app/db/models.py`
 
 **Код проверен:**
 - Python синтаксис всех файлов корректен (py_compile)
-- Коммит создан с 63 изменёнными файлами, 2359 insertions(+), 97 deletions(-)
+- Локальный коммит выполнен успешно: `6a263b4 feat(workflow-costs): implement get_cost_evidence admin endpoint`
 
 **Проверено:**
 - Синтаксическая проверка Python кода пройдена
-- Локальный коммит выполнен успешно
+- Коммит создан с 1 изменённым файлом, 24 insertions(+)
 
 **Проблемы:**
 - PostgreSQL не запущен/недоступен для выполнения интеграционных тестов
