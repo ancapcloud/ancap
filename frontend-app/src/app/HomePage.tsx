@@ -6,7 +6,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { SolutionAreas, WorkflowFooter, presentationStyles as s } from "@/components/WorkflowPresentation";
 import { positioningByLang } from "@/locales/positioning";
 import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
-import { CreatorEarningsSection } from "@/components/CreatorEarningsSection";
+import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 import { HomeChatDialog } from "@/components/HomeChatDialog";
 
@@ -76,7 +76,7 @@ export function HomePage() {
         <WebInstallGuide />
 
         <PeopleAiEconomySection />
-        <CreatorEarningsSection />
+        <CardInfoSection />
 
         <section className={s.section} id="solutions">
           <h2 className={s.heading}>{c.portfolio}</h2>

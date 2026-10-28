@@ -1,5 +1,9 @@
 # ANCAP Production Roadmap
 
+## ANCAP Card — 2026-10-28
+
+[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation remains open. Production release is authorised; deployment verification is pending.
+
 
 2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
 packets to exact result/source hashes, human review and the durable outbox.
