@@ -21,7 +21,7 @@ _default_test_db_url = (
     + ("post" + "gres")
     + ":"
     + ("post" + "gres")
-    + "@localhost:5432/ancap"
+    + "@localhost:5432/ancap_test"
 )
 _test_db_url = os.environ.get("TEST_DATABASE_URL", _default_test_db_url)
 if "+asyncpg" not in _test_db_url:
@@ -86,6 +86,20 @@ def _sync_database_url():
     return url
 
 
+def _make_sync_connection_string(url):
+    """Convert async URL to sync connection string with proper encoding."""
+    if "+asyncpg" not in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    # Add client_encoding for Windows compatibility
+    import urllib.parse
+    parsed = urllib.parse.urlparse(url)
+    params = urllib.parse.parse_qs(parsed.query)
+    if 'client_encoding' not in params:
+        params['client_encoding'] = 'utf8'
+    new_query = urllib.parse.urlencode(params, doseq=True)
+    return urllib.parse.urlunparse(parsed._replace(query=new_query))
+
+
 def _seed_base_vertical_if_missing(sync_engine):
     """Insert BaseVertical and its spec if not present (so tests work with create_all without Alembic)."""
     base_vertical_spec = {
@@ -138,7 +152,7 @@ def _seed_base_vertical_if_missing(sync_engine):
 def _run_migrations_or_create_all(sync_url: str):
     """Run Alembic migrations; on drift/failure, rebuild the test schema to current metadata and stamp head."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sync_db_url = sync_url.replace("postgresql+asyncpg", "postgresql").replace("+asyncpg", "")
+    sync_db_url = _make_sync_connection_string(sync_url)
     try:
         r = subprocess.run(
             ["alembic", "upgrade", "head"],
@@ -307,7 +321,7 @@ def db_cursor():
     state from earlier tests when the session-scoped TestClient keeps the app/engine alive.
     Caller is responsible for committing if needed.
     """
-    sync_url = _sync_database_url()
+    sync_url = _make_sync_connection_string(_sync_database_url())
     engine = create_engine(sync_url, pool_pre_ping=True)
     raw_conn = engine.connect().connection.driver_connection
     raw_conn.commit()  # ensure connection is in a clean state
@@ -319,7 +333,7 @@ def db_cursor():
 
 def get_base_vertical_id_from_db():
     """Return BaseVertical id by querying DB directly (same DB as app)."""
-    sync_url = _sync_database_url()
+    sync_url = _make_sync_connection_string(_sync_database_url())
     try:
         engine = create_engine(sync_url, pool_pre_ping=True)
         with engine.connect() as conn:
@@ -351,7 +365,7 @@ def unique_name(prefix="test"):
 def _reset_ledger_invariant_halted():
     """Reset ledger_invariant_halted flag so tests don't see 503 from previous runs/tick."""
     from sqlalchemy import create_engine, text
-    sync_url = _sync_database_url()
+    sync_url = _make_sync_connection_string(_sync_database_url())
     engine = create_engine(sync_url, pool_pre_ping=True)
     with engine.connect() as conn:
         conn.execute(

@@ -1,13 +1,29 @@
 """Async database session and engine."""
+import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from app.config import get_settings
 from app.db.base import Base
 
+# Use the same URL builder as conftest.py to ensure consistency
+def _make_async_connection_string():
+    """Build async connection string with proper encoding."""
+    url = os.environ.get("DATABASE_URL", "")
+    if "+asyncpg" not in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    # Add client_encoding for Windows compatibility
+    import urllib.parse
+    parsed = urllib.parse.urlparse(url)
+    params = urllib.parse.parse_qs(parsed.query)
+    if 'client_encoding' not in params:
+        params['client_encoding'] = 'utf8'
+    new_query = urllib.parse.urlencode(params, doseq=True)
+    return urllib.parse.urlunparse(parsed._replace(query=new_query))
+
 settings = get_settings()
 
 engine = create_async_engine(
-    settings.database_url,
+    _make_async_connection_string(),
     echo=settings.debug,
     pool_pre_ping=True,
     pool_size=5,
@@ -27,7 +43,7 @@ async_session_maker = async_sessionmaker(
 # a separate NullPool engine so asyncpg connections are never reused across
 # loops.
 _sessionlocal_engine = create_async_engine(
-    settings.database_url,
+    _make_async_connection_string(),
     echo=settings.debug,
     pool_pre_ping=True,
     poolclass=NullPool,
@@ -52,5 +68,3 @@ async def get_db():
             raise
         finally:
             await session.close()
-
-
