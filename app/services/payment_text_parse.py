@@ -20,7 +20,7 @@ _ASSET_AMOUNT_RE = re.compile(
     r"(?i)(?<![\w.,])([0-9]{1,18}(?:[.,][0-9]{1,8})?)(?![0-9.,])\s*(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b",
 )
 _CURRENCY_HINT_RE = re.compile(r"(?i)\b(USDT|USDC|BNB|ETH|ACP|USD|EUR)\b")
-_INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s+request)\s*#?\s*([A-Z0-9-]{3,32})")
+_INVOICE_LABEL_RE = re.compile(r"(?i)(?:invoice|receipt|payment\s++request)\s*+#?\s*+([A-Z0-9-]{3,32})")
 _NON_ACP_CURRENCIES = {"USDT", "USDC", "BNB", "ETH", "USD", "EUR"}
 
 
@@ -159,7 +159,7 @@ def parse_payment_text(raw_text: str, *, source: str = "paste") -> PaymentTextPa
         "ACP" in hinted
         and "ACP" not in amount_currencies
         and amount_currencies
-        and re.search(r"(?i)\bnetwork\s*[:#]?\s*acp\b", text)
+        and re.search(r"(?i)\bnetwork\s*+[:#]?\s*+acp\b", text)
     ):
         hinted = [item for item in hinted if item != "ACP"]
     if currency == "ACP" and "ACP" not in hinted:

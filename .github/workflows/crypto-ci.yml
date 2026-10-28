@@ -98,7 +98,7 @@ jobs:
           submodules: recursive
 
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1
 
       - name: Install forge-std
         run: forge install foundry-rs/forge-std --no-commit

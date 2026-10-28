@@ -85,12 +85,15 @@ def test_cross_project_isolation_guest_and_read_only_member(client,monkeypatch):
     assert client.get(base,headers=view_headers).status_code==200
     assert client.post(f'{base}/sources/{sid}/check',headers=view_headers).status_code==404
     assert client.post(base+'/sources',headers=view_headers,json={'title':'No','url':'https://example.net/','permission_basis':'Approved by owner'}).status_code==404
-    assert client.delete(f'{base}/sources/{sid}',headers=view_headers).status_code==404
+    response = client.delete(f'{base}/sources/{sid}',headers=view_headers)
+    assert response.status_code == 404
     changed=client.post(f'/v1/workflow-ops/projects/{pid}/members',headers=headers,json={'email':viewer['email'],'role':'editor'})
     assert changed.status_code==200,changed.text
     editable=add(client,view_headers,base,'https://example.net/')
-    assert client.delete(f'{base}/sources/{editable}',headers=view_headers).status_code==200
-    assert client.post(f'/v1/workflow-ops/projects/{pid}/members',headers=headers,json={'email':viewer['email'],'role':'remove'}).status_code==200
+    response = client.delete(f'{base}/sources/{editable}',headers=view_headers)
+    assert response.status_code == 200
+    response = client.post(f'/v1/workflow-ops/projects/{pid}/members',headers=headers,json={'email':viewer['email'],'role':'remove'})
+    assert response.status_code == 200
     assert client.get(base,headers=view_headers).status_code==404
     _,other_headers,_,other_base=setup(client)
     assert client.get(f'{other_base}/sources/{sid}/snapshots',headers=other_headers).status_code==404
@@ -123,7 +126,8 @@ def test_source_limits_duplicate_retention_and_project_delete(client,db_cursor,m
     assert db_cursor.fetchone()[0]==0
     db_cursor.execute('SELECT count(*) FROM research_claims WHERE source_id=%s',(sid,))
     assert db_cursor.fetchone()[0]==0
-    assert client.delete(f'/v1/workflow-ops/projects/{pid}',headers=headers).status_code==200
+    response = client.delete(f'/v1/workflow-ops/projects/{pid}',headers=headers)
+    assert response.status_code == 200
     for table in ('research_sources','research_snapshots','research_claims'):
         column='project_id' if table=='research_sources' else 'source_id'
         db_cursor.execute(f'SELECT count(*) FROM {table} WHERE {column}=%s',(pid if column=='project_id' else sid,))

@@ -10,21 +10,8 @@ from sqlalchemy import select
 
 from app.db.models import ResearchSource, WorkflowAutomation, WorkflowRunRecord, WorkflowConnection
 from app.services import research_ops
-from app.services.workflow_ops_support import bounded_json, digest, now
+from app.services.workflow_ops_support import bounded_json, digest, now, operation_output, review_hash
 from app.services.workflow_value import workflow_result_hash
-
-
-def operation_output(operation):
-    progress = operation.progress_json
-    return progress.get("reviewed_output", progress.get("output", {"items": [item["output"] for item in progress.get("items", [])]}))
-
-
-def review_hash(operation):
-    progress = operation.progress_json
-    packets = progress.get("research_packets", [])
-    selected = {key: packets[-1][key] for key in ("hash", "binding_hash", "version")} if packets else None
-    return digest({"operation_id": str(operation.id), "output": operation_output(operation),
-        "items": progress.get("items", []), "packet": selected})
 
 
 def binding_hash(research):
@@ -36,7 +23,7 @@ def binding_hash(research):
 
 
 async def current_research(session, user, project_id, ids):
-    from app.services.workflow_ops import project_access
+    from app.services.workflow_ops_access import project_access
     await project_access(session, user, project_id)
     rows = (await session.execute(select(ResearchSource).where(ResearchSource.project_id == str(project_id),
         ResearchSource.id.in_(ids), ResearchSource.expires_at > now()).order_by(ResearchSource.id)
@@ -81,7 +68,7 @@ async def result_versions(session, operation, expected=None):
 
 
 async def attach_packet(session, user, project_id, body):
-    from app.services.workflow_ops import project_access, run_access, public_run
+    from app.services.workflow_ops_access import project_access, run_access, public_run
     await project_access(session, user, str(project_id), write=True)
     operation = await run_access(session, user, str(body.operation_id), write=True)
     automation = await session.get(WorkflowAutomation, operation.automation_id) if operation.automation_id else None
@@ -113,7 +100,7 @@ async def attach_packet(session, user, project_id, body):
 
 
 async def validate_packet(session, operation, user):
-    from app.services.workflow_ops import project_access
+    from app.services.workflow_ops_access import project_access
     saved = operation.progress_json["research_packets"][-1]
     packet = saved["packet"]
     if operation.expires_at and operation.expires_at <= now():

@@ -74,6 +74,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("message", (event) => {
+  if (event.origin !== self.location.origin) return;
   if (event.data && event.data.type === "CLEAR_CACHES") {
     event.waitUntil(
       caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))

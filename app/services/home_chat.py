@@ -45,15 +45,6 @@ _MODE_HINTS = {
     "earn": "Explain how creators earn on ANCAP by selling workflow runs. Mention the seller workspace when useful. Do not promise earnings.",
 }
 # Free models (esp. Nemotron) sometimes echo classifier tags into the reply body.
-_SAFETY_LINE = re.compile(
-    r"^\s*(?:user|response|prompt|assistant)\s+safety\s*:\s*\S+\s*$",
-    re.IGNORECASE | re.MULTILINE,
-)
-_SAFETY_INLINE = re.compile(
-    r"(?:^|\n)\s*(?:user|response|prompt|assistant)\s+safety\s*:\s*\S+\s*(?=\n|$)",
-    re.IGNORECASE,
-)
-
 _router_disabled = False
 
 
@@ -100,10 +91,10 @@ def pretty_model(model_id: str) -> str:
     for part in slug.split("-"):
         if not part:
             continue
-        if re.fullmatch(r"\d+(?:\.\d+)?b", part, flags=re.IGNORECASE):
+        if re.fullmatch(r"\d++(?:\.\d++)?b", part, flags=re.IGNORECASE):
             parts.append(part[:-1] + "B")
             continue
-        if re.fullmatch(r"\d+(?:\.\d+)?", part):
+        if re.fullmatch(r"\d++(?:\.\d++)?", part):
             parts.append(part)
             continue
         parts.append(part[:1].upper() + part[1:])
@@ -187,9 +178,18 @@ def scrub_model_reply(text: str) -> str:
     raw = (text or "").strip()
     if not raw:
         return ""
-    cleaned = _SAFETY_LINE.sub("", raw)
-    cleaned = _SAFETY_INLINE.sub("\n", cleaned)
-    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    lines = []
+    for line in raw.splitlines():
+        label, separator, value = line.partition(":")
+        is_classifier = (
+            bool(separator)
+            and " ".join(label.lower().split()) in {
+                "user safety", "response safety", "prompt safety", "assistant safety"
+            }
+            and len(value.split()) == 1
+        )
+        lines.append("" if is_classifier else line)
+    cleaned = re.sub(r"\n{3,}+", "\n\n", "\n".join(lines)).strip()
     return cleaned
 
 

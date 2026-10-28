@@ -1,6 +1,5 @@
 """A bounded research pilot. No LLM, payment or delivery authority."""
 from datetime import timedelta
-from uuid import UUID
 
 import httpx
 from fastapi import HTTPException
@@ -8,7 +7,7 @@ from sqlalchemy import delete, func, select
 
 from app.db.models import WorkflowProject, ResearchSource, ResearchSnapshot, ResearchClaim
 from app.services import research_fetch
-from app.services.workflow_ops import project_access
+from app.services.workflow_ops_access import project_access
 from app.services.workflow_ops_support import digest, now
 
 

@@ -154,3 +154,16 @@ async def market_snapshot(coin_ids):
     if not isinstance(payload, dict) or any(coin not in payload for coin in coin_ids):
         raise HTTPException(502, "Market data missing; report not generated")
     return payload, [{"url": "https://api.coingecko.com/api/v3/simple/price", "retrieved_at": now().isoformat(), "coin_ids": coin_ids, "kind": "market_data"}]
+
+
+def operation_output(operation):
+    progress = operation.progress_json
+    return progress.get("reviewed_output", progress.get("output", {"items": [item["output"] for item in progress.get("items", [])]}))
+
+
+def review_hash(operation):
+    progress = operation.progress_json
+    packets = progress.get("research_packets", [])
+    selected = {key: packets[-1][key] for key in ("hash", "binding_hash", "version")} if packets else None
+    return digest({"operation_id": str(operation.id), "output": operation_output(operation),
+        "items": progress.get("items", []), "packet": selected})

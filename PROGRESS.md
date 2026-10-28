@@ -101,3 +101,9 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - Assemble cost evidence (migration 092), bounded sources (093), claim drafts and exact Studio-reviewed client packets from verified feature work onto current origin/master. Exclude inherited OCR experiments and local runtime files.
 - Prior isolated validation: 51 targeted backend tests and 13 Chromium scenarios, TypeScript and focused ESLint pass. CI and production rollout are pending for this exact release branch.
 
+
+- Release follow-up: restored the referenced release-verification document, extracted shared Studio access/serialization to remove research import cycles, and removed mutating calls from assert expressions flagged by CodeQL.
+- Hardened long-text parsing, recovery-wrapper trimming, service-worker message origin, external-field log formatting and randomized e2e credentials. Pin deployment/Foundry/release actions to upstream commit SHAs; the top-up example no longer logs client-secret fragments.
+- Exact release checkout validation: 101 targeted backend/security tests, all 97 frontend unit tests, lint and Next production build pass. Full backend/remote CI are still running.
+- Initial GitHub snapshot: 372 open CodeQL findings (342 quality notes, 18 high and 12 medium security-classified alerts); no open Dependabot or Secret Scanning alerts. This is an inventory, not a claim that all old alerts are exploitable or resolved. Historical wallet-storage/protocol and quality findings require separate review; no findings were mass-dismissed.
+

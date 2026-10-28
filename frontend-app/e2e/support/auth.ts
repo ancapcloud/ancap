@@ -1,4 +1,5 @@
 import type { APIRequestContext, Page } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 
 type UserData = {
   id: string;
@@ -20,7 +21,7 @@ type PasswordSessionResult = {
 };
 
 function uniqueSuffix() {
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return randomUUID();
 }
 
 export async function createPasswordUserSession(
