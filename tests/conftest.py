@@ -90,14 +90,8 @@ def _make_sync_connection_string(url):
     """Convert async URL to sync connection string with proper encoding."""
     if "+asyncpg" not in url:
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    # Add client_encoding for Windows compatibility
-    import urllib.parse
-    parsed = urllib.parse.urlparse(url)
-    params = urllib.parse.parse_qs(parsed.query)
-    if 'client_encoding' not in params:
-        params['client_encoding'] = 'utf8'
-    new_query = urllib.parse.urlencode(params, doseq=True)
-    return urllib.parse.urlunparse(parsed._replace(query=new_query))
+    # Note: asyncpg doesn't accept client_encoding parameter, so we omit it
+    return url
 
 
 def _seed_base_vertical_if_missing(sync_engine):
