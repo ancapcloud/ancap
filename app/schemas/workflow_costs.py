@@ -61,7 +61,17 @@ class CostEvidenceCreate(BaseModel):
 
 
 class CostEvidenceReceipt(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     recorded_by_user_id: UUID | None
     # Operator attestation is deliberately distinct from an independent audit.
     verification_basis: Literal["operator_attested"] = "operator_attested"
+    source: str
+    document_id: str
+    line_id: str
+    document_sha256: str
+    category: CostCategory
+    currency: str
+    amount: Decimal
+    review_note: str
+    allocations: list[CostRunAllocation]

@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { apiFetch } from "@/lib/api";
 import { workflowOpsCopy } from "@/locales/workflowOps";
+import { ResearchPanel } from "./ResearchPanel";
 import {
   downloadWorkflowJson,
   parseWorkflowCsv,
@@ -618,6 +619,7 @@ export function WorkflowStudio() {
             </section>
           </div>
         )}
+        {tab === "projects" && projectId && <ResearchPanel key={projectId} projectId={projectId} canEdit={canEditProject} />}
         {tab === "connections" && (
           <div className="grid gap-6 lg:grid-cols-2">
             <section className={panel}>

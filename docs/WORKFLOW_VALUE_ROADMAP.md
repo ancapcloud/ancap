@@ -33,6 +33,13 @@ Deployment enables the owner UI after `alembic upgrade head`. Rollback uses the 
 
 ## Next work, in execution order
 
+The operator-provided strategy is now sequenced in
+[Research Operations pilot](RESEARCH_OPERATIONS_PILOT_ROADMAP.md): ROP-01 sources,
+version-linked claims and private draft packet; ROP-02 existing review-bound
+release/delivery; ROP-03 bounded schedules/evaluations; ROP-04 evidenced economics
+and renewals; ROP-05 proven onboarding reuse. Sources and draft links do not
+replace existing accepted workflow versions or establish revenue or demand.
+
 2026-10-28 implementation slice: `app/services/workflow_costs.py` provides an
 offline evidence-allocation reconciler with strict input schemas. It rejects
 duplicate source-line/run allocations, conflicting currency/category/source

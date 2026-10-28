@@ -286,6 +286,8 @@ async def workflow_ops_tick(max_items=2):
         for project in projects:
             if project.created_at + timedelta(days=project.retention_days) <= now() and project.context_json:
                 project.context_json = {}
+        from app.services.research_ops import purge_expired
+        await purge_expired(session)
         await session.commit()
     WORKER_HEALTH.update(last_tick=now().isoformat(), last_error_type=None)
     return summary

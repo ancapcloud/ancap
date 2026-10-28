@@ -1,6 +1,11 @@
 # ANCAP Production Roadmap
 
-## Active priorities — 2026-10-27
+## Active priorities — 2026-10-28
+
+2026-10-28 local implementation: [Research Operations pilot](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md),
+migration 093, adds bounded manual source checks/evidence and a private Studio
+draft packet. It creates no paid workflow, payment or external delivery.
+Production rollout and a version-bound approved release remain acceptance gates.
 
 2026-10-28 local implementation: migration 092 adds admin-only operator-attested
 workflow cost evidence and per-run totals. Deployment requires `alembic upgrade

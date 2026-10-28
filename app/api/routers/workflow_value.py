@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, Response
-from app.api.deps import DbSession, require_auth
+from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary
 from app.services import workflow_value
 from uuid import UUID
@@ -52,3 +52,15 @@ async def get_assessment_history(run_id: str, session: DbSession, response: Resp
 async def get_assessed_result(assessment_id: str, session: DbSession, response: Response, owner_id: str = Depends(require_auth)):
     response.headers["Cache-Control"] = "private, no-store"
     return await workflow_value.assessed_result(session, owner_id, assessment_id)
+
+
+@router.get("/admin/cost-evidence/{evidence_id}", response_model=CostEvidenceReceipt)
+async def get_cost_evidence(evidence_id: UUID, session: DbSession, response: Response,
+                            user_id: str = Depends(require_platform_admin)):
+    """Admin-only read endpoint for operator verification.
+
+    Guest 401, user 403, unknown ID 404. No mutations allowed.
+    verification_basis=operator_attested.
+    """
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_costs.get_cost_evidence(evidence_id, session)

@@ -1,6 +1,13 @@
 # ANCAP Master Roadmap
 
-## Active priorities — 2026-10-27
+## Active priorities — 2026-10-28
+
+2026-10-28: the operator's Research Operations strategy is incorporated in the
+[bounded agency-pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+ROP-01 adds project-approved public HTML sources, checked versions/text changes,
+manual source-bound claims and a private draft packet in Studio (migration 093).
+Commercial validation, reviewed-release delivery, schedules and renewal evidence
+remain explicit gates; the supplied strategy is not a verified market audit.
 
 2026-10-28: actual-cost P0 now includes an evidence-allocation reconciler and
 admin-only persistent operator-attested source lines (migration 092), with

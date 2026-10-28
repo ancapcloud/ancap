@@ -1,9 +1,16 @@
 # ANCAP Status
 
-> Updated: 2026-10-27
+> Updated: 2026-10-28
 > Fast truth: this is the shortest current status entry point.
 
 ## Current truth
+
+**Research Operations (2026-10-28, local):** migration 093, public HTML source
+register/checks, version-bound manual claim links and private draft JSON/text
+exports in Studio are implemented. The
+[pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md) separates implemented
+foundation from approved delivery, recurring collection, payments and renewals.
+No live-source acceptance, deployment, paid pilot or valuation increase is claimed.
 
 **Cost evidence (2026-10-28, local):** migration 092 and admin-only source-line
 recording/per-run cost totals are implemented; 44 targeted tests and disposable

@@ -13,7 +13,24 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.models import WorkflowCostAllocation, WorkflowCostEvidence, WorkflowRunRecord
 
-from app.schemas.workflow_costs import COST_CATEGORIES, ReconciledCostAllocation, ReconciledRunCosts
+from app.schemas.workflow_costs import COST_CATEGORIES, ReconciledCostAllocation, ReconciledRunCosts, CostEvidenceReceipt
+
+
+async def get_cost_evidence(evidence_id: UUID, session):
+    """Read a single cost-evidence record for operator verification.
+
+    Admin-only read endpoint. Returns the complete source line with document_sha256,
+    time, author, review_note and allocations. No mutations allowed.
+    verification_basis is always 'operator_attested'.
+    """
+    row = (await session.execute(select(WorkflowCostEvidence).where(
+        WorkflowCostEvidence.id == evidence_id))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    return CostEvidenceReceipt(id=row.id, recorded_by_user_id=row.recorded_by_user_id,
+        source=row.source, document_id=row.document_id, line_id=row.line_id,
+        document_sha256=row.document_sha256, category=row.category, currency=row.currency,
+        amount=row.amount, review_note=row.review_note, verification_basis="operator_attested")
 
 
 async def record_cost_evidence(session, reviewer_id: str, body):

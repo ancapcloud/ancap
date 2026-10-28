@@ -37,6 +37,8 @@ class WorkflowCostEvidence(Base):
     amount = Column(Numeric(36, 18), nullable=False)
     review_note = Column(Text, nullable=False)
     recorded_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    verification_basis = Column(String(32), nullable=False, default="operator_attested")
+    allocations = Column(JSONB, nullable=False, default=list)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     __table_args__ = (
         UniqueConstraint("source", "document_id", "line_id", name="uq_workflow_cost_source_line"),
@@ -3539,6 +3541,43 @@ class WorkflowProject(Base):
     members_json = Column(JSONB, nullable=False, default=dict)
     retention_days = Column(Integer, nullable=False, default=30)
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+
+
+class ResearchSource(Base):
+    __tablename__ = "research_sources"
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    project_id = Column(UUID(as_uuid=False), ForeignKey("workflow_projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(120), nullable=False)
+    url = Column(String(2048), nullable=False)
+    permission_basis = Column(String(500), nullable=False)
+    status = Column(String(32), nullable=False, default="unchecked")
+    latest_hash = Column(String(64))
+    checked_at = Column(DateTime(timezone=True))
+    expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    __table_args__ = (UniqueConstraint("project_id", "url", name="uq_research_source_url"),)
+
+
+class ResearchSnapshot(Base):
+    __tablename__ = "research_snapshots"
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    source_id = Column(UUID(as_uuid=False), ForeignKey("research_sources.id", ondelete="CASCADE"), nullable=False, index=True)
+    raw_hash = Column(String(64), nullable=False)
+    text_hash = Column(String(64), nullable=False)
+    text_content = Column(Text, nullable=False)
+    change_kind = Column(String(32), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class ResearchClaim(Base):
+    __tablename__ = "research_claims"
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    source_id = Column(UUID(as_uuid=False), ForeignKey("research_sources.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_hash = Column(String(64), nullable=False)
+    statement = Column(String(1000), nullable=False)
+    excerpt = Column(String(500), nullable=False)
+    verdict = Column(String(32), nullable=False)
+    reviewer_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"))
+    created_at = Column(DateTime(timezone=True), nullable=False)
 
 
 class WorkflowConnection(Base):
