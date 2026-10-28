@@ -87,7 +87,12 @@ async def attach_packet(session, user, project_id, body):
     packet = bounded_json({"format": "ancap-research-client-packet/v1", "operation_id": str(operation.id),
         "research": client_research(research), "workflow_versions": versions, "result": output,
         "review_scope": "exact_packet_human_review_not_independent_fact_check"}, 100000)
-    if history and history[-1]["hash"] == digest(packet) and history[-1]["binding_hash"] == binding_hash(research):
+    if history and history[-1]["binding_hash"] == binding_hash(research) and (
+        history[-1]["packet"]["workflow_versions"] == versions
+        and history[-1]["packet"]["result"] == output
+    ):
+        # A freshness observation alone is not a new reviewed evidence version.
+        # Preserve the original packet, including its collection timestamps.
         return public_run(operation)
     if len(history) >= 3:
         raise HTTPException(409, "Three packet versions reached; create a new report instead of rewriting history")

@@ -238,3 +238,22 @@ def test_idempotent_enqueue_cannot_return_expired_packet(client, db_cursor, monk
     assert 'research_packets' not in replay.text
     db_cursor.execute("SELECT count(*) FROM workflow_operation_runs WHERE owner_user_id=%s AND request_key=%s", (owner['id'], body.idempotency_key))
     assert db_cursor.fetchone()[0] == 1
+
+
+def test_unchanged_source_checks_preserve_immutable_packet_version(client, db_cursor, monkeypatch):
+    _, headers, _, base, sid, _, op, html = fixture(client, db_cursor, monkeypatch)
+    original = attach(client, headers, base, sid, op)['progress']['research_packets'][0]
+    for _ in range(4):
+        age(db_cursor, sid)
+        checked = client.post(f'{base}/sources/{sid}/check', headers=headers)
+        assert checked.status_code == 200, checked.text
+        assert checked.json()['source']['status'] == 'unchanged'
+        current = attach(client, headers, base, sid, op)['progress']['research_packets']
+        assert current == [original]
+    html[0] = b'<p>Product source version two</p>'
+    age(db_cursor, sid)
+    changed = client.post(f'{base}/sources/{sid}/check', headers=headers)
+    assert changed.status_code == 200
+    current = attach(client, headers, base, sid, op)['progress']['research_packets']
+    assert len(current) == 2 and current[0] == original
+    assert current[1]['hash'] != original['hash']

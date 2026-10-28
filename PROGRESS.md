@@ -115,3 +115,7 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 - GitHub full backend run exposed a legacy release test that required a mutable action tag. Updated it to require a 40-character commit pin. The previous run otherwise had 1189 passes and 40 skips; it is not reported as a green run.
 - Local Windows QR failure was a missing tzdata package; installed tzdata in the test environment and the QR regression now passes. Deployment CI uses Linux timezone data. Operator approved PR #130 in this chat on 2026-10-28; merge/deployment still wait for exact-head CI and review fixes.
 
+
+- Review follow-up: no-change source checks now reuse the immutable packet when evidence bindings, workflow versions and report output match. Freshness timestamps no longer exhaust the three-version limit. Regression performs four unchanged checks, then confirms a real source change still creates version two; all 11 packet tests pass.
+- The initial local full-suite run completed with 1215 passes, 8 skips and two failures (missing Windows timezone data and old mutable-tag expectation), both separately corrected and covered by the passing focused reruns. It is not labeled a clean full run; exact-head Linux CI remains authoritative for this release.
+
