@@ -33,6 +33,20 @@ Deployment enables the owner UI after `alembic upgrade head`. Rollback uses the 
 
 ## Next work, in execution order
 
+2026-10-28 implementation slice: `app/services/workflow_costs.py` provides an
+offline evidence-allocation reconciler with strict input schemas. It rejects
+duplicate source-line/run allocations, conflicting currency/category/source
+amounts and cross-run over-allocation; keeps currencies separate and missing
+categories unknown; includes creator payout once and distinct retry evidence.
+Explicit zero requires evidence. Decimal accumulation preserves database-scale
+precision. Callers must supply the complete allocation set for each source line.
+This is a calculation foundation, not a public ingestion endpoint or verified
+actual-cost dashboard. Persistence, authenticated evidence review, provider
+imports, completeness verification and SKU/client contribution remain open.
+Local validation: `python -m pytest tests/unit/test_workflow_costs.py
+tests/unit/test_workflow_value_estimates.py -q` — 29 passed. No database migration,
+deployment or real payment was performed for this calculation-only slice.
+
 | Priority | Work | Owner | Acceptance / dependency | State |
 | --- | --- | --- | --- | --- |
 | P0 | Actual cost per execution: model/data/infrastructure/retries/review/support/payment fees | Engineer + finance | Provider billing and real manual-work evidence, separate estimates; contribution by SKU/client without double counting creator payouts | Open; existing margin snapshots are estimates |
