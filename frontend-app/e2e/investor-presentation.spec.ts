@@ -2,6 +2,7 @@ import { test, expect, type BrowserContext } from "@playwright/test";
 import { positioningByLang } from "../src/locales/positioning";
 import { investorOverviewByLang } from "../src/locales/investorOverview";
 import { investorDocsByLang } from "../src/locales/investorDocs";
+import { cardInfoByLang } from "../src/locales/cardInfo";
 import { economyByLang } from "../src/locales/economy";
 import { testProjectsByLang } from "../src/locales/testProjects";
 import { testProjects } from "../src/lib/testProjects";
@@ -61,7 +62,7 @@ test("catalog filters offers and has a usable empty state", async ({ page, conte
   await expect(page.locator("#catalog-crypto")).toHaveCount(0);
 });
 
-test("People + AI and earnings stay localized and usable on mobile in five languages", async ({ page, context }) => {
+test("People + AI and card information stay localized and usable on mobile in five languages", async ({ page, context }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const lang of supportedLanguages) {
@@ -81,21 +82,13 @@ test("People + AI and earnings stay localized and usable on mobile in five langu
       expect(brand && languages && brand.x + brand.width <= languages.x, `${lang} ${route}: brand and language controls should not overlap`).toBe(true);
 
       if (route === "/projects") {
-        const earnings = page.locator("#creator-earnings");
-        await expect(earnings.getByRole("heading", { name: c.earnings, exact: true })).toBeVisible();
-        await expect(earnings.getByText(c.assumptions, { exact: true })).toBeVisible();
-        await expect(earnings.getByText(c.disclaimer, { exact: true })).toBeVisible();
-        for (const field of ["price", "orders", "feePercent", "variableCost", "fixedCost"] as const) {
-          await expect(earnings.getByLabel(c[field], { exact: true })).toBeVisible();
-        }
-        await expect(earnings.getByTestId("earnings-net")).toHaveText("700 ACP");
-        const orders = earnings.getByLabel(c.orders, { exact: true });
-        await orders.fill("0");
-        await expect(earnings.getByTestId("earnings-net")).toHaveText("−50 ACP");
-        await expect(earnings.getByText(c.loss, { exact: true })).toBeVisible();
-        await orders.fill("-1");
-        await expect(earnings.getByRole("status")).toHaveText(c.invalid);
-        await expect(earnings.getByTestId("earnings-net")).toHaveCount(0);
+        const card = page.locator("#ancap-card");
+        const copy = cardInfoByLang[lang];
+        await expect(card.getByRole("heading", { name: copy.title, exact: true })).toBeVisible();
+        await expect(card.getByText(copy.status, { exact: true })).toBeVisible();
+        await expect(card.getByText(copy.rewardsStatus, { exact: true })).toBeVisible();
+        await expect(card.getByRole("link", { name: `${copy.cta} →`, exact: true })).toHaveAttribute("href", "/cards#waitlist");
+        await expect(page.locator("#creator-earnings")).toHaveCount(0);
         const tests = page.locator("#test-projects");
         await expect(tests.getByRole("heading", { name: testProjectsByLang[lang].title, exact: true })).toBeVisible();
         await expect(tests.getByText(testProjectsByLang[lang].disclosure, { exact: true })).toBeVisible();

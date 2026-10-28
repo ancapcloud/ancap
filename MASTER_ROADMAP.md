@@ -1,5 +1,9 @@
 # ANCAP Master Roadmap
 
+## ANCAP Card — 2026-10-28
+
+[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented locally in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation and production acceptance remain open. No deployment in this change.
+
 ## Active priorities — 2026-10-28
 
 2026-10-28: the operator's Research Operations strategy is incorporated in the

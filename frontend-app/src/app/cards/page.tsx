@@ -44,7 +44,7 @@ export default function CardsWaitlistPage() {
           </li>
         </ul>
 
-        <section className="mt-10">
+        <section id="waitlist" className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">
             Join the waitlist
           </h2>
