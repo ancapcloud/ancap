@@ -8,6 +8,7 @@ from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import WorkflowProject, WorkflowConnection, WorkflowAutomation, WorkflowOperationRun
 from app.schemas.workflow_ops import ProjectWrite, ConnectionWrite, AutomationWrite, ScheduleWrite, EnqueueRequest, ReviewWrite, TrialWrite, VersionSelect, DeliveryRetry, ProjectMemberWrite
 from app.services import workflow_ops as ops
+from app.services import workflow_ops_access as access
 from app.services.workflow_ops_support import now, seal, digest, bounded_json, validate_connection, secret_key
 from app.services.rate_limit import enforce_rate_limit, get_request_ip
 
@@ -28,7 +29,7 @@ async def index(response: Response, session: DbSession, user_id: str = Depends(r
     projects = (await session.execute(select(WorkflowProject).where(or_(WorkflowProject.owner_user_id == user_id, WorkflowProject.members_json.has_key(user_id))).limit(100))).scalars().all()
     project_ids = [row.id for row in projects]
     shared_automations = (await session.execute(select(WorkflowAutomation.id).where(WorkflowAutomation.project_id.in_(project_ids)))).scalars().all()
-    for key, model, serialize in [("projects", WorkflowProject, ops.public_project), ("connections", WorkflowConnection, ops.public_connection), ("automations", WorkflowAutomation, ops.public_automation), ("runs", WorkflowOperationRun, ops.public_run)]:
+    for key, model, serialize in [("projects", WorkflowProject, ops.public_project), ("connections", WorkflowConnection, ops.public_connection), ("automations", WorkflowAutomation, ops.public_automation), ("runs", WorkflowOperationRun, access.public_run)]:
         if model is WorkflowProject:
             result[key] = [serialize(row) for row in projects]
             continue
@@ -158,13 +159,13 @@ async def enqueue_run(row_id: str, body: EnqueueRequest, session: DbSession, use
         existing = (await session.execute(select(WorkflowOperationRun).where(WorkflowOperationRun.owner_user_id == user_id, WorkflowOperationRun.request_key == body.idempotency_key))).scalar_one_or_none()
         if existing is None:
             raise HTTPException(429, "Wait for queued work to complete")
-    return ops.public_run(await ops.enqueue(session, user_id, row, body))
+    return access.public_run(await ops.enqueue(session, user_id, row, body))
 
 
 @router.get("/runs/{row_id}")
 async def get_run(row_id: str, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
     response.headers["Cache-Control"] = "private, no-store"
-    return ops.public_run(await ops.run_access(session, user_id, row_id))
+    return access.public_run(await access.run_access(session, user_id, row_id))
 
 
 @router.post("/runs/{row_id}/cancel")
@@ -173,13 +174,13 @@ async def cancel_run(row_id: str, session: DbSession, user_id: str = Depends(req
     if row.state != "queued":
         raise HTTPException(409, "Only queued work can be cancelled")
     row.state = "cancelled"
-    return ops.public_run(row)
+    return access.public_run(row)
 
 
 @router.post("/runs/{row_id}/review")
 async def review(row_id: str, body: ReviewWrite, response: Response, session: DbSession, user_id: str = Depends(require_auth)):
     response.headers["Cache-Control"] = "private, no-store"
-    row = await ops.run_access(session, user_id, row_id, write=True)
+    row = await access.run_access(session, user_id, row_id, write=True)
     if row.state != "awaiting_review":
         raise HTTPException(409, "Run is not awaiting review")
     from app.services.research_packets import review_hash, approve_packet
@@ -198,7 +199,7 @@ async def review(row_id: str, body: ReviewWrite, response: Response, session: Db
         progress["reviewed_output_hash"] = digest(body.edited_output)
     row.progress_json = progress
     row.state = "approved" if body.decision == "approve" else "rejected"
-    return ops.public_run(row)
+    return access.public_run(row)
 
 
 @router.post("/projects/{row_id}/members")
@@ -234,7 +235,7 @@ async def retry_delivery(row_id: str, body: DeliveryRetry, session: DbSession, u
     progress["deliveries"] = [d for d in progress.get("deliveries", []) if d["connection_id"] != body.connection_id]
     row.progress_json = progress
     row.state = "approved"
-    return ops.public_run(row)
+    return access.public_run(row)
 
 
 @router.post("/trial")
@@ -242,7 +243,7 @@ async def run_trial(body: TrialWrite, request: Request, session: DbSession, user
     import hmac, hashlib
     await enforce_rate_limit(key=f"workflow-ops-trial:{get_request_ip(request)}", limit=5, window_seconds=600)
     ip_hash = hmac.new(secret_key(), get_request_ip(request).encode(), hashlib.sha256).hexdigest()
-    return ops.public_run(await ops.trial(session, user_id, body, ip_hash))
+    return access.public_run(await ops.trial(session, user_id, body, ip_hash))
 
 
 @router.post("/tick")
