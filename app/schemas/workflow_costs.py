@@ -1,4 +1,5 @@
 """Evidence input for offline reconciliation; never accepts estimated costs."""
+from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
@@ -75,3 +76,21 @@ class CostEvidenceReceipt(BaseModel):
     amount: Decimal
     review_note: str
     allocations: list[CostRunAllocation]
+
+
+class CostEvidenceAdminResponse(BaseModel):
+    """Admin-only response for cost evidence verification."""
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    recorded_by_user_id: UUID | None
+    verification_basis: str
+    source: str
+    document_id: str
+    line_id: str
+    document_sha256: str
+    category: CostCategory
+    currency: str
+    amount: Decimal
+    review_note: str
+    allocations: list[CostRunAllocation]
+    created_at: datetime | None = None

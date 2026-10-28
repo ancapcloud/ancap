@@ -3,12 +3,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from app.db.models import WorkflowCostEvidence
-from app.schemas.workflow_costs import CostEvidenceReceipt
+from app.schemas.workflow_costs import CostEvidenceReceipt, CostEvidenceAdminResponse
 
 
 @dataclass
@@ -118,7 +119,7 @@ def calculate_actual_cost(
     }
 
 
-async def get_cost_evidence(evidence_id: UUID, session) -> CostEvidenceReceipt:
+async def get_cost_evidence(evidence_id: UUID, session) -> CostEvidenceAdminResponse:
     """Admin-only read endpoint for operator verification.
 
     Returns full cost evidence record with allocations.
@@ -135,4 +136,4 @@ async def get_cost_evidence(evidence_id: UUID, session) -> CostEvidenceReceipt:
         raise ValueError(f"Cost evidence {evidence_id} not found")
     
     # Convert to Pydantic model
-    return CostEvidenceReceipt.model_validate(row)
+    return CostEvidenceAdminResponse.model_validate(row)
