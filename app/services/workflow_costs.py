@@ -4,6 +4,10 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+
+from app.db.models import WorkflowCostEvidence
 from app.schemas.workflow_costs import CostEvidenceReceipt
 
 
@@ -112,3 +116,23 @@ def calculate_actual_cost(
         "category_coverage": list(categories),
         "missing_categories": missing_categories,
     }
+
+
+async def get_cost_evidence(evidence_id: UUID, session) -> CostEvidenceReceipt:
+    """Admin-only read endpoint for operator verification.
+
+    Returns full cost evidence record with allocations.
+    No mutations allowed.
+    """
+    stmt = select(WorkflowCostEvidence).where(
+        WorkflowCostEvidence.id == evidence_id
+    ).options(
+        joinedload(WorkflowCostEvidence.allocations)
+    )
+    result = await session.execute(stmt)
+    row = result.scalar_one_or_none()
+    if not row:
+        raise ValueError(f"Cost evidence {evidence_id} not found")
+    
+    # Convert to Pydantic model
+    return CostEvidenceReceipt.model_validate(row)
