@@ -5,13 +5,15 @@
 Wallet balance hotfix (2026-10-30): personal native UTXOs are no longer capped
 to the shared custodial wallet's ledger entitlement. Existing stake/platform
 reservations remain excluded from spendable funds. Nine targeted tests passed;
-patched API deployed and live balance response/health checked. Reserve funding
-still requires release of active claims or additional unencumbered funds.
+patched API deployed and live balance response/health checked. The user-approved
+claim release and reserve funding are now complete, as recorded below. The partial
+UTXO index also no longer reports unwatched addresses as confirmed zero balances.
 
-Robinhood Chain mainnet contract deployed with zero initial supply; cap 10,000,000 rACP
-against an intended exclusive reserve of 1,000,000 ACP (1 ACP = 10 rACP).
-Catalog entry is planned and non-tradeable. Reserve funding, issuance and supervised
-redemption remain open. Deployment evidence and next steps: [rACP](contracts/robinhood-racp/README.md).
+Robinhood Chain mainnet issuance complete: 10,000,000 rACP sent to the approved
+recipient against an exclusive 1,000,000 ACP reserve (1 ACP = 10 rACP), funded in
+native block 19. The user approved release of platform claims/three 50k stakes.
+Catalog entry is beta and non-tradeable through ANCAP; automated redemption and
+continuous reserve monitoring remain open. Evidence: [rACP](contracts/robinhood-racp/README.md).
 
 ## ANCAP Card — 2026-10-28
 

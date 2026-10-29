@@ -1,0 +1,2 @@
+# On-chain evidence commits to these exact bytes, including line endings.
+prepared/reserve-funding.json -text

@@ -12,11 +12,16 @@ verification or ACP payout service is implemented in this change.
 - Deployment transaction: `0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53`.
 - Block: 101270941; fee: **0.00003171607548 ETH**.
 - Issuer/recipient: `0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4`.
-- Initial supply: **0**. Issuance has **not** occurred; backing is **not funded**.
+- Current issued supply and recipient balance at verification: **10,000,000 rACP**.
+- Issuance transaction: `0xe9b437c7e2260ae284ae011fdae4699b9bca63e3712997ffad28be8d105334e8`.
+- Issuance block: 101282581; fee: **0.000002401664904 ETH**.
+- Reserve funded with **1,000,000 ACP**, confirmed in native block 19 (one confirmation at issuance).
+- Native funding transaction: `1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2`.
+- Issuer evidence commitment: `0x9eb3773d3937092df7b67e12c6443d16c7d778e4ed49dd4807ffd94d9642302b`.
 - Dedicated reserve: `acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz`.
 - Reserve keystore is stored privately on the existing ANCAP server under
   `~/.ancap/racp-reserve/`, directory mode 0700, keystore mode 0600.
-  It must be backed up securely before funding. Never commit it or expose it through API.
+  Never commit it or expose it through API.
   A private backup was saved locally under the ignored `Sicret/robinhood-racp/` directory.
 
 The source account's internal platform claims and native ACP wallet balance
@@ -24,12 +29,23 @@ are different quantities. A follow-up production audit on 2026-10-30 found that
 the personal wallet was incorrectly capped to shared custodial ledger entitlement.
 That calculation is now fixed and live-checked: personal total is its native balance,
 and available is native balance minus active stake/platform reservations. Custodial
-hot entitlement checks remain unchanged. Nine targeted tests passed. Active claims
-still leave insufficient unencumbered funds for the full reserve. No ledger debit,
-unstake, native transfer or reserve claim was made. Do not bypass those reservations
-or create an unbacked ledger credit to issue rACP.
-Use the authenticated wallet flow with sufficient available funds to transfer
-1,000,000 ACP to the dedicated reserve, retaining ACP for the network fee.
+hot entitlement checks remain unchanged. Nine targeted tests passed. The operator
+then explicitly approved releasing the shortfall from platform balances/staking.
+Three 50,000 ACP stakes were released through the existing staking service; three
+200 ACP stakes remain. Ledger withdrawals totalled 259,027.96904192 ACP, leaving
+65.999999 ACP liquid platform credits. The native transfer used 0.000001 ACP in fees;
+665.999999 ACP remain at the source. A database operation journal and withdrawal
+references prevent repeating the release on retry. No funds were minted in the ledger.
+
+`fund-reserve.py` requires the funding user's ID in `RACP_FUNDING_USER_ID` and the
+wallet password on stdin, never in files or argv. Default mode is read-only.
+The completed funding operation must not be repeated. The reserve proof in
+`prepared/reserve-funding.json` is preserved byte-for-byte by `.gitattributes`:
+the issuer evidence is its UTF-8 Keccak-256 digest, after removing any BOM.
+
+The partial UTXO index previously returned a false zero for unwatched addresses.
+The API now falls back to a live walletd probe for those addresses. Five index tests
+passed and the public reserve endpoint was checked against the native node.
 
 ## Contract behavior
 
@@ -56,13 +72,21 @@ node verify-runtime.mjs
 Four contract tests cover zero initial supply, restricted one-time issuance,
 cap after redemption, ERC-20 transfers and invalid redemptions. The backend test
 `tests/test_racp_catalog.py` ensures rACP cannot enter quote/settlement pairs.
-Catalog status remains planned until funding, issuance and redemption readiness.
+Catalog status is beta, with no quote/settlement pairs until redemption readiness.
+The updated catalog is deployed to the existing production API and was checked at
+`/v1/mobile/exchange/catalog`; the public native reserve balance endpoint returns
+1,000,000 ACP. Deployment used targeted source/container patches on the existing
+server, preserving its other changes; these patches must be retained in subsequent
+image builds. Token deployment/issuance are independent on-chain state.
 
 `prepare-deployment.mjs` only prepares an unsigned creation transaction.
 `deploy.mjs --broadcast` checks chain/signer and records an intent before sending;
 its journal prevents an accidental second deployment on retry. Mainnet deployment
 has already completed: do not remove the journal or deploy another token.
 The existing signer env file is accessed only in memory; no private key is in artifacts.
+`issue.mjs --broadcast` checks the archived proof, current public reserve balance,
+issuer/recipient, cap and zero prior issuance, and journals before signing/sending.
+Issuance has already completed. Do not remove its journal or attempt another issuance.
 
 Explorer source verification was attempted but blocked by its Cloudflare challenge.
 `prepared/standard-input.json`, compiler 0.8.24, optimizer 200, EVM paris, and
@@ -72,11 +96,9 @@ Runtime bytecode is checked independently against local compilation by
 
 ## Remaining steps
 
-1. Securely back up the reserve keystore and transfer/confirm the 1,000,000 ACP reserve.
-2. Record native reserve transfer hash and confirmed balance; prohibit reuse as wACP backing.
-3. Archive evidence, then call `issueAgainstReserve` with its nonzero reference and verify recipient balance.
-4. Implement authenticated, idempotent redemption payouts and reserve reconciliation.
-5. Deploy the catalog change and enable trading only after the relevant service checks.
+1. Preserve the exclusive reserve; prohibit reuse as wACP backing.
+2. Implement authenticated, idempotent redemption payouts and continuous reserve reconciliation.
+3. Enable trading only after the relevant service checks; complete explorer source verification.
 
 Network details: https://docs.robinhood.com/chain/connecting/
 Contract: https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911
