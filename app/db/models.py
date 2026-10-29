@@ -39,6 +39,9 @@ class WorkflowCostEvidence(Base):
     recorded_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
     verification_basis = Column(String(32), nullable=False, default="operator_attested")
     allocations = Column(JSONB, nullable=False, default=list)
+    source_url = Column(String(512), nullable=True)  # External evidence URL
+    author = Column(String(80), nullable=True)  # Author of the evidence
+    distributions = Column(JSONB, nullable=True)  # Distribution metadata
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     __table_args__ = (
         UniqueConstraint("source", "document_id", "line_id", name="uq_workflow_cost_source_line"),

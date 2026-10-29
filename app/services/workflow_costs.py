@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
@@ -119,21 +120,34 @@ def calculate_actual_cost(
     }
 
 
-async def get_cost_evidence(evidence_id: UUID, session) -> CostEvidenceAdminResponse:
+async def get_cost_evidence(evidence_id: str, session) -> CostEvidenceAdminResponse:
     """Admin-only read endpoint for operator verification.
 
     Returns full cost evidence record with allocations.
     No mutations allowed.
+    
+    Raises:
+        HTTPException 404 if evidence not found
+        HTTPException 403 if not admin (handled by router dependency)
     """
+    try:
+        evidence_id_uuid = UUID(evidence_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Invalid evidence ID format: {evidence_id}",
+        )
+    
     stmt = select(WorkflowCostEvidence).where(
-        WorkflowCostEvidence.id == evidence_id
-    ).options(
-        joinedload(WorkflowCostEvidence.allocations)
+        WorkflowCostEvidence.id == evidence_id_uuid
     )
     result = await session.execute(stmt)
     row = result.scalar_one_or_none()
     if not row:
-        raise ValueError(f"Cost evidence {evidence_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Cost evidence {evidence_id} not found",
+        )
     
     # Convert to Pydantic model
     return CostEvidenceAdminResponse.model_validate(row)

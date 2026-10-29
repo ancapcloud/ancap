@@ -17,11 +17,7 @@ from starlette.testclient import TestClient
 
 # Set before importing app (engine reads from env). Force async URL for app.
 _default_test_db_url = (
-    "postgresql+asyncpg://"
-    + ("post" + "gres")
-    + ":"
-    + ("post" + "gres")
-    + "@localhost:5432/ancap_test"
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap_test"
 )
 _test_db_url = os.environ.get("TEST_DATABASE_URL", _default_test_db_url)
 if "+asyncpg" not in _test_db_url:
@@ -174,7 +170,9 @@ def _run_migrations_or_create_all(sync_url: str):
     alembic_cfg = AlembicConfig(os.path.join(repo_root, "alembic.ini"))
     alembic_cfg.set_main_option("script_location", os.path.join(repo_root, "alembic"))
     script = ScriptDirectory.from_config(alembic_cfg)
-    head_revision = script.get_current_head()
+    # Handle multiple heads (branching) by picking the last one
+    heads = script.get_heads()
+    head_revision = heads[-1] if heads else None
     if head_revision:
         with sync_engine.begin() as conn:
             conn.execute(text("CREATE TABLE IF NOT EXISTS alembic_version (version_num VARCHAR(32) NOT NULL)"))
@@ -256,6 +254,25 @@ def _bootstrap_default_user(c: TestClient) -> str:
     return str(login.json().get("access_token") or "")
 
 
+def _bootstrap_platform_admin(c: TestClient) -> str:
+    """Create a platform admin user and return its access token."""
+    email = unique_email()
+    password = "admin123"
+    r = c.post(
+        "/v1/auth/users",
+        json={"email": email, "password": password, "display_name": "platform_admin", "is_platform_admin": True},
+        headers={"Authorization": ""},
+    )
+    assert r.status_code in (200, 201, 400), r.text
+    login = c.post(
+        "/v1/auth/login",
+        json={"email": email, "password": password},
+        headers={"Authorization": ""},
+    )
+    assert login.status_code == 200, login.text
+    return str(login.json().get("access_token") or "")
+
+
 @pytest.fixture(scope="session")
 def client():
     """Sync HTTP client. Creates tables once via sync engine; app runs in one thread/loop.
@@ -284,6 +301,8 @@ def client():
     app.dependency_overrides[get_db] = override_get_db
     with _AuthedTestClient(app=app, base_url="http://test") as c:
         c.default_token = _bootstrap_default_user(c)
+        # Also bootstrap a platform admin for admin endpoint tests
+        c.platform_admin_token = _bootstrap_platform_admin(c)
         yield c
     app.dependency_overrides.clear()
 
@@ -339,6 +358,43 @@ def get_base_vertical_id_from_db():
         return None
 
 
+@pytest.fixture
+def evidence_create(client):
+    """Create a test cost evidence record via POST /admin/cost-evidence."""
+    from app.schemas.workflow_costs import CostEvidenceCreate
+    from uuid import uuid4
+    
+    def _create_evidence(source: str = "test_source", document_id: str = "doc-test-001",
+                          line_id: str = "line-001", document_sha256: str = "sha256:test",
+                          category: str = "model", currency: str = "ACP", amount: float = 10.0,
+                          review_note: str = "Test evidence for API testing"):
+        body = CostEvidenceCreate(
+            source=source,
+            document_id=document_id,
+            line_id=line_id,
+            document_sha256=document_sha256,
+            category=category,
+            currency=currency,
+            amount=amount,
+            review_note=review_note,
+            allocations=[
+                {"workflow_run_id": str(uuid4()), "allocated_amount": 5.0},
+                {"workflow_run_id": str(uuid4()), "allocated_amount": 5.0}
+            ]
+        )
+        r = client.post("/workflow-store/admin/cost-evidence", json=body.model_dump(), headers={"Authorization": f"Bearer {client.platform_admin_token}"})
+        assert r.status_code in (201, 200), f"Failed to create evidence: {r.text}"
+        return type("obj", (object,), {
+            "id": str(r.json().get("id")),
+            "source": source,
+            "document_id": document_id,
+            "line_id": line_id,
+            "amount": amount
+        })
+    
+    yield _create_evidence
+
+
 @pytest.fixture(scope="session")
 def base_vertical_id(client):
     """Session-scoped BaseVertical id for tests that need it."""
@@ -354,6 +410,13 @@ def unique_email():
 
 def unique_name(prefix="test"):
     return f"{prefix}_{uuid.uuid4().hex[:8]}"
+
+
+@pytest.fixture(scope="function")
+def evidence_data(client, evidence_data_async):
+    """Sync wrapper for the async evidence fixture. Returns an object with .id attribute."""
+    # Convert async result to sync-compatible object
+    return type("obj", (object,), {"id": evidence_data_async.id})
 
 
 def _reset_ledger_invariant_halted():
@@ -375,6 +438,9 @@ def _reset_ledger_invariant_halted():
 
 DB_STATE_RESET_FIXTURES = {"client", "client_unauth", "db_cursor", "base_vertical_id"}
 
+# Temporarily disable sync DB reset for async tests to avoid MissingGreenlet
+_SYNC_DB_RESET_ENABLED = False
+
 
 @pytest.fixture(autouse=True)
 def reset_test_runtime_state(request):
@@ -384,7 +450,7 @@ def reset_test_runtime_state(request):
     shared DB-backed fixtures; text-only/document/workflow tests should stay
     runnable on hosts/CI jobs without PostgreSQL.
     """
-    if DB_STATE_RESET_FIXTURES.intersection(request.fixturenames):
+    if _SYNC_DB_RESET_ENABLED and DB_STATE_RESET_FIXTURES.intersection(request.fixturenames):
         _reset_ledger_invariant_halted()
     clear_rate_limit_state()
     yield

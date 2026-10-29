@@ -6,6 +6,7 @@ from uuid import UUID
 from app.api.deps import require_platform_admin
 from app.schemas.workflow_costs import CostEvidenceCreate, CostEvidenceReceipt, ReconciledRunCosts, CostEvidenceAdminResponse
 from app.services import workflow_costs
+from app.services.workflow_costs import get_cost_evidence
 
 router = APIRouter(prefix="/workflow-store", tags=["Private Workflow Value"])
 
@@ -55,12 +56,12 @@ async def get_assessed_result(assessment_id: str, session: DbSession, response: 
 
 
 @router.get("/admin/cost-evidence/{evidence_id}", response_model=CostEvidenceAdminResponse)
-async def get_cost_evidence(evidence_id: UUID, session: DbSession, response: Response,
-                            user_id: str = Depends(require_platform_admin)):
+async def get_cost_evidence_admin(evidence_id: str, session: DbSession, response: Response,
+                                   user_id: str = Depends(require_platform_admin)):
     """Admin-only read endpoint for operator verification.
 
     Guest 401, user 403, unknown ID 404. No mutations allowed.
     verification_basis=operator_attested.
     """
     response.headers["Cache-Control"] = "private, no-store"
-    return await workflow_costs.get_cost_evidence(evidence_id, session)
+    return await get_cost_evidence(evidence_id, session)

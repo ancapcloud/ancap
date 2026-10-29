@@ -9,9 +9,9 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy import func, select, tuple_
 from sqlalchemy.orm import defer
-from app.db.models import PaymentIntent, WorkflowRunRecord, WorkflowResultAssessment
+from app.db.models import PaymentIntent, WorkflowRunRecord, WorkflowResultAssessment, WorkflowCostEvidence
 from app.schemas.common import Money
-from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary
+from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary, CostEvidencePublic
 
 VALUE_RUN_LIMIT = 200
 
@@ -150,3 +150,23 @@ async def assessed_result(session, owner_id: str, assessment_id: str) -> Assesse
     if workflow_result_hash(row.result_snapshot_json) != row.result_hash:
         raise HTTPException(status_code=409, detail="Archived result integrity check failed")
     return AssessedResultPublic(assessment_id=str(row.id), result_hash=row.result_hash, result=row.result_snapshot_json)
+
+
+async def cost_evidence(session, evidence_id: str) -> CostEvidencePublic:
+    """Admin-only endpoint for cost evidence verification."""
+    try:
+        parsed = UUID(evidence_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Cost evidence not found") from exc
+    row = (await session.execute(select(WorkflowCostEvidence).where(WorkflowCostEvidence.id == parsed))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    return CostEvidencePublic(
+        evidence_id=str(row.id),
+        document_sha256=row.document_sha256,
+        source_url=row.source_url,
+        created_at=row.created_at,
+        author=row.author,
+        review_note=row.review_note,
+        distributions=row.distributions
+    )
