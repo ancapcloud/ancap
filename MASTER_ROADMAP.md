@@ -1,5 +1,12 @@
 # ANCAP Master Roadmap
 
+## Robinhood ACP (rACP) — 2026-10-30
+
+Robinhood Chain mainnet contract deployed with zero initial supply; cap 10,000,000 rACP
+against an intended exclusive reserve of 1,000,000 ACP (1 ACP = 10 rACP).
+Catalog entry is planned and non-tradeable. Reserve funding, issuance and supervised
+redemption remain open. Deployment evidence and next steps: [rACP](contracts/robinhood-racp/README.md).
+
 ## ANCAP Card — 2026-10-28
 
 [Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented locally in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation and production acceptance remain open. No deployment in this change.

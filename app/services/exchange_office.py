@@ -259,6 +259,37 @@ def build_assets() -> list[ExchangeAssetPublic]:
             metadata={"pair_hint": "wACP/USDT on PancakeSwap"},
         ),
         ExchangeAssetPublic(
+            id="racp_robinhood",
+            symbol="rACP",
+            label="Robinhood ACP",
+            kind="crypto",
+            availability="planned",
+            direction="none",
+            rail="bridge",
+            quote_mode="bridge_1_10",
+            unit="rACP",
+            decimals=18,
+            network="robinhood",
+            note=(
+                "Planned custodial ACP receipt: 1 ACP = 10 rACP. "
+                "Contract deployed; exclusive reserve funding and redemption service pending."
+            ),
+            metadata={
+                "chain_id": 4663,
+                "rpc_url": "https://rpc.mainnet.chain.robinhood.com",
+                "explorer_url": "https://robinhoodchain.blockscout.com",
+                "gas_symbol": "ETH",
+                "max_issuance": "10000000",
+                "required_reserve_acp": "1000000",
+                "recipient": "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4",
+                "contract_address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+                "deployment_tx": "0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53",
+                "reserve_acp_address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
+                "reserve_verified": False,
+                "redemption_available": False,
+            },
+        ),
+        ExchangeAssetPublic(
             id="sacp_bsc",
             symbol="sACP",
             label="sACP (Stable ACP)",
