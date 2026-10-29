@@ -93,13 +93,6 @@ class CostEvidenceCreate(BaseModel):
 class CostEvidenceReceipt(BaseModel):
     model_config = ConfigDict(from_attributes=True, json_schema_serialization_defaults_required=False, extra="forbid")
 
-    @model_serializer
-    def serialize_model(self):
-        data = self.model_dump()
-        for key, value in data.items():
-            if isinstance(value, Decimal):
-                data[key] = float(value)
-        return data
     id: UUID
     recorded_by_user_id: UUID | None
     # Operator attestation is deliberately distinct from an independent audit.
@@ -113,6 +106,15 @@ class CostEvidenceReceipt(BaseModel):
     amount: Decimal
     review_note: str
     allocations: list[CostRunAllocation]
+    created_at: datetime | None = None
+
+    @model_serializer
+    def serialize_model(self):
+        data = self.model_dump()
+        for key, value in data.items():
+            if isinstance(value, Decimal):
+                data[key] = float(value)
+        return data
 
 
 class CostEvidenceAdminResponse(BaseModel):

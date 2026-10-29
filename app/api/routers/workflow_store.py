@@ -21,7 +21,7 @@ from app.services.credit_pricing import build_topup_pricing_snapshot, package_fo
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
-from app.db.models import ChainReceipt, LedgerEventTypeEnum, PaymentIntent, PaymentIntentStatusEnum, ReferralRewardEvent, SettlementIntent, User, WorkflowRunRecord
+from app.db.models import ChainReceipt, LedgerEventTypeEnum, PaymentIntent, PaymentIntentStatusEnum, ReferralRewardEvent, SettlementIntent, User, WorkflowRunRecord, WorkflowCostEvidence
 from app.schemas import (
     ChainReceiptPublic,
     Money,
@@ -58,6 +58,7 @@ from app.schemas import (
     WorkflowRunStatusUpdateResponse,
     WorkflowTemplatePublic,
     WorkflowTemplatesResponse,
+    CostEvidenceAdminResponse,
 )
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
 from app.services.llm import execute_paid_workflow_with_llm
@@ -1493,6 +1494,34 @@ async def export_workflow_store_revenue_csv(
             "Content-Disposition": f"attachment; filename=workflow-revenue-{since.strftime('%Y-%m-%d')}-to-{generated_at.strftime('%Y-%m-%d')}.csv"
         },
     )
+
+
+@router.get("/admin/cost-evidence/{evidence_id}", response_model=CostEvidenceAdminResponse)
+async def get_cost_evidence(
+    session: DbSession,
+    evidence_id: UUID,
+    admin_user_id: str = Depends(require_platform_admin),
+):
+    """Admin-only endpoint to retrieve cost evidence record for verification."""
+    
+    evidence = await session.get(WorkflowCostEvidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    
+    # Serialize the response with proper Decimal handling
+    result = CostEvidenceAdminResponse.model_validate(evidence)
+    
+    # Convert Decimal values to float for JSON serialization
+    if result.amount is not None:
+        result.amount = float(result.amount)
+    
+    for allocation in result.allocations:
+        if isinstance(allocation.evidence_amount, Decimal):
+            allocation.evidence_amount = float(allocation.evidence_amount)
+        if isinstance(allocation.allocated_amount, Decimal):
+            allocation.allocated_amount = float(allocation.allocated_amount)
+    
+    return result
 
 
 @router.get("/runs", response_model=WorkflowRunsResponse)

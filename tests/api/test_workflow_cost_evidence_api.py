@@ -15,15 +15,19 @@ from app.db.models import WorkflowCostEvidence
 from app.schemas.workflow_costs import CostEvidenceCreate, CostRunAllocation
 
 
+def _make_sha256():
+    """Generate a valid 64-char hex SHA256 string for tests."""
+    return uuid.uuid4().hex + uuid.uuid4().hex  # Ensure exactly 64 chars
+
+
 @pytest.fixture(scope="function")
-def evidence_data(client):
+def evidence_data(client, evidence_create):
     """Create a test cost evidence record via API for GET tests."""
-    from tests.conftest import evidence_create
     evidence = evidence_create(
         source="test_source",
         document_id="doc-test-001",
         line_id="line-001",
-        document_sha256="sha256:test",
+        document_sha256=_make_sha256(),
         category="model",
         currency="ACP",
         amount=10.0,
@@ -92,17 +96,34 @@ async def test_get_cost_evidence_not_found(client):
 @pytest.fixture(scope="session")
 def evidence_data_persistent(client):
     """Create a persistent test cost evidence record for session-level tests."""
-    from tests.conftest import evidence_create
-    return evidence_create(
-        source="test_source_persistent",
-        document_id="doc-test-persistent-001",
-        line_id="line-persistent-001",
-        document_sha256="sha256:test-persistent",
-        category="model",
-        currency="ACP",
-        amount=100.0,
-        review_note="Persistent test evidence"
-    )
+    from app.db.session import async_session_maker
+    from app.db.models import WorkflowCostEvidence
+    
+    # Create evidence directly in DB using SQLAlchemy
+    async def _create():
+        async with async_session_maker() as session:
+            evidence = WorkflowCostEvidence(
+                source="test_source_persistent",
+                document_id="doc-test-persistent-001",
+                line_id="line-persistent-001",
+                document_sha256=_make_sha256(),
+                category="model",
+                currency="ACP",
+                amount=Decimal("100.0"),
+                review_note="Persistent test evidence"
+            )
+            session.add(evidence)
+            await session.commit()
+            await session.refresh(evidence)
+        return type("obj", (object,), {
+            "id": str(evidence.id),
+            "source": evidence.source,
+            "document_id": evidence.document_id,
+            "line_id": evidence.line_id,
+            "amount": float(evidence.amount)
+        })
+    
+    return _create()
 
 
 @pytest.mark.asyncio
@@ -134,9 +155,10 @@ async def test_get_cost_evidence_no_mutation(client, evidence_data):
 async def test_get_cost_evidence_no_db_mutation(client, evidence_data_persistent):
     """GET does not mutate the database."""
     from app.db.session import async_session_maker
+    from app.db.models import WorkflowCostEvidence
     
     initial_count = 0
-    async for session in async_session_maker():
+    async with async_session_maker() as session:
         result = await session.execute(select(WorkflowCostEvidence))
         initial_count = len(result.scalars().all())
     
@@ -148,7 +170,7 @@ async def test_get_cost_evidence_no_db_mutation(client, evidence_data_persistent
     assert response.status_code == 200
     
     final_count = 0
-    async for session in async_session_maker():
+    async with async_session_maker() as session:
         result = await session.execute(select(WorkflowCostEvidence))
         final_count = len(result.scalars().all())
     
