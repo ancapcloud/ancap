@@ -1520,7 +1520,7 @@ async def export_workflow_store_revenue_csv(
 @router.get("/admin/cost-evidence/{evidence_id}", response_model=CostEvidenceAdminResponse)
 async def get_cost_evidence(
     evidence_id: UUID,
-    session: DbSession = Depends(get_db),
+    session: DbSession,
     admin_user_id: str = Depends(require_platform_admin),
 ):
     """Admin-only endpoint to retrieve cost evidence record for verification."""
