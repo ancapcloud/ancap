@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import { Contract, JsonRpcProvider } from 'ethers';
+import { Contract, JsonRpcProvider, keccak256, toUtf8Bytes } from 'ethers';
 import { compile } from './compile.mjs';
 const plan = JSON.parse(fs.readFileSync('deployment-plan.json', 'utf8'));
 const provider = new JsonRpcProvider(plan.rpcUrl);
@@ -19,8 +19,14 @@ assert.equal((await token.recipient()).toLowerCase(), plan.recipient.toLowerCase
 assert.equal(await token.name(), 'Robinhood ACP');
 assert.equal(await token.symbol(), 'rACP');
 assert.equal(await token.MAX_ISSUANCE(), BigInt(plan.maxIssuance));
+if (plan.reserveEvidence) {
+  const proof = fs.readFileSync('prepared/reserve-funding.json', 'utf8').replace(/^\uFEFF/, '');
+  assert.equal(keccak256(toUtf8Bytes(proof)), plan.reserveEvidence);
+  assert.equal(await token.reserveEvidence(), plan.reserveEvidence);
+}
 const report = { chainId: plan.chainId, contractAddress: plan.contractAddress, runtimeMatchesLocalCompilation: true,
-  totalSupply: (await token.totalSupply()).toString(), issued: await token.issued(), explorerSourceVerification: 'blocked-by-explorer-challenge' };
+  totalSupply: (await token.totalSupply()).toString(), recipientBalance: (await token.balanceOf(plan.recipient)).toString(),
+  issued: await token.issued(), reserveEvidence: await token.reserveEvidence(), explorerSourceVerification: 'blocked-by-explorer-challenge' };
 fs.writeFileSync('prepared/runtime-verification.json', JSON.stringify(report, null, 2) + '\n');
 fs.writeFileSync('prepared/standard-input.json', JSON.stringify(input, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 2));

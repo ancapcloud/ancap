@@ -1,0 +1,16 @@
+{
+  "chain": "ACP",
+  "reserveAddress": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
+  "requiredReserveACP": "1000000",
+  "balanceUnits": "100000000000000",
+  "balanceACP": "1000000",
+  "transactionHash": "1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2",
+  "blockHeight": 19,
+  "blockHash": "182b7059a17115c00c0286216708bca12f6c8dc0a5b06733b058196f6b7dd476",
+  "confirmations": 1,
+  "supplyInvariantOK": true,
+  "racpChainId": 4663,
+  "racpContract": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+  "racpMaxIssuance": "10000000",
+  "ratioRACPperACP": 10
+}

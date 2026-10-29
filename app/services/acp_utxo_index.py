@@ -131,7 +131,9 @@ def get_indexed_balance(address: str) -> dict[str, Any] | None:
         report_optional_failure('app.services.acp_utxo_index:get_indexed_balance:fallback', quiet=False)
     with _lock:
         wm = int(_state.get("wm") or 0)
-        if wm <= 0:
+        if wm <= 0 or target not in (_state.get("watch") or set()):
+            # A partial index cannot prove zero for an address it never scanned.
+            # Let the caller perform its live walletd probe instead.
             return None
         units, count = _aggregate_locked(target)
         return _balance_payload(target, units, count, source="utxo_index", height=wm)

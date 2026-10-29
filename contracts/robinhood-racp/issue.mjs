@@ -1,0 +1,66 @@
+// Explicit one-time issuance after live reserve check and archived native funding evidence.
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { Wallet, Contract, JsonRpcProvider, keccak256, toUtf8Bytes } from 'ethers';
+import { compile } from './compile.mjs';
+
+if (!process.argv.includes('--broadcast')) throw new Error('Explicit --broadcast required');
+const plan = JSON.parse(fs.readFileSync('deployment-plan.json', 'utf8'));
+const proofText = fs.readFileSync('prepared/reserve-funding.json', 'utf8').replace(/^\uFEFF/, '');
+const proof = JSON.parse(proofText);
+assert.equal(proof.reserveAddress, plan.reserveAddress);
+assert.equal(proof.racpContract.toLowerCase(), plan.contractAddress.toLowerCase());
+assert.equal(proof.racpChainId, 4663);
+assert.ok(proof.confirmations >= 1 && proof.supplyInvariantOK);
+assert.ok(BigInt(proof.balanceUnits) >= 100000000000000n);
+assert.match(proof.transactionHash, /^[a-f0-9]{64}$/);
+const response = await fetch(`https://api.ancap.cloud/v1/acp/address/${plan.reserveAddress}/balance`);
+assert.ok(response.ok, 'Live reserve probe failed');
+const live = await response.json();
+assert.equal(live.address, plan.reserveAddress);
+assert.ok(BigInt(live.units) >= 100000000000000n, 'Insufficient live reserve');
+const evidence = keccak256(toUtf8Bytes(proofText));
+const keyFile = process.env.RACP_DEPLOYER_ENV_FILE;
+if (!keyFile) throw new Error('Signer file required');
+const line = fs.readFileSync(keyFile, 'utf8').split(/\r?\n/).find(l => l.startsWith('BRIDGE_BSC_PRIVATE_KEY='));
+if (!line) throw new Error('Signer unavailable');
+const provider = new JsonRpcProvider(plan.rpcUrl);
+assert.equal((await provider.getNetwork()).chainId, 4663n);
+const wallet = new Wallet(line.slice(line.indexOf('=') + 1).trim().replace(/^["']|["']$/g, ''), provider);
+assert.equal(wallet.address.toLowerCase(), plan.issuer.toLowerCase());
+const { artifact } = compile();
+const token = new Contract(plan.contractAddress, artifact.abi, wallet);
+assert.equal((await token.recipient()).toLowerCase(), plan.recipient.toLowerCase());
+assert.equal(await token.MAX_ISSUANCE(), BigInt(plan.maxIssuance));
+const journalFile = 'prepared/issuance-journal.json';
+let journal;
+if (fs.existsSync(journalFile)) {
+  journal = JSON.parse(fs.readFileSync(journalFile, 'utf8'));
+  assert.equal(journal.evidence, evidence);
+} else {
+  assert.equal(await token.issued(), false);
+  assert.equal(await token.totalSupply(), 0n);
+  const tx = await token.issueAgainstReserve.populateTransaction(evidence);
+  const estimate = await provider.estimateGas({ ...tx, from: wallet.address });
+  const price = (await provider.getFeeData()).gasPrice;
+  if (!price) throw new Error('Gas price missing');
+  Object.assign(tx, { type: 0, chainId: 4663, nonce: await provider.getTransactionCount(wallet.address, 'pending'), gasLimit: (estimate * 120n + 99n) / 100n, gasPrice: (price * 110n + 99n) / 100n });
+  const maxCost = tx.gasLimit * tx.gasPrice;
+  assert.ok(maxCost <= 20_000_000_000_000n, 'Issuance exceeds 0.00002 ETH budget');
+  assert.ok(await provider.getBalance(wallet.address) >= maxCost, 'Insufficient ETH');
+  const signed = await wallet.signTransaction(tx);
+  journal = { transactionHash: keccak256(signed), evidence, status: 'broadcast-intent' };
+  fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n', { flag: 'wx' });
+  await provider.broadcastTransaction(signed);
+  console.log('BROADCAST', journal.transactionHash);
+}
+const receipt = await provider.waitForTransaction(journal.transactionHash, 1, 120_000);
+assert.ok(receipt && receipt.status === 1, 'Issuance not confirmed successfully');
+assert.equal(await token.totalSupply(), BigInt(plan.maxIssuance));
+assert.equal(await token.balanceOf(plan.recipient), BigInt(plan.maxIssuance));
+assert.equal(await token.reserveEvidence(), evidence);
+Object.assign(journal, { status: 'confirmed', blockNumber: receipt.blockNumber, feeWei: receipt.fee.toString() });
+fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n');
+Object.assign(plan, { status: 'issued', fundingBlocker: null, reserveEvidence: evidence, reserveFundingTransaction: proof.transactionHash, issuanceTransaction: journal.transactionHash });
+fs.writeFileSync('deployment-plan.json', JSON.stringify(plan, null, 2) + '\n');
+console.log(JSON.stringify(journal, null, 2));

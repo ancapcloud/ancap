@@ -263,7 +263,7 @@ def build_assets() -> list[ExchangeAssetPublic]:
             symbol="rACP",
             label="Robinhood ACP",
             kind="crypto",
-            availability="planned",
+            availability="beta",
             direction="none",
             rail="bridge",
             quote_mode="bridge_1_10",
@@ -271,8 +271,9 @@ def build_assets() -> list[ExchangeAssetPublic]:
             decimals=18,
             network="robinhood",
             note=(
-                "Planned custodial ACP receipt: 1 ACP = 10 rACP. "
-                "Contract deployed; exclusive reserve funding and redemption service pending."
+                "Custodial ACP receipt: 1 ACP = 10 rACP. 10,000,000 rACP issued "
+                "against an initial confirmed 1,000,000 ACP reserve. "
+                "Automated redemption and continuous reserve monitoring are not available."
             ),
             metadata={
                 "chain_id": 4663,
@@ -285,7 +286,13 @@ def build_assets() -> list[ExchangeAssetPublic]:
                 "contract_address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
                 "deployment_tx": "0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53",
                 "reserve_acp_address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
-                "reserve_verified": False,
+                "issuance_tx": "0xe9b437c7e2260ae284ae011fdae4699b9bca63e3712997ffad28be8d105334e8",
+                "issued_supply": "10000000",
+                "initial_reserve_confirmed": True,
+                "initial_reserve_block": 19,
+                "reserve_funding_tx": "1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2",
+                "reserve_balance_url": "/v1/acp/address/acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz/balance",
+                "reserve_monitoring": "not_implemented",
                 "redemption_available": False,
             },
         ),

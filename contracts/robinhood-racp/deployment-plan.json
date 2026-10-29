@@ -1,5 +1,5 @@
 {
-  "status": "deployed_unfunded",
+  "status": "issued",
   "chainId": 4663,
   "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
   "explorerUrl": "https://robinhoodchain.blockscout.com",
@@ -13,9 +13,10 @@
   "recipient": "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4",
   "issuer": "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4",
   "contractAddress": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
-  "reserveEvidence": null,
-  "fundingBlocker": "active-stake-and-platform-reservations",
+  "reserveEvidence": "0x9eb3773d3937092df7b67e12c6443d16c7d778e4ed49dd4807ffd94d9642302b",
+  "fundingBlocker": null,
   "reserveAddress": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
   "deploymentTransaction": "0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53",
-  "issuanceTransaction": null
+  "issuanceTransaction": "0xe9b437c7e2260ae284ae011fdae4699b9bca63e3712997ffad28be8d105334e8",
+  "reserveFundingTransaction": "1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2"
 }
