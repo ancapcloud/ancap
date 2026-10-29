@@ -1,0 +1,20 @@
+{
+  "source": "test-invoice-2026-10-28",
+  "document_id": "doc-test-001",
+  "line_id": "line-001",
+  "document_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "category": "model",
+  "currency": "ACP",
+  "amount": "10.00",
+  "review_note": "Test cost evidence for admin endpoint verification",
+  "allocations": [
+    {
+      "workflow_run_id": "00000000-0000-0000-0000-000000000001",
+      "allocated_amount": "5.00"
+    },
+    {
+      "workflow_run_id": "00000000-0000-0000-0000-000000000002",
+      "allocated_amount": "5.00"
+    }
+  ]
+}

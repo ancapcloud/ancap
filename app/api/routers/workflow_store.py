@@ -2423,3 +2423,32 @@ async def create_workflow_run(
         )
 
     return result
+
+
+@router.get(
+    "/admin/cost-evidence/{evidence_id}",
+    response_model=CostEvidenceAdminResponse,
+    dependencies=[Depends(require_platform_admin)],
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden (non-admin)"},
+        404: {"description": "Evidence not found"},
+    },
+)
+async def get_cost_evidence(
+    evidence_id: str,
+    session: DbSession = Depends(DbSession),
+):
+    """Admin-only endpoint to retrieve cost evidence for verification.
+    
+    - Cache-Control: private, no-store
+    - Guest: 401, regular user: 403, unknown ID: 404
+    - verification_basis=operator_attested
+    """
+    from app.db.models import WorkflowCostEvidence
+    
+    row = await session.get(WorkflowCostEvidence, evidence_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    
+    return CostEvidenceAdminResponse.model_validate(row)

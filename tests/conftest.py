@@ -67,6 +67,7 @@ os.environ["REGISTRATION_SIGNAL_MAX_PER_IP"] = "1000"
 os.environ["REGISTRATION_SIGNAL_MAX_PER_DEVICE"] = "1000"
 
 from app.config import get_settings
+from app.db.models import *
 from app.db.session import Base, get_db, async_session_maker
 from app.services.rate_limit import clear_rate_limit_state
 
