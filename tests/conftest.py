@@ -359,15 +359,38 @@ def get_base_vertical_id_from_db():
 
 
 @pytest.fixture
+def evidence_data(client, evidence_create):
+    """Create a test cost evidence record via POST /admin/cost-evidence."""
+    return evidence_create()
+
+
+@pytest.fixture
 def evidence_create(client):
     """Create a test cost evidence record via POST /admin/cost-evidence."""
     from app.schemas.workflow_costs import CostEvidenceCreate
     from uuid import uuid4
     
-    def _create_evidence(source: str = "test_source", document_id: str = "doc-test-001",
-                          line_id: str = "line-001", document_sha256: str = "sha256:test",
-                          category: str = "model", currency: str = "ACP", amount: float = 10.0,
-                          review_note: str = "Test evidence for API testing"):
+    def _create_evidence(source: str = None, document_id: str = None,
+                          line_id: str = None, document_sha256: str = None,
+                          category: str = None, currency: str = None, amount: float = None,
+                          review_note: str = None):
+        # Generate unique values if not provided
+        if source is None:
+            source = f"test_source_{uuid4().hex[:8]}"
+        if document_id is None:
+            document_id = f"doc-test-{uuid4().hex[:6]}"
+        if line_id is None:
+            line_id = f"line-{uuid4().hex[:6]}"
+        if document_sha256 is None:
+            document_sha256 = "sha256:test"
+        if category is None:
+            category = "model"
+        if currency is None:
+            currency = "ACP"
+        if amount is None:
+            amount = 10.0
+        if review_note is None:
+            review_note = "Test evidence for API testing"
         body = CostEvidenceCreate(
             source=source,
             document_id=document_id,

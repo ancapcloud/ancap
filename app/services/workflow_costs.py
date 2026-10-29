@@ -7,10 +7,11 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.db.models import WorkflowCostEvidence
-from app.schemas.workflow_costs import CostEvidenceReceipt, CostEvidenceAdminResponse
+from app.schemas.workflow_costs import CostEvidenceCreate, CostEvidenceAdminResponse, CostEvidenceReceipt
 
 
 @dataclass
@@ -151,3 +152,62 @@ async def get_cost_evidence(evidence_id: str, session) -> CostEvidenceAdminRespo
     
     # Convert to Pydantic model
     return CostEvidenceAdminResponse.model_validate(row)
+
+
+async def record_cost_evidence(
+    session: AsyncSession,
+    reviewer_id: str,
+    body: CostEvidenceCreate,
+) -> CostEvidenceAdminResponse:
+    """Record cost evidence and create allocations.
+
+    Creates a new cost evidence record with optional workflow run allocations.
+    
+    Args:
+        session: SQLAlchemy async session
+        reviewer_id: ID of the reviewer (admin user)
+        body: CostEvidenceCreate schema with evidence data and optional allocations
+    
+    Returns:
+        CostEvidenceAdminResponse with the created evidence record
+    """
+    from app.db.models import WorkflowCostEvidence, WorkflowCostAllocation
+    from sqlalchemy import insert
+    
+    # Create the evidence record
+    evidence = WorkflowCostEvidence(
+        source=body.source,
+        document_id=body.document_id,
+        line_id=body.line_id,
+        document_sha256=body.document_sha256,
+        category=body.category or "unknown",
+        currency=body.currency or "unknown",
+        amount=body.amount,
+        review_note=body.review_note or ""
+    )
+    
+    session.add(evidence)
+    await session.flush()
+    evidence_id = str(evidence.id)
+    
+    # Handle allocations if provided
+    if body.allocations:
+        for alloc in body.allocations:
+            workflow_run_id = UUID(alloc["workflow_run_id"])
+            allocated_amount = alloc["allocated_amount"]
+            
+            allocation = WorkflowCostAllocation(
+                evidence_id=evidence_id,
+                workflow_run_id=workflow_run_id,
+                amount=allocated_amount
+            )
+            session.add(allocation)
+        
+        # Store allocations as JSON in the evidence record for easy access
+        evidence.allocations = [a.model_dump() for a in body.allocations]
+    
+    await session.commit()
+    await session.refresh(evidence)
+    
+    # Convert to Pydantic model
+    return CostEvidenceAdminResponse.model_validate(evidence)
