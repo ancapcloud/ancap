@@ -1,0 +1,12 @@
+{
+  "name": "ancap-robinhood-racp",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "@openzeppelin/contracts": "5.4.0"
+  },
+  "devDependencies": {
+    "ethers": "^6.15.0",
+    "solc": "^0.8.24"
+  }
+}

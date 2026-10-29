@@ -1,22 +1,15 @@
 # ANCAP Master Roadmap
 
-## Expo SDK 58 CI maintenance — 2026-10-28
+## Robinhood ACP (rACP) — 2026-10-30
 
-[~] Align the 11 newly required Expo SDK 58 patch versions in the mobile workspace and lockfile. The previous Frontend CI failure was dependency compatibility; frontend tests, browser tests, backend and security checks passed. Local expo-doctor (19/19), workspace type checks, 352 workspace tests, 13 security regression tests and Android export passed. A green replacement GitHub run is pending. Native device acceptance remains separate.
+Robinhood Chain mainnet contract deployed with zero initial supply; cap 10,000,000 rACP
+against an intended exclusive reserve of 1,000,000 ACP (1 ACP = 10 rACP).
+Catalog entry is planned and non-tradeable. Reserve funding, issuance and supervised
+redemption remain open. Deployment evidence and next steps: [rACP](contracts/robinhood-racp/README.md).
 
 ## ANCAP Card — 2026-10-28
 
-[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation remains open. Card release 86fb055 deployed successfully via PR #132; public build and all five home/projects locales verified. The mobile CI dependency patch alignment is tracked below.
-
-
-2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
-packets to exact result/source hashes, human review and the durable outbox.
-Only one consented full-JSON webhook is eligible; source/result/role changes
-block approval and dispatch. Recipient export omits internal provenance notes.
-Release 00c1e04 deployed successfully via PR #130; production build, CI,
-migrations 092/093 and public health/readiness checks passed. Live recipient
-delivery, customer-source quality and paid validation remain open.
-See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented locally in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation and production acceptance remain open. No deployment in this change.
 
 ## Active priorities — 2026-10-28
 
@@ -24,7 +17,7 @@ See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
 [bounded agency-pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
 ROP-01 adds project-approved public HTML sources, checked versions/text changes,
 manual source-bound claims and a private draft packet in Studio (migration 093).
-Commercial validation, live reviewed-release delivery, schedules and renewal evidence
+Commercial validation, reviewed-release delivery, schedules and renewal evidence
 remain explicit gates; the supplied strategy is not a verified market audit.
 
 2026-10-28: actual-cost P0 now includes an evidence-allocation reconciler and
