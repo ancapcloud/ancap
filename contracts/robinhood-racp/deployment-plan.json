@@ -14,6 +14,7 @@
   "issuer": "0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4",
   "contractAddress": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
   "reserveEvidence": null,
+  "fundingBlocker": "insufficient-withdrawable-entitlement",
   "reserveAddress": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
   "deploymentTransaction": "0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53",
   "issuanceTransaction": null
