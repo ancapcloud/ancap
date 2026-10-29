@@ -23,10 +23,15 @@ def _make_sha256():
 @pytest.fixture(scope="function")
 def evidence_data(client, evidence_create):
     """Create a test cost evidence record via API for GET tests."""
+    # Generate unique IDs to prevent UniqueConstraint violations
+    source = f"test_source_{uuid.uuid4().hex[:8]}"
+    document_id = f"doc-test-{uuid.uuid4().hex[:6]}"
+    line_id = f"line-{uuid.uuid4().hex[:6]}"
+    
     evidence = evidence_create(
-        source="test_source",
-        document_id="doc-test-001",
-        line_id="line-001",
+        source=source,
+        document_id=document_id,
+        line_id=line_id,
         document_sha256=_make_sha256(),
         category="model",
         currency="ACP",
@@ -53,8 +58,8 @@ async def test_get_cost_evidence_admin_access(client, evidence_data):
     assert response.status_code == 200
     data = response.json()
     assert data["source"] == evidence_data.source
-    assert data["document_id"] == "doc-test-001"
-    assert data["line_id"] == "line-001"
+    assert data["document_id"] == evidence_data.document_id
+    assert data["line_id"] == evidence_data.line_id
     assert data["category"] == "model"
     assert data["currency"] == "ACP"
     assert abs(float(data["amount"]) - 10.0) < 0.001
@@ -93,19 +98,23 @@ async def test_get_cost_evidence_not_found(client):
     assert response.status_code == 404
 
 
-@pytest.fixture(scope="session")
-def evidence_data_persistent(client):
-    """Create a persistent test cost evidence record for session-level tests."""
+@pytest.fixture(scope="function")
+async def evidence_data_persistent_async(client):
+    """Async fixture to create a test cost evidence record for function-level tests."""
     from app.db.session import async_session_maker
     from app.db.models import WorkflowCostEvidence
     
-    # Create evidence directly in DB using SQLAlchemy
+    # Generate unique IDs to prevent UniqueConstraint violations
+    source = f"test_source_persistent_{uuid.uuid4().hex[:8]}"
+    document_id = f"doc-test-persistent-{uuid.uuid4().hex[:6]}"
+    line_id = f"line-persistent-{uuid.uuid4().hex[:6]}"
+    
     async def _create():
         async with async_session_maker() as session:
             evidence = WorkflowCostEvidence(
-                source="test_source_persistent",
-                document_id="doc-test-persistent-001",
-                line_id="line-persistent-001",
+                source=source,
+                document_id=document_id,
+                line_id=line_id,
                 document_sha256=_make_sha256(),
                 category="model",
                 currency="ACP",
@@ -123,7 +132,13 @@ def evidence_data_persistent(client):
             "amount": float(evidence.amount)
         })
     
-    return _create()
+    return await _create()
+
+
+@pytest.fixture(scope="function")
+def evidence_data_persistent(client, evidence_data_persistent_async):
+    """Sync wrapper for the async evidence fixture."""
+    return evidence_data_persistent_async
 
 
 @pytest.mark.asyncio

@@ -89,6 +89,26 @@ from app.services.workflow_execution import (
 
 router = APIRouter(prefix="/workflow-store", tags=["Workflow Store"])
 
+@router.get(
+    "/admin/cost-evidence/{evidence_id}",
+    response_model=CostEvidenceAdminResponse,
+    dependencies=[Depends(require_platform_admin)],
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden (non-admin)"},
+        404: {"description": "Evidence not found"},
+    },
+    summary="Admin-only cost evidence verification",
+    description="Read-only endpoint for operator attestation of cost evidence records. No mutations allowed.",
+)
+async def get_cost_evidence_admin(
+    evidence_id: str,
+):
+    """Admin-only read endpoint for cost evidence verification."""
+    from app.services.workflow_costs import get_cost_evidence
+    async with DbSession() as session:
+        return await get_cost_evidence(evidence_id, session)
+
 
 ALLOWED_TRANSITIONS: dict[WorkflowRunStatus, set[WorkflowRunStatus]] = {
     WorkflowRunStatus.quoted: {WorkflowRunStatus.paid, WorkflowRunStatus.cancelled},
