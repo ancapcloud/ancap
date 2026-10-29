@@ -17,7 +17,7 @@ from sqlalchemy import desc, select
 
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
 from app.db.session import get_db
-from app.services.workflow_value import workflow_result_hash
+from app.services.workflow_value import workflow_result_hash, assessment_public, value_summary, assessment_history, assessed_result, cost_evidence
 from app.services.credit_pricing import build_topup_pricing_snapshot, package_for_topup_intent
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
@@ -61,6 +61,8 @@ from app.schemas import (
     WorkflowTemplatesResponse,
     CostEvidenceAdminResponse,
 )
+from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary, CostEvidencePublic
+from app.schemas.workflow_value_request import ValueRequest, ValueResponse
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
 from app.services.llm import execute_paid_workflow_with_llm
 from app.services.mail import can_receive_system_email, send_email
@@ -2453,3 +2455,22 @@ async def get_cost_evidence(
         raise HTTPException(status_code=404, detail="Cost evidence not found")
     
     return CostEvidenceAdminResponse.model_validate(row)
+
+
+@router.post("/ai/value", response_model=ValueResponse)
+async def get_value_summary(
+    body: ValueRequest,
+    session: DbSession = Depends(DbSession),
+    user_id: str | None = Depends(get_current_user_id),
+):
+    """Get value summary for the authenticated user's completed runs.
+    
+    - Returns counts, labor value estimates, and ledger charges for the specified window.
+    - Estimates are self-reported (not verified externally).
+    - Scope: completed runs created in the window.
+    """
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    summary = await value_summary(session, user_id, body.days)
+    return ValueResponse.model_validate(summary)
