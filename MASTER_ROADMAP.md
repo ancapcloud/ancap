@@ -2,6 +2,12 @@
 
 ## Robinhood ACP (rACP) — 2026-10-30
 
+Wallet balance hotfix (2026-10-30): personal native UTXOs are no longer capped
+to the shared custodial wallet's ledger entitlement. Existing stake/platform
+reservations remain excluded from spendable funds. Nine targeted tests passed;
+patched API deployed and live balance response/health checked. Reserve funding
+still requires release of active claims or additional unencumbered funds.
+
 Robinhood Chain mainnet contract deployed with zero initial supply; cap 10,000,000 rACP
 against an intended exclusive reserve of 1,000,000 ACP (1 ACP = 10 rACP).
 Catalog entry is planned and non-tradeable. Reserve funding, issuance and supervised

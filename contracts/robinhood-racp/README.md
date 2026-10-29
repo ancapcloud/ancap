@@ -19,13 +19,15 @@ verification or ACP payout service is implemented in this change.
   It must be backed up securely before funding. Never commit it or expose it through API.
   A private backup was saved locally under the ignored `Sicret/robinhood-racp/` directory.
 
-The source account's internal platform entitlement and native ACP wallet balance
-are different quantities. A follow-up production withdrawal preflight on 2026-10-30
-found available entitlement below 1,000,000 ACP, active stakes and an empty custodial
-hot float. The native balance alone does not authorize that withdrawal. No ledger
-debit, native transfer or reserve claim was made. Funding is blocked by insufficient
-withdrawable entitlement, independently of signing access. Do not bypass the
-withdrawal entitlement/stake checks or create an unbacked ledger credit to issue rACP.
+The source account's internal platform claims and native ACP wallet balance
+are different quantities. A follow-up production audit on 2026-10-30 found that
+the personal wallet was incorrectly capped to shared custodial ledger entitlement.
+That calculation is now fixed and live-checked: personal total is its native balance,
+and available is native balance minus active stake/platform reservations. Custodial
+hot entitlement checks remain unchanged. Nine targeted tests passed. Active claims
+still leave insufficient unencumbered funds for the full reserve. No ledger debit,
+unstake, native transfer or reserve claim was made. Do not bypass those reservations
+or create an unbacked ledger credit to issue rACP.
 Use the authenticated wallet flow with sufficient available funds to transfer
 1,000,000 ACP to the dedicated reserve, retaining ACP for the network fee.
 
