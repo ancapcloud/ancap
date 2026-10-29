@@ -402,6 +402,21 @@ def _custodial_balance_view(
     return display_acp, entitlement, available
 
 
+def _personal_balance_view(
+    on_chain_acp: Decimal,
+    staked_acp: Decimal,
+    ledger_acp: Decimal,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Personal UTXOs are not capped to a share of the shared hot wallet.
+
+    Keep existing platform reservations unavailable, so they cannot also be spent
+    on-chain. A separate ledger withdrawal/unstake must release those claims first.
+    """
+    total = max(on_chain_acp, Decimal(0))
+    reserved = max(staked_acp, Decimal(0)) + max(ledger_acp, Decimal(0))
+    return total, reserved, max(total - reserved, Decimal(0))
+
+
 def _creator_vesting_monthly_unlock_acp() -> Decimal:
     # 69,300,000 ACP over 72 months after a 12-month cliff.
     return Decimal("962500")
@@ -556,7 +571,12 @@ async def _decorate_balance_for_user(
         on_chain_acp = Decimal(0)
     if include_in_work:
         in_work_acp, in_staked, in_ledger = await _in_work_breakdown_for_user(session, user_id)
-        real_acp, in_work_acp, available_acp = _custodial_balance_view(
+        balance_view = (
+            _custodial_balance_view
+            if str(raw.get("address") or "").strip() == CUSTODIAL_HOT_ADDRESS
+            else _personal_balance_view
+        )
+        real_acp, in_work_acp, available_acp = balance_view(
             on_chain_acp, in_staked, in_ledger
         )
     else:
@@ -631,7 +651,7 @@ async def _decorate_balance_for_user(
         # Personal deposit UTXOs remain spendable with the account keystore.
         personal_available = Decimal(0)
         if target_address and target_address != CUSTODIAL_HOT_ADDRESS and not deposit_probe_failed:
-            _, _, personal_available = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
+            _, _, personal_available = _personal_balance_view(on_chain_acp, in_staked, in_ledger)
         # Custodial hot float is spendable via server custodial-hot keystore (hot holders only).
         if hot_live > 0:
             available_acp = hot_live
@@ -2347,7 +2367,7 @@ async def withdraw(
             on_chain_acp = Decimal(0)
         else:
             on_chain_acp = _parse_decimal_or_zero(balance_res.get("acp"))
-        _, _, available_acp = _custodial_balance_view(on_chain_acp, in_staked, in_ledger)
+        _, _, available_acp = _personal_balance_view(on_chain_acp, in_staked, in_ledger)
         if required_total > available_acp:
             raise HTTPException(
                 status_code=400,
