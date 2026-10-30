@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { CardsWaitlistForm } from "@/components/CardsWaitlistForm";
+import { WebIdPartnerStatus } from "@/components/WebIdPartnerStatus";
 
 export const metadata = {
   title: "Physical card / Apple Pay waitlist | ANCAP",
@@ -29,7 +30,9 @@ export default function CardsWaitlistPage() {
             >
               WebID
             </a>{" "}
-            (or equivalent) when live — identity checks only.
+            (or equivalent) when live — identity checks only. Live adapter:{" "}
+            <code className="text-white/55">GET /v1/commerce/webid/status</code>, session start{" "}
+            <code className="text-white/55">POST /v1/commerce/webid/session</code>.
           </li>
           <li>
             <strong className="text-white/85">Cards / Apple Pay:</strong> require a separate
@@ -43,6 +46,8 @@ export default function CardsWaitlistPage() {
             (bridge, credits, MoonPay Commerce) to get ACP.
           </li>
         </ul>
+
+        <WebIdPartnerStatus />
 
         <section id="waitlist" className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-300/90">

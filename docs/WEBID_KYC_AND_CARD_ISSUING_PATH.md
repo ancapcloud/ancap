@@ -1,6 +1,6 @@
 # WebID KYC and future card issuing path
 
-> Status: P0 shipped (docs + waitlist + fail-closed status) | Updated: 2026-10-05  
+> Status: P0 shipped · P1 sandbox adapter shipped (fail-closed) | Updated: 2026-10-30  
 > Partner site: [webid-solutions.com](https://webid-solutions.com/en/)
 
 ## Honest split
@@ -18,17 +18,23 @@ ANCAP remains **not a VASP** until counsel and a licensed card issuer change tha
 
 ## Phases
 
-### P0 — now (repo)
+### P0 — shipped
 
 - Public waitlist: `/cards` → `POST /v1/commerce/ramp-waitlist` with `interest=physical_card_apple_pay`
 - Fail-closed: `GET /v1/commerce/webid/status` → `configured=false`, `issues_cards=false`
 - Env placeholders only (`WEBID_ENABLED=false`, empty credentials)
 
-### P1 — after WebID commercial account
+### P1 — sandbox API (repo ready, live after commercial account)
 
-- Wire sandbox credentials (`WEBID_API_BASE`, `WEBID_CLIENT_ID`, `WEBID_CLIENT_SECRET`)
-- Start / complete KYC session for gated surfaces; webhook ack
-- CorporateID path if Gewerbe / UBO KYB is required
+- Env: `WEBID_ENABLED`, `WEBID_API_BASE`, `WEBID_CLIENT_ID`, `WEBID_CLIENT_SECRET`, optional
+  `WEBID_CREATE_PATH`, `WEBID_LIGHT_REDIRECT_BASE`, `WEBID_RETURN_URL`, `WEBID_WEBHOOK_SECRET`,
+  `WEBID_PRODUCT`
+- Authenticated `POST /v1/commerce/webid/session` starts an identification process (503 until configured)
+- Signed `POST /v1/commerce/webid/webhook` acks status callbacks (HMAC-SHA256; 401 without secret)
+- `/cards` shows live partner status via `GET /v1/commerce/webid/status`
+- CorporateID path: set `WEBID_PRODUCT=CorporateID` when Gewerbe / UBO KYB is required
+
+Without a commercial WebID account, all session/webhook paths stay fail-closed. Do not invent live KYC.
 
 ### P2 — licensed card path (counsel gate)
 
@@ -38,15 +44,20 @@ ANCAP remains **not a VASP** until counsel and a licensed card issuer change tha
 
 ## Operator checklist (outside repo)
 
-1. Contact WebID business sales (Crypto/Web3 + CorporateID if company KYB)
-2. Shortlist card issuer / BaaS separately
-3. Counsel review before claiming card issuance or Apple Pay on product surfaces
+1. Contact WebID business sales (Crypto/Web3 + CorporateID if company KYB) via [webid-solutions.com](https://webid-solutions.com/en/)
+2. Receive sandbox base URL, customer id, API key / secret, webhook signing secret, light-redirect base
+3. Set host env (`WEBID_ENABLED=true` + credentials); never commit secrets
+4. Smoke: `GET /v1/commerce/webid/status` → `sessions_ready=true`; signed-in `POST /v1/commerce/webid/session`
+5. Shortlist card issuer / BaaS separately
+6. Counsel review before claiming card issuance or Apple Pay on product surfaces
 
 ## Public surfaces
 
 | Surface | Role |
 |---------|------|
-| `/cards` | Waitlist + honesty copy |
+| `/cards` | Waitlist + live WebID status + honesty copy |
 | `GET /v1/commerce/webid/status` | Partner slot status (no secrets) |
+| `POST /v1/commerce/webid/session` | Start KYC session (auth; fail-closed) |
+| `POST /v1/commerce/webid/webhook` | Identification status ack (HMAC) |
 | `/compliance` | Link to card waitlist |
 | `/buy-acp` | Quiet link to `/cards` |

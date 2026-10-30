@@ -16,19 +16,19 @@ not verify ACP consensus or maintain cross-chain reserves automatically.
 Transfers use ERC-20. No transfer tax, mutable owner, additional mint capacity,
 or upgrade mechanism is present. Burns do not restore issuance capacity.
 
-`requestRedemption` burns rACP and emits a request; it does not pay native ACP.
-Automated redemptions and continuous reserve monitoring are not available.
-Do not treat an emitted request as a completed payout. Backing is custodial.
+`requestRedemption` burns rACP and emits `RedemptionRequested`. Native ACP is
+paid by the ANCAP supervised redeem service from the exclusive reserve when
+`RACP_REDEEM_ENABLED=true`. Destination is the `acp1` string in the event.
+Do not treat an emitted request alone as a completed payout until status is
+`COMPLETED` at `/v1/racp/redeem/by-tx/{tx}` or `/tokens/racp/redeem`.
 
 No trading pool or market price has been established. Liquidity budget is zero
 until the operator provides new parameters. No CoinGecko, CoinMarketCap,
 Trust Wallet directory, exchange listing, Robinhood endorsement, or security
 audit is claimed. Source verification is not an audit or listing approval.
 
-Next steps: implement authenticated idempotent redemption payouts and reserve
-reconciliation, then add operator-approved liquidity and submit eligible listings.
-
 Official page: https://ancap.cloud/tokens/racp
+Redeem: https://ancap.cloud/tokens/racp/redeem
 Token list: https://ancap.cloud/tokenlist.json
 Placement status: https://ancap.cloud/racp-listings.json
 Source verification: https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911?tab=contract
