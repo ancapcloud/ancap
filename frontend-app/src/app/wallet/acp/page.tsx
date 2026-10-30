@@ -14,6 +14,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { ApiError, walletAcp } from "@/lib/api";
 import {
   formatAcpDisplay,
+  selectDragonAcp,
   selectHeroAcp,
   selectOnChainAtDeposit,
   selectPlatformLedger,
@@ -190,9 +191,12 @@ export default function AcpWalletPage() {
   const nativeDataUnavailable =
     wallet?.probe_status === "unavailable" ||
     wallet?.probe_status === "degraded";
-  const available = nativeDataUnavailable
-    ? null
-    : (wallet?.withdrawable_now_acp ?? wallet?.available_acp ?? null);
+  const available =
+    wallet?.probe_status === "unavailable"
+      ? null
+      : (wallet?.withdrawable_now_acp ?? wallet?.available_acp ?? null);
+  const dragonAcp = operator ? selectDragonAcp(wallet, HOT_ADDRESS) : null;
+  const accountAcp = dragonAcp ?? available;
   const validation = transferCheck(recipient, amount, fee, available);
   const validationMessage = (code: string | null) =>
     code === "address"
@@ -207,7 +211,15 @@ export default function AcpWalletPage() {
               ? c.rowsError
               : c.unknown;
   const money = (value: string | null | undefined) =>
-    value == null ? "—" : formatRacpEquivalent(value, lang);
+    value == null ? "—" : formatAcpDisplay(value);
+  const racpLine = (value: string | null | undefined) => {
+    if (value == null) return null;
+    try {
+      return formatRacpEquivalent(value, lang);
+    } catch {
+      return null;
+    }
+  };
   const field = (label: string, control: ReactNode) => (
     <label className={s.field}>
       <span>{label}</span>
@@ -498,7 +510,7 @@ export default function AcpWalletPage() {
         <div className={s.metric} key={label}>
           <span>{label}</span>
           <strong title={value || undefined}>
-            {money(value)} <small>rACP equiv.</small>
+            {money(value)} <small>ACP</small>
           </strong>
           <p>{hint}</p>
         </div>
@@ -617,9 +629,12 @@ export default function AcpWalletPage() {
                   <div>
                     <span className={s.eyebrow}>{c.available}</span>
                     <div className={s.balance}>
-                      {loading && !wallet ? "…" : money(available)}{" "}
-                      <span>rACP equiv.</span>
+                      {loading && !wallet ? "…" : money(accountAcp)}{" "}
+                      <span>ACP</span>
                     </div>
+                    {racpLine(accountAcp) && (
+                      <p className={s.muted}>{racpLine(accountAcp)} rACP equiv.</p>
+                    )}
                     <p>{c.availableHint}</p>
                     <div className={s.updated}>
                       {updated
@@ -680,7 +695,7 @@ export default function AcpWalletPage() {
                   <dl className={s.facts}>
                     <div>
                       <dt>{t("walletAcpPage.walletBalance")}</dt>
-                      <dd>{money(selectHeroAcp(wallet))} rACP equiv.</dd>
+                      <dd>{money(accountAcp ?? selectHeroAcp(wallet))} ACP</dd>
                     </div>
                     <div>
                       <dt>
@@ -709,7 +724,7 @@ export default function AcpWalletPage() {
                       {wallet?.tokenomics_buckets?.map((bucket) => (
                         <p className={s.metricLine} key={bucket.key}>
                           <span>{bucket.label}</span>
-                          <strong>{money(bucket.acp)} rACP equiv.</strong>
+                          <strong>{money(bucket.acp)} ACP</strong>
                         </p>
                       ))}
                     </>
@@ -859,7 +874,7 @@ export default function AcpWalletPage() {
                   <p className={s.muted}>{c.sendHint}</p>
                   <div className={s.available}>
                     {c.available}
-                    <strong>{money(available)} rACP equiv.</strong>
+                    <strong>{money(available)} ACP</strong>
                   </div>
                   {attempted ? (
                     <section className={s.stack} aria-live="polite">

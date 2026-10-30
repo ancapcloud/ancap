@@ -38,6 +38,49 @@ export function selectPlatformLedger(balance: AcpBalanceHeroInput | null | undef
   return balance.platform_ledger_acp ?? balance.platform_credits_acp ?? balance.ledger_credits_acp ?? null;
 }
 
+const ACP_SCALE = 100_000_000n;
+
+function acpUnitsExact(raw: string | null | undefined): bigint | null {
+  if (raw == null) return null;
+  const value = String(raw).trim();
+  if (!/^\d+(\.\d+)?$/.test(value)) return null;
+  const [whole, fraction = ""] = value.split(".");
+  return BigInt(whole) * ACP_SCALE + BigInt(fraction.slice(0, 8).padEnd(8, "0"));
+}
+
+function acpFromUnits(units: bigint): string {
+  const fraction = (units % ACP_SCALE).toString().padStart(8, "0").replace(/0+$/, "");
+  return `${units / ACP_SCALE}${fraction ? "." + fraction : ""}`;
+}
+
+export type DragonBalanceInput = AcpBalanceHeroInput & {
+  address?: string | null;
+  operator_hot_live_acp?: string | null;
+  tokenomics_buckets?: { key: string; label: string; acp: string }[] | null;
+};
+
+/**
+ * ACP that left the retired wACP rail and still belongs to this login:
+ * live bridge-reserve coins, the deposit address, and custodial hot when it
+ * is a different wallet. Chain-wide supply is not part of this balance.
+ */
+export function selectDragonAcp(
+  balance: DragonBalanceInput | null | undefined,
+  hotAddress: string,
+): string | null {
+  if (!balance) return null;
+  const bridge = balance.tokenomics_buckets?.find((bucket) => bucket.key === "bridge_reserve");
+  const bridgeLive =
+    bridge && !/design|unavailable/i.test(bridge.label) ? acpUnitsExact(bridge.acp) : null;
+  const deposit = acpUnitsExact(balance.on_chain_at_deposit_acp ?? balance.on_chain_acp);
+  const address = (balance.address || "").trim();
+  const hot =
+    address && address !== hotAddress ? acpUnitsExact(balance.operator_hot_live_acp) : null;
+  const parts = [bridgeLive, deposit, hot].filter((part): part is bigint => part != null);
+  if (!parts.length) return null;
+  return acpFromUnits(parts.reduce((sum, part) => sum + part, 0n));
+}
+
 /**
  * Compact display for large ACP amounts so cards do not overflow.
  * Full precision stays available via title/tooltip (pass raw string separately).

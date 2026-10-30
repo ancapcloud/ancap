@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAcpDisplay,
+  selectDragonAcp,
   selectHeroAcp,
   selectOnChainAtDeposit,
   selectPlatformLedger,
   selectWithdrawableNow,
 } from "../acpBalanceDisplay";
+
+const HOT = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9";
 
 describe("acpBalanceDisplay", () => {
   it("hero prefers primary over on-chain zero and headline", () => {
@@ -41,6 +44,36 @@ describe("acpBalanceDisplay", () => {
         ledger_credits_acp: "30",
       }),
     ).toBe("50");
+  });
+
+  it("dragon balance keeps ACP that left wACP and skips design fallbacks", () => {
+    expect(
+      selectDragonAcp(
+        {
+          address: "acp1qpersonaladdress000000000000000",
+          on_chain_at_deposit_acp: "1000.5",
+          operator_hot_live_acp: "20",
+          tokenomics_buckets: [
+            { key: "bridge_reserve", label: "Bridge reserve", acp: "32883823.16372116" },
+            { key: "public", label: "Public & liquidity", acp: "25200000" },
+          ],
+        },
+        HOT,
+      ),
+    ).toBe("32884843.66372116");
+    expect(
+      selectDragonAcp(
+        {
+          address: HOT,
+          on_chain_at_deposit_acp: "20",
+          operator_hot_live_acp: "20",
+          tokenomics_buckets: [
+            { key: "bridge_reserve", label: "Bridge reserve (design; probe unavailable)", acp: "0" },
+          ],
+        },
+        HOT,
+      ),
+    ).toBe("20");
   });
 
   it("formatAcpDisplay compacts large balances", () => {
