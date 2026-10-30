@@ -474,7 +474,7 @@ def test_stripe_intent_rejects_unsupported_currency(client):
         headers=headers,
     )
     assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Unsupported Stripe currency. Supported values: USD"
+    assert response.json()["detail"] == "Unsupported Stripe currency. Supported values: EUR, USD"
 
 
 
