@@ -121,7 +121,7 @@ export default function WorkflowBundlePage() {
                 <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">Bundle price</div>
                   <div className="mt-2 text-xl font-semibold text-emerald-300">{catalogPriceLabel(bundle)}</div>
-                  {bundle.price.currency !== "USD" && <div className="mt-1 text-xs text-white/55">ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  {quotedPreview}</div>}
+                  {bundle.price.currency !== "USD" && <div className="mt-1 text-xs text-white/55">≈ {quotedPreview}</div>}
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">{bundle.discount_percent > 0 ? "Discount" : "Tier"}</div>
@@ -224,7 +224,7 @@ export default function WorkflowBundlePage() {
                       <Link key={run.id} href={`/ai/runs/${run.id}`} className="rounded-2xl border border-white/10 bg-black/15 p-3 text-sm text-white/80 transition hover:border-emerald-400/25 hover:text-white">
                         <div className="font-semibold">{run.title}</div>
                         <div className="mt-1 text-white/50">
-                          {run.status} Ãƒâ€šÃ‚Â· {catalogPriceLabel(run)}
+                          {run.status} · {catalogPriceLabel(run)}
                         </div>
                       </Link>
                     ))}

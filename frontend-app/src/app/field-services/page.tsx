@@ -97,7 +97,7 @@ function FieldServicesInner() {
 
   useEffect(() => {
     void load();
-    document.title = `ANCAP â€” ${t("fieldServicesPage.title")}`;
+    document.title = `ANCAP — ${t("fieldServicesPage.title")}`;
   }, [load, t]);
 
   const services = (catalog?.services || []).filter((svc) => {
@@ -259,7 +259,7 @@ function FieldServicesInner() {
                 <div className="card-header">
                   <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>{svc.label}</h3>
                   <strong style={{ color: "#7dd3fc", whiteSpace: "nowrap" }}>
-                    â‚¬{Number(svc.price_eur).toLocaleString()}
+                    €{Number(svc.price_eur).toLocaleString()}
                   </strong>
                 </div>
                 <p style={{ color: "var(--text-muted)", lineHeight: 1.65, minHeight: 72 }}>{svc.blurb}</p>
@@ -298,11 +298,11 @@ function FieldServicesInner() {
               <div style={{ display: "grid", gap: 8, fontFamily: "ui-monospace, monospace", fontSize: "0.95rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>{t("fieldServicesPage.installFee")}</span>
-                  <span>â‚¬{quote.installation_fee_eur}</span>
+                  <span>€{quote.installation_fee_eur}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>{t("fieldServicesPage.serviceFee")}</span>
-                  <span>â‚¬{quote.service_fee_eur}</span>
+                  <span>€{quote.service_fee_eur}</span>
                 </div>
                 <div
                   style={{
@@ -314,7 +314,7 @@ function FieldServicesInner() {
                   }}
                 >
                   <span>{t("fieldServicesPage.total")}</span>
-                  <span>â‚¬{quote.total_eur}</span>
+                  <span>€{quote.total_eur}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", color: "#bae6fd" }}>
                   <span>rACP equiv.</span>
@@ -348,7 +348,7 @@ function FieldServicesInner() {
               </div>
 
               <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                {t("fieldServicesPage.provider")}: {quote.provider_label} Â· {quote.provider_location}
+                {t("fieldServicesPage.provider")}: {quote.provider_label} · {quote.provider_location}
               </p>
               <p style={{ color: "#86efac", fontWeight: 600 }}>{t("fieldServicesPage.escrow")}</p>
               <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>{quote.escrow_note}</p>

@@ -13,7 +13,7 @@ export default function ConvertUsdcToAcpPage() {
       <main className="mx-auto max-w-3xl px-4 py-10">
         <h1 className="text-3xl font-semibold">Convert USDC to ACP</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          ANCAP uses ACP internally and rACP on Robinhood Chain externally. Direct USDCâ†’ACP partner ramps are waitlisted while compliance review completes.
+          ANCAP uses ACP internally and rACP on Robinhood Chain externally. Direct USDC→ACP partner ramps are waitlisted while compliance review completes.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <Link href="/tokens/racp" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-white/20">

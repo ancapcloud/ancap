@@ -288,7 +288,7 @@ async def _capture_reserved_workflow_payment(session: DbSession, row: WorkflowRu
     platform_fee = (gross * fee_pct / Decimal("100")).quantize(Decimal("0.00000001"))
     operator_share = (gross - platform_fee).quantize(Decimal("0.00000001"))
 
-    # Single ledger move of gross â†’ platform; fee split is recorded in metadata for treasury.
+    # Single ledger move of gross → platform; fee split is recorded in metadata for treasury.
     ev = await append_event(
         session,
         LedgerEventTypeEnum.fee,
