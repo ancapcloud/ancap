@@ -15,8 +15,7 @@ export const RACP_NETWORK = {
   blockExplorerUrls: [RACP_EXPLORER],
 };
 
-/** No signing, token approval or transaction: only a wallet network/import prompt. */
-export async function watchRacpInWallet(provider: Eip1193Provider | null = getPreferredEvmProvider() ?? null): Promise<boolean> {
+export async function ensureRobinhoodChain(provider: Eip1193Provider): Promise<void> {
   if (!provider) throw new Error("No compatible EVM wallet");
   const chainId = () => provider.request({ method: "eth_chainId" });
   if (BigInt(String(await chainId())) !== BigInt(RACP_CHAIN_ID)) {
@@ -29,6 +28,12 @@ export async function watchRacpInWallet(provider: Eip1193Provider | null = getPr
     }
   }
   if (BigInt(String(await chainId())) !== BigInt(RACP_CHAIN_ID)) throw new Error("Wallet is on another chain");
+}
+
+/** No signing, token approval or transaction: only a wallet network/import prompt. */
+export async function watchRacpInWallet(provider: Eip1193Provider | null = getPreferredEvmProvider() ?? null): Promise<boolean> {
+  if (!provider) throw new Error("No compatible EVM wallet");
+  await ensureRobinhoodChain(provider);
   return (await provider.request({ method: "wallet_watchAsset", params: {
     type: "ERC20", options: { address: RACP_CONTRACT, symbol: "rACP", decimals: 18, image: "https://ancap.cloud/racp-logo.png" },
   } })) !== false;

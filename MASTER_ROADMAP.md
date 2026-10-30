@@ -2,6 +2,14 @@
 
 ## Robinhood ACP (rACP) — 2026-10-30
 
+Opt-in airdrop funded with 1,000,000 existing rACP: 500 per claim, up to 2,000
+recipients. Pool `0x2867D10560b35616370cF5C7A21Ab1532698FD0F` has exact verified
+source. Authenticated wallet/Turnstile vouchers, on-chain wallet/account replay
+protection, live counters and five-language claim page are included in release
+`racp-airdrop-20261030`. Recipients pay ETH network fees. Funded tokens are not yet
+distributed to recipients; counters track actual confirmed claims. Uniqueness is
+per account and wallet, not proof of unique humans. Native backing remains unchanged.
+
 Public distribution: Blockscout and Sourcify exact source matches confirmed;
 official five-language token page, wallet import, homepage/Markets/navigation,
 logo, whitepaper and multi-chain tokenlist are deployed in web release `racp-20261030`.

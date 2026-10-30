@@ -395,6 +395,10 @@ class Settings(BaseSettings):
     graph_enforcement_max_cluster_size: int = 10
     graph_enforcement_block_if_in_cycle: bool = True
 
+    # Opt-in rACP campaign: dedicated restricted signing key, never treasury key.
+    racp_airdrop_config_file: str = "/run/secrets/racp-airdrop.json"
+    racp_airdrop_signer_file: str = "/run/secrets/racp-airdrop-voucher.key"
+
     # wACP / BSC bridge
     bridge_rail_enabled: bool = False
     bridge_rail_paused: bool = False

@@ -5,6 +5,7 @@ import { useLanguage } from "./LanguageProvider";
 import { racpCopy } from "@/locales/racp";
 import { RACP_CONTRACT, RACP_EXPLORER, RACP_FUNDING_TX, RACP_ISSUANCE_TX, RACP_RESERVE, watchRacpInWallet } from "@/lib/racpToken";
 import styles from "./RacpOverview.module.css";
+import { racpAirdropCopy } from "@/locales/racpAirdrop";
 
 export function RacpOverview({ compact = false }: { compact?: boolean }) {
   const { lang } = useLanguage();
@@ -35,6 +36,7 @@ export function RacpOverview({ compact = false }: { compact?: boolean }) {
     </dl>
     <code style={{ display: "block", overflowWrap: "anywhere", fontSize: ".85rem", padding: 12, background: "var(--bg)", borderRadius: 8 }}>{RACP_CONTRACT}</code>
     <div className="action-cluster" style={{ marginTop: 18 }}>
+      <Link className="btn btn-primary" href="/tokens/racp/airdrop">{racpAirdropCopy[lang].title}</Link>
       <button type="button" className="btn btn-primary" disabled={busy} aria-busy={busy} onClick={() => void add()}>{busy ? c.opening : c.add}</button>
       {compact ? <Link className="btn btn-ghost" href="/tokens/racp">{c.details} →</Link> : <button type="button" className="btn btn-ghost" onClick={() => void copy()}>{c.copy}</button>}
       <a className="btn btn-ghost" href={`${RACP_EXPLORER}/address/${RACP_CONTRACT}?tab=contract`} target="_blank" rel="noopener noreferrer">{c.explorer} ↗</a>

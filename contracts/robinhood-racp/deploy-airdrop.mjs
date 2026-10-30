@@ -1,0 +1,60 @@
+// Read-only estimate by default. --broadcast deploys and funds exactly 1,000,000 rACP.
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { Wallet, Contract, ContractFactory, JsonRpcProvider, getCreateAddress, keccak256, formatEther } from 'ethers';
+import { compile } from './compile.mjs';
+const plan = JSON.parse(fs.readFileSync('deployment-plan.json', 'utf8'));
+const provider = new JsonRpcProvider(plan.rpcUrl);
+assert.equal((await provider.getNetwork()).chainId, 4663n);
+const treasuryLine = fs.readFileSync(process.env.RACP_DEPLOYER_ENV_FILE, 'utf8').split(/\r?\n/).find(l => l.startsWith('BRIDGE_BSC_PRIVATE_KEY='));
+const treasury = new Wallet(treasuryLine.slice(treasuryLine.indexOf('=') + 1).trim().replace(/^["']|["']$/g, ''), provider);
+assert.equal(treasury.address, plan.recipient);
+const keyPath = '../../Sicret/robinhood-racp/airdrop-voucher.key';
+if (!fs.existsSync(keyPath)) fs.writeFileSync(keyPath, Wallet.createRandom().privateKey + '\n', { flag: 'wx', mode: 0o600 });
+const signer = new Wallet(fs.readFileSync(keyPath, 'utf8').trim());
+const { input, artifact } = compile('src/RacpAirdrop.sol', 'RacpAirdrop');
+const factory = new ContractFactory(artifact.abi, artifact.evm.bytecode.object, treasury);
+const token = new Contract(plan.contractAddress, ['function transfer(address,uint256) returns(bool)', 'function balanceOf(address) view returns(uint256)'], treasury);
+const budget = 1_000_000n * 10n ** 18n;
+const journalFile = 'prepared/airdrop-deployment.json';
+let journal = fs.existsSync(journalFile) ? JSON.parse(fs.readFileSync(journalFile, 'utf8')) : null;
+const nonce = await provider.getTransactionCount(treasury.address, 'pending');
+const predicted = journal?.contractAddress ?? getCreateAddress({ from: treasury.address, nonce });
+const deployTx = await factory.getDeployTransaction(plan.contractAddress, signer.address, treasury.address);
+const fundTx = await token.transfer.populateTransaction(predicted, budget);
+const fees = await provider.getFeeData();
+const gasPrice = (fees.gasPrice * 110n + 99n) / 100n;
+const deployGas = (await provider.estimateGas({ ...deployTx, from: treasury.address }) * 120n + 99n) / 100n;
+const fundGas = (await provider.estimateGas({ ...fundTx, from: treasury.address }) * 120n + 99n) / 100n;
+const maxCost = (deployGas + fundGas) * gasPrice;
+const balance = await provider.getBalance(treasury.address);
+console.log(JSON.stringify({ recipientCount: 2000, grant: '500', budget: '1000000', signer: signer.address, predicted, maxCostETH: formatEther(maxCost), balanceETH: formatEther(balance), affordable: maxCost <= balance }, null, 2));
+if (!process.argv.includes('--broadcast')) process.exit(0);
+assert.ok(maxCost <= balance && maxCost <= 33_000_000_000_000n, 'Deployment and funding exceed 0.000033 ETH gas budget');
+if (!journal) {
+  assert.ok(await token.balanceOf(treasury.address) >= budget);
+  const signed = await treasury.signTransaction({ ...deployTx, nonce, type: 0, chainId: 4663, gasPrice, gasLimit: deployGas });
+  journal = { chainId: 4663, token: plan.contractAddress, owner: treasury.address, signer: signer.address, contractAddress: predicted, budget: '1000000', grant: '500', status: 'deploy-intent', deploymentTransaction: keccak256(signed) };
+  fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n', { flag: 'wx' });
+  await provider.broadcastTransaction(signed);
+}
+const deployment = await provider.waitForTransaction(journal.deploymentTransaction, 1, 120_000);
+assert.equal(deployment?.status, 1);
+const pool = new Contract(journal.contractAddress, artifact.abi, treasury);
+assert.equal(await pool.signer(), signer.address);
+assert.equal(await pool.token(), plan.contractAddress);
+if (!journal.fundingTransaction) {
+  assert.equal(await token.balanceOf(journal.contractAddress), 0n, 'Unexpected pool funds; inspect before retry');
+  const signed = await treasury.signTransaction({ ...fundTx, nonce: await provider.getTransactionCount(treasury.address, 'pending'), type: 0, chainId: 4663, gasPrice, gasLimit: fundGas });
+  journal.status = 'funding-intent'; journal.fundingTransaction = keccak256(signed);
+  fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n');
+  await provider.broadcastTransaction(signed);
+}
+const funded = await provider.waitForTransaction(journal.fundingTransaction, 1, 120_000);
+assert.equal(funded?.status, 1);
+assert.equal(await token.balanceOf(journal.contractAddress), budget);
+journal.status = 'funded'; journal.fundingBlock = funded.blockNumber;
+fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n');
+fs.writeFileSync('prepared/airdrop-standard-input.json', JSON.stringify(input, null, 2) + '\n');
+fs.writeFileSync('prepared/airdrop-abi.json', JSON.stringify(artifact.abi, null, 2) + '\n');
+console.log(JSON.stringify(journal, null, 2));

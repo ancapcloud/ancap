@@ -1,0 +1,30 @@
+{
+  "verificationId": "8153b714-4a4e-4d4e-9153-b96594d7ba09",
+  "isJobCompleted": true,
+  "jobStartTime": "2026-10-30T00:22:44Z",
+  "jobFinishTime": "2026-10-30T00:22:44Z",
+  "compilationTime": "249",
+  "externalVerifications": {
+    "etherscan": {
+      "verificationId": "usrkx4blpzezttx9g4cz3grqshpr7xked7xbzzter4qh9egxwj",
+      "statusUrl": "https://api.etherscan.io/v2/api?chainid=4663&module=contract&action=checkverifystatus&guid=usrkx4blpzezttx9g4cz3grqshpr7xked7xbzzter4qh9egxwj",
+      "explorerUrl": "https://robin.etherscan.io//address/0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+      "contractApiUrl": "https://api.etherscan.io/v2/api?chainid=4663&module=contract&action=getabi&address=0x2867D10560b35616370cF5C7A21Ab1532698FD0F"
+    },
+    "blockscout": {
+      "verificationId": "2867d10560b35616370cf5c7a21ab1532698fd0f6ae3e354",
+      "statusUrl": "https://robinhoodchain.blockscout.com/api?module=contract&action=checkverifystatus&chainid=4663&guid=2867d10560b35616370cf5c7a21ab1532698fd0f6ae3e354",
+      "explorerUrl": "https://robinhoodchain.blockscout.com//address/0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+      "contractApiUrl": "https://robinhoodchain.blockscout.com/api?module=contract&action=getabi&chainid=4663&address=0x2867D10560b35616370cF5C7A21Ab1532698FD0F"
+    }
+  },
+  "contract": {
+    "match": "exact_match",
+    "creationMatch": "exact_match",
+    "runtimeMatch": "exact_match",
+    "chainId": "4663",
+    "address": "0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+    "verifiedAt": "2026-10-30T00:22:44Z",
+    "matchId": "57606968"
+  }
+}

@@ -98,3 +98,14 @@ Planned lunar track (not blocking Phase 6): Lunar land trading R13 — science-t
 Embodied / humanoid model adapters (Unitree UnifoLM etc.): **off by default** — `FF_EMBODIED_ADAPTER=false`, register at `GET /v1/embodied-ai/security`, policy in `docs/EMBODIED_AI_SECURITY_CONTROLS.md`. Never host weights on the API host; never share process space with ACP/bridge keys.
 
 Crypto Benchmark Library (QOBLIB-style): public scorecard at `GET /v1/crypto/benchmark` + `/reserves`; baselines in `docs/CRYPTO_BENCHMARK_LIBRARY.md`. No “production-ready” claim without measured pass vs published baselines.
+
+
+## rACP opt-in campaign (2026-10-30)
+
+Use the campaign-specific voucher signer mounted under `/run/secrets`; never put
+the treasury key into the API. Wallet ownership uses existing signed ANCAP auth
+challenges. EIP-712 vouchers bind account identity, recipient, chain, pool and expiry;
+claim calldata is pinned client-side and has zero ETH value. Read on-chain counters
+for actual distribution; pool funding alone is not a payout to recipients.
+Account/wallet uniqueness is not unique-human verification. Preserve deployment
+journals and do not repeat the funded campaign deployment.

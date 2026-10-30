@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import solc from 'solc';
 
-export function compile() {
+export function compile(sourceFile = 'src/RobinhoodACP.sol', contractName = 'RobinhoodACP') {
   const input = {
     language: 'Solidity',
-    sources: { 'src/RobinhoodACP.sol': { content: fs.readFileSync('src/RobinhoodACP.sol', 'utf8') } },
+    sources: { [sourceFile]: { content: fs.readFileSync(sourceFile, 'utf8') } },
     settings: {
       optimizer: { enabled: true, runs: 200 }, evmVersion: 'paris',
       outputSelection: { '*': { '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode'] } },
@@ -25,5 +25,5 @@ export function compile() {
   }));
   const errors = (output.errors ?? []).filter(e => e.severity === 'error');
   if (errors.length) throw new Error(errors.map(e => e.formattedMessage).join('\n'));
-  return { input, artifact: output.contracts['src/RobinhoodACP.sol'].RobinhoodACP };
+  return { input, artifact: output.contracts[sourceFile][contractName] };
 }

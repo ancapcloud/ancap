@@ -12,7 +12,8 @@ verification or ACP payout service is implemented in this change.
 - Deployment transaction: `0x4d7f241ab01eb00d95f68ca6daf3839700b797b685d25df2dedef2a3a7618a53`.
 - Block: 101270941; fee: **0.00003171607548 ETH**.
 - Issuer/recipient: `0x396351dF6420e6089dC67F4CBdDc717f34fFB2e4`.
-- Current issued supply and recipient balance at verification: **10,000,000 rACP**.
+- Issued supply: **10,000,000 rACP**. After campaign funding, treasury holds
+  **9,000,000 rACP** and the claim pool holds **1,000,000 rACP** before claims.
 - Issuance transaction: `0xe9b437c7e2260ae284ae011fdae4699b9bca63e3712997ffad28be8d105334e8`.
 - Issuance block: 101282581; fee: **0.000002401664904 ETH**.
 - Reserve funded with **1,000,000 ACP**, confirmed in native block 19 (one confirmation at issuance).
@@ -124,3 +125,39 @@ Official requirements reviewed:
 
 Network details: https://docs.robinhood.com/chain/connecting/
 Contract: https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911
+
+## Funded opt-in airdrop — 2026-10-30
+
+The operator authorized 1,000,000 existing rACP for free distribution, at most
+1,000 per recipient. The chosen fixed allocation is **500 rACP**, up to **2,000**
+claims. This allocates existing tokens; it does not mint tokens or move native ACP.
+Funding a pool is not a completed transfer to recipients. Live claimed amounts:
+https://api.ancap.cloud/v1/racp/airdrop/status
+
+- Claim page: https://ancap.cloud/tokens/racp/airdrop
+- Pool: `0x2867D10560b35616370cF5C7A21Ab1532698FD0F`.
+- Funding transaction: `0x21dd02d49eba0c48eecf25377144cb93128187983ecb2d05baeccd3a13cc42db`.
+- Dedicated voucher signer: `0x5a40eb5b084F24e3d545987403E36cCDf155bdD8`.
+- Sourcify creation/runtime exact match: **57606968**.
+
+The recipient authenticates or links their EVM wallet with the existing signed
+ANCAP challenge, passes Turnstile, obtains a ten-minute EIP-712 voucher, and submits
+the claim. Recipients pay network ETH gas; no token purchase, approval or payment
+to ANCAP is required. A relayer cannot redirect a signed allocation. Both account
+identity and recipient wallet can claim only once. These restrictions are not
+proof of unique humans; multiple accounts/wallets remain a Sybil limitation.
+
+The contract fixes the cumulative budget and amount per claim. The treasury owner
+may pause and recover undistributed tokens while paused. A dedicated signer can
+only authorize campaign claims; the API never receives the treasury spending key.
+No private identity, email address or wallet credential is included in vouchers.
+Server paths default to `/run/secrets/racp-airdrop.json` and
+`/run/secrets/racp-airdrop-voucher.key` (0600); absent configuration disables issuance.
+Never commit either secret file. Preserve `prepared/airdrop-deployment.json` and do
+not repeat deployment or funding. Source and funding journals are public artifacts.
+
+Validation includes fixed grants, replay, recipient redirection, account reuse,
+contract domain, expired signatures, paused/unfunded rollback, and the full 2,000
+claim budget even when overfunded. Python EIP-712 digests match the deployed
+contract's read-only `claimDigest`; frontend calldata is restricted to this pool's
+claim function with zero ETH value. Real-user claims require the user's wallet.
