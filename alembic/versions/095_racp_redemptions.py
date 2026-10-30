@@ -1,7 +1,7 @@
 """rACP → ACP redemption ops + transitions (exclusive reserve rail).
 
 Revision ID: 095_racp_redemptions
-Revises: 092_add_workflow_cost_allocations, 094_merge_workflow_cost_heads
+Revises: 093_research_operations
 Create Date: 2026-10-30
 """
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "095_racp_redemptions"
-down_revision = ("092_add_workflow_cost_allocations", "094_merge_workflow_cost_heads")
+down_revision = "093_research_operations"
 branch_labels = None
 depends_on = None
 
