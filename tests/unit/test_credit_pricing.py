@@ -54,9 +54,10 @@ def test_missing_or_corrupt_evidence_never_reprices_from_catalog(mutation):
 def test_stripe_never_relabels_acp_as_fiat_when_explicit_price_is_absent():
     package = find_credit_package("starter-credits").model_copy(deep=True)
     package.fiat_price = None
+    for currency in ("USD", "EUR"):
+        with pytest.raises(HTTPException) as caught:
+            quote_stripe_credit_package_amount(package, currency)
+        assert caught.value.status_code == 409
     with pytest.raises(HTTPException) as caught:
-        quote_stripe_credit_package_amount(package, "USD")
-    assert caught.value.status_code == 409
-    with pytest.raises(HTTPException) as caught:
-        quote_stripe_credit_package_amount(package, "EUR")
+        quote_stripe_credit_package_amount(package, "GBP")
     assert caught.value.status_code == 400

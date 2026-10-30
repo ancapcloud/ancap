@@ -79,11 +79,11 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
     # Include allocations in the response with full details
     receipt.allocations = [ReconciledCostAllocation(
         workflow_run_id=a.workflow_run_id,
-        evidence_line_id=str(a.evidence_line_id),
-        evidence_amount=a.evidence_amount,
-        allocated_amount=a.allocated_amount,
-        category=a.category,
-        currency=a.currency
+        evidence_line_id=str(evidence.id),
+        evidence_amount=evidence.amount,
+        allocated_amount=a.amount,
+        category=evidence.category,
+        currency=evidence.currency,
     ) for a in allocations]
     
     return receipt

@@ -120,7 +120,7 @@ def test_get_cost_evidence_by_id(client, monkeypatch):
     assert "allocations" in data
     assert len(data["allocations"]) == 1
     assert data["allocations"][0]["workflow_run_id"] == run_id
-    assert str(data["allocations"][0]["amount"]) == str(body["allocations"][0]["allocated_amount"])
+    assert str(data["allocations"][0]["allocated_amount"]) == str(body["allocations"][0]["allocated_amount"])
     
     # Verify cache-control header
     assert retrieved.headers["cache-control"] == "private, no-store"

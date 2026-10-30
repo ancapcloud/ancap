@@ -192,7 +192,7 @@ export default function AcpWalletPage() {
     wallet?.probe_status === "unavailable" ||
     wallet?.probe_status === "degraded";
   const available =
-    wallet?.probe_status === "unavailable"
+    wallet?.probe_status === "unavailable" || wallet?.probe_status === "degraded"
       ? null
       : (wallet?.withdrawable_now_acp ?? wallet?.available_acp ?? null);
   const dragonAcp = operator ? selectDragonAcp(wallet, HOT_ADDRESS) : null;
@@ -623,17 +623,23 @@ export default function AcpWalletPage() {
                   <aside className={s.warning}>
                     <strong>{c.operator}</strong>
                     <p>{c.operatorHint}</p>
+                    {dragonAcp && (
+                      <p>
+                        {money(dragonAcp)} ACP
+                        {racpLine(dragonAcp) ? ` · ${racpLine(dragonAcp)} rACP equiv.` : ""}
+                      </p>
+                    )}
                   </aside>
                 )}
                 <section className={s.hero} aria-label={c.available}>
                   <div>
                     <span className={s.eyebrow}>{c.available}</span>
                     <div className={s.balance}>
-                      {loading && !wallet ? "…" : money(accountAcp)}{" "}
+                      {loading && !wallet ? "…" : money(available)}{" "}
                       <span>ACP</span>
                     </div>
-                    {racpLine(accountAcp) && (
-                      <p className={s.muted}>{racpLine(accountAcp)} rACP equiv.</p>
+                    {racpLine(available) && (
+                      <p className={s.muted}>{racpLine(available)} rACP equiv.</p>
                     )}
                     <p>{c.availableHint}</p>
                     <div className={s.updated}>
