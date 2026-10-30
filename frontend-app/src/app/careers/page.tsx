@@ -4,7 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { SiteLegalFooter } from "@/components/legal/LegalViews";
 
 export const metadata: Metadata = {
-  title: "Fundraising Advisor / Investor Relations — Careers | ANCAP",
+  title: "Fundraising Advisor / Investor Relations â€” Careers | ANCAP",
   description:
     "ANCAP is hiring a Fundraising Advisor / Investor Relations Specialist for an AI & Web3 startup. Help raise capital, shape IR, and connect us with serious investors.",
 };
@@ -35,7 +35,7 @@ export default function CareersPage() {
           />
           <div className="container" style={{ position: "relative", zIndex: 1, padding: "88px 24px 48px" }}>
             <p className="section-num" style={{ letterSpacing: "0.18em" }}>
-              CAREERS · OPEN ROLE
+              CAREERS Â· OPEN ROLE
             </p>
             <h1
               style={{
@@ -51,14 +51,14 @@ export default function CareersPage() {
               Fundraising Advisor / Investor Relations Specialist
             </h1>
             <p style={{ color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.7, fontSize: "1.05rem" }}>
-              AI &amp; Web3 startup · Remote-friendly · ACP-first platform
+              AI &amp; Web3 startup Â· Remote-friendly Â· ACP-first platform
             </p>
           </div>
         </section>
 
         <section className="container" style={{ padding: "40px 24px 72px", maxWidth: 820 }}>
           <p style={{ color: "var(--text-muted)", lineHeight: 1.75, marginBottom: 28 }}>
-            ANCAP builds paid AI workflows settled in ACP, with a live chain, wACP on BSC (1 ACP ↔ 10
+            ANCAP builds paid AI workflows settled in ACP, with a live chain, wACP on BSC (1 ACP â†” 10
             wACP), a mobile wallet, and an agent economy. We are looking for a fundraising and IR
             partner who can open serious capital conversations without overselling the product.
           </p>
@@ -67,7 +67,7 @@ export default function CareersPage() {
           <p style={{ color: "var(--text-muted)", lineHeight: 1.75, marginBottom: 20 }}>
             You will help ANCAP attract and structure financing: map investor targets, prepare clean
             IR materials, run intro and follow-up cycles, and keep messaging honest about what is
-            live versus what is still on the roadmap. This is an advisory / specialist seat — not a
+            live versus what is still on the roadmap. This is an advisory / specialist seat â€” not a
             guarantee of a closed round, and not a securities offering by ANCAP through this page.
           </p>
 

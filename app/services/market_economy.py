@@ -17,6 +17,7 @@ from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_HALF_UP
 from typing import Any
 
 import httpx
+from fastapi import HTTPException
 
 from app.config import get_settings
 from app.services.bridge_decimal import WACP_PER_ACP, acp_usd_from_wacp_usd
@@ -186,6 +187,9 @@ def usdt_to_acp_desk_rate(*, wacp_usd: Decimal | None = None) -> Decimal:
     Otherwise rate = 1 / (WACP_PER_ACP * wacp_usd) — 1 ACP ≈ 10 wACP ≈ 10× spot USD.
     """
     settings = get_settings()
+    if settings.external_token_racp_only:
+        from app.services.eur_pricing import USD_PER_EUR_AT_CUTOVER
+        return (settings.acp_per_eur / USD_PER_EUR_AT_CUTOVER).quantize(_Q_RATE, rounding=ROUND_HALF_UP)
     if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
         pinned = _to_dec(getattr(settings, "usdt_trc20_to_acp_rate", None) or "1") or Decimal("1")
         return pinned if pinned > 0 else Decimal("1")
@@ -255,6 +259,12 @@ def quote_catalog_acp(
     """
     settings = get_settings()
     pay = (payment_currency or "ACP").upper()
+    if settings.external_token_racp_only:
+        from app.services.eur_pricing import eur_sticker, eur_to_acp
+        if pay != "ACP":
+            raise HTTPException(409, "Service settlement uses internal ACP. rACP is the external token; the BSC test payment route is retired.")
+        sticker = eur_sticker(catalog_amount, catalog_slug=catalog_slug)
+        return eur_to_acp(sticker), sticker, Decimal("0")
     if bool(getattr(settings, "wacp_oracle_pin_desk", False)):
         amount = catalog_amount_to_usd_sticker(catalog_amount, catalog_slug=catalog_slug)
         acp = amount.quantize(_Q_ACP, rounding=ROUND_HALF_UP)
@@ -272,6 +282,23 @@ def quote_catalog_acp(
         )
         return charge, sticker, spot
     return acp, sticker, spot
+
+
+def catalog_sticker(catalog_amount: Decimal | str, *, catalog_slug: str | None = None) -> Decimal:
+    if get_settings().external_token_racp_only:
+        from app.services.eur_pricing import eur_sticker
+        return eur_sticker(catalog_amount, catalog_slug=catalog_slug)
+    return catalog_amount_to_usd_sticker(catalog_amount, catalog_slug=catalog_slug)
+
+
+def catalog_currency() -> str:
+    return "EUR" if get_settings().external_token_racp_only else "USD"
+
+
+async def get_checkout_reference() -> tuple[Decimal, str]:
+    if get_settings().external_token_racp_only:
+        return Decimal("0"), "fixed_eur_accounting"
+    return await get_wacp_usd_oracle()
 
 
 def workflow_platform_fee_percent() -> Decimal:

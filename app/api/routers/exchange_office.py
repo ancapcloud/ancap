@@ -225,6 +225,11 @@ async def create_exchange_ticket(
     if not cached:
         raise HTTPException(status_code=400, detail="Quote not found or expired — request a fresh quote")
     quote = cached["payload"]
+    if get_settings().external_token_racp_only and (
+        quote["to_asset"] in {"wacp_bsc", "sacp_bsc", "usdt_bsc"}
+        or quote["from_asset"] == "usdt_bsc"
+    ):
+        raise HTTPException(status_code=409, detail="New BSC exchange tickets are closed; request a fresh quote using supported assets.")
 
     needs_payout = quote["to_asset"] == "acp" or quote["rail"] in (
         "swap_desk",

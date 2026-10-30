@@ -51,9 +51,9 @@ describe("rACP wallet import", () => {
     };
     expect(await watchRacpInWallet({ request })).toBe(false);
   });
-  it("publishes rACP on its actual chain without removing wACP", () => {
+  it("publishes only the current rACP asset on its actual chain", () => {
     const list = JSON.parse(readFileSync(resolve(process.cwd(), "public/tokenlist.json"), "utf8"));
-    expect(list.tokens.find((t: {symbol: string}) => t.symbol === "wACP").chainId).toBe(56);
+    expect(list.tokens.some((t: {symbol: string}) => t.symbol === "wACP")).toBe(false);
     expect(list.tokens.find((t: {symbol: string}) => t.symbol === "rACP")).toMatchObject({ chainId: 4663, address: RACP_CONTRACT, decimals: 18 });
   });
 });

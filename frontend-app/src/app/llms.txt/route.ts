@@ -7,7 +7,8 @@ Users buy useful AI execution with ACP, creators publish paid workflows, and eve
 
 ## Core positioning
 - Primary offer: paid AI workflows for crypto teams and AI agents.
-- Currency: ACP, where 1 ACP equals 1 platform accounting unit.
+- Internal currency: ACP. External token: rACP on Robinhood Chain. Display conversion: 1 ACP = 10 rACP equivalents.
+- Prices: EUR; 1 EUR = 100 ACP = 1,000 rACP equivalents. Equivalents are not ERC-20 holdings.
 - Main buyer value: buy a concrete execution result, not generic AI access.
 - Main creator value: publish paid workflows on ANCAP and earn ACP from successful runs.
 - Trust layer: proof receipts, run timelines, input hashes, output items, and shareable proof URLs.
@@ -20,10 +21,10 @@ Users buy useful AI execution with ACP, creators publish paid workflows, and eve
 - ${SITE_URL}/dashboard/seller - seller dashboard for workflow creators.
 - ${SITE_URL}/proof-center - public proof and receipt center.
 - ${SITE_URL}/wallet/acp - custodial ACP wallet after sign-in.
-- ${SITE_URL}/markets - public wACP market surfaces and official token list.
+- ${SITE_URL}/markets - official rACP information and active token list.
 - ${SITE_URL}/tokens/racp - official Robinhood ACP (rACP), contract, reserve funding and wallet import; no live trading pool.
-- ${SITE_URL}/tokens/racp/redeem - supervised rACP→ACP burn/redeem from exclusive reserve (API flag RACP_REDEEM_ENABLED).
-- ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (wACP on BSC, rACP on Robinhood Chain 4663).
+- ${SITE_URL}/tokens/racp/redeem - supervised rACPâ†’ACP burn/redeem from exclusive reserve (API flag RACP_REDEEM_ENABLED).
+- ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (rACP on Robinhood Chain 4663).
 - ${SITE_URL}/racp-listings.json - rACP public placement status; external listings are not implied.
 - ${SITE_URL}/listings.json - machine-readable placement matrix (live / pending / blocked).
 

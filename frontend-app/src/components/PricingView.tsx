@@ -14,6 +14,7 @@ type PricingBundle = {
   summary: string;
   price: Money;
   usd_sticker?: Money | null;
+  eur_sticker?: Money | null;
   price_acp?: Money | null;
   output_items: string[];
 };
@@ -25,6 +26,7 @@ type PricingWorkflow = {
   description: string;
   price: Money;
   usd_sticker?: Money | null;
+  eur_sticker?: Money | null;
   price_acp?: Money | null;
 };
 
@@ -37,7 +39,7 @@ const TIERS = [
   ["pricing.tierEnterprise", "pricing.tierEnterprisePrice", "pricing.tierEnterpriseText"],
 ] as const;
 
-function PriceFace({ item }: { item: { price: Money; usd_sticker?: Money | null; price_acp?: Money | null } }) {
+function PriceFace({ item }: { item: { price: Money; usd_sticker?: Money | null; eur_sticker?: Money | null; price_acp?: Money | null } }) {
   return <div className="text-3xl font-black text-emerald-300">{catalogPriceLabel(item)}</div>;
 }
 
@@ -125,14 +127,7 @@ export function PricingView({
                 <div className="flex items-start justify-between gap-3">
                   <span className="rounded-full border border-white/12 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55">{workflow.category}</span>
                   <div className="text-right">
-                    {workflow.usd_sticker?.amount ? (
-                      <>
-                        <strong className="text-emerald-300">${workflow.usd_sticker.amount}</strong>
-                        <div className="text-[11px] text-white/45">≈ {(workflow.price_acp || workflow.price).amount} ACP</div>
-                      </>
-                    ) : (
-                      <strong className="text-emerald-300">{workflow.price.amount} {workflow.price.currency}</strong>
-                    )}
+                    <strong className="text-emerald-300">{catalogPriceLabel(workflow)}</strong>
                   </div>
                 </div>
                 <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em]">{workflow.title}</h3>

@@ -1,3 +1,5 @@
+> **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
+
 # ANCAP Card roadmap — 2026-10-28
 
 Status: concept / waitlist, not a launched card. Germany/EEA is the proposed first market. This track stays behind paid-workflow revenue validation.

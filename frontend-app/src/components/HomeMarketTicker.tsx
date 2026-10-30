@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { marketData } from "@/lib/api";
-import { formatUsdMicro } from "@/lib/formatUsd";
+import { racpTransitionCopy } from "@/locales/racpTransition";
 
 type MarketRow = {
   id?: string;
@@ -14,7 +14,7 @@ type MarketRow = {
 };
 
 export function HomeMarketTicker() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [rows, setRows] = useState<MarketRow[]>([]);
   const [ready, setReady] = useState(false);
 
@@ -22,10 +22,10 @@ export function HomeMarketTicker() {
     let cancelled = false;
     void (async () => {
       try {
-        const payload = await marketData.prices("usd");
+        const payload = await marketData.prices("eur");
         if (cancelled) return;
         const list = Array.isArray(payload?.prices) ? payload.prices : [];
-        setRows(list.filter((row: MarketRow) => row?.symbol && row?.price));
+        setRows(list.filter((row: MarketRow) => row?.symbol && row?.price && !["acp", "wacp", "sacp", "racp"].includes(row.symbol.toLowerCase())));
       } catch {
         if (!cancelled) setRows([]);
       } finally {
@@ -69,12 +69,12 @@ export function HomeMarketTicker() {
                 className="home-market-ticker__item"
               >
                 <strong>{row.symbol}</strong>
-                <span>{formatUsdMicro(row.price)}</span>
+                <span>{new Intl.NumberFormat(lang, { style: "currency", currency: "EUR", maximumFractionDigits: 8 }).format(Number(row.price))}</span>
               </span>
             ))}
           </div>
         </div>
-        <p className="home-market-ticker__note">{t("homePage.marketTickerNote")}</p>
+        <p className="home-market-ticker__note">{racpTransitionCopy[lang].price}</p>
       </div>
     </section>
   );

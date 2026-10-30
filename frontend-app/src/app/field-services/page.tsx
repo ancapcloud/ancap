@@ -1,4 +1,5 @@
 "use client";
+import { formatRacpEquivalent } from "@/lib/racpDisplay";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -96,7 +97,7 @@ function FieldServicesInner() {
 
   useEffect(() => {
     void load();
-    document.title = `ANCAP — ${t("fieldServicesPage.title")}`;
+    document.title = `ANCAP â€” ${t("fieldServicesPage.title")}`;
   }, [load, t]);
 
   const services = (catalog?.services || []).filter((svc) => {
@@ -258,7 +259,7 @@ function FieldServicesInner() {
                 <div className="card-header">
                   <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>{svc.label}</h3>
                   <strong style={{ color: "#7dd3fc", whiteSpace: "nowrap" }}>
-                    €{Number(svc.price_eur).toLocaleString()}
+                    â‚¬{Number(svc.price_eur).toLocaleString()}
                   </strong>
                 </div>
                 <p style={{ color: "var(--text-muted)", lineHeight: 1.65, minHeight: 72 }}>{svc.blurb}</p>
@@ -297,11 +298,11 @@ function FieldServicesInner() {
               <div style={{ display: "grid", gap: 8, fontFamily: "ui-monospace, monospace", fontSize: "0.95rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>{t("fieldServicesPage.installFee")}</span>
-                  <span>€{quote.installation_fee_eur}</span>
+                  <span>â‚¬{quote.installation_fee_eur}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>{t("fieldServicesPage.serviceFee")}</span>
-                  <span>€{quote.service_fee_eur}</span>
+                  <span>â‚¬{quote.service_fee_eur}</span>
                 </div>
                 <div
                   style={{
@@ -313,25 +314,18 @@ function FieldServicesInner() {
                   }}
                 >
                   <span>{t("fieldServicesPage.total")}</span>
-                  <span>€{quote.total_eur}</span>
+                  <span>â‚¬{quote.total_eur}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", color: "#bae6fd" }}>
-                  <span>ACP</span>
-                  <span>{Number(quote.amount_acp).toLocaleString()} ACP</span>
+                  <span>rACP equiv.</span>
+                  <span>{formatRacpEquivalent(quote.amount_acp)} rACP equiv.</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#bae6fd" }}>
-                  <span>wACP</span>
-                  <span>{Number(quote.amount_wacp).toLocaleString()} wACP</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>USDT</span>
-                  <span>{quote.total_usdt} USDT</span>
-                </div>
+
               </div>
 
               <p style={{ marginTop: 18, marginBottom: 8, fontWeight: 600 }}>{t("fieldServicesPage.payment")}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-                {(["ACP", "wACP", "USDT"] as PayChoice[]).map((choice) => (
+                {(["ACP"] as PayChoice[]).map((choice) => (
                   <label key={choice} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                     <input
                       type="radio"
@@ -354,7 +348,7 @@ function FieldServicesInner() {
               </div>
 
               <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                {t("fieldServicesPage.provider")}: {quote.provider_label} · {quote.provider_location}
+                {t("fieldServicesPage.provider")}: {quote.provider_label} Â· {quote.provider_location}
               </p>
               <p style={{ color: "#86efac", fontWeight: 600 }}>{t("fieldServicesPage.escrow")}</p>
               <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>{quote.escrow_note}</p>

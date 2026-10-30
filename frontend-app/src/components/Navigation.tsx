@@ -7,7 +7,7 @@ import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
 import { useWallet } from "./WalletProvider";
 import { useTheme } from "./ThemeProvider";
-import { MarketRateBar } from "./MarketRateBar";
+import { RacpUnitBar } from "./RacpEntry";
 import { getPreferredEvmProvider } from "@/lib/evmProvider";
 import { isNavHrefActive } from "@/lib/navActive";
 import type { Language } from "@/locales/translations";
@@ -48,7 +48,7 @@ const explorePublicGroups: NavGroup[] = [
     { label: "ACP", href: "/acp" },
     { label: "rACP · Robinhood Chain", href: "/tokens/racp" },
     { label: "Wallet", href: "/wallet/acp", i18nKey: "nav.acpWallet" },
-    { label: "Bridge", href: "/bridge/acp-bsc", i18nKey: "nav.bridgeAcpBsc" },
+    { label: "rACP → ACP", href: "/tokens/racp/redeem" },
   ] },
   { titleKey: "positioning.trust", items: [
     { label: "Proof Center", href: "/proof-center", i18nKey: "nav.proofCenter" },
@@ -398,7 +398,7 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-[100] border-b border-white/[0.06] bg-[#070b16]/78 backdrop-blur-2xl supports-[backdrop-filter]:bg-[#070b16]/65">
-      {pathname?.startsWith("/wallet") || pathname?.startsWith("/bridge") || pathname?.startsWith("/markets") ? <MarketRateBar /> : null}
+      {pathname?.startsWith("/wallet") || pathname?.startsWith("/bridge") || pathname?.startsWith("/markets") ? <RacpUnitBar /> : null}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent"
         aria-hidden

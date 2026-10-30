@@ -46,9 +46,9 @@ _ZERO_DECIMAL_CURRENCIES = {
     "xof",
     "xpf",
 }
-# Card top-ups are USD-only until a real FX quote path exists (EUR previously
-# charged the ACP sticker 1:1 as euros).
-SUPPORTED_STRIPE_CURRENCIES = ("USD",)
+# Current packages have explicit EUR faces; USD remains valid only for archived
+# terms / explicit legacy prices. The quote function requires an exact fiat face.
+SUPPORTED_STRIPE_CURRENCIES = ("EUR", "USD")
 _SUPPORTED_STRIPE_CURRENCIES = SUPPORTED_STRIPE_CURRENCIES
 _SUPPORTED_STRIPE_CURRENCY_SET = {code.lower() for code in SUPPORTED_STRIPE_CURRENCIES}
 _STRIPE_API_BASE = "https://api.stripe.com/v1"

@@ -61,6 +61,9 @@ os.environ.setdefault("RUN_FEE_AMOUNT", "0")
 os.environ.setdefault("ORDER_FEE_PERCENT", "5")
 # Pin desk so workflow catalog faces stay 1 ACP≈$1 in tests (live DEX spot is microcents).
 os.environ["WACP_ORACLE_PIN_DESK"] = "true"
+# Existing regression scenarios exercise the historical rail explicitly;
+# test_racp_transition overrides this to cover the production-default policy.
+os.environ["EXTERNAL_TOKEN_RACP_ONLY"] = "false"
 os.environ.setdefault("USDT_TRC20_TO_ACP_RATE", "1")
 # Welcome 100 ACP grant is a production growth expense. Exact-balance tests
 # assume a zero starting ledger, so disable it in pytest.

@@ -1,3 +1,4 @@
+import { RacpOverview } from "@/components/RacpOverview";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { getServerApiBase, serverApiFetch } from "@/lib/serverApi";
@@ -39,7 +40,7 @@ export default async function AcpSupplyPage() {
       <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-3xl font-semibold">ACP supply snapshot</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
-          Public transparency for native ACP chain activity, official genesis tokenomics (210M), and bridged wACP context.
+          Public transparency for native ACP chain activity, official genesis tokenomics (210M), and rACP on Robinhood Chain.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -54,19 +55,7 @@ export default async function AcpSupplyPage() {
               <p className="mt-3 text-sm text-amber-200">Explorer RPC unavailable</p>
             )}
           </section>
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-            <h2 className="font-semibold">wACP bridge</h2>
-            {wacp ? (
-              <div className="mt-3 space-y-1 text-sm text-white/70">
-                <div>Status: {wacp.status}</div>
-                <div>Reserve health: {wacp.reserve_health}</div>
-                <div className="break-all">wACP contract: {wacp.wacp_contract || "—"}</div>
-                <div className="break-all">Reserve ACP: {wacp.reserve_acp_address || "—"}</div>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-amber-200">Bridge status unavailable</p>
-            )}
-          </section>
+          <RacpOverview compact />
           <TokenomicsSnapshotSection snapshot={tokenomics} />
         </div>
         <div className="mt-8 flex flex-wrap gap-4 text-sm">

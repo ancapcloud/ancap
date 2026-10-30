@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-/** Alias for BscScan / listing forms that look for a wACP whitepaper path. */
-export default function WacpWhitepaperAliasPage() {
-  redirect("/whitepaper/acp");
-}
+import { TokenTestArchive } from "@/components/TokenTestArchive";
+export const metadata = { robots: { index: false, follow: true } };
+export default function Page() { return <TokenTestArchive />; }

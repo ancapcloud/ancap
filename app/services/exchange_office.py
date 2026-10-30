@@ -73,6 +73,8 @@ def _usdt_trc20_acp_rate() -> Decimal:
 
 def _fiat_acp_rate(asset_id: str) -> Decimal | None:
     settings = get_settings()
+    if settings.external_token_racp_only and asset_id == "fiat_eur":
+        return settings.acp_per_eur
     rates = getattr(settings, "exchange_fiat_acp_rates", None) or {}
     raw = rates.get(asset_id) or rates.get(asset_id.replace("fiat_", ""))
     if raw is None:
@@ -83,6 +85,8 @@ def _fiat_acp_rate(asset_id: str) -> Decimal | None:
 def _acp_to_usdt_smart_pay() -> Decimal:
     """Soft reverse for foundation quotes (smart-pay uses ~0.25 USDT per ACP)."""
     settings = get_settings()
+    if settings.external_token_racp_only:
+        return (Decimal("1") / _usdt_trc20_acp_rate()).quantize(_Q, rounding=ROUND_HALF_UP)
     raw = getattr(settings, "exchange_acp_to_usdt_rate", None)
     if raw:
         return Decimal(str(raw))
@@ -230,6 +234,8 @@ def build_assets() -> list[ExchangeAssetPublic]:
         getattr(settings, "racp_redeem_paused", False)
     )
     fiat_rates = getattr(settings, "exchange_fiat_acp_rates", None) or {"usd": "1", "eur": "1.08"}
+    if settings.external_token_racp_only:
+        fiat_rates = {**fiat_rates, "eur": str(settings.acp_per_eur)}
 
     assets: list[ExchangeAssetPublic] = [
         ExchangeAssetPublic(
@@ -252,14 +258,14 @@ def build_assets() -> list[ExchangeAssetPublic]:
             label="wACP (BSC)",
             kind="crypto",
             availability="live" if bridge_live else "beta",
-            direction="both",
+            direction="into_acp" if settings.external_token_racp_only else "both",
             rail="bridge",
             quote_mode="bridge_1_10",
             unit="wACP",
             decimals=18,
             network="bsc",
-            note="Bridge 1 ACP ↔ 10 wACP with reserve proof. Mint/redeem via bridge intents.",
-            metadata={"pair_hint": "wACP/USDT on PancakeSwap"},
+            note="Legacy wACP redemption: 10 wACP = 1 ACP. New external token: rACP on Robinhood Chain." if settings.external_token_racp_only else "Bridge 1 ACP ↔ 10 wACP with reserve proof. Mint/redeem via bridge intents.",
+            metadata={"legacy": settings.external_token_racp_only, "primary_external_asset": "racp_robinhood"},
         ),
         ExchangeAssetPublic(
             id="racp_robinhood",
@@ -284,6 +290,7 @@ def build_assets() -> list[ExchangeAssetPublic]:
             ),
             metadata={
                 "chain_id": 4663,
+                "primary_external_asset": True,
                 "rpc_url": "https://rpc.mainnet.chain.robinhood.com",
                 "explorer_url": "https://robinhoodchain.blockscout.com",
                 "gas_symbol": "ETH",
@@ -315,7 +322,7 @@ def build_assets() -> list[ExchangeAssetPublic]:
             label="sACP (Stable ACP)",
             kind="stablecoin",
             availability="beta" if sacp_svc.is_enabled() and not sacp_svc.is_paused() else "planned",
-            direction="both",
+            direction="into_acp" if settings.external_token_racp_only else "both",
             rail="stablecoin",
             quote_mode="stable_peg",
             unit="sACP",
@@ -353,7 +360,7 @@ def build_assets() -> list[ExchangeAssetPublic]:
             label="USDT (BSC)",
             kind="crypto",
             availability="beta",
-            direction="both",
+            direction="none" if settings.external_token_racp_only else "both",
             rail="dex_deep_link",
             quote_mode="market_feed",
             unit="USDT",
@@ -397,6 +404,8 @@ def build_assets() -> list[ExchangeAssetPublic]:
         *space_assets,
         *ip_assets,
     ]
+    if settings.external_token_racp_only:
+        return [a for a in assets if a.id not in {"wacp_bsc", "sacp_bsc", "usdt_bsc", "fiat_usd"}]
     return assets
 
 
@@ -414,6 +423,8 @@ def _can_from_acp(asset: ExchangeAssetPublic) -> bool:
     """Outbound from ACP — includes indicative reverses for crypto desks."""
     if asset.id == _HUB:
         return True
+    if asset.direction == "none":
+        return False
     if asset.kind in ("metal", "goods", "commodity", "real_estate", "space", "ip"):
         return False
     if asset.direction in ("from_acp", "both"):

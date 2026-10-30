@@ -1,3 +1,5 @@
+> **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
+
 Для ANCAP имеет смысл подготовить криптовалютную карту через лицензированного партнёра, но не запускать её с обещанием постоянного кешбэка 3–5%. Предлагаю концепцию ANCAP Card: расчёты в обычных магазинах, прозрачная конвертация и ограниченные вознаграждения — с отдельной экономикой карты и бонусов экосистемы; в ЕС финансировать щедрый кешбэк только межбанковской комиссией не получится: для регулируемых потребительских дебетовых операций её базовый потолок составляет 0,2%.
 
 Ниже — анализ рынка, расчёты, предложение пользователям и готовое задание для Codex. Германия и ЕЭЗ приняты как рабочий рынок первого запуска; все тарифы ANCAP ниже — проектные варианты, а не действующие условия.

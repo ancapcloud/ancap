@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import { workflowStore } from "@/lib/api";
+import { catalogPriceLabel } from "@/lib/workflowStore";
 import type { WorkflowTemplate } from "@/lib/workflowStore";
 
 type WorkflowRun = {
@@ -295,12 +296,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
     [workflow.slug, searchParams],
   );
 
-  const pricePreview = useMemo(() => {
-    if (workflow.price.currency === "USD") return `$${workflow.price.amount} · ${paymentCurrency}`;
-    const base = Number(workflow.price.amount || 0);
-    if (paymentCurrency === "wACP") return `${(base * 9).toFixed(2)} ${paymentCurrency}`;
-    return `${base.toFixed(2)} ${paymentCurrency}`;
-  }, [workflow.price.amount, workflow.price.currency, paymentCurrency]);
+  const pricePreview = catalogPriceLabel(workflow);
 
   useEffect(() => {
     const prefillMode = searchParams?.get("prefill");
@@ -590,7 +586,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
         <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
           <div className="text-sm font-semibold text-emerald-200">{t("workflowRunPanel.runCreated")}</div>
           <div className="mt-2 text-sm text-white/80">{t("workflowRunPanel.status")} {createdRun.status}</div>
-          <div className="text-sm text-white/80">{t("workflowRunPanel.quotedPriceLabel")} {createdRun.price.amount} {createdRun.price.currency}</div>
+          <div className="text-sm text-white/80">{t("workflowRunPanel.quotedPriceLabel")} {catalogPriceLabel(createdRun)}</div>
           <div className="text-sm text-white/80">{t("workflowRunPanel.runId")} {createdRun.id}</div>
           {Array.isArray(createdRun.receipt.receipt_items) && createdRun.receipt.receipt_items.length > 0 && (
             <ul className="mt-3 space-y-2 text-sm text-white/75">
@@ -627,7 +623,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               <div key={run.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="font-medium text-white/88">{run.title}</div>
-                  <div className="text-emerald-300">{run.price.amount} {run.price.currency}</div>
+                  <div className="text-emerald-300">{catalogPriceLabel(run)}</div>
                 </div>
                 <div className="mt-2 text-white/60">{t("workflowRunPanel.status")} {run.status}</div>
                 <div className="text-white/45">{new Date(run.created_at).toLocaleString()}</div>

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Markets — wACP and rACP official tokens",
+  title: "Markets — rACP on Robinhood Chain",
   description:
-    "Where Wrapped ACP (wACP) is already visible without CoinGecko approval: PancakeSwap, GeckoTerminal, BscScan, and the ANCAP official token list.",
+    "Official rACP on Robinhood Chain: contract, reserve evidence, redemption availability and legacy wACP support. No market price is promised.",
   alternates: { canonical: "/markets" },
 };
 

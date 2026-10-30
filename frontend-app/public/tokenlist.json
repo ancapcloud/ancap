@@ -1,29 +1,28 @@
 {
   "name": "ANCAP Official",
   "timestamp": "2026-10-30T00:00:00.000Z",
-  "version": { "major": 1, "minor": 1, "patch": 0 },
-  "logoURI": "https://ancap.cloud/wacp-logo.png",
-  "keywords": ["ancap", "acp", "wacp", "sacp", "racp", "bsc", "robinhood"],
+  "version": {
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  },
+  "logoURI": "https://ancap.cloud/racp-logo.png",
+  "keywords": [
+    "ancap",
+    "racp",
+    "robinhood"
+  ],
   "tags": {
     "ancap-official": {
       "name": "ANCAP Official",
-      "description": "Tokens published by ANCAP. Verify wACP at https://ancap.cloud/docs/wacp/contracts and rACP at https://ancap.cloud/tokens/racp"
+      "description": "Active ANCAP external token. Verify rACP at https://ancap.cloud/tokens/racp"
     },
     "bridge-wrap": {
       "name": "Bridge wrap",
-      "description": "ACP representations on another chain; 1 ACP = 10 wACP or 10 rACP. Custody and redemption differ by asset."
+      "description": "rACP represents native ACP at 1 ACP = 10 rACP. Custodial reserve and separate redemption."
     }
   },
   "tokens": [
-    {
-      "chainId": 56,
-      "address": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "name": "Wrapped ACP",
-      "symbol": "wACP",
-      "decimals": 18,
-      "logoURI": "https://ancap.cloud/wacp-logo.png",
-      "tags": ["ancap-official", "bridge-wrap"]
-    },
     {
       "chainId": 4663,
       "address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
@@ -31,7 +30,10 @@
       "symbol": "rACP",
       "decimals": 18,
       "logoURI": "https://ancap.cloud/racp-logo.png",
-      "tags": ["ancap-official", "bridge-wrap"]
+      "tags": [
+        "ancap-official",
+        "bridge-wrap"
+      ]
     }
   ]
 }

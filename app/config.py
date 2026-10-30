@@ -1,8 +1,9 @@
 """Application configuration."""
 from functools import lru_cache
+from decimal import Decimal
 from urllib.parse import parse_qs, unquote, urlsplit
 
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -413,6 +414,9 @@ class Settings(BaseSettings):
     racp_operator_secret: str = ""
 
     # wACP / BSC bridge
+    # ACP stays internal; new external issuance uses rACP. Legacy redemption stays separate.
+    external_token_racp_only: bool = True
+    acp_per_eur: Decimal = Field(default=Decimal("100"), gt=0, allow_inf_nan=False)
     bridge_rail_enabled: bool = False
     bridge_rail_paused: bool = False
     bridge_dry_run: bool = True

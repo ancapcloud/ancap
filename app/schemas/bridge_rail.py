@@ -54,6 +54,7 @@ class BridgeOperationPublic(BaseModel):
 
 
 class BridgeStatusResponse(BaseModel):
+    new_wacp_intents_allowed: bool = False
     bridge_rail_enabled: bool
     bridge_rail_paused: bool
     dry_run: bool

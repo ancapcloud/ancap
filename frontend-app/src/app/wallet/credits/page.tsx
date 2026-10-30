@@ -75,7 +75,7 @@ type StripeIntentResponse = {
   };
 };
 
-const STRIPE_CURRENCIES = ["USD"] as const;
+const STRIPE_CURRENCIES = ["EUR"] as const;
 type StripeCurrency = typeof STRIPE_CURRENCIES[number];
 
 function localizeSettlement(signal: StripeSettlementSignal, t: (key: string) => string) {
@@ -141,7 +141,7 @@ export default function WalletCreditsPage() {
   const [stripePanelOpen, setStripePanelOpen] = useState(false);
   const [stripePackageSlug, setStripePackageSlug] = useState("");
   const [stripeLoadingSlug, setStripeLoadingSlug] = useState("");
-  const [stripeCurrency, setStripeCurrency] = useState<StripeCurrency>("USD");
+  const [stripeCurrency, setStripeCurrency] = useState<StripeCurrency>("EUR");
   const [stripeIntent, setStripeIntent] = useState<StripeIntentResponse | null>(null);
   const [stripePolling, setStripePolling] = useState(false);
   const [stripeSelectedMethodId, setStripeSelectedMethodId] = useState("");

@@ -288,7 +288,7 @@ async def _capture_reserved_workflow_payment(session: DbSession, row: WorkflowRu
     platform_fee = (gross * fee_pct / Decimal("100")).quantize(Decimal("0.00000001"))
     operator_share = (gross - platform_fee).quantize(Decimal("0.00000001"))
 
-    # Single ledger move of gross → platform; fee split is recorded in metadata for treasury.
+    # Single ledger move of gross â†’ platform; fee split is recorded in metadata for treasury.
     ev = await append_event(
         session,
         LedgerEventTypeEnum.fee,
@@ -621,7 +621,7 @@ def _build_workflow_run_record(
     repeated_from_run_id: str | None = None,
     repeated_from_status: str | None = None,
 ) -> WorkflowRunRecord:
-    from app.services.market_economy import quote_catalog_acp
+    from app.services.market_economy import quote_catalog_acp, catalog_currency
 
     quoted_amount, usd_sticker, oracle_spot = quote_catalog_acp(
         template.price.amount,
@@ -632,8 +632,8 @@ def _build_workflow_run_record(
     estimated_provider_cost = (quoted_amount * Decimal("0.18")).quantize(Decimal("0.01"))
     estimated_margin = (quoted_amount - estimated_provider_cost).quantize(Decimal("0.01"))
     proof: dict[str, object] = {
-        "pricing_basis": {"amount": str(usd_sticker), "currency": "USD"},
-        "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+        "pricing_basis": {"amount": str(usd_sticker), "currency": catalog_currency()},
+        f"{catalog_currency().lower()}_sticker": {"amount": str(usd_sticker), "currency": catalog_currency()},
         "oracle_wacp_usd": format(oracle_spot, "f"),
         "accepted_currencies": template.accepted_currencies,
         "billing_mode": "market_aligned_quote",
@@ -647,7 +647,7 @@ def _build_workflow_run_record(
             "gross": {"amount": str(quoted_amount), "currency": payment_currency},
             "estimated_cost": {"amount": str(estimated_provider_cost), "currency": payment_currency},
             "estimated_margin": {"amount": str(estimated_margin), "currency": payment_currency},
-            "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+            f"{catalog_currency().lower()}_sticker": {"amount": str(usd_sticker), "currency": catalog_currency()},
             "oracle_wacp_usd": format(oracle_spot, "f"),
         },
         "status_timeline": [
@@ -670,7 +670,7 @@ def _build_workflow_run_record(
             "amount": str(quoted_amount),
             "currency": payment_currency,
         },
-        "usd_sticker": {"amount": str(usd_sticker), "currency": "USD"},
+        f"{catalog_currency().lower()}_sticker": {"amount": str(usd_sticker), "currency": catalog_currency()},
         "oracle_wacp_usd": format(oracle_spot, "f"),
         "status": WorkflowRunStatus.quoted.value,
         "receipt_items": template.receipt_items,
@@ -753,14 +753,16 @@ def _apply_bundle_pricing_to_run(
 def _catalog_display_metadata(item: WorkflowTemplatePublic | WorkflowBundlePublic) -> dict:
     """USD subscription faces and discounts use the same SKU schedule as checkout."""
     import re
-    from app.services.market_economy import catalog_amount_to_usd_sticker
+    from app.services.market_economy import catalog_sticker, catalog_currency
 
-    sticker = catalog_amount_to_usd_sticker(item.price.amount, catalog_slug=item.slug)
+    sticker = catalog_sticker(item.price.amount, catalog_slug=item.slug)
     # Historical token prices embedded in copy must not contradict the price card.
     metadata = {
-        field: re.sub(r"\b(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*ACP\b", f"${sticker:g}", getattr(item, field))
+        field: re.sub(r"\b(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*ACP\b", f"{sticker:g} {catalog_currency()}", getattr(item, field))
         for field in ("summary", "description")
     }
+    if get_settings().external_token_racp_only:
+        metadata["accepted_currencies"] = ["ACP"]
     if item.slug.startswith(("aeterna-", "counsel-", "space-ai-", "stardust-")) or item.slug in ("entertainment-tesla-coil-party", "antique-fire-restore"):
         metadata["description"] = (
             "Price covers an AI-generated brief and intake preparation only. "
@@ -772,10 +774,10 @@ def _catalog_display_metadata(item: WorkflowTemplatePublic | WorkflowBundlePubli
             field = f"subscription_price_{period}"
             price = getattr(item, field)
             if price is not None:
-                face = catalog_amount_to_usd_sticker(price.amount, catalog_slug=f"{item.slug}:{period}")
-                metadata[field] = Money(amount=str(face), currency="USD")
+                face = catalog_sticker(price.amount, catalog_slug=f"{item.slug}:{period}")
+                metadata[field] = Money(amount=str(face), currency=catalog_currency())
     else:
-        total = sum((catalog_amount_to_usd_sticker(find_workflow_template(slug).price.amount, catalog_slug=slug)
+        total = sum((catalog_sticker(find_workflow_template(slug).price.amount, catalog_slug=slug)
                      for slug in item.workflow_slugs), Decimal(0))
         metadata["discount_percent"] = int((1 - sticker / total) * 100) if total > 0 else 0
     return metadata
@@ -786,9 +788,9 @@ async def list_workflow_templates(
     category: str | None = Query(None),
     q: str | None = Query(None),
 ):
-    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+    from app.services.market_economy import get_checkout_reference, quote_catalog_acp, catalog_currency
 
-    spot, _src = await get_wacp_usd_oracle()
+    spot, _src = await get_checkout_reference()
     items = WORKFLOW_TEMPLATES
     if category:
         category_l = category.strip().lower()
@@ -810,7 +812,7 @@ async def list_workflow_templates(
             item.model_copy(
                 update={
                     **_catalog_display_metadata(item),
-                    "usd_sticker": Money(amount=str(sticker), currency="USD"),
+                    f"{catalog_currency().lower()}_sticker": Money(amount=str(sticker), currency=catalog_currency()),
                     "price_acp": Money(amount=str(acp), currency="ACP"),
                     "oracle_wacp_usd": format(spot, "f"),
                     "price": Money(amount=str(acp), currency="ACP"),
@@ -822,17 +824,17 @@ async def list_workflow_templates(
 
 @router.get("/templates/{workflow_slug}", response_model=WorkflowTemplatePublic)
 async def get_workflow_template(workflow_slug: str):
-    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+    from app.services.market_economy import get_checkout_reference, quote_catalog_acp, catalog_currency
 
     item = find_workflow_template(workflow_slug)
     if not item:
         raise HTTPException(status_code=404, detail="Workflow template not found")
-    spot, _src = await get_wacp_usd_oracle()
+    spot, _src = await get_checkout_reference()
     acp, sticker, _ = quote_catalog_acp(item.price.amount, catalog_slug=item.slug, wacp_usd=spot)
     return item.model_copy(
         update={
             **_catalog_display_metadata(item),
-            "usd_sticker": Money(amount=str(sticker), currency="USD"),
+            f"{catalog_currency().lower()}_sticker": Money(amount=str(sticker), currency=catalog_currency()),
             "price_acp": Money(amount=str(acp), currency="ACP"),
             "oracle_wacp_usd": format(spot, "f"),
             "price": Money(amount=str(acp), currency="ACP"),
@@ -842,9 +844,9 @@ async def get_workflow_template(workflow_slug: str):
 
 @router.get("/bundles", response_model=WorkflowBundlesResponse)
 async def list_workflow_bundles():
-    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+    from app.services.market_economy import get_checkout_reference, quote_catalog_acp, catalog_currency
 
-    spot, _src = await get_wacp_usd_oracle()
+    spot, _src = await get_checkout_reference()
     enriched: list[WorkflowBundlePublic] = []
     for item in WORKFLOW_BUNDLES:
         acp, sticker, _ = quote_catalog_acp(item.price.amount, catalog_slug=item.slug, wacp_usd=spot)
@@ -852,7 +854,7 @@ async def list_workflow_bundles():
             item.model_copy(
                 update={
                     **_catalog_display_metadata(item),
-                    "usd_sticker": Money(amount=str(sticker), currency="USD"),
+                    f"{catalog_currency().lower()}_sticker": Money(amount=str(sticker), currency=catalog_currency()),
                     "price_acp": Money(amount=str(acp), currency="ACP"),
                     "oracle_wacp_usd": format(spot, "f"),
                     "price": Money(amount=str(acp), currency="ACP"),
@@ -864,17 +866,17 @@ async def list_workflow_bundles():
 
 @router.get("/bundles/{bundle_slug}", response_model=WorkflowBundlePublic)
 async def get_workflow_bundle(bundle_slug: str):
-    from app.services.market_economy import get_wacp_usd_oracle, quote_catalog_acp
+    from app.services.market_economy import get_checkout_reference, quote_catalog_acp, catalog_currency
 
     item = find_workflow_bundle(bundle_slug)
     if not item:
         raise HTTPException(status_code=404, detail="Workflow bundle not found")
-    spot, _src = await get_wacp_usd_oracle()
+    spot, _src = await get_checkout_reference()
     acp, sticker, _ = quote_catalog_acp(item.price.amount, catalog_slug=item.slug, wacp_usd=spot)
     return item.model_copy(
         update={
             **_catalog_display_metadata(item),
-            "usd_sticker": Money(amount=str(sticker), currency="USD"),
+            f"{catalog_currency().lower()}_sticker": Money(amount=str(sticker), currency=catalog_currency()),
             "price_acp": Money(amount=str(acp), currency="ACP"),
             "oracle_wacp_usd": format(spot, "f"),
             "price": Money(amount=str(acp), currency="ACP"),
@@ -884,7 +886,7 @@ async def get_workflow_bundle(bundle_slug: str):
 
 @router.get("/credit-packages", response_model=WorkflowCreditPackagesResponse)
 async def list_workflow_credit_packages():
-    return WorkflowCreditPackagesResponse(items=WORKFLOW_CREDIT_PACKAGES)
+    return WorkflowCreditPackagesResponse(items=[find_credit_package(item.slug) for item in WORKFLOW_CREDIT_PACKAGES])
 
 
 @router.get("/credit-packages/{package_slug}", response_model=WorkflowCreditPackagePublic)
@@ -2350,9 +2352,9 @@ async def create_workflow_run(
             },
         )
 
-    from app.services.market_economy import get_wacp_usd_oracle
+    from app.services.market_economy import get_checkout_reference
 
-    await get_wacp_usd_oracle()
+    await get_checkout_reference()
 
     row = _build_workflow_run_record(
         owner_user_id=user_id,

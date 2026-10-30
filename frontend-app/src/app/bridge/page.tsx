@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Canonical bridge UI lives under /bridge/acp-bsc */
+/** rACP is the primary external token; legacy wACP remains at its explicit route. */
 export default function BridgeIndexPage() {
-  redirect("/bridge/acp-bsc");
+  redirect("/tokens/racp/redeem");
 }

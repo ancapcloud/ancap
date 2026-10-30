@@ -1,0 +1,10 @@
+{
+  "currency": "EUR",
+  "acp_per_eur": "100",
+  "racp_per_acp": "10",
+  "racp_equivalent_per_eur": "1000",
+  "legacy_usd_per_eur": "1.1130",
+  "fx_date": "2026-10-29",
+  "fx_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+  "display_note": "rACP equivalents of internal ACP balances are not proof of ERC-20 token ownership."
+}

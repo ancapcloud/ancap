@@ -10,6 +10,9 @@ from typing import Any
 
 from app.services.bridge_decimal import WACP_PER_ACP
 from app.services.market_economy import get_cached_wacp_usd, usd_to_acp
+from app.config import get_settings
+from app.services.eur_pricing import eur_to_acp
+from fastapi import HTTPException
 
 SERVICE_FEE_EUR = Decimal("3")
 
@@ -429,8 +432,11 @@ def quote(
     install = Decimal(str(svc["price_eur"]))
     fee = SERVICE_FEE_EUR
     total_eur = (install + fee).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    spot = get_cached_wacp_usd(allow_stale=True)
-    amount_acp = usd_to_acp(total_eur, wacp_usd=spot)
+    racp_only = get_settings().external_token_racp_only
+    if racp_only and (payment_currency or "ACP").upper() != "ACP":
+        raise HTTPException(409, "Service settlement uses internal ACP with EUR pricing; the BSC test route is retired.")
+    spot = None if racp_only else get_cached_wacp_usd(allow_stale=True)
+    amount_acp = eur_to_acp(total_eur) if racp_only else usd_to_acp(total_eur, wacp_usd=spot)
     amount_wacp = (amount_acp * Decimal(WACP_PER_ACP)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     cur = (payment_currency or "ACP").strip().upper()

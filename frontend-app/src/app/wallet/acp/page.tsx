@@ -25,6 +25,8 @@ import {
   isAcpAddress,
 } from "@/lib/walletTransfer";
 import { walletUxCopy } from "@/locales/walletUx";
+import { racpTransitionCopy } from "@/locales/racpTransition";
+import { formatRacpEquivalent } from "@/lib/racpDisplay";
 import { WalletBulkTransfer } from "./WalletBulkTransfer";
 import type { WalletBalance, ChainTransaction } from "./types";
 import s from "./wallet.module.css";
@@ -205,7 +207,7 @@ export default function AcpWalletPage() {
               ? c.rowsError
               : c.unknown;
   const money = (value: string | null | undefined) =>
-    value == null ? "—" : formatAcpDisplay(value);
+    value == null ? "—" : formatRacpEquivalent(value, lang);
   const field = (label: string, control: ReactNode) => (
     <label className={s.field}>
       <span>{label}</span>
@@ -496,7 +498,7 @@ export default function AcpWalletPage() {
         <div className={s.metric} key={label}>
           <span>{label}</span>
           <strong title={value || undefined}>
-            {money(value)} <small>ACP</small>
+            {money(value)} <small>rACP equiv.</small>
           </strong>
           <p>{hint}</p>
         </div>
@@ -506,9 +508,10 @@ export default function AcpWalletPage() {
   const intro = (
     <header className={s.header}>
       <div>
-        <p className={s.eyebrow}>ANCAP / ACP</p>
+        <p className={s.eyebrow}>ANCAP / rACP</p>
         <h1>{t("walletAcpPage.title")}</h1>
         <p className={s.lead}>{c.subtitle}</p>
+        <p className={s.lead}>{racpTransitionCopy[lang].displayNote}</p>
       </div>
       {isAuthenticated && (
         <button
@@ -615,7 +618,7 @@ export default function AcpWalletPage() {
                     <span className={s.eyebrow}>{c.available}</span>
                     <div className={s.balance}>
                       {loading && !wallet ? "…" : money(available)}{" "}
-                      <span>ACP</span>
+                      <span>rACP equiv.</span>
                     </div>
                     <p>{c.availableHint}</p>
                     <div className={s.updated}>
@@ -669,7 +672,7 @@ export default function AcpWalletPage() {
                   </Link>
                   <Link href="/buy-acp">
                     <strong>{c.buy} →</strong>
-                    <span>{c.network} / wACP</span>
+                    <span>{c.network} / rACP equiv.</span>
                   </Link>
                 </div>
                 <details className={s.panel}>
@@ -677,7 +680,7 @@ export default function AcpWalletPage() {
                   <dl className={s.facts}>
                     <div>
                       <dt>{t("walletAcpPage.walletBalance")}</dt>
-                      <dd>{money(selectHeroAcp(wallet))} ACP</dd>
+                      <dd>{money(selectHeroAcp(wallet))} rACP equiv.</dd>
                     </div>
                     <div>
                       <dt>
@@ -706,7 +709,7 @@ export default function AcpWalletPage() {
                       {wallet?.tokenomics_buckets?.map((bucket) => (
                         <p className={s.metricLine} key={bucket.key}>
                           <span>{bucket.label}</span>
-                          <strong>{money(bucket.acp)} ACP</strong>
+                          <strong>{money(bucket.acp)} rACP equiv.</strong>
                         </p>
                       ))}
                     </>
@@ -843,8 +846,8 @@ export default function AcpWalletPage() {
                   <Link className={s.secondary} href="/buy-acp">
                     {c.buy}
                   </Link>
-                  <Link className={s.secondary} href="/bridge/acp-bsc">
-                    {c.bridge}
+                  <Link className={s.secondary} href="/tokens/racp/redeem">
+                    rACP → ACP
                   </Link>
                 </div>
               </section>
@@ -856,7 +859,7 @@ export default function AcpWalletPage() {
                   <p className={s.muted}>{c.sendHint}</p>
                   <div className={s.available}>
                     {c.available}
-                    <strong>{money(available)} ACP</strong>
+                    <strong>{money(available)} rACP equiv.</strong>
                   </div>
                   {attempted ? (
                     <section className={s.stack} aria-live="polite">
@@ -1218,7 +1221,7 @@ export default function AcpWalletPage() {
                             tx.net_acp.startsWith("-") ? s.negative : s.positive
                           }
                         >
-                          {money(tx.net_acp)} ACP
+                          {formatAcpDisplay(tx.net_acp)} ACP
                         </strong>
                       </li>
                     ))}
@@ -1316,9 +1319,9 @@ export default function AcpWalletPage() {
                     <strong>{c.buy} →</strong>
                     <span>ACP</span>
                   </Link>
-                  <Link href="/bridge/acp-bsc">
-                    <strong>{c.bridge} →</strong>
-                    <span>BSC / ACP</span>
+                  <Link href="/tokens/racp/redeem">
+                    <strong>rACP → ACP</strong>
+                    <span>Robinhood Chain / ACP</span>
                   </Link>
                   <Link href="/wallet/credits">
                     <strong>{c.openCredits} →</strong>

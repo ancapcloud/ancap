@@ -239,6 +239,8 @@ async def fetch_market_board(*, vs: str = "usd") -> dict[str, Any]:
     """Home/ticker board: platform ACP rails first, then CoinGecko majors."""
     vs_n = (vs or "usd").lower().strip() or "usd"
     cg = await fetch_simple_prices(vs=vs_n)
+    if get_settings().external_token_racp_only:
+        return {**cg, "notes": ["External token: rACP. No public rACP market price; accounting uses EUR, not the archived BSC test pool.", *(cg.get("notes") or [])]}
     usdt: Decimal | None = None
     for row in cg.get("prices") or []:
         if row.get("id") == "tether" and row.get("price"):

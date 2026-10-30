@@ -68,8 +68,8 @@ async def enqueue(session, owner, automation, body: EnqueueRequest, *, scheduled
         if existing.request_hash != request_hash:
             raise HTTPException(409, "Idempotency key used for different inputs")
         return await run_access(session, owner, existing.id)
-    from app.services.market_economy import get_wacp_usd_oracle
-    await get_wacp_usd_oracle()
+    from app.services.market_economy import get_checkout_reference
+    await get_checkout_reference()
     # Use the same live quote construction as direct purchases, never an assumed FX rate.
     from app.api.routers.workflow_store import _build_workflow_run_record
     expected = sum(Decimal(_build_workflow_run_record(owner_user_id=owner, template=find_workflow_template(step["slug"]), payment_currency="ACP", unlock_full_result=True, inputs={}).quoted_amount) for step in revision["definition"]["steps"])
@@ -123,8 +123,8 @@ async def _process_item(session, operation):
     template = find_workflow_template(step["slug"])
     if template is None:
         raise HTTPException(409, "Published workflow is no longer available")
-    from app.services.market_economy import get_wacp_usd_oracle
-    await get_wacp_usd_oracle()
+    from app.services.market_economy import get_checkout_reference
+    await get_checkout_reference()
     run = _build_workflow_run_record(owner_user_id=str(operation.owner_user_id), template=template, payment_currency="ACP", unlock_full_result=True, inputs=inputs)
     price = Decimal(run.quoted_amount)
     if Decimal(operation.cost_acp)+price > Decimal(operation.max_cost_acp):

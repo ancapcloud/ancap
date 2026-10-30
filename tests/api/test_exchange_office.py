@@ -73,8 +73,11 @@ def test_quote_usdt_into_acp(monkeypatch):
     get_settings.cache_clear()
 
 
-def test_quote_wacp_bridge_ratio_1_to_10():
+def test_quote_wacp_bridge_ratio_1_to_10(monkeypatch):
     """Bridge doctrine: 1 ACP ↔ 10 wACP (not 1:1)."""
+    from app.config import get_settings
+    monkeypatch.setenv("EXTERNAL_TOKEN_RACP_ONLY", "false")
+    get_settings.cache_clear()
     into = quote(ExchangeQuoteRequest(from_asset="wacp_bsc", to_asset="acp", from_amount="10"))
     assert Decimal(into.to_amount) == Decimal("1")
     assert into.rail == "bridge"

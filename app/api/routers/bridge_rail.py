@@ -542,6 +542,7 @@ async def bridge_status(session: AsyncSession = Depends(get_db)):
             await session.rollback()
 
     return BridgeStatusResponse(
+        new_wacp_intents_allowed=not s.external_token_racp_only and s.bridge_rail_enabled and not s.bridge_rail_paused,
         bridge_rail_enabled=s.bridge_rail_enabled,
         bridge_rail_paused=s.bridge_rail_paused,
         dry_run=s.bridge_dry_run,
@@ -602,6 +603,8 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
     for item in reserve.notes:
         if item not in notes:
             notes.append(item)
+    if s.external_token_racp_only:
+        notes = ["Archived ANCAP BSC token test. rACP is the current external token. Historical redemption remains separate.", *reserve.notes]
 
     overall_status = "live"
     reserve_proof_status = reserve.status
@@ -614,10 +617,10 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         overall_status = "degraded"
 
     return WacpPublicStatusResponse(
-        status=overall_status,
+        status="test_archive" if s.external_token_racp_only else overall_status,
         bridge_enabled=s.bridge_rail_enabled,
         bridge_paused=s.bridge_rail_paused,
-        mint_available=bool(s.bridge_rail_enabled and not s.bridge_rail_paused),
+        mint_available=bool(not s.external_token_racp_only and s.bridge_rail_enabled and not s.bridge_rail_paused),
         redeem_available=bool(s.bridge_rail_enabled and not s.bridge_rail_paused and reserve_health != "critical"),
         redeem_mode="live" if bool(s.bridge_rail_enabled and not s.bridge_rail_paused and reserve_health != "critical") else "disabled",
         reserve_proof_status=reserve_proof_status,
@@ -637,7 +640,7 @@ async def wacp_public_status(session: AsyncSession = Depends(get_db)):
         pair_symbol="wACP/USDT",
         pair_address=WACP_PAIR_ADDRESS,
         pair_url=WACP_PAIR_URL,
-        swap_url=WACP_SWAP_URL,
+        swap_url="" if s.external_token_racp_only else WACP_SWAP_URL,
         liquidity_tx_hash=WACP_LIQUIDITY_TX,
         first_swap_buy_tx_hash=WACP_FIRST_SWAP_BUY_TX,
         first_swap_sell_tx_hash=WACP_FIRST_SWAP_SELL_TX,
@@ -796,6 +799,8 @@ async def create_intent_acp_to_bsc(
     session: AsyncSession = Depends(get_db),
 ):
     s = get_settings()
+    if s.external_token_racp_only:
+        raise HTTPException(status_code=409, detail="New ACP to wACP intents are closed. Use rACP on Robinhood Chain; legacy wACP redemption remains separate.")
     if not s.bridge_rail_enabled:
         raise HTTPException(status_code=503, detail="Bridge rail is disabled")
     if s.bridge_rail_paused:

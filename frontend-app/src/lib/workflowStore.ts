@@ -1,4 +1,5 @@
-import catalogPrices from "./catalogPrices.json";
+import catalogPrices from "./catalogEurPrices.json";
+import { formatRacpEquivalent } from "./racpDisplay";
 
 export type WorkflowTemplate = {
   slug: string;
@@ -8,6 +9,7 @@ export type WorkflowTemplate = {
   description: string;
   price: { amount: string; currency: string };
   usd_sticker?: { amount: string; currency: string } | null;
+  eur_sticker?: { amount: string; currency: string } | null;
   price_acp?: { amount: string; currency: string } | null;
   oracle_wacp_usd?: string | null;
   accepted_currencies: string[];
@@ -32,6 +34,7 @@ export type WorkflowBundle = {
   workflow_slugs: string[];
   price: { amount: string; currency: string };
   usd_sticker?: { amount: string; currency: string } | null;
+  eur_sticker?: { amount: string; currency: string } | null;
   price_acp?: { amount: string; currency: string } | null;
   oracle_wacp_usd?: string | null;
   accepted_currencies: string[];
@@ -270,9 +273,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "Tesla Coil Party Desk Brief",
     category: "Entertainment",
     summary:
-      "Licensed venue partner brief for a Tesla-coil spectacle party with complimentary Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only — $29.",
+      "Licensed venue partner brief for a Tesla-coil spectacle party with complimentary Jack Daniel's hospitality literacy and jurisdiction-permitted adult substances only â€” $29.",
     description:
-      "Settles $29 and issues a licensed entertainment-venue partner brief. Not affiliated with Jack Daniel's or Brown-Forman. ANCAP does not hold a liquor licence and does not sell alcohol or controlled substances. Age/ID gates (18+/21+) apply. Tesla coil HV operated only by licensed venue partner — not a DIY kit.",
+      "Settles $29 and issues a licensed entertainment-venue partner brief. Not affiliated with Jack Daniel's or Brown-Forman. ANCAP does not hold a liquor licence and does not sell alcohol or controlled substances. Age/ID gates (18+/21+) apply. Tesla coil HV operated only by licensed venue partner â€” not a DIY kit.",
     price: { amount: "8900", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 30,
@@ -295,9 +298,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "Antique Fire Restore Desk Brief",
     category: "Conservation",
     summary:
-      "Licensed conservation / metallurgy partner brief for antique restoration after total fire using reverse-combustion literacy — $29.",
+      "Licensed conservation / metallurgy partner brief for antique restoration after total fire using reverse-combustion literacy â€” $29.",
     description:
-      "Settles $29 and issues a licensed conservation / metallurgy partner brief. Reverse-combustion literacy is not a DIY furnace kit. Six-stage map is conservation analogy — not medical burn care. No authenticity guarantee; ANCAP does not pay insurance claims for fire loss.",
+      "Settles $29 and issues a licensed conservation / metallurgy partner brief. Reverse-combustion literacy is not a DIY furnace kit. Six-stage map is conservation analogy â€” not medical burn care. No authenticity guarantee; ANCAP does not pay insurance claims for fire loss.",
     price: { amount: "42000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 40,
@@ -320,7 +323,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA DNA Wellness Report",
     category: "AETERNA",
     summary: "Turn a vaulted genome hash / VCF summary into an ACP-paid wellness annotation brief.",
-    description: "Produces a structured genomic wellness report shell from consented DNA vault metadata. Educational and consult-prep only — not a diagnosis and not a DIY editing protocol.",
+    description: "Produces a structured genomic wellness report shell from consented DNA vault metadata. Educational and consult-prep only â€” not a diagnosis and not a DIY editing protocol.",
     price: { amount: "1000000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 40,
@@ -389,9 +392,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     slug: "aeterna-molecular-aging-profile",
     title: "AETERNA Molecular Aging Profile (15 axes)",
     category: "AETERNA",
-    summary: "Map consented blood-RNA / PCR panel metadata onto 15 hallmark axes — configuration of aging, not one bio-age number.",
+    summary: "Map consented blood-RNA / PCR panel metadata onto 15 hallmark axes â€” configuration of aging, not one bio-age number.",
     description:
-      "Partner-ready molecular aging profile across 15 hallmark themes. Educational / licensed-consult prep only — not a diagnostic PCR assay and not a DIY wet-lab kit.",
+      "Partner-ready molecular aging profile across 15 hallmark themes. Educational / licensed-consult prep only â€” not a diagnostic PCR assay and not a DIY wet-lab kit.",
     price: { amount: "1000000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 60,
@@ -410,7 +413,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Partial Reprogramming Consult (mRNA / LNP literacy)",
     category: "AETERNA",
     summary:
-      "Licensed-partner consult brief on partial cellular reprogramming via mRNA in lipid nanoparticles — public patent-literacy only, $39.",
+      "Licensed-partner consult brief on partial cellular reprogramming via mRNA in lipid nanoparticles â€” public patent-literacy only, $39.",
     description:
       "Discussion brief on partial epigenetic reprogramming: restore some youthful cell functions without erasing identity. Cites public USPTO notice-of-allowance journalism (Daewoong eTurna, Aug 2026). Not an approved drug. No lipid recipes, mRNA sequences, or LNP formulation steps.",
     price: { amount: "1000000", currency: "ACP" },
@@ -419,7 +422,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     preview_items: ["Partial vs full reprogramming framing", "Delivery literacy (mRNA in LNP)", "Partner consult agenda"],
     output_items: [
       "Partial-reprogramming consult brief",
-      "Public-citation caveats (allowance ≠ grant ≠ drug approval)",
+      "Public-citation caveats (allowance â‰  grant â‰  drug approval)",
       "Licensed-partner handoff checklist",
       "Proof receipt",
     ],
@@ -430,9 +433,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     slug: "aeterna-stem-cell-organ-print",
     title: "AETERNA Stem-Cell Organ Print",
     category: "AETERNA",
-    summary: "Licensed-partner organ bioprint from autologous stem cells — wisdom-tooth DPSC fallback — $49 per planning brief.",
+    summary: "Licensed-partner organ bioprint from autologous stem cells â€” wisdom-tooth DPSC fallback â€” $49 per planning brief.",
     description:
-      "Settles $49 per planning brief and issues a licensed-partner bioreactor handoff. Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. Printing occurs only in a licensed biochemical reactor operated by a verified partner. Not a home kit — no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture.",
+      "Settles $49 per planning brief and issues a licensed-partner bioreactor handoff. Primary cell source: autologous stem cells. Fallback: dental pulp stem cells (DPSC) from a wisdom tooth. Printing occurs only in a licensed biochemical reactor operated by a verified partner. Not a home kit â€” no wet-lab protocol, CRISPR design, gene synthesis, or DIY cell culture.",
     price: { amount: "250000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 90,
@@ -446,7 +449,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Feline Tissue Cryoconservator-Restorer",
     category: "AETERNA",
     summary:
-      "Licensed-veterinary-partner intake for a feline tissue cryoconservator-restorer (controlled-rate freeze, LN2 store, thaw/restore) — $29.",
+      "Licensed-veterinary-partner intake for a feline tissue cryoconservator-restorer (controlled-rate freeze, LN2 store, thaw/restore) â€” $29.",
     description:
       "Settles $29 and issues a licensed-veterinary-partner brief for cat tissue banking. Conceptual architecture only. ANCAP does not manufacture the chamber, does not practice veterinary medicine, and does not claim return-to-life. No home cryo kit.",
     price: { amount: "75000", currency: "ACP" },
@@ -467,7 +470,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Canine VET REGEN POD",
     category: "AETERNA",
     summary:
-      "Licensed-veterinary-partner organ-transplant and regeneration chamber pathway for dogs (VET REGEN POD) — $39.",
+      "Licensed-veterinary-partner organ-transplant and regeneration chamber pathway for dogs (VET REGEN POD) â€” $39.",
     description:
       "Settles $39 and issues a licensed-veterinary-partner brief for a canine organ pathway. Infographics illustrate intended partner architecture. ANCAP does not operate VET REGEN POD hardware and does not quote survival percentages. Licensed veterinarian only.",
     price: { amount: "180000", currency: "ACP" },
@@ -488,9 +491,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Vinci Light Chamber",
     category: "AETERNA",
     summary:
-      "Licensed phototherapy-partner intake for a full-body LED / UVA / red / near-IR photobiomodulation chamber (Leonardo sunlight-health literacy) — $19.",
+      "Licensed phototherapy-partner intake for a full-body LED / UVA / red / near-IR photobiomodulation chamber (Leonardo sunlight-health literacy) â€” $19.",
     description:
-      "Settles $19 and issues a licensed dermatology or phototherapy-partner brief. Inspired by Leonardo da Vinci’s notes on sunlight and the body — not a reconstructed invention. ANCAP does not manufacture the chamber and does not claim safe tanning, vitamin-D treatment, or a CE/FDA device. UV remains a known skin-cancer risk class.",
+      "Settles $19 and issues a licensed dermatology or phototherapy-partner brief. Inspired by Leonardo da Vinciâ€™s notes on sunlight and the body â€” not a reconstructed invention. ANCAP does not manufacture the chamber and does not claim safe tanning, vitamin-D treatment, or a CE/FDA device. UV remains a known skin-cancer risk class.",
     price: { amount: "48000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 40,
@@ -509,9 +512,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Microwave Body Contouring",
     category: "AETERNA",
     summary:
-      "Licensed aesthetic/dermatology-partner intake for contact-cooled microwave body contouring (2.45 / 5.8 GHz ISM applicator) — $19.",
+      "Licensed aesthetic/dermatology-partner intake for contact-cooled microwave body contouring (2.45 / 5.8 GHz ISM applicator) â€” $19.",
     description:
-      "Settles $19 and issues a licensed dermatology or aesthetic-medicine partner brief. Public literature discusses selective adipocyte heating with surface cooling — AETERNA does not claim blebbing, lymphatic clearance, or a guaranteed contour change. Not liposuction, not a weight-loss program, not a CE/FDA device sold by ANCAP. Licensed clinician only.",
+      "Settles $19 and issues a licensed dermatology or aesthetic-medicine partner brief. Public literature discusses selective adipocyte heating with surface cooling â€” AETERNA does not claim blebbing, lymphatic clearance, or a guaranteed contour change. Not liposuction, not a weight-loss program, not a CE/FDA device sold by ANCAP. Licensed clinician only.",
     price: { amount: "52000", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 45,
@@ -530,7 +533,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA BioFusion Micromanipulation Chamber",
     category: "AETERNA",
     summary:
-      "Licensed-partner intake for a BioFusion micromanipulation chamber (IVF/ICSI, plant pollination, embryo observation, microorganism handling) — $49.",
+      "Licensed-partner intake for a BioFusion micromanipulation chamber (IVF/ICSI, plant pollination, embryo observation, microorganism handling) â€” $49.",
     description:
       "Settles $49 and issues a licensed-partner brief. ANCAP does not operate a fertility clinic, does not create embryos, and does not sell gene-editing or home ICSI recipes. Infographic architecture only.",
     price: { amount: "88000", currency: "ACP" },
@@ -551,7 +554,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Wisdom-Tooth DPSC Biomaterial",
     category: "AETERNA",
     summary:
-      "Licensed-bioreactor intake to expand autologous wisdom-tooth dental pulp stem cells (DPSC) into a biomaterial construct — $29.",
+      "Licensed-bioreactor intake to expand autologous wisdom-tooth dental pulp stem cells (DPSC) into a biomaterial construct â€” $29.",
     description:
       "Settles $29 and issues a licensed bioreactor brief. Not a full organ print ($29), not an FDA/CE cell therapy, not a home culture kit.",
     price: { amount: "65000", currency: "ACP" },
@@ -572,7 +575,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Vascular Care+",
     category: "AETERNA",
     summary:
-      "Licensed phlebology/aesthetic-partner intake for Vascular Care+ (anhydrous N2+O2 flow plus light-wave applicator) — $19.",
+      "Licensed phlebology/aesthetic-partner intake for Vascular Care+ (anhydrous N2+O2 flow plus light-wave applicator) â€” $19.",
     description:
       "Settles $19 and issues a licensed clinic brief. Not a marketed medical device, not a thrombosis treatment, not a guaranteed varicose-vein claim.",
     price: { amount: "54000", currency: "ACP" },
@@ -593,7 +596,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Vascular Care",
     category: "AETERNA",
     summary:
-      "Licensed phlebology/aesthetic-partner intake for Vascular Care (ultrasound / radiofrequency / thermal applicator) — $19.",
+      "Licensed phlebology/aesthetic-partner intake for Vascular Care (ultrasound / radiofrequency / thermal applicator) â€” $19.",
     description:
       "Settles $19 and issues a licensed clinic brief. Not surgery, not a CE/FDA device, not a guaranteed vein-diameter claim.",
     price: { amount: "58000", currency: "ACP" },
@@ -614,7 +617,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Needle-Free Transdermal Pistol",
     category: "AETERNA",
     summary:
-      "Licensed clinic-partner intake for a needle-free transdermal pistol (aerosol actives plus carrier gas) — $19.",
+      "Licensed clinic-partner intake for a needle-free transdermal pistol (aerosol actives plus carrier gas) â€” $19.",
     description:
       "Settles $19 and issues a licensed clinic brief. Not a prescription dispenser, not compounding, not a guaranteed dose or cosmetic result.",
     price: { amount: "46000", currency: "ACP" },
@@ -635,7 +638,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA M-Receptor Delivery Subscription",
     category: "AETERNA",
     summary:
-      "Licensed-clinic subscription for multimodal M-receptor delivery and neuromodulation literacy (patch, iontophoresis, inhaler, vagus-adjacent stimulation) — $19 / month.",
+      "Licensed-clinic subscription for multimodal M-receptor delivery and neuromodulation literacy (patch, iontophoresis, inhaler, vagus-adjacent stimulation) â€” $19 / month.",
     description:
       "Settles the first subscription period and issues a licensed-clinic partner brief. Not compounding, not a CE/FDA device, not a treatment claim.",
     price: { amount: "12000", currency: "ACP" },
@@ -664,7 +667,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Artificial Oxygen Carrier",
     category: "AETERNA",
     summary:
-      "Licensed bioreactor / transfusion-medicine partner brief for hemoglobin-vesicle or perfluorocarbon-emulsion oxygen-carrier architecture literacy — $39.",
+      "Licensed bioreactor / transfusion-medicine partner brief for hemoglobin-vesicle or perfluorocarbon-emulsion oxygen-carrier architecture literacy â€” $39.",
     description:
       "Settles $39 and issues a licensed-partner brief. Not a blood product, not compounding of hemoglobin or PFC, not a CE/FDA oxygen therapeutic, not a manufacturing SOP.",
     price: { amount: "92000", currency: "ACP" },
@@ -689,7 +692,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Synthetic Blood / Black Mamba Architecture",
     category: "AETERNA",
     summary:
-      "Licensed bioreactor / transfusion-medicine partner brief for synthetic-blood architecture with modified Black Mamba peptide literacy — $49.",
+      "Licensed bioreactor / transfusion-medicine partner brief for synthetic-blood architecture with modified Black Mamba peptide literacy â€” $49.",
     description:
       "Settles $49 and issues a licensed-partner brief. Not a blood product, not compounding of venom peptides, hemoglobin or PFC, not a CE/FDA therapeutic, not a toxin or manufacturing SOP.",
     price: { amount: "98000", currency: "ACP" },
@@ -711,10 +714,10 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
   },
   {
     slug: "aeterna-adhd-support",
-    title: "AETERNA ADHD / СДВГ Support Brief",
+    title: "AETERNA ADHD / Ð¡Ð”Ð’Ð“ Support Brief",
     category: "AETERNA",
     summary:
-      "Licensed clinician / child psychiatry–neurology partner brief for ADHD support literacy — $19.",
+      "Licensed clinician / child psychiatryâ€“neurology partner brief for ADHD support literacy â€” $19.",
     description:
       "Settles $19 and issues a licensed-partner brief. Not a diagnosis, not a prescription, not stimulant compounding, not a CE/FDA drug, and not a guaranteed academic or financial outcome. Motivational literacy only.",
     price: { amount: "42000", currency: "ACP" },
@@ -726,7 +729,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
       "Non-claim protocol pack",
     ],
     output_items: [
-      "ADHD / СДВГ support intake brief",
+      "ADHD / Ð¡Ð”Ð’Ð“ support intake brief",
       "Licensed clinician handoff",
       "Non-claim checklist (no diagnosis / no stimulant recipe / no guaranteed billionaire path)",
       "Proof receipt",
@@ -739,7 +742,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Down Syndrome Support Brief",
     category: "AETERNA",
     summary:
-      "Licensed developmental pediatrics / genetics partner brief for Down syndrome support literacy — $19. Not a cure.",
+      "Licensed developmental pediatrics / genetics partner brief for Down syndrome support literacy â€” $19. Not a cure.",
     description:
       "Settles $19 and issues a licensed-partner brief. Not a cure for Down syndrome, not a diagnosis, not gene therapy or CRISPR sold by ANCAP, not a prescription, and not a guaranteed developmental outcome.",
     price: { amount: "42000", currency: "ACP" },
@@ -764,7 +767,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Substance Coding Support Brief",
     category: "AETERNA",
     summary:
-      "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief for coding literacy — $19. Not a coding session by ANCAP.",
+      "Licensed addiction-medicine / narcology / clinical-hypnosis partner brief for coding literacy â€” $19. Not a coding session by ANCAP.",
     description:
       "Settles $19 and issues a licensed-partner brief covering light-protocol, clinic-only substance, and clinical-hypnosis literacy for non-essential psychoactive dependence. ANCAP does not perform coding, does not guarantee abstinence, does not compound or sell controlled substances, and does not replace emergency care.",
     price: { amount: "48000", currency: "ACP" },
@@ -789,7 +792,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA PulmoPure Lung-Care Subscription",
     category: "AETERNA",
     summary:
-      "Licensed pulmonology / respiratory clinic subscription for PulmoPure gas-vibration and lavender-oil architecture literacy — $19 / month.",
+      "Licensed pulmonology / respiratory clinic subscription for PulmoPure gas-vibration and lavender-oil architecture literacy â€” $19 / month.",
     description:
       "Settles the first subscription period and issues a licensed-clinic partner brief. Not a CE/FDA device, not ozone therapy, not medical-gas compounding, not a guaranteed tar-clearance or clean-lungs outcome.",
     price: { amount: "14000", currency: "ACP" },
@@ -818,7 +821,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA Installation Project (Neonatal Nutrition + Hyperbaric)",
     category: "AETERNA",
     summary:
-      "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and neonatal hyperbaric-chamber literacy — $39.",
+      "Licensed neonatology / infant-nutrition partner brief for high-protein milk-line and neonatal hyperbaric-chamber literacy â€” $39.",
     description:
       "Settles $39 and issues a licensed-partner brief for Installation Project milk-line and neonatal hyperbaric literacy. Not formula sold by ANCAP, not a CE/FDA device, not home HBO, not a guaranteed clinical outcome.",
     price: { amount: "72000", currency: "ACP" },
@@ -843,7 +846,7 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
     title: "AETERNA DNA-Matched Pheromone Perfume (1 Bottle)",
     category: "AETERNA",
     summary:
-      "Licensed cosmetic / fragrance partner fill for a DNA-vault–informed pheromone perfume — sold per bottle at $29.",
+      "Licensed cosmetic / fragrance partner fill for a DNA-vaultâ€“informed pheromone perfume â€” sold per bottle at $29.",
     description:
       "Settles $29 for exactly one bottle and issues a licensed cosmetic / fragrance partner handoff. Optional DNA-vault content hash may inform olfactory-profile literacy; genome bytes are never uploaded. Not a drug, not an aphrodisiac claim, not a guaranteed attraction outcome, not CE/FDA pheromone medicine.",
     price: { amount: "8900", currency: "ACP" },
@@ -865,11 +868,11 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
   },
   {
     slug: "counsel-jurisdiction-match",
-    title: "Worldwide Legal Counsel — Jurisdiction Match",
+    title: "Worldwide Legal Counsel â€” Jurisdiction Match",
     category: "Counsel",
-    summary: "Match licensed counsel in any covered country — from $19.",
+    summary: "Match licensed counsel in any covered country â€” from $19.",
     description:
-      "Settles ACP for a worldwide jurisdiction-match brief and licensed-counsel shortlist handoff. ANCAP is not a law firm and does not form an attorney–client relationship.",
+      "Settles ACP for a worldwide jurisdiction-match brief and licensed-counsel shortlist handoff. ANCAP is not a law firm and does not form an attorneyâ€“client relationship.",
     price: { amount: "3900", currency: "ACP" },
     accepted_currencies: ["ACP", "wACP"],
     estimated_time_minutes: 35,
@@ -885,9 +888,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
   },
   {
     slug: "counsel-entity-setup",
-    title: "Worldwide Legal Counsel — Entity / Incorporation Brief",
+    title: "Worldwide Legal Counsel â€” Entity / Incorporation Brief",
     category: "Counsel",
-    summary: "Entity setup intake + licensed local counsel handoff — from $39.",
+    summary: "Entity setup intake + licensed local counsel handoff â€” from $39.",
     description:
       "Settles ACP for an incorporation / entity-setup intake brief and licensed local counsel handoff. Not a ready-made company sold by ANCAP.",
     price: { amount: "8900", currency: "ACP" },
@@ -905,9 +908,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
   },
   {
     slug: "counsel-contract-review",
-    title: "Worldwide Legal Counsel — Contract Review Brief",
+    title: "Worldwide Legal Counsel â€” Contract Review Brief",
     category: "Counsel",
-    summary: "Contract intake + licensed counsel review handoff — from $29.",
+    summary: "Contract intake + licensed counsel review handoff â€” from $29.",
     description:
       "Settles ACP for a structured contract-review intake and licensed-counsel handoff. ANCAP does not redline as your attorney.",
     price: { amount: "4500", currency: "ACP" },
@@ -925,9 +928,9 @@ export const fallbackWorkflowTemplates: WorkflowTemplate[] = [
   },
   {
     slug: "counsel-crypto-assets",
-    title: "Worldwide Legal Counsel — Crypto / Digital Assets Match",
+    title: "Worldwide Legal Counsel â€” Crypto / Digital Assets Match",
     category: "Counsel",
-    summary: "Crypto-assets counsel match for token / exchange / stablecoin rails — from $39.",
+    summary: "Crypto-assets counsel match for token / exchange / stablecoin rails â€” from $39.",
     description:
       "Settles ACP for a crypto / digital-assets literacy pack and licensed counsel match. Not an investment prospectus or securities opinion from ANCAP.",
     price: { amount: "12000", currency: "ACP" },
@@ -1105,7 +1108,7 @@ export const fallbackWorkflowBundles: WorkflowBundle[] = [
     category: "AETERNA",
     summary: "DNA wellness + 15-axis molecular aging profile + longevity panel for ACP checkout.",
     description:
-      "Three AETERNA consult-prep workflows for vaulted genomic / blood-RNA panel metadata. Licensed-partner handoff only — no DIY gene editing.",
+      "Three AETERNA consult-prep workflows for vaulted genomic / blood-RNA panel metadata. Licensed-partner handoff only â€” no DIY gene editing.",
     workflow_slugs: [
       "aeterna-dna-wellness-report",
       "aeterna-molecular-aging-profile",
@@ -1164,15 +1167,16 @@ export const fallbackWorkflowCreditPackages: WorkflowCreditPackage[] = [
   },
 ];
 
-// Offline catalogue faces are USD only: no fabricated ACP quote without an oracle.
+// Offline catalogue faces are EUR only: no fabricated ACP quote without an oracle.
 const retailPrices: Record<string, string> = catalogPrices;
 for (const item of [...fallbackWorkflowTemplates, ...fallbackWorkflowBundles]) {
   const amount = retailPrices[item.slug];
   if (!amount) continue;
-  item.usd_sticker = { amount, currency: "USD" };
-  item.price = item.usd_sticker;
+  item.eur_sticker = { amount, currency: "EUR" };
+  item.price = item.eur_sticker;
+  item.accepted_currencies = ["ACP"];
   for (const field of ["summary", "description"] as const) {
-    item[field] = item[field].replace(/\b(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*ACP\b/g, `$${amount}`);
+    item[field] = item[field].replace(/\b(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*ACP\b/g, `${amount} EUR`);
   }
   if (/^(aeterna-|counsel-|space-ai-|stardust-)/.test(item.slug) || ["entertainment-tesla-coil-party", "antique-fire-restore"].includes(item.slug)) {
     item.description = "Price covers an AI-generated brief and intake preparation only. Partner services, procedures, equipment and goods are quoted separately. " + item.description;
@@ -1183,15 +1187,15 @@ for (const item of [...fallbackWorkflowTemplates, ...fallbackWorkflowBundles]) {
   } else {
     for (const period of ["monthly", "quarterly", "annual"] as const) {
       const price = retailPrices[`${item.slug}:${period}`];
-      if (price) item[`subscription_price_${period}`] = { amount: price, currency: "USD" };
+      if (price) item[`subscription_price_${period}`] = { amount: price, currency: "EUR" };
     }
   }
 }
 
-export function catalogPriceLabel(item: { price: { amount: string; currency: string }; usd_sticker?: { amount: string; currency: string } | null }): string {
-  const price = item.usd_sticker || item.price;
+export function catalogPriceLabel(item: { price: { amount: string; currency: string }; usd_sticker?: { amount: string; currency: string } | null; eur_sticker?: { amount: string; currency: string } | null }): string {
+  const price = item.eur_sticker || item.usd_sticker || item.price;
   const amount = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(price.amount));
-  return price.currency === "USD" ? `$${amount}` : `${amount} ${price.currency}`;
+  return price.currency === "EUR" ? `€${amount}` : price.currency === "USD" ? `$${amount}` : price.currency === "ACP" ? `${formatRacpEquivalent(price.amount)} rACP equiv.` : `${amount} ${price.currency}`;
 }
 
 export function getFallbackWorkflowTemplate(slug: string): WorkflowTemplate | null {

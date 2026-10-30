@@ -108,13 +108,14 @@ def public_status() -> dict:
     ]
     if not contract:
         notes.append("Production sACP contract is not configured yet — set SACP_CONTRACT after DeploySacp.s.sol.")
-    mint_available = enabled and not paused
+    redeem_available = enabled and not paused
+    mint_available = redeem_available and not settings.external_token_racp_only
     return {
         "status": "ok" if enabled else "disabled",
         "enabled": enabled,
         "paused": paused,
         "mint_available": mint_available,
-        "redeem_available": mint_available,
+        "redeem_available": redeem_available,
         "peg_target": "USD",
         "peg_note": (
             f"Target 1 sACP ≈ 1 USD; indicative {_api_str(_acp_per_usd())} ACP per USD "
@@ -239,6 +240,8 @@ async def create_mint_intent(
     user_id: str | None = None,
     correlation_id: str | None = None,
 ) -> SacpOperation:
+    if get_settings().external_token_racp_only:
+        raise HTTPException(status_code=409, detail="New BSC sACP issuance is closed; rACP is the primary external token. Existing sACP redemption is separate.")
     _require_live()
     acp = _dec(acp_amount, "acp_amount")
     sacp = indicative_sacp_for_acp(acp)

@@ -1898,7 +1898,21 @@ def find_workflow_bundle(bundle_slug: str) -> WorkflowBundlePublic | None:
 
 
 def find_credit_package(package_slug: str) -> WorkflowCreditPackagePublic | None:
-    return next((item for item in WORKFLOW_CREDIT_PACKAGES if item.slug == package_slug), None)
+    item = next((item for item in WORKFLOW_CREDIT_PACKAGES if item.slug == package_slug), None)
+    from app.config import get_settings
+    if item is None or not get_settings().external_token_racp_only:
+        return item
+    from app.services.eur_pricing import eur_sticker, eur_to_acp
+    face = eur_sticker(item.fiat_price.amount if item.fiat_price else item.price.amount)
+    charge = eur_to_acp(face)
+    # Preserve each package's existing credit-to-price ratio, not a new bonus.
+    credits = (charge * Decimal(item.credit_amount.amount) / Decimal(item.price.amount)).quantize(Decimal("0.00000001"))
+    return item.model_copy(update={
+        "price": Money(amount=str(charge), currency="ACP"),
+        "fiat_price": Money(amount=str(face), currency="EUR"),
+        "credit_amount": Money(amount=str(credits), currency="ACP"),
+        "accepted_currencies": ["ACP"], "pricing_version": "eur-racp-display-20261030",
+    })
 
 
 

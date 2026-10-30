@@ -1,128 +1,98 @@
 {
-  "updated_at": "2026-09-28T12:00:00Z",
+  "updated_at": "2026-10-30",
   "project": "ANCAP",
-  "official_asset": {
-    "name": "Wrapped ACP",
-    "symbol": "wACP",
-    "chain": "bsc",
-    "chain_id": 56,
-    "address": "0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
+  "asset": {
+    "name": "Robinhood ACP",
+    "symbol": "rACP",
+    "chain_id": 4663,
+    "address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
     "decimals": 18,
-    "pool_wacp_usdt_v2": "0xF391ca2bcBaB93Afa23326ebF1e35DB950841601",
-    "pool_wacp_usdt_v3": null,
-    "liquidity_playbook": "https://ancap.cloud/docs/wacp/pancakeswap",
-    "gateway": "0x57c24FF77B23a82328cb88914D4FD4EEBd93321b",
-    "logo": "https://ancap.cloud/wacp-logo.png",
-    "website": "https://ancap.cloud",
-    "docs": "https://ancap.cloud/docs/wacp",
+    "issued_supply": "10000000",
+    "website": "https://ancap.cloud/tokens/racp",
+    "logo": "https://ancap.cloud/racp-logo.png",
     "tokenlist": "https://ancap.cloud/tokenlist.json",
-    "markets": "https://ancap.cloud/markets",
-    "note": "Do not confuse with CoinGecko ticker ACP (Arena Of Faith). Native ACP is ANCAP L1; sACP lists after mainnet deploy."
+    "reserve_address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
+    "initial_reserve_acp": "1000000",
+    "racp_per_acp": 10,
+    "liquidity_budget": "0",
+    "market_price": null,
+    "automatic_redemption": true,
+    "redeem_url": "https://ancap.cloud/tokens/racp/redeem",
+    "redeem_status": "https://api.ancap.cloud/v1/racp/redeem/status",
+    "redeem_note": "Enabled when RACP_REDEEM_ENABLED=true on the API host; burn via requestRedemption, ACP from exclusive reserve."
   },
   "placements": [
     {
-      "id": "pancakeswap_v3",
-      "name": "PancakeSwap V3 (primary LP)",
-      "status": "pending_deploy",
-      "fee": "free",
-      "url": "https://ancap.cloud/docs/wacp/pancakeswap",
-      "how": "Concentrated wACP/USDT after Stage C deployment"
+      "id": "blockscout",
+      "status": "source_verified_exact_match",
+      "url": "https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911?tab=contract"
     },
     {
-      "id": "pancakeswap",
-      "name": "PancakeSwap V2 (reference)",
-      "status": "live",
-      "fee": "free",
-      "url": "https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "Thin canonical micro-market"
+      "id": "sourcify",
+      "status": "source_verified_exact_match",
+      "url": "https://repo.sourcify.dev/4663/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911"
     },
     {
-      "id": "dextools",
-      "name": "DexTools",
-      "status": "live",
-      "fee": "free_index_paid_profile",
-      "url": "https://www.dextools.io/app/en/bnb/pair-explorer/0xf391ca2bcbab93afa23326ebf1e35db950841601",
-      "how": "Auto-indexed from PancakeSwap; Update Info is paid"
+      "id": "blockscout_token_profile",
+      "status": "requires_account_login_for_name_and_logo_update"
     },
     {
-      "id": "geckoterminal",
-      "name": "GeckoTerminal",
-      "status": "live",
-      "fee": "free",
-      "url": "https://www.geckoterminal.com/bsc/pools/0xf391ca2bcbab93afa23326ebf1e35db950841601",
-      "how": "Auto-indexed DEX terminal (CoinGecko family)"
+      "id": "ancap",
+      "status": "published_with_this_release",
+      "url": "https://ancap.cloud/tokens/racp"
     },
     {
-      "id": "bscscan",
-      "name": "BscScan",
-      "status": "live",
-      "fee": "free",
-      "url": "https://bscscan.com/token/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "On-chain explorer token page"
+      "id": "tokenlist",
+      "status": "published_with_this_release",
+      "url": "https://ancap.cloud/tokenlist.json"
     },
     {
-      "id": "goplus",
-      "name": "GoPlus Security",
-      "status": "live",
-      "fee": "free",
-      "url": "https://gopluslabs.io/token-security/56/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "Security API indexes any BSC token; is_in_dex=true"
+      "id": "wallet_import",
+      "status": "manual_import_available",
+      "url": "https://ancap.cloud/tokens/racp"
     },
     {
-      "id": "ancap_tokenlist",
-      "name": "ANCAP Official Token List",
-      "status": "live",
-      "fee": "free",
-      "url": "https://ancap.cloud/tokenlist.json",
-      "how": "Self-hosted Uniswap token-list schema"
+      "id": "metamask_chrome_ios",
+      "status": "metamask_connect_evm",
+      "guide": "https://ancap.cloud/docs/racp/metamask",
+      "note": "Chrome on iPhone uses MetaMask Connect deeplink to the MetaMask app, then returns to Chrome"
     },
     {
-      "id": "ancap_markets",
-      "name": "ANCAP Markets Hub",
-      "status": "live",
-      "fee": "free",
-      "url": "https://ancap.cloud/markets",
-      "how": "First-party discovery page"
-    },
-    {
-      "id": "dexscreener",
-      "name": "DexScreener",
-      "status": "pending_volume",
-      "fee": "free_index_paid_profile",
-      "url": "https://dexscreener.com/bsc/0xf391ca2bcbab93afa23326ebf1e35db950841601",
-      "how": "Needs non-dust swaps; API currently returns pairs:null"
+      "id": "dex_pool",
+      "status": "deferred_by_operator_zero_liquidity_budget"
     },
     {
       "id": "coingecko",
-      "name": "CoinGecko Active Listing",
-      "status": "blocked_liquidity",
-      "fee": "free_form",
-      "url": "https://www.coingecko.com/en/request-form",
-      "how": "Submit as wACP after meaningful pool depth — docs/COINGECKO_LISTING_PLAYBOOK.md"
+      "status": "not_submitted_requires_active_tracked_market",
+      "url": "https://support.coingecko.com/articles/9489827481-how-to-list-a-new-cryptocurrency-on-coingecko?lang=en"
     },
     {
-      "id": "trustwallet",
-      "name": "Trust Wallet Assets",
-      "status": "pack_ready",
-      "fee": "free_pr",
-      "url": "https://github.com/trustwallet/assets",
-      "how": "Community PR pack in docs/listings/trustwallet-smartchain-wacp/"
+      "id": "coinmarketcap",
+      "status": "not_submitted_no_active_market",
+      "url": "https://support.coinmarketcap.com/hc/en-us/articles/360043659351-Listings-Criteria"
     },
     {
-      "id": "poocoin",
-      "name": "PooCoin",
-      "status": "auto_if_indexed",
-      "fee": "free",
-      "url": "https://poocoin.app/tokens/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "BSC chart SPA; open by CA"
+      "id": "trustwallet_assets",
+      "status": "not_submitted_requirements_and_fee_not_met",
+      "url": "https://developer.trustwallet.com/developer/new-asset/requirements"
     },
     {
-      "id": "dexview",
-      "name": "DexView",
-      "status": "auto_if_indexed",
-      "fee": "free",
-      "url": "https://www.dexview.com/bsc/0x349797E2f1A4FD722Af2dB181ab1C4ED7606F402",
-      "how": "Open by CA"
+      "id": "airdrops_com_campaign",
+      "status": "suggestion_submitted_pending_editorial_review",
+      "url": "https://airdrops.com/suggest-airdrop",
+      "submitted_at": "2026-10-30"
     }
-  ]
+  ],
+  "airdrop": {
+    "url": "https://ancap.cloud/tokens/racp/airdrop",
+    "contract": "0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+    "budget": "1000000",
+    "grant": "500",
+    "maximum_claims": 2000,
+    "status": "funded_claims_open",
+    "live_status": "https://api.ancap.cloud/v1/racp/airdrop/status",
+    "recipient_pays_eth_network_fee": true,
+    "uniqueness": "per_account_and_verified_wallet_not_proof_of_unique_humans"
+  },
+  "primary_external_asset": "rACP"
 }
