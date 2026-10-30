@@ -4,6 +4,10 @@
 
 # ANCAP Master Roadmap
 
+2026-10-30: native ACP receipt confirmed in block 21; stale balance index
+repaired live. Independent 30-second UTXO refresh timer installed and enabled.
+See [incident evidence](docs/ACP_BALANCE_INDEX_INCIDENT_2026-10-30.md).
+
 ## Robinhood ACP (rACP) — 2026-10-30
 
 Opt-in airdrop funded with 1,000,000 existing rACP: 500 per claim, up to 2,000

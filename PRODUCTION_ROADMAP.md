@@ -2,6 +2,10 @@
 
 # ANCAP Production Roadmap
 
+2026-10-30: [x] Native ACP stale balance index recovered to block 21;
+independent UTXO refresh deployed as a 30-second systemd timer. Five index
+tests passed. [Incident evidence](docs/ACP_BALANCE_INDEX_INCIDENT_2026-10-30.md).
+
 ## Expo SDK 58 CI maintenance — 2026-10-28
 
 [~] Align the 11 newly required Expo SDK 58 patch versions in the mobile workspace and lockfile. The previous Frontend CI failure was dependency compatibility; frontend tests, browser tests, backend and security checks passed. Local expo-doctor (19/19), workspace type checks, 352 workspace tests, 13 security regression tests and Android export passed. A green replacement GitHub run is pending. Native device acceptance remains separate.
