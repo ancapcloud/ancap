@@ -1,0 +1,18 @@
+{
+  "chainId": 4663,
+  "contract": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+  "blockscout": {
+    "status": "exact_match",
+    "compiler": "v0.8.24+commit.e11b9ed9",
+    "optimizerRuns": 200,
+    "evmVersion": "paris",
+    "license": "MIT",
+    "verifiedAt": "2026-10-29T23:39:21Z",
+    "url": "https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911?tab=contract"
+  },
+  "sourcify": {
+    "status": "exact_match",
+    "matchId": "57603340",
+    "url": "https://repo.sourcify.dev/4663/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911"
+  }
+}

@@ -12,6 +12,8 @@ def test_racp_is_discoverable_but_not_tradeable():
     assert token.metadata["initial_reserve_confirmed"] is True
     assert token.metadata["redemption_available"] is False
     assert token.metadata["reserve_monitoring"] == "not_implemented"
+    assert token.metadata["source_verification"] == "exact_match"
+    assert token.metadata["website"] == "https://ancap.cloud/tokens/racp"
     assert not any(
         p.from_asset == token.id or p.to_asset == token.id
         for p in build_pairs(assets)

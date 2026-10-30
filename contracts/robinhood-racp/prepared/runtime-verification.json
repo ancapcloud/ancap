@@ -6,5 +6,5 @@
   "recipientBalance": "10000000000000000000000000",
   "issued": true,
   "reserveEvidence": "0x9eb3773d3937092df7b67e12c6443d16c7d778e4ed49dd4807ffd94d9642302b",
-  "explorerSourceVerification": "blocked-by-explorer-challenge"
+  "explorerSourceVerification": "exact_match"
 }

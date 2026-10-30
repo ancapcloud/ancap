@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { WacpPublicActions } from "@/components/WacpPublicActions";
+import { RacpOverview } from "@/components/RacpOverview";
 import { SiteLegalFooter } from "@/components/legal/LegalViews";
 import {
   WACP_BSC_CONTRACT,
@@ -126,6 +127,7 @@ export default function MarketsPage() {
     <div className="relative min-h-screen">
       <Navigation />
       <main className="container" style={{ padding: "48px 24px 72px" }}>
+        <RacpOverview compact />
         <div className="section-num">PUBLIC MARKETS</div>
         <h1
           style={{
