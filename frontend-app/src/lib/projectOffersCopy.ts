@@ -20,7 +20,7 @@ const en: OfferCopyMap = {
     inputs: "Asset or commodity focus, horizon, risk tolerance notes",
     aiResult: "Market-direction or momentum brief (document)",
     constraints: "Not investment advice; not a live trading bot; public listing widgets on the page are separate from paid briefs",
-    payment: "ACP / wACP via workflow-store checkout",
+    payment: "EUR prices; internal ACP settlement; rACP display equivalents.",
     receipt: "Run receipt with price snapshot, input hash, status timeline",
   },
   "/business": {
@@ -38,7 +38,7 @@ const en: OfferCopyMap = {
     inputs: "Audience, channels, launch window, constraints",
     aiResult: "Campaign plan, post ideas, ops checklist",
     constraints: "Does not purchase ads or guarantee follower growth",
-    payment: "ACP / wACP",
+    payment: "EUR prices; internal ACP settlement; rACP display equivalents.",
     receipt: "Workflow run receipt",
   },
   "/agency": {
@@ -47,7 +47,7 @@ const en: OfferCopyMap = {
     inputs: "Project facts, token references, channel goals",
     aiResult: "Bundled launch / growth documents",
     constraints: "Agency page routes to catalog packs; delivery is documents, not managed services",
-    payment: "ACP / wACP on pack checkout",
+    payment: "EUR prices; internal ACP settlement; rACP display equivalents.",
     receipt: "Bundle run receipt",
   },
   "/startups": {
@@ -56,7 +56,7 @@ const en: OfferCopyMap = {
     inputs: "Project name, narrative, chain, checklist answers",
     aiResult: "Listing pack / launch audit documents",
     constraints: "Not an exchange listing guarantee",
-    payment: "ACP / wACP",
+    payment: "EUR prices; internal ACP settlement; rACP display equivalents.",
     receipt: "Proof receipt",
   },
   "/counsel": {
@@ -83,7 +83,7 @@ const en: OfferCopyMap = {
     inputs: "Process description, controls, evidence inventory",
     aiResult: "Governance / compliance readiness documents",
     constraints: "Readiness support only — not a certification",
-    payment: "ACP / wACP",
+    payment: "EUR prices; internal ACP settlement; rACP display equivalents.",
     receipt: "Proof receipt with governance scope metadata",
   },
   "/careers": {
@@ -320,7 +320,7 @@ const ru: OfferCopyMap = {
     inputs: "Фокус на активе или товаре, горизонт, заметки о риск-аппетите",
     aiResult: "Бриф о направлении рынка или моментуме (документ)",
     constraints: "Не инвестиционная рекомендация; не торговый бот; виджеты листингов на странице отделены от платных брифов",
-    payment: "ACP / wACP через checkout workflow-store",
+    payment: "Цены в EUR; расчёт в ACP; отображение в эквиваленте rACP.",
     receipt: "Квитанция запуска с ценой, хешем входов и таймлайном статуса",
   },
   "/business": {
@@ -338,7 +338,7 @@ const ru: OfferCopyMap = {
     inputs: "Аудитория, каналы, окно запуска, ограничения",
     aiResult: "План кампании, идеи постов, ops-чеклист",
     constraints: "Не покупает рекламу и не гарантирует рост аудитории",
-    payment: "ACP / wACP",
+    payment: "Цены в EUR; расчёт в ACP; отображение в эквиваленте rACP.",
     receipt: "Квитанция запуска workflow",
   },
   "/agency": {
@@ -347,7 +347,7 @@ const ru: OfferCopyMap = {
     inputs: "Факты проекта, ссылки на токен, цели каналов",
     aiResult: "Пакет документов для запуска / роста",
     constraints: "Страница ведёт к catalog packs; результат — документы, а не managed-услуги",
-    payment: "ACP / wACP при checkout пакета",
+    payment: "Цены в EUR; расчёт в ACP; отображение в эквиваленте rACP.",
     receipt: "Квитанция bundle-запуска",
   },
   "/startups": {
@@ -356,7 +356,7 @@ const ru: OfferCopyMap = {
     inputs: "Название, нарратив, сеть, ответы чеклиста",
     aiResult: "Listing pack / audit-документы запуска",
     constraints: "Не гарантия листинга на бирже",
-    payment: "ACP / wACP",
+    payment: "Цены в EUR; расчёт в ACP; отображение в эквиваленте rACP.",
     receipt: "Proof-квитанция",
   },
   "/counsel": {
@@ -383,7 +383,7 @@ const ru: OfferCopyMap = {
     inputs: "Описание процессов, контроли, инвентарь доказательств",
     aiResult: "Документы governance / compliance readiness",
     constraints: "Только поддержка готовности — не сертификация",
-    payment: "ACP / wACP",
+    payment: "Цены в EUR; расчёт в ACP; отображение в эквиваленте rACP.",
     receipt: "Proof-квитанция с метаданными scope",
   },
   "/careers": {
@@ -620,7 +620,7 @@ const uk: OfferCopyMap = {
     inputs: "Фокус на активе или товаре, горизонт, нотки о риск-аппетите",
     aiResult: "Бриф о направлении рынка или моментуме (документ)",
     constraints: "Не інвестиційна рекомендація; не торговий бот; виджеты листингов на сторінці відокремлені от платних брифів",
-    payment: "ACP / wACP через checkout workflow-store",
+    payment: "Ціни в EUR; розрахунок в ACP; відображення в еквіваленті rACP.",
     receipt: "Квитанція запуску с ціною, хешем входів и таймлайном статусу",
   },
   "/business": {
@@ -638,7 +638,7 @@ const uk: OfferCopyMap = {
     inputs: "Аудиторія, канали, окно запуску, обмеження",
     aiResult: "План кампанії, ідеї постів, ops-чеклист",
     constraints: "Не купує рекламу и не гарантує ззростанняння аудиторії",
-    payment: "ACP / wACP",
+    payment: "Ціни в EUR; розрахунок в ACP; відображення в еквіваленті rACP.",
     receipt: "Квитанція запуску workflow",
   },
   "/agency": {
@@ -647,7 +647,7 @@ const uk: OfferCopyMap = {
     inputs: "Факты проєкта, посилання на токен, цілі каналів",
     aiResult: "Пакет документів для запуску / зростання",
     constraints: "Сторінка веде к catalog packs; результат — документи, а не managed-послуги",
-    payment: "ACP / wACP під час checkout пакета",
+    payment: "Ціни в EUR; розрахунок в ACP; відображення в еквіваленті rACP.",
     receipt: "Квитанція bundle-запуску",
   },
   "/startups": {
@@ -656,7 +656,7 @@ const uk: OfferCopyMap = {
     inputs: "Назва, нарратив, мережа, відповіді чеклиста",
     aiResult: "Listing pack / audit-документы запуску",
     constraints: "Не гарантія лістингу на біржі",
-    payment: "ACP / wACP",
+    payment: "Ціни в EUR; розрахунок в ACP; відображення в еквіваленті rACP.",
     receipt: "Proof-квитанция",
   },
   "/counsel": {
@@ -683,7 +683,7 @@ const uk: OfferCopyMap = {
     inputs: "Опис процесів, контроли, інвентар доказів",
     aiResult: "Документы governance / compliance readiness",
     constraints: "Лише підтримка готовності — не сертифікація",
-    payment: "ACP / wACP",
+    payment: "Ціни в EUR; розрахунок в ACP; відображення в еквіваленті rACP.",
     receipt: "Proof-квитанция с метаданными scope",
   },
   "/careers": {
@@ -920,7 +920,7 @@ const de: OfferCopyMap = {
     inputs: "Asset- oder Rohstofffokus, Horizont, Risikohinweise",
     aiResult: "Markt- oder Momentum-Briefing (Dokument)",
     constraints: "Keine Anlageberatung; kein Live-Handelsbot; öffentliche Listing-Widgets sind von bezahlten Briefings getrennt",
-    payment: "ACP / wACP über Workflow-Store-Checkout",
+    payment: "Preise in EUR; interne ACP-Abrechnung; Anzeige als rACP-Gegenwert.",
     receipt: "Ausführungsbeleg mit Preis-Snapshot, Input-Hash und Status-Timeline",
   },
   "/business": {
@@ -938,7 +938,7 @@ const de: OfferCopyMap = {
     inputs: "Zielgruppe, Kanäle, Launch-Fenster, Grenzen",
     aiResult: "Kampagnenplan, Post-Ideen, Ops-Checkliste",
     constraints: "Kauft keine Anzeigen und garantiert kein Follower-Wachstum",
-    payment: "ACP / wACP",
+    payment: "Preise in EUR; interne ACP-Abrechnung; Anzeige als rACP-Gegenwert.",
     receipt: "Workflow-Ausführungsbeleg",
   },
   "/agency": {
@@ -947,7 +947,7 @@ const de: OfferCopyMap = {
     inputs: "Projektdaten, Token-Referenzen, Kanalziele",
     aiResult: "Gebündelte Launch-/Wachstumsdokumente",
     constraints: "Seite führt zu Katalogpaketen; Ergebnis sind Dokumente, keine Managed Services",
-    payment: "ACP / wACP beim Paket-Checkout",
+    payment: "Preise in EUR; interne ACP-Abrechnung; Anzeige als rACP-Gegenwert.",
     receipt: "Bundle-Ausführungsbeleg",
   },
   "/startups": {
@@ -956,7 +956,7 @@ const de: OfferCopyMap = {
     inputs: "Projektname, Narrative, Chain, Checklistenantworten",
     aiResult: "Listing-Pack- / Launch-Audit-Dokumente",
     constraints: "Keine Börsenlisting-Garantie",
-    payment: "ACP / wACP",
+    payment: "Preise in EUR; interne ACP-Abrechnung; Anzeige als rACP-Gegenwert.",
     receipt: "Proof-Beleg",
   },
   "/counsel": {
@@ -983,7 +983,7 @@ const de: OfferCopyMap = {
     inputs: "Prozessbeschreibung, Kontrollen, Evidenzinventar",
     aiResult: "Governance-/Compliance-Readiness-Dokumente",
     constraints: "Nur Readiness-Unterstützung — keine Zertifizierung",
-    payment: "ACP / wACP",
+    payment: "Preise in EUR; interne ACP-Abrechnung; Anzeige als rACP-Gegenwert.",
     receipt: "Proof-Beleg mit Governance-Scope-Metadaten",
   },
   "/careers": {
@@ -1220,7 +1220,7 @@ const zhHant: OfferCopyMap = {
     inputs: "資產或商品焦點、時間範圍、風險備註",
     aiResult: "市場方向或動能簡報（文件）",
     constraints: "非投資建議；非即時交易機器人；頁面公開上架元件與付費簡報分開",
-    payment: "透過 workflow-store 結帳以 ACP／wACP 付款",
+    payment: "價格以 EUR 計算；內部以 ACP 結算；顯示 rACP 等值。",
     receipt: "含價格快照、輸入雜湊與狀態時間軸的執行憑證",
   },
   "/business": {
@@ -1238,7 +1238,7 @@ const zhHant: OfferCopyMap = {
     inputs: "受眾、通路、上線時窗、限制",
     aiResult: "活動計畫、貼文構想、營運清單",
     constraints: "不代買廣告，也不保證粉絲成長",
-    payment: "ACP／wACP",
+    payment: "價格以 EUR 計算；內部以 ACP 結算；顯示 rACP 等值。",
     receipt: "工作流程執行憑證",
   },
   "/agency": {
@@ -1247,7 +1247,7 @@ const zhHant: OfferCopyMap = {
     inputs: "專案事實、代幣參考、通路目標",
     aiResult: "打包的上線／成長文件",
     constraints: "頁面導向目錄套餐；交付是文件而非代管服務",
-    payment: "套餐結帳時以 ACP／wACP 付款",
+    payment: "價格以 EUR 計算；內部以 ACP 結算；顯示 rACP 等值。",
     receipt: "套餐執行憑證",
   },
   "/startups": {
@@ -1256,7 +1256,7 @@ const zhHant: OfferCopyMap = {
     inputs: "專案名稱、敘事、鏈別、清單回答",
     aiResult: "上架套件／上線稽核文件",
     constraints: "不保證交易所上架",
-    payment: "ACP／wACP",
+    payment: "價格以 EUR 計算；內部以 ACP 結算；顯示 rACP 等值。",
     receipt: "證明憑證",
   },
   "/counsel": {
@@ -1283,7 +1283,7 @@ const zhHant: OfferCopyMap = {
     inputs: "流程描述、控制措施、證據清冊",
     aiResult: "治理／合規就緒文件",
     constraints: "僅就緒支援——非認證",
-    payment: "ACP／wACP",
+    payment: "價格以 EUR 計算；內部以 ACP 結算；顯示 rACP 等值。",
     receipt: "含治理範圍中繼資料的證明憑證",
   },
   "/careers": {
