@@ -1,0 +1,108 @@
+{
+  "pages": [
+    {
+      "status": 200,
+      "racpPresent": true,
+      "path": "/tokens/racp"
+    },
+    {
+      "status": 200,
+      "racpPresent": true,
+      "path": "/markets"
+    },
+    {
+      "status": 200,
+      "racpPresent": true,
+      "path": "/"
+    },
+    {
+      "status": 200,
+      "racpPresent": true,
+      "path": "/whitepaper/racp.md"
+    },
+    {
+      "status": 200,
+      "racpPresent": true,
+      "path": "/llms.txt"
+    }
+  ],
+  "checkedAtUTC": "2026-10-29T23:57:49.0428541Z",
+  "build": {
+    "NEXT_PUBLIC_APP_BUILD_ID": "racp-20261030",
+    "build_id_source": "next-build-id-file",
+    "next_public_app_build_id_env": "racp-20261030",
+    "next_build_id_file": "racp-20261030"
+  },
+  "logoStatus": 200,
+  "tokenlistVersion": {
+    "major": 1,
+    "minor": 1,
+    "patch": 0
+  },
+  "token": {
+    "chainId": 4663,
+    "address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+    "name": "Robinhood ACP",
+    "symbol": "rACP",
+    "decimals": 18,
+    "logoURI": "https://ancap.cloud/racp-logo.png",
+    "tags": [
+      "ancap-official",
+      "bridge-wrap"
+    ]
+  },
+  "placements": [
+    {
+      "id": "blockscout",
+      "status": "source_verified_exact_match",
+      "url": "https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911?tab=contract"
+    },
+    {
+      "id": "sourcify",
+      "status": "source_verified_exact_match",
+      "url": "https://repo.sourcify.dev/4663/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911"
+    },
+    {
+      "id": "blockscout_token_profile",
+      "status": "requires_account_login_for_name_and_logo_update"
+    },
+    {
+      "id": "ancap",
+      "status": "published_with_this_release",
+      "url": "https://ancap.cloud/tokens/racp"
+    },
+    {
+      "id": "tokenlist",
+      "status": "published_with_this_release",
+      "url": "https://ancap.cloud/tokenlist.json"
+    },
+    {
+      "id": "wallet_import",
+      "status": "manual_import_available",
+      "url": "https://ancap.cloud/tokens/racp"
+    },
+    {
+      "id": "dex_pool",
+      "status": "deferred_by_operator_zero_liquidity_budget"
+    },
+    {
+      "id": "coingecko",
+      "status": "not_submitted_requires_active_tracked_market",
+      "url": "https://support.coingecko.com/articles/9489827481-how-to-list-a-new-cryptocurrency-on-coingecko?lang=en"
+    },
+    {
+      "id": "coinmarketcap",
+      "status": "not_submitted_no_active_market",
+      "url": "https://support.coinmarketcap.com/hc/en-us/articles/360043659351-Listings-Criteria"
+    },
+    {
+      "id": "trustwallet_assets",
+      "status": "not_submitted_requirements_and_fee_not_met",
+      "url": "https://developer.trustwallet.com/developer/new-asset/requirements"
+    }
+  ],
+  "apiCatalogUpdated": true,
+  "reserveBalanceACP": "1000000",
+  "docsAliasStatus": 200,
+  "liveBrowserChecked": true
+}

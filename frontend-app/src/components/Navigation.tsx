@@ -46,6 +46,7 @@ const explorePublicGroups: NavGroup[] = [
     { label: "Free snapshot", href: "/token-snapshot", i18nKey: "nav.freeSnapshot" },
     { label: "MCP", href: "/mcp" },
     { label: "ACP", href: "/acp" },
+    { label: "rACP · Robinhood Chain", href: "/tokens/racp" },
     { label: "Wallet", href: "/wallet/acp", i18nKey: "nav.acpWallet" },
     { label: "Bridge", href: "/bridge/acp-bsc", i18nKey: "nav.bridgeAcpBsc" },
   ] },

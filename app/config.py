@@ -395,6 +395,23 @@ class Settings(BaseSettings):
     graph_enforcement_max_cluster_size: int = 10
     graph_enforcement_block_if_in_cycle: bool = True
 
+    # Opt-in rACP campaign: dedicated restricted signing key, never treasury key.
+    racp_airdrop_config_file: str = "/run/secrets/racp-airdrop.json"
+    racp_airdrop_signer_file: str = "/run/secrets/racp-airdrop-voucher.key"
+
+    # rACP → ACP automatic redemption (exclusive reserve; never bridge hot wallet).
+    racp_redeem_enabled: bool = False
+    racp_redeem_paused: bool = False
+    racp_redeem_dry_run: bool = True
+    racp_contract: str = "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911"
+    racp_rpc_url: str = "https://rpc.mainnet.chain.robinhood.com"
+    racp_chain_id: str = "4663"
+    racp_reserve_acp_address: str = "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz"
+    racp_reserve_keystore_file: str = "/run/secrets/racp-reserve.keystore.json"
+    racp_redeem_rh_confirmations: int = 3
+    racp_redeem_acp_confirmations: int = 1
+    racp_operator_secret: str = ""
+
     # wACP / BSC bridge
     bridge_rail_enabled: bool = False
     bridge_rail_paused: bool = False
@@ -544,6 +561,12 @@ class Settings(BaseSettings):
     webid_api_base: str = ""
     webid_client_id: str = ""
     webid_client_secret: str = ""
+    # Optional P1 sandbox overrides (set after commercial WebID account).
+    webid_create_path: str = "/api/v1/identification"
+    webid_light_redirect_base: str = ""  # e.g. https://gateway.webid-solutions.de/…
+    webid_return_url: str = "https://ancap.cloud/cards"
+    webid_webhook_secret: str = ""
+    webid_product: str = "VideoID"  # VideoID | AutoID | TrueID | CorporateID | …
 
     # CoinGecko market data (indicative only; never commit real keys)
     coingecko_enabled: bool = True

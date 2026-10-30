@@ -21,7 +21,10 @@ Users buy useful AI execution with ACP, creators publish paid workflows, and eve
 - ${SITE_URL}/proof-center - public proof and receipt center.
 - ${SITE_URL}/wallet/acp - custodial ACP wallet after sign-in.
 - ${SITE_URL}/markets - public wACP market surfaces and official token list.
-- ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (wACP on BSC).
+- ${SITE_URL}/tokens/racp - official Robinhood ACP (rACP), contract, reserve funding and wallet import; no live trading pool.
+- ${SITE_URL}/tokens/racp/redeem - supervised rACP→ACP burn/redeem from exclusive reserve (API flag RACP_REDEEM_ENABLED).
+- ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (wACP on BSC, rACP on Robinhood Chain 4663).
+- ${SITE_URL}/racp-listings.json - rACP public placement status; external listings are not implied.
 - ${SITE_URL}/listings.json - machine-readable placement matrix (live / pending / blocked).
 
 ## Machine-readable resources

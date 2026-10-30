@@ -61,12 +61,32 @@ def test_webid_status_public_fail_closed(client):
     assert response.status_code == 200
     body = response.json()
     assert body["configured"] is False
+    assert body["sessions_ready"] is False
     assert body["issues_cards"] is False
     assert body["apple_pay_ready"] is False
     assert body["role"] == "kyc_partner_slot"
     assert body["waitlist_interest"] == "physical_card_apple_pay"
+    assert body["session_path"] == "/v1/commerce/webid/session"
+    assert body["webhook_path"] == "/v1/commerce/webid/webhook"
+    assert body["partner_url"].startswith("https://webid-solutions.com")
     assert "client_secret" not in body
     assert "WEBID_CLIENT_SECRET" not in str(body)
+
+
+def test_webid_session_fail_closed_without_credentials(client):
+    _, headers = _register_user(client, "webid_session")
+    response = client.post("/v1/commerce/webid/session", json={}, headers=headers)
+    assert response.status_code == 503
+    assert "not configured" in response.json()["detail"].lower()
+
+
+def test_webid_webhook_rejects_without_secret(client):
+    response = client.post(
+        "/v1/commerce/webid/webhook",
+        content=b'{"event":"identification.completed","actionId":"1","status":"success"}',
+        headers={"Content-Type": "application/json", "X-Signature": "deadbeef"},
+    )
+    assert response.status_code == 401
 
 
 def test_stripe_adapter_status_public(client):

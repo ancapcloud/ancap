@@ -1,22 +1,39 @@
 # ANCAP Master Roadmap
 
-## Expo SDK 58 CI maintenance — 2026-10-28
+## Robinhood ACP (rACP) — 2026-10-30
 
-[~] Align the 11 newly required Expo SDK 58 patch versions in the mobile workspace and lockfile. The previous Frontend CI failure was dependency compatibility; frontend tests, browser tests, backend and security checks passed. Local expo-doctor (19/19), workspace type checks, 352 workspace tests, 13 security regression tests and Android export passed. A green replacement GitHub run is pending. Native device acceptance remains separate.
+Opt-in airdrop funded with 1,000,000 existing rACP: 500 per claim, up to 2,000
+recipients. Pool `0x2867D10560b35616370cF5C7A21Ab1532698FD0F` has exact verified
+source. Authenticated wallet/Turnstile vouchers, on-chain wallet/account replay
+protection, live counters and five-language claim page are included in release
+`racp-airdrop-20261030`. Recipients pay ETH network fees. Funded tokens are not yet
+distributed to recipients; counters track actual confirmed claims. Uniqueness is
+per account and wallet, not proof of unique humans. Native backing remains unchanged.
+
+Public distribution: Blockscout and Sourcify exact source matches confirmed;
+official five-language token page, wallet import, homepage/Markets/navigation,
+logo, whitepaper and multi-chain tokenlist are deployed in web release `racp-20261030`.
+Liquidity budget is explicitly zero. Exchange/price-tracker applications remain
+unsubmitted; Blockscout profile edits need account login. Scope and evidence:
+[distribution record](docs/RACP_PUBLIC_DISTRIBUTION_2026-10-30.md).
+
+Wallet balance hotfix (2026-10-30): personal native UTXOs are no longer capped
+to the shared custodial wallet's ledger entitlement. Existing stake/platform
+reservations remain excluded from spendable funds. Nine targeted tests passed;
+patched API deployed and live balance response/health checked. The user-approved
+claim release and reserve funding are now complete, as recorded below. The partial
+UTXO index also no longer reports unwatched addresses as confirmed zero balances.
+
+Robinhood Chain mainnet issuance complete: 10,000,000 rACP sent to the approved
+recipient against an exclusive 1,000,000 ACP reserve (1 ACP = 10 rACP), funded in
+native block 19. The user approved release of platform claims/three 50k stakes.
+Catalog entry stays non-tradeable for quote/settle pairs; automated rACP→ACP
+redemption rail is shipped (fail-closed until `RACP_REDEEM_ENABLED`). Evidence:
+[rACP](contracts/robinhood-racp/README.md), `/tokens/racp/redeem`.
 
 ## ANCAP Card — 2026-10-28
 
-[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation remains open. Card release 86fb055 deployed successfully via PR #132; public build and all five home/projects locales verified. The mobile CI dependency patch alignment is tracked below.
-
-
-2026-10-28 local ROP-02: existing Studio reports can now bind immutable research
-packets to exact result/source hashes, human review and the durable outbox.
-Only one consented full-JSON webhook is eligible; source/result/role changes
-block approval and dispatch. Recipient export omits internal provenance notes.
-Release 00c1e04 deployed successfully via PR #130; production build, CI,
-migrations 092/093 and public health/readiness checks passed. Live recipient
-delivery, customer-source quality and paid validation remain open.
-See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
+[Card roadmap](docs/ANCAP_CARD_ROADMAP.md) preserves the complete supplied brief, partner gates, rewards, cost assumptions and pilot budget. Home/projects information is implemented locally in five languages. Issuing and rewards remain unavailable; partners and Apple Pay are unconfirmed. Full card-page localisation and production acceptance remain open. No deployment in this change.
 
 ## Active priorities — 2026-10-28
 
@@ -24,7 +41,7 @@ See [pilot scope](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
 [bounded agency-pilot roadmap](docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md).
 ROP-01 adds project-approved public HTML sources, checked versions/text changes,
 manual source-bound claims and a private draft packet in Studio (migration 093).
-Commercial validation, live reviewed-release delivery, schedules and renewal evidence
+Commercial validation, reviewed-release delivery, schedules and renewal evidence
 remain explicit gates; the supplied strategy is not a verified market audit.
 
 2026-10-28: actual-cost P0 now includes an evidence-allocation reconciler and
@@ -938,7 +955,7 @@ Status: [~] Adapter shipped: env `HELIO_*`, `GET /v1/commerce/helio/status`, sig
 
 ### 4.0c WebID KYC slot + physical card / Apple Pay waitlist [MEDIUM]
 
-Status: [x] P0 — docs (`docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`), `/cards` waitlist (`interest=physical_card_apple_pay`), fail-closed `GET /v1/commerce/webid/status` (`issues_cards=false`). WebID is KYC/KYB only; plastic + Apple Pay need a separate licensed BaaS/EMI after counsel. P1 sandbox API and P2 issuer track remain open.
+Status: [~] P0 done + P1 sandbox adapter shipped (fail-closed until commercial credentials): docs (`docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`), `/cards` waitlist + live status, `GET /v1/commerce/webid/status`, authenticated `POST /v1/commerce/webid/session`, signed `POST /v1/commerce/webid/webhook`. WebID is KYC/KYB only (`issues_cards=false`); plastic + Apple Pay need a separate licensed BaaS/EMI after counsel. Remaining: operator WebID commercial account + live sandbox smoke; P2 issuer track open.
 
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 

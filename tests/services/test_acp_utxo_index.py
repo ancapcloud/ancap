@@ -49,6 +49,19 @@ def test_apply_block_tracks_unspent_for_watched_addresses():
     assert unspent["bbbb:0"] == (CUSTODIAL_HOT_ADDRESS, 140_000_000)
 
 
+def test_unwatched_address_is_unknown_rather_than_zero(monkeypatch):
+    from app.services import cache
+
+    monkeypatch.setattr(cache, "cache_get_json_sync", lambda key: None)
+    with idx._lock:
+        idx._state["wm"] = 19
+        idx._state["unspent"] = {"tx:0": (CUSTODIAL_HOT_ADDRESS, 100)}
+    assert idx.get_indexed_balance("acp1qnewreserve") is None
+    watched = idx.get_indexed_balance(GENESIS_TREASURY_ADDRESS)
+    assert watched is not None
+    assert watched["units"] == "0"
+
+
 def test_amount_parser_rejects_ambiguous_decimal_strings():
     assert idx._amount_to_units(6_600_000_000) == 6_600_000_000
     try:

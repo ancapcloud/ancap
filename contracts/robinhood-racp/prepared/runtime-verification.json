@@ -1,0 +1,10 @@
+{
+  "chainId": 4663,
+  "contractAddress": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+  "runtimeMatchesLocalCompilation": true,
+  "totalSupply": "10000000000000000000000000",
+  "recipientBalance": "10000000000000000000000000",
+  "issued": true,
+  "reserveEvidence": "0x9eb3773d3937092df7b67e12c6443d16c7d778e4ed49dd4807ffd94d9642302b",
+  "explorerSourceVerification": "exact_match"
+}
