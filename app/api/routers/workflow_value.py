@@ -17,6 +17,13 @@ async def record_cost_evidence(body: CostEvidenceCreate, session: DbSession, res
     return await workflow_costs.record_cost_evidence(session, reviewer_id, body)
 
 
+@router.get("/admin/cost-evidence/{evidence_id}", response_model=CostEvidenceReceipt)
+async def get_cost_evidence(evidence_id: UUID, session: DbSession, response: Response,
+                             reviewer_id: str = Depends(require_platform_admin)):
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_costs.get_cost_evidence(evidence_id, session)
+
+
 @router.get("/admin/runs/{run_id}/costs", response_model=ReconciledRunCosts)
 async def get_run_costs(run_id: UUID, session: DbSession, response: Response,
                         reviewer_id: str = Depends(require_platform_admin)):

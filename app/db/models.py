@@ -45,11 +45,26 @@ class WorkflowCostEvidence(Base):
     )
 
 
+# Cost category enum for PostgreSQL
+class CostCategoryEnum(str, enum.Enum):
+    model = "model"
+    data = "data"
+    infrastructure = "infrastructure"
+    review = "review"
+    support = "support"
+    payment_fee = "payment_fee"
+    creator_payout = "creator_payout"
+
+
 class WorkflowCostAllocation(Base):
     __tablename__ = "workflow_cost_allocations"
     evidence_id = Column(UUID(as_uuid=True), ForeignKey("workflow_cost_evidence.id", ondelete="CASCADE"), primary_key=True)
     workflow_run_id = Column(UUID(as_uuid=True), ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
     amount = Column(Numeric(36, 18), nullable=False)
+    evidence_line_id = Column(String(255), nullable=True)  # Reference to source line
+    evidence_amount = Column(Numeric(36, 18), nullable=True)  # Original amount from source
+    category = Column(SQLEnum(CostCategoryEnum), nullable=True)  # Cost category
+    currency = Column(String(3), nullable=True)  # Currency code
     __table_args__ = (
         CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_workflow_cost_allocation_amount"),
         Index("ix_workflow_cost_allocation_run", "workflow_run_id"),

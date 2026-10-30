@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.db.models import WorkflowCostAllocation, WorkflowCostEvidence, WorkflowRunRecord
+from app.api.deps import DbSession
 
 from app.schemas.workflow_costs import COST_CATEGORIES, ReconciledCostAllocation, ReconciledRunCosts
 
@@ -42,6 +43,50 @@ async def record_cost_evidence(session, reviewer_id: str, body):
                 raise HTTPException(status_code=409, detail="Source line already recorded; no changes applied") from exc
             raise
         return CostEvidenceReceipt(id=row.id, recorded_by_user_id=row.recorded_by_user_id)
+
+
+async def get_cost_evidence(evidence_id: UUID, session: DbSession):
+    """Retrieve a single cost evidence record by ID.
+
+    Admin-only endpoint for viewing saved cost evidence records.
+    Returns the full evidence record with all allocations.
+    """
+    from app.schemas.workflow_costs import CostEvidenceReceipt, ReconciledCostAllocation
+    
+    evidence = (await session.execute(select(WorkflowCostEvidence).where(
+        WorkflowCostEvidence.id == evidence_id))).scalar_one_or_none()
+    if evidence is None:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    
+    # Fetch allocations for this evidence
+    allocations = (await session.execute(select(WorkflowCostAllocation).where(
+        WorkflowCostAllocation.evidence_id == evidence_id))).scalars().all()
+    
+    # Convert to response schema with full details
+    receipt = CostEvidenceReceipt(
+        id=evidence.id,
+        source=evidence.source,
+        document_id=evidence.document_id,
+        line_id=evidence.line_id,
+        document_sha256=evidence.document_sha256,
+        category=evidence.category,
+        currency=evidence.currency,
+        amount=evidence.amount,
+        review_note=evidence.review_note,
+        recorded_by_user_id=evidence.recorded_by_user_id
+    )
+    
+    # Include allocations in the response with full details
+    receipt.allocations = [ReconciledCostAllocation(
+        workflow_run_id=a.workflow_run_id,
+        evidence_line_id=str(a.evidence_line_id),
+        evidence_amount=a.evidence_amount,
+        allocated_amount=a.allocated_amount,
+        category=a.category,
+        currency=a.currency
+    ) for a in allocations]
+    
+    return receipt
 
 
 async def stored_run_costs(session, run_id: UUID):

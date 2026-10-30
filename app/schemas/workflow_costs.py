@@ -30,9 +30,13 @@ class ReconciledRunCosts(BaseModel):
 
 
 class CostRunAllocation(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="allow", frozen=True)
     workflow_run_id: UUID
     allocated_amount: Decimal = Field(ge=0, max_digits=36, decimal_places=18, allow_inf_nan=False)
+    evidence_line_id: str | None = None
+    evidence_amount: Decimal | None = None
+    category: CostCategory | None = None
+    currency: str | None = None
 
 
 class CostEvidenceCreate(BaseModel):
@@ -65,3 +69,12 @@ class CostEvidenceReceipt(BaseModel):
     recorded_by_user_id: UUID | None
     # Operator attestation is deliberately distinct from an independent audit.
     verification_basis: Literal["operator_attested"] = "operator_attested"
+    allocations: list[ReconciledCostAllocation] = []
+    source: str | None = None
+    document_id: str | None = None
+    line_id: str | None = None
+    document_sha256: str | None = None
+    category: CostCategory | None = None
+    currency: str | None = None
+    amount: Decimal | None = None
+    review_note: str | None = None

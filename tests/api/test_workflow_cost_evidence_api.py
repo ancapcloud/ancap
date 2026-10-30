@@ -89,3 +89,47 @@ def test_split_line_retains_source_identity_after_run_deletion(client, monkeypat
     assert Decimal(remaining.json()["totals_by_currency"]["USD"]) == 7
     assert remaining.json()["costs_are_independently_verified"] is False
     assert client.post(url, json={**body, "allocations": [body["allocations"][1]]}, headers=headers).status_code == 409
+
+
+def test_get_cost_evidence_by_id(client, monkeypatch):
+    """Test GET /admin/cost-evidence/{evidence_id} endpoint."""
+    headers, run_id, body = setup_costs(client, monkeypatch)
+    
+    # First create the evidence
+    created = client.post("/v1/workflow-store/admin/cost-evidence", json=body, headers=headers)
+    assert created.status_code == 201, created.text
+    evidence_id = created.json()["id"]
+    
+    # Now retrieve it
+    retrieved = client.get(f"/v1/workflow-store/admin/cost-evidence/{evidence_id}", headers=headers)
+    assert retrieved.status_code == 200, retrieved.text
+    
+    # Verify the response contains all expected fields
+    data = retrieved.json()
+    assert data["id"] == evidence_id
+    assert data["source"] == body["source"]
+    assert data["document_id"] == body["document_id"]
+    assert data["line_id"] == body["line_id"]
+    assert data["document_sha256"] == body["document_sha256"]
+    assert data["category"] == body["category"]
+    assert data["currency"] == body["currency"]
+    assert str(data["amount"]) == str(body["amount"])
+    assert data["review_note"] == body["review_note"]
+    
+    # Verify allocations are included
+    assert "allocations" in data
+    assert len(data["allocations"]) == 1
+    assert data["allocations"][0]["workflow_run_id"] == run_id
+    assert str(data["allocations"][0]["amount"]) == str(body["allocations"][0]["allocated_amount"])
+    
+    # Verify cache-control header
+    assert retrieved.headers["cache-control"] == "private, no-store"
+    
+    # Test 404 for non-existent evidence
+    not_found = client.get(f"/v1/workflow-store/admin/cost-evidence/{uuid4().hex}", headers=headers)
+    assert not_found.status_code == 404
+    assert "not found" in not_found.text.lower()
+    
+    # Test unauthorized access
+    unauthorized = client.get(f"/v1/workflow-store/admin/cost-evidence/{evidence_id}")
+    assert unauthorized.status_code == 401
