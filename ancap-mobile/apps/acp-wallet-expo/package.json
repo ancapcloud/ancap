@@ -40,7 +40,7 @@
     "i18next": "^26.2.0",
     "react": "19.3.0",
     "react-i18next": "^17.0.8",
-    "react-native": "0.88.0",
+    "react-native": "0.88.1",
     "react-native-ble-plx": "^3.5.1",
     "react-native-nfc-manager": "^4.1.0",
     "react-native-qrcode-svg": "^6.3.14",
