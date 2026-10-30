@@ -7,9 +7,6 @@
     <linearGradient id="mint" x1="17" y1="10" x2="49" y2="55" gradientUnits="userSpaceOnUse">
       <stop stop-color="#BCFFE0"/><stop offset=".35" stop-color="#3DEAA4"/><stop offset="1" stop-color="#079466"/>
     </linearGradient>
-    <linearGradient id="letter" x1="25" y1="22" x2="36" y2="44" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#C8F9E6"/>
-    </linearGradient>
     <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="translate(20 13) rotate(52) scale(42)" gradientUnits="userSpaceOnUse">
       <stop stop-color="#4BEFA7" stop-opacity=".16"/><stop offset="1" stop-color="#4BEFA7" stop-opacity="0"/>
     </radialGradient>
@@ -21,6 +18,16 @@
   <path d="M16.5 15.5A22 22 0 0 1 38.5 10" fill="none" stroke="#DDFFEF" stroke-opacity=".55" stroke-width="1.2" stroke-linecap="round"/>
   <circle cx="49.4" cy="17.5" r="3.7" fill="#071F17"/><circle cx="49.4" cy="17.5" r="2.6" fill="#6DF5B8"/>
   <circle cx="14.6" cy="44.5" r="3.7" fill="#071F17"/><circle cx="14.6" cy="44.5" r="2.6" fill="#21CB8B"/>
-  <path d="M23 43V22.5h6.1v4.1c2.4-3.2 5.9-4.8 10.4-4.2v6.2c-6.9-.7-10.2 2.5-10.2 8.3V43H23Z" fill="#000C08" transform="translate(0 1.4)" opacity=".7"/>
-  <path d="M23 43V22.5h6.1v4.1c2.4-3.2 5.9-4.8 10.4-4.2v6.2c-6.9-.7-10.2 2.5-10.2 8.3V43H23Z" fill="url(#letter)"/>
+  <path d="M25.5 35.5 28.5 33M35.5 28.5 38.5 26" fill="none" stroke="#80F7BD" stroke-width="3" stroke-linecap="round"/>
+  <g stroke="#062A1D" stroke-width=".65" stroke-linejoin="round">
+    <path d="m22 32 5 3-5 3-5-3Z" fill="#E8FFF3"/>
+    <path d="m17 35 5 3v6l-5-3Z" fill="#7DDEAF"/>
+    <path d="m22 38 5-3v6l-5 3Z" fill="#32BE85"/>
+    <path d="m32 25 5 3-5 3-5-3Z" fill="#FFFFFF"/>
+    <path d="m27 28 5 3v6l-5-3Z" fill="#BDF7D9"/>
+    <path d="m32 31 5-3v6l-5 3Z" fill="#60DCA4"/>
+    <path d="m42 18 5 3-5 3-5-3Z" fill="#E8FFF3"/>
+    <path d="m37 21 5 3v6l-5-3Z" fill="#7DDEAF"/>
+    <path d="m42 24 5-3v6l-5 3Z" fill="#32BE85"/>
+  </g>
 </svg>
