@@ -18,6 +18,7 @@ from sqlalchemy import desc, select
 from app.api.deps import DbSession, get_current_user_id, require_platform_admin
 from app.db.session import get_db
 from app.services.workflow_value import workflow_result_hash, assessment_public, value_summary, assessment_history, assessed_result, cost_evidence
+from app.services.cost_allocation_reconciler import get_allocation_summary
 from app.services.credit_pricing import build_topup_pricing_snapshot, package_for_topup_intent
 from app.services.idempotency import get_idempotency_hit, store_idempotency_result
 from app.config import get_settings
@@ -61,6 +62,7 @@ from app.schemas import (
     WorkflowTemplatesResponse,
     CostEvidenceAdminResponse,
 )
+from app.schemas.cost_allocation import AllocationSummary
 from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary, CostEvidencePublic
 from app.schemas.workflow_value_request import ValueRequest, ValueResponse
 from app.services.ledger import append_event, balance_for_account, get_or_create_account, is_ledger_invariant_halted
@@ -2440,7 +2442,7 @@ async def create_workflow_run(
 )
 async def get_cost_evidence(
     evidence_id: str,
-    session: DbSession = Depends(DbSession),
+    session: DbSession,
 ):
     """Admin-only endpoint to retrieve cost evidence for verification.
     
@@ -2457,10 +2459,41 @@ async def get_cost_evidence(
     return CostEvidenceAdminResponse.model_validate(row)
 
 
+@router.get(
+    "/admin/cost-evidence/{evidence_id}/allocations",
+    response_model=AllocationSummary,
+    dependencies=[Depends(require_platform_admin)],
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden (non-admin)"},
+        404: {"description": "Evidence not found"},
+    },
+)
+async def get_cost_allocations(
+    evidence_id: str,
+    session: DbSession,
+):
+    """Admin-only endpoint to retrieve cost allocations for a workflow cost evidence.
+    
+    - Cache-Control: private, no-store
+    - Guest: 401, regular user: 403, unknown ID: 404
+    """
+    from app.db.models import WorkflowCostEvidence
+    
+    row = await session.get(WorkflowCostEvidence, evidence_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    
+    summary = await get_allocation_summary(evidence_id, session=session)
+    if summary.get("error"):
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    return AllocationSummary.model_validate(summary)
+
+
 @router.post("/ai/value", response_model=ValueResponse)
 async def get_value_summary(
     body: ValueRequest,
-    session: DbSession = Depends(DbSession),
+    session: DbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
     """Get value summary for the authenticated user's completed runs.

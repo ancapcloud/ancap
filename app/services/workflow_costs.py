@@ -193,8 +193,14 @@ async def record_cost_evidence(
     # Handle allocations if provided
     if body.allocations:
         for alloc in body.allocations:
-            workflow_run_id = UUID(alloc["workflow_run_id"])
-            allocated_amount = alloc["allocated_amount"]
+            # Normalize allocation to dict (handle both model and dict inputs)
+            if hasattr(alloc, "model_dump"):
+                alloc_dict = alloc.model_dump()
+            else:
+                alloc_dict = alloc
+            
+            workflow_run_id = UUID(alloc_dict["workflow_run_id"])
+            allocated_amount = alloc_dict["allocated_amount"]
             
             allocation = WorkflowCostAllocation(
                 evidence_id=evidence_id,
@@ -204,7 +210,13 @@ async def record_cost_evidence(
             session.add(allocation)
         
         # Store allocations as JSON in the evidence record for easy access
-        evidence.allocations = [a.model_dump() for a in body.allocations]
+        await session.flush()
+        allocation_records = await session.scalars(select(WorkflowCostAllocation).where(
+            WorkflowCostAllocation.evidence_id == evidence_id
+        )).all()
+        evidence.allocations = [a.model_dump() if hasattr(a, "model_dump") else a for a in allocation_records]
+    else:
+        evidence.allocations = []
     
     await session.commit()
     await session.refresh(evidence)

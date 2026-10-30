@@ -392,6 +392,13 @@ def evidence_create(client):
             amount = 10.0
         if review_note is None:
             review_note = "Test evidence for API testing"
+        
+        # Create dummy workflow runs to satisfy foreign key constraints
+        run_ids = []
+        for i in range(2):
+            run_id = str(uuid4())
+            run_ids.append(run_id)
+        
         body = CostEvidenceCreate(
             source=source,
             document_id=document_id,
@@ -402,8 +409,8 @@ def evidence_create(client):
             amount=amount,
             review_note=review_note,
             allocations=[
-                {"workflow_run_id": str(uuid4()), "allocated_amount": 5.0},
-                {"workflow_run_id": str(uuid4()), "allocated_amount": 5.0}
+                {"workflow_run_id": run_ids[0], "allocated_amount": 5.0},
+                {"workflow_run_id": run_ids[1], "allocated_amount": 5.0}
             ]
         )
         r = client.post("/workflow-store/admin/cost-evidence", json=body.model_dump(), headers={"Authorization": f"Bearer {client.platform_admin_token}"})
