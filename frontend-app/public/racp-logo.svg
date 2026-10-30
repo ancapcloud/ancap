@@ -1,7 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="rACP ANCAP">
-  <rect width="256" height="256" rx="64" fill="#081c20"/>
-  <circle cx="128" cy="128" r="88" fill="none" stroke="#19c38a" stroke-width="18"/>
-  <circle cx="128" cy="40" r="15" fill="#19c38a"/><circle cx="128" cy="216" r="15" fill="#19c38a"/>
-  <circle cx="40" cy="128" r="15" fill="#19c38a"/><circle cx="216" cy="128" r="15" fill="#19c38a"/>
-  <path d="M104 169V89h19v12c8-10 16-14 30-13v20c-18-2-29 6-29 25v36z" fill="#e7fff6"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Robinhood ACP by ANCAP</title>
+  <defs>
+    <linearGradient id="bg" x1="6" y1="3" x2="56" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#143F35"/><stop offset=".5" stop-color="#092821"/><stop offset="1" stop-color="#041610"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="17" y1="10" x2="49" y2="55" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BCFFE0"/><stop offset=".35" stop-color="#3DEAA4"/><stop offset="1" stop-color="#079466"/>
+    </linearGradient>
+    <linearGradient id="letter" x1="25" y1="22" x2="36" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#C8F9E6"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="translate(20 13) rotate(52) scale(42)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4BEFA7" stop-opacity=".16"/><stop offset="1" stop-color="#4BEFA7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="17" fill="url(#bg)" stroke="#255C49"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#light)"/>
+  <circle cx="32" cy="33" r="22" fill="#031C14" fill-opacity=".45" stroke="#052218" stroke-width="5"/>
+  <circle cx="32" cy="31" r="22" fill="none" stroke="url(#mint)" stroke-width="3.6"/>
+  <path d="M16.5 15.5A22 22 0 0 1 38.5 10" fill="none" stroke="#DDFFEF" stroke-opacity=".55" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="49.4" cy="17.5" r="3.7" fill="#071F17"/><circle cx="49.4" cy="17.5" r="2.6" fill="#6DF5B8"/>
+  <circle cx="14.6" cy="44.5" r="3.7" fill="#071F17"/><circle cx="14.6" cy="44.5" r="2.6" fill="#21CB8B"/>
+  <path d="M23 43V22.5h6.1v4.1c2.4-3.2 5.9-4.8 10.4-4.2v6.2c-6.9-.7-10.2 2.5-10.2 8.3V43H23Z" fill="#000C08" transform="translate(0 1.4)" opacity=".7"/>
+  <path d="M23 43V22.5h6.1v4.1c2.4-3.2 5.9-4.8 10.4-4.2v6.2c-6.9-.7-10.2 2.5-10.2 8.3V43H23Z" fill="url(#letter)"/>
 </svg>
