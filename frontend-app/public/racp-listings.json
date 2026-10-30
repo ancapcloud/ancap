@@ -52,6 +52,12 @@
       "url": "https://ancap.cloud/tokens/racp"
     },
     {
+      "id": "metamask_mobile",
+      "status": "dapp_deep_link_available",
+      "url": "https://metamask.app.link/dapp/ancap.cloud/tokens/racp",
+      "guide": "https://ancap.cloud/docs/racp/metamask"
+    },
+    {
       "id": "dex_pool",
       "status": "deferred_by_operator_zero_liquidity_budget"
     },

@@ -7,6 +7,8 @@ export const RACP_EXPLORER = "https://robinhoodchain.blockscout.com";
 export const RACP_RESERVE = "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz";
 export const RACP_ISSUANCE_TX = "0xe9b437c7e2260ae284ae011fdae4699b9bca63e3712997ffad28be8d105334e8";
 export const RACP_FUNDING_TX = "1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2";
+export const RACP_PUBLIC_ORIGIN = "https://ancap.cloud";
+export const RACP_DAPP_PATH = "/tokens/racp";
 export const RACP_NETWORK = {
   chainId: RACP_CHAIN_HEX,
   chainName: "Robinhood Chain",
@@ -14,6 +16,24 @@ export const RACP_NETWORK = {
   rpcUrls: ["https://rpc.mainnet.chain.robinhood.com"],
   blockExplorerUrls: [RACP_EXPLORER],
 };
+
+/** MetaMask mobile universal link — opens the dapp inside the MetaMask in-app browser. */
+export function metamaskDappLink(path: string = RACP_DAPP_PATH): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `https://metamask.app.link/dapp/ancap.cloud${normalized}`;
+}
+
+export function isLikelyMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+/** Hand the phone user to MetaMask when no injected provider is present. */
+export function openRacpInMetaMaskApp(path: string = RACP_DAPP_PATH): boolean {
+  if (typeof window === "undefined") return false;
+  window.location.assign(metamaskDappLink(path));
+  return true;
+}
 
 export async function ensureRobinhoodChain(provider: Eip1193Provider): Promise<void> {
   if (!provider) throw new Error("No compatible EVM wallet");
@@ -32,10 +52,16 @@ export async function ensureRobinhoodChain(provider: Eip1193Provider): Promise<v
 
 /** No signing, token approval or transaction: only a wallet network/import prompt. */
 export async function watchRacpInWallet(provider: Eip1193Provider | null = getPreferredEvmProvider() ?? null): Promise<boolean> {
-  if (!provider) throw new Error("No compatible EVM wallet");
+  if (!provider) {
+    if (isLikelyMobileBrowser() && openRacpInMetaMaskApp()) {
+      throw new Error("OPENING_METAMASK_APP");
+    }
+    throw new Error("No compatible EVM wallet");
+  }
+  await provider.request({ method: "eth_requestAccounts" });
   await ensureRobinhoodChain(provider);
   return (await provider.request({ method: "wallet_watchAsset", params: {
-    type: "ERC20", options: { address: RACP_CONTRACT, symbol: "rACP", decimals: 18, image: "https://ancap.cloud/racp-logo.png" },
+    type: "ERC20", options: { address: RACP_CONTRACT, symbol: "rACP", decimals: 18, image: `${RACP_PUBLIC_ORIGIN}/racp-logo.png` },
   } })) !== false;
 }
 

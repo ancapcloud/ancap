@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   ACP_ADDRESS_RE,
+  metamaskDappLink,
   parseRacpHumanToWei,
   redeemTransaction,
   RACP_CONTRACT,
@@ -13,8 +14,16 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("rACP wallet import", () => {
+  it("builds a MetaMask mobile dapp deep link for phone connect", () => {
+    expect(metamaskDappLink("/tokens/racp")).toBe("https://metamask.app.link/dapp/ancap.cloud/tokens/racp");
+    expect(metamaskDappLink("/tokens/racp/airdrop")).toContain("/tokens/racp/airdrop");
+  });
   it("refuses to import on a wallet that stays on the wrong network", async () => {
-    const request = vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0x38" : null);
+    const request = vi.fn(async ({ method }: { method: string }) => {
+      if (method === "eth_requestAccounts") return ["0x" + "11".repeat(20)];
+      if (method === "eth_chainId") return "0x38";
+      return null;
+    });
     await expect(watchRacpInWallet({ request })).rejects.toThrow("another chain");
     expect(request.mock.calls.some(([x]) => x.method === "wallet_watchAsset")).toBe(false);
   });
@@ -22,6 +31,7 @@ describe("rACP wallet import", () => {
     let chain = "0x38";
     let added = false;
     const request: Eip1193Provider["request"] = vi.fn(async (args) => {
+      if (args.method === "eth_requestAccounts") return ["0x" + "11".repeat(20)];
       if (args.method === "eth_chainId") return chain;
       if (args.method === "wallet_switchEthereumChain") {
         if (!added) throw { code: 4902 };
@@ -34,7 +44,11 @@ describe("rACP wallet import", () => {
     expect(await watchRacpInWallet({ request })).toBe(true);
   });
   it("keeps a rejected import unsuccessful", async () => {
-    const request: Eip1193Provider["request"] = async ({ method }) => method === "eth_chainId" ? "0x1237" : false;
+    const request: Eip1193Provider["request"] = async ({ method }) => {
+      if (method === "eth_requestAccounts") return ["0x" + "11".repeat(20)];
+      if (method === "eth_chainId") return "0x1237";
+      return false;
+    };
     expect(await watchRacpInWallet({ request })).toBe(false);
   });
   it("publishes rACP on its actual chain without removing wACP", () => {
