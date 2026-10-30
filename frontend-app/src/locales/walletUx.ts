@@ -29,10 +29,10 @@ export const walletUxCopy = {
     partial: "Some wallet data is unavailable. Refresh to try again.",
     network: "ACP network",
     receiveHint:
-      "Use this address for native ACP on the ACP network. BSC wACP and USDT require their own deposit route.",
+      "Use this address for native ACP on the ACP network. rACP is on Robinhood Chain; USDT uses its own deposit route.",
     address: "Receiving address",
     buy: "Buy / add ACP",
-    bridge: "ACP ↔ wACP bridge",
+    bridge: "rACP on Robinhood Chain",
     openCredits: "Open workflow credits",
     sendHint:
       "Transfer native ACP to another ACP address. Review the recipient and total before confirming.",
@@ -112,10 +112,10 @@ export const walletUxCopy = {
     partial: "Часть данных недоступна. Обновите кошелёк ещё раз.",
     network: "Сеть ACP",
     receiveHint:
-      "Этот адрес предназначен для ACP в сети ACP. Для wACP в BSC и USDT выберите соответствующий способ пополнения.",
+      "Этот адрес предназначен для ACP в сети ACP. rACP — в Robinhood Chain; для USDT выберите соответствующий способ пополнения.",
     address: "Адрес для получения",
     buy: "Купить / пополнить ACP",
-    bridge: "Мост ACP ↔ wACP",
+    bridge: "rACP в Robinhood Chain",
     openCredits: "Открыть кредиты платформы",
     sendHint:
       "Перевод ACP на другой адрес ACP. Перед подтверждением проверьте получателя и итоговую сумму.",
@@ -192,10 +192,10 @@ export const walletUxCopy = {
     partial: "Частина даних недоступна. Оновіть гаманець ще раз.",
     network: "Мережа ACP",
     receiveHint:
-      "Ця адреса призначена для ACP у мережі ACP. Для wACP у BSC та USDT оберіть відповідний спосіб поповнення.",
+      "Ця адреса призначена для ACP у мережі ACP. rACP — у Robinhood Chain; для USDT оберіть відповідний спосіб поповнення.",
     address: "Адреса для отримання",
     buy: "Купити / поповнити ACP",
-    bridge: "Міст ACP ↔ wACP",
+    bridge: "rACP у Robinhood Chain",
     openCredits: "Відкрити кредити платформи",
     sendHint:
       "Переказ ACP на іншу адресу ACP. Перед підтвердженням перевірте отримувача та підсумкову суму.",
@@ -273,10 +273,10 @@ export const walletUxCopy = {
     partial: "Einige Daten fehlen. Bitte erneut aktualisieren.",
     network: "ACP-Netzwerk",
     receiveHint:
-      "Diese Adresse ist für native ACP. Für BSC-wACP und USDT den passenden Einzahlungsweg nutzen.",
+      "Diese Adresse ist für native ACP. rACP liegt auf der Robinhood Chain; USDT nutzt einen eigenen Einzahlungsweg.",
     address: "Empfangsadresse",
     buy: "ACP kaufen / einzahlen",
-    bridge: "ACP ↔ wACP Bridge",
+    bridge: "rACP auf der Robinhood Chain",
     openCredits: "Workflow-Guthaben öffnen",
     sendHint:
       "Native ACP an eine ACP-Adresse senden. Empfänger und Gesamtbetrag vor dem Bestätigen prüfen.",
@@ -352,10 +352,10 @@ export const walletUxCopy = {
     partial: "部分錢包資料暫時無法取得，請重新整理。",
     network: "ACP 網路",
     receiveHint:
-      "此地址僅用於 ACP 網路原生 ACP；BSC wACP 與 USDT 請使用各自的入金方式。",
+      "此地址僅用於 ACP 網路原生 ACP。rACP 在 Robinhood Chain；USDT 請使用各自的入金方式。",
     address: "接收地址",
     buy: "購買／加值 ACP",
-    bridge: "ACP ↔ wACP 橋接",
+    bridge: "Robinhood Chain 上的 rACP",
     openCredits: "開啟工作流程點數",
     sendHint: "將原生 ACP 傳送到另一個 ACP 地址；確認前請核對收件地址與總額。",
     recipient: "收件人的 ACP 地址",

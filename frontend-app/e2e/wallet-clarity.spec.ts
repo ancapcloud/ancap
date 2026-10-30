@@ -168,7 +168,7 @@ test("balances stay separate and unrelated desks load only on request", async ({
     .first()
     .click();
   await expect(page.locator("main code").first()).toHaveText(ownAddress);
-  await expect(page.getByText(/BSC wACP and USDT require/)).toBeVisible();
+  await expect(page.getByText(/rACP is on Robinhood Chain/)).toBeVisible();
 });
 
 test("max deducts fee and review does not send until explicitly confirmed", async ({

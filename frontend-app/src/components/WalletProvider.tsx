@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/safeStorage";
 import { getPreferredEvmProvider, subscribeEvmProviderDiscovery, type Eip1193Provider } from "@/lib/evmProvider";
+import { RACP_CHAIN_ID, RACP_CHAIN_HEX } from "@/lib/racpToken";
 
 type EthereumRequestArgs = {
   method: string;
@@ -31,7 +32,7 @@ type WalletContextType = {
   error: string;
   connect: () => Promise<void>;
   disconnect: () => void;
-  switchToBnb: () => Promise<void>;
+  switchToRacp: () => Promise<void>;
   refresh: () => Promise<void>;
   clearError: () => void;
 };
@@ -70,6 +71,8 @@ function chainName(chainId: number | null): string {
       return "Ethereum";
     case BNB_CHAIN_ID:
       return "BNB Chain";
+    case RACP_CHAIN_ID:
+      return "Robinhood Chain";
     case 8453:
       return "Base";
     case 42161:
@@ -232,7 +235,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (!provider) {
         // Chrome/iOS and other mobile browsers: MetaMask Connect deeplinks to the app, then returns a provider.
         const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
-        provider = (await resolveEvmProvider(["0x38", "0x1237"])) as EthereumProvider;
+        provider = (await resolveEvmProvider([RACP_CHAIN_HEX])) as EthereumProvider;
       }
       await provider.request({ method: "eth_requestAccounts" });
       await syncFromProvider();
@@ -256,7 +259,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     applyWalletState(null, null, false);
   }, [applyWalletState, clearError]);
 
-  const switchToBnb = useCallback(async () => {
+  const switchToRacp = useCallback(async () => {
     const provider = getProvider();
     if (!provider) {
       setError("MetaMask is not available in this browser. Disable Rainbow for ancap.cloud or use MetaMask directly.");
@@ -265,40 +268,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     setError("");
     try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x38" }],
-      });
+      const { ensureRobinhoodChain } = await import("@/lib/racpToken");
+      await ensureRobinhoodChain(provider);
       await syncFromProvider();
-    } catch (err: unknown) {
-      const maybeCode = typeof err === "object" && err && "code" in err ? Number((err as { code?: unknown }).code) : undefined;
-      if (maybeCode === 4902) {
-        try {
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: "0x38",
-                chainName: "BNB Smart Chain",
-                nativeCurrency: {
-                  name: "BNB",
-                  symbol: "BNB",
-                  decimals: 18,
-                },
-                rpcUrls: ["https://bsc-dataseed.binance.org/"],
-                blockExplorerUrls: ["https://bscscan.com/"],
-              },
-            ],
-          });
-          await syncFromProvider();
-          return;
-        } catch (innerErr) {
-          const innerMessage = innerErr instanceof Error ? innerErr.message : "Failed to add BNB Chain to wallet.";
-          setError(innerMessage);
-          return;
-        }
-      }
-      const message = err instanceof Error ? err.message : "Failed to switch wallet to BNB Chain.";
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to switch wallet to Robinhood Chain.";
       setError(message);
     }
   }, [syncFromProvider]);
@@ -315,10 +289,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     error,
     connect,
     disconnect,
-    switchToBnb,
+    switchToRacp,
     refresh: syncFromProvider,
     clearError,
-  }), [address, clearError, connect, currentChainId, disconnect, error, isConnecting, isMetaMask, providerAvailable, switchToBnb, syncFromProvider]);
+  }), [address, clearError, connect, currentChainId, disconnect, error, isConnecting, isMetaMask, providerAvailable, switchToRacp, syncFromProvider]);
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
@@ -332,5 +306,5 @@ export function useWallet() {
 }
 
 export const walletConstants = {
-  bnbChainId: BNB_CHAIN_ID,
+  racpChainId: RACP_CHAIN_ID,
 };

@@ -52,7 +52,7 @@ async function signWalletChallenge(walletAddress: string, chainId?: number | nul
     throw new Error("Wallet address is required");
   }
   const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
-  const provider = await resolveEvmProvider(["0x38", "0x1237"]);
+  const provider = await resolveEvmProvider(["0x1237"]);
   if (!provider) {
     throw new Error("No MetaMask provider found. Install MetaMask and reconnect from Chrome.");
   }

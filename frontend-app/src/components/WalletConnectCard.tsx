@@ -33,19 +33,19 @@ export function WalletConnectCard({ compact = false, showContinue = true, contin
     isMetaMask,
     error,
     connect,
-    switchToBnb,
+    switchToRacp,
     clearError,
   } = useWallet();
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
 
-  const onBnb = chainId === walletConstants.bnbChainId;
+  const onRacp = chainId === walletConstants.racpChainId;
 
   const statusTone = useMemo(() => {
     if (!isConnected) return { color: "var(--text-muted)", bg: "rgba(255,255,255,0.04)", border: "var(--border)" };
-    if (onBnb) return { color: "#86efac", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.28)" };
+    if (onRacp) return { color: "#86efac", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.28)" };
     return { color: "#fbbf24", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.28)" };
-  }, [isConnected, onBnb]);
+  }, [isConnected, onRacp]);
 
   const handleConnect = async () => {
     clearError();
@@ -151,10 +151,10 @@ export function WalletConnectCard({ compact = false, showContinue = true, contin
           </div>
           <div className="wallet-connect-row" style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", fontSize: "0.9rem" }}>
             <span style={{ color: "var(--text-muted)" }}>Network</span>
-            <span style={{ color: onBnb ? "#86efac" : "#fbbf24", fontWeight: 600 }}>{chainName}</span>
+            <span style={{ color: onRacp ? "#86efac" : "#fbbf24", fontWeight: 600 }}>{chainName}</span>
           </div>
-          {!onBnb && (
-            <div style={{ color: "#fbbf24", fontSize: "0.88rem", lineHeight: 1.5, overflowWrap: "anywhere" }}>{t("auth.walletBnbHint")}</div>
+          {!onRacp && (
+            <div style={{ color: "#fbbf24", fontSize: "0.88rem", lineHeight: 1.5, overflowWrap: "anywhere" }}>{t("auth.walletChainHint")}</div>
           )}
         </div>
       )}
@@ -198,9 +198,9 @@ export function WalletConnectCard({ compact = false, showContinue = true, contin
           </button>
         ) : (
           <>
-            {!onBnb && (
-              <button type="button" className="btn btn-ghost" onClick={switchToBnb}>
-                {t("auth.switchToBnb")}
+            {!onRacp && (
+              <button type="button" className="btn btn-ghost" onClick={() => void switchToRacp()}>
+                {t("auth.switchToRacp")}
               </button>
             )}
             {showContinue && (
