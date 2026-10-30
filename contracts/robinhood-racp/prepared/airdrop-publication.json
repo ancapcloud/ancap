@@ -1,0 +1,100 @@
+{
+  "checked_at": "2026-10-30T00:31:36.513630+00:00",
+  "checks": {
+    "page": {
+      "url": "https://ancap.cloud/tokens/racp/airdrop",
+      "http_status": 200
+    },
+    "status": {
+      "url": "https://api.ancap.cloud/v1/racp/airdrop/status",
+      "http_status": 200,
+      "response": {
+        "enabled": true,
+        "chain_id": 4663,
+        "token_contract": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911",
+        "airdrop_contract": "0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+        "grant": "500",
+        "budget": "1000000",
+        "distributed": "0",
+        "available": "1000000",
+        "remaining_claims": 2000,
+        "paused": false,
+        "recipient_pays_network_fee": true
+      }
+    },
+    "build": {
+      "url": "https://ancap.cloud/internal/frontend-build",
+      "http_status": 200,
+      "response": {
+        "NEXT_PUBLIC_APP_BUILD_ID": "racp-airdrop-20261030",
+        "build_id_source": "next-build-id-file",
+        "next_public_app_build_id_env": "racp-airdrop-20261030",
+        "next_build_id_file": "racp-airdrop-20261030"
+      }
+    },
+    "registry": {
+      "url": "https://ancap.cloud/racp-listings.json",
+      "http_status": 200,
+      "directory_status": "suggestion_submitted_pending_editorial_review"
+    },
+    "reserve": {
+      "url": "https://api.ancap.cloud/v1/acp/address/acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz/balance",
+      "http_status": 200,
+      "response": {
+        "address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
+        "units": "100000000000000",
+        "acp": "1000000",
+        "utxo_count": 1
+      }
+    },
+    "source": {
+      "url": "https://sourcify.dev/server/v2/contract/4663/0x2867D10560b35616370cF5C7A21Ab1532698FD0F",
+      "http_status": 200,
+      "response": {
+        "matchId": "57606968",
+        "creationMatch": "exact_match",
+        "runtimeMatch": "exact_match",
+        "verifiedAt": "2026-10-30T00:22:44Z",
+        "match": "exact_match",
+        "chainId": "4663",
+        "address": "0x2867D10560b35616370cF5C7A21Ab1532698FD0F"
+      }
+    }
+  },
+  "chain_state": {
+    "distributed": 0,
+    "paused": false,
+    "balance": 1000000000000000000000000,
+    "signer": "0x5a40eb5b084F24e3d545987403E36cCDf155bdD8",
+    "claimed": false,
+    "identity_claimed": false
+  },
+  "listing_submission": {
+    "directory": "Airdrops.com",
+    "status": "submitted_pending_editorial_review",
+    "confirmation": "Thank you! We'll review your suggestion carefully as part of our due diligence process."
+  },
+  "validation": {
+    "solidity_tests_passed": 9,
+    "backend_tests_passed": 6,
+    "frontend_tests_passed": 10,
+    "production_build_passed": true,
+    "languages_checked": [
+      "en",
+      "ru",
+      "uk",
+      "de",
+      "zh-Hant"
+    ],
+    "mobile_width": 390,
+    "horizontal_overflow": false,
+    "unauthenticated_voucher_http_status": 401,
+    "backend_eip712_digest_matches_deployed_contract": true
+  },
+  "limitations": [
+    "Funded pool is not distribution to recipients; consult live claimed counters.",
+    "Recipients pay ETH network gas.",
+    "Account and wallet uniqueness is not unique-human identity verification.",
+    "No active market, guaranteed value, paid listing or liquidity pool."
+  ]
+}

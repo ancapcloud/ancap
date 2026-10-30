@@ -15,7 +15,7 @@ declare global {
 
 type Props = {
   siteKey: string;
-  action: "login" | "register";
+  action: "login" | "register" | "racp_airdrop";
   onTokenChange: (token: string) => void;
   resetSignal?: string | number;
 };
