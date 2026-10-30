@@ -57,12 +57,16 @@
 - Limitations: isolated PostgreSQL used for API tests; fixtures may drop schema.
 - Next: Research Operations P0 — ROP-03 (limited collection/fixtures quality) per docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md.
 
-## ROP-03 — research operations quality fixtures — 2026-10-30 (in-progress)
+## ROP-03 — research operations quality fixtures — 2026-10-30 (completed)
 - Implemented endpoints for bounded collection pilot: upload_quality_fixtures, get_quality_fixture, remove_quality_fixture.
 - Files changed: app/services/research_ops.py, app/api/routers/research_ops.py, PROGRESS.md.
 - Commit: cc78727d on master.
 - Status: Basic fixture CRUD implemented with simplified in-memory storage; ready for DB integration and testing.
-- Next: Add database table for fixtures, implement proper persistence, write tests for fixture endpoints.
+- Database Integration:
+  - Added QualityFixture model to app/db/models.py
+  - Created migration file 002_add_quality_fixtures_table.py
+  - Migration defines quality_fixtures table with UUID primary key, fixture metadata, test cases/results JSONB columns, status tracking
+- Next: Run migration, update service layer to use database instead of in-memory storage, write integration tests.
 
 ## Run Summary
 

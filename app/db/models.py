@@ -3787,3 +3787,35 @@ class RacpRedemptionTransition(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (Index("ix_racp_redemption_transitions_op", "redemption_id"),)
+
+
+class QualityFixture(Base):
+    """Quality fixtures for ROP-03: persistent storage of quality test data."""
+    __tablename__ = "quality_fixtures"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    fixture_name = Column(String(128), nullable=False, index=True)
+    fixture_type = Column(String(64), nullable=False)  # e.g., "performance", "security", "compatibility"
+    version = Column(String(32), nullable=True)  # Semantic version string
+    description = Column(Text, nullable=True)
+    
+    # Test data storage
+    test_cases = Column(JSONB, nullable=True)  # List of test case definitions
+    expected_results = Column(JSONB, nullable=True)  # Expected outcomes for each test case
+    actual_results = Column(JSONB, nullable=True)  # Results from running tests
+    
+    # Metadata
+    source = Column(String(128), nullable=True)  # Source of fixture (e.g., "manual", "auto-generated")
+    created_by = Column(String(64), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Status tracking
+    status = Column(String(32), nullable=False, default="active")  # active, deprecated, archived
+    notes = Column(Text, nullable=True)
+    
+    __table_args__ = (
+        Index("ix_quality_fixtures_fixture_name", "fixture_name"),
+        Index("ix_quality_fixtures_fixture_type", "fixture_type"),
+        CheckConstraint("status IN ('active', 'deprecated', 'archived')", name="ck_quality_fixture_status"),
+    )

@@ -1,10 +1,64 @@
 """Bounded, project-scoped Research Operations requests."""
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from app.services.webhook_url_policy import validate_webhook_url
+
+
+class PriceChangeFixture(BaseModel):
+    """Fixture for price change detection testing."""
+    fixture_id: str = Field(..., pattern=r"^[a-f0-9-]+$")
+    source_type: Literal["price_change"]
+    fixture_name: str
+    description: str
+    original_price: float
+    new_price: float
+    product_name: str
+    expected_detection: bool
+
+
+class MarkupNoiseFixture(BaseModel):
+    """Fixture for markup noise testing."""
+    fixture_id: str = Field(..., pattern=r"^[a-f0-9-]+$")
+    source_type: Literal["markup_noise"]
+    fixture_name: str
+    description: str
+    noise_type: str
+    noise_location: str
+    expected_parsing_error: Optional[str] = None
+
+
+class UnavailableSourceFixture(BaseModel):
+    """Fixture for unavailable source testing."""
+    fixture_id: str = Field(..., pattern=r"^[a-f0-9-]+$")
+    source_type: Literal["unavailable_source"]
+    fixture_name: str
+    description: str
+    unavailability_reason: str
+    retry_after_seconds: Optional[int] = None
+
+
+class ContradictionFixture(BaseModel):
+    """Fixture for contradiction resolution testing."""
+    fixture_id: str = Field(..., pattern=r"^[a-f0-9-]+$")
+    source_type: Literal["contradiction"]
+    fixture_name: str
+    description: str
+    claim_a: str
+    claim_b: str
+    expected_resolution: Literal["human_review_required", "claim_a_wins", "claim_b_wins"]
+
+
+class MaliciousEmbeddedFixture(BaseModel):
+    """Fixture for malicious embedded content testing."""
+    fixture_id: str = Field(..., pattern=r"^[a-f0-9-]+$")
+    source_type: Literal["malicious_embedded"]
+    fixture_name: str
+    description: str
+    instruction_type: str
+    detection_method: str
 
 
 class SourceCreate(BaseModel):
