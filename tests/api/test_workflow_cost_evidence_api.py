@@ -131,6 +131,9 @@ def test_get_cost_evidence_by_id(client, monkeypatch):
     assert not_found.status_code == 404
     assert "not found" in not_found.text.lower()
     
-    # Test unauthorized access
-    unauthorized = client.get(f"/v1/workflow-store/admin/cost-evidence/{evidence_id}")
-    assert unauthorized.status_code == 401
+    # Empty credentials are unauthenticated. The default fixture user is signed in but not a reviewer.
+    assert client.get(
+        f"/v1/workflow-store/admin/cost-evidence/{evidence_id}",
+        headers={"Authorization": ""},
+    ).status_code == 401
+    assert client.get(f"/v1/workflow-store/admin/cost-evidence/{evidence_id}").status_code == 403
