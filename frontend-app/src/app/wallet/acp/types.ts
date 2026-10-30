@@ -12,6 +12,7 @@ export type WalletBalance = {
   utxo_count?: number;
   on_chain_acp?: string | null;
   on_chain_at_deposit_acp?: string | null;
+  privacy_receive_acp?: string | null;
   ledger_credits_acp?: string | null;
   platform_ledger_acp?: string | null;
   headline_acp?: string | null;

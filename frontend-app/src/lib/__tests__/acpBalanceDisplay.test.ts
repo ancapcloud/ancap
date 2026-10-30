@@ -64,6 +64,20 @@ describe("acpBalanceDisplay", () => {
     expect(
       selectDragonAcp(
         {
+          address: "acp1qpersonaladdress000000000000000",
+          on_chain_at_deposit_acp: "665.999999",
+          operator_hot_live_acp: "0",
+          privacy_receive_acp: "32883823.16372116",
+          tokenomics_buckets: [
+            { key: "bridge_reserve", label: "Bridge reserve", acp: "1803162.17149777" },
+          ],
+        },
+        HOT,
+      ),
+    ).toBe("34687651.33521793");
+    expect(
+      selectDragonAcp(
+        {
           address: HOT,
           on_chain_at_deposit_acp: "20",
           operator_hot_live_acp: "20",

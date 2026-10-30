@@ -545,6 +545,46 @@ def _probe_source_failed(raw: dict | None) -> bool:
     return str((raw or {}).get("source") or "") in {"timeout", "error", "degraded", "unavailable"}
 
 
+async def _privacy_receive_snapshot(
+    session: AsyncSession,
+    user_id: str,
+    primary_address: str,
+) -> tuple[Decimal | None, list[str]]:
+    """Sum live UTXOs on this login's one-time receive addresses.
+
+    The primary deposit address is excluded so it is not counted twice.
+    None means a registered address could not be probed; do not treat that as zero.
+    """
+    rows = (
+        await session.execute(
+            select(UserAcpPrivacyAddress.address).where(UserAcpPrivacyAddress.user_id == user_id)
+        )
+    ).all()
+    primary = (primary_address or "").strip()
+    addresses: list[str] = []
+    seen: set[str] = set()
+    for (addr,) in rows:
+        cleaned = (addr or "").strip()
+        if not cleaned or cleaned == primary or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        addresses.append(cleaned)
+        if len(addresses) >= privacy_svc.DEFAULT_SUBADDR_SCAN_WINDOW:
+            break
+    if not addresses:
+        return Decimal(0), []
+    total = Decimal(0)
+    for addr in addresses:
+        try:
+            probed = _load_balance_result(addr, interactive=True)
+        except HTTPException:
+            return None, addresses
+        if _probe_source_failed(probed):
+            return None, addresses
+        total += _parse_decimal_or_zero(probed.get("acp"))
+    return total, addresses
+
+
 def _chain_height_from_raw(raw: dict) -> int | None:
     for key in ("chain_height", "height", "block_height"):
         val = raw.get(key)
@@ -620,6 +660,11 @@ async def _decorate_balance_for_user(
     probe_status: str | None = "live"
 
     is_hot_holder = bool(include_in_work and await user_is_custodial_hot_holder(session, user_id))
+    privacy_acp: Decimal | None = None
+    if include_in_work:
+        privacy_acp, _privacy_addresses = await _privacy_receive_snapshot(
+            session, user_id, target_address
+        )
 
     if is_hot_holder:
         # Designated operator: live probes for hero when available; design total when all fail.
@@ -649,15 +694,17 @@ async def _decorate_balance_for_user(
             else _decimal_to_api_str(on_chain_acp)
         )
         # Personal deposit UTXOs remain spendable with the account keystore.
+        # One-time privacy receives spend with the same keystore and belong to this login.
         personal_available = Decimal(0)
         if target_address and target_address != CUSTODIAL_HOT_ADDRESS and not deposit_probe_failed:
             _, _, personal_available = _personal_balance_view(on_chain_acp, in_staked, in_ledger)
+        personal_spendable = personal_available + (privacy_acp or Decimal(0))
         # Custodial hot float is spendable via server custodial-hot keystore (hot holders only).
         if hot_live > 0:
             available_acp = hot_live
             withdraw_source = "custodial_hot"
-        elif personal_available > 0:
-            available_acp = personal_available
+        elif personal_spendable > 0:
+            available_acp = personal_spendable
             withdraw_source = "personal_utxo"
         else:
             available_acp = Decimal(0)
@@ -716,6 +763,7 @@ async def _decorate_balance_for_user(
             f"Withdraw from this login uses custodial hot float "
             f"({_decimal_to_api_str(hot_live)} ACP hot"
             f"{f'; + {_decimal_to_api_str(personal_available)} ACP personal UTXO' if personal_available > 0 else ''}"
+            f"{f'; + {_decimal_to_api_str(privacy_acp)} ACP privacy receive' if privacy_acp else ''}"
             f"; {_decimal_to_api_str(available_acp)} ACP available now). "
             f"PQC KeystoreV3 (Ed25519+Dilithium2); amounts are transparent on-chain."
         )
@@ -753,6 +801,9 @@ async def _decorate_balance_for_user(
     # Regular users: always expose ledger credits separately from on-chain.
     # Hero prefers platform credits when on-chain is 0 and ledger > 0.
     if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS and not is_hot_holder:
+        if privacy_acp is not None and privacy_acp > 0:
+            available_acp += privacy_acp
+        visible_chain = on_chain_acp + (privacy_acp or Decimal(0))
         platform_credits_s = _decimal_to_api_str(in_ledger)
         on_chain_s = None if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)
         if deposit_probe_failed:
@@ -761,7 +812,7 @@ async def _decorate_balance_for_user(
                 "error",
                 "unavailable",
             } else "degraded"
-        if on_chain_acp <= 0 and in_ledger > 0:
+        if visible_chain <= 0 and in_ledger > 0:
             display_acp = in_ledger
             display_units = _units_from_acp(in_ledger)
             primary_kind = "platform_credits"
@@ -837,6 +888,9 @@ async def _decorate_balance_for_user(
         vested_locked_acp=vested_locked_acp,
         balance_note=balance_note,
         on_chain_at_deposit_acp=on_chain_at_deposit_s,
+        privacy_receive_acp=(
+            _decimal_to_api_str(privacy_acp) if include_in_work and privacy_acp is not None else None
+        ),
         platform_ledger_acp=platform_ledger_s,
         staked_acp=staked_s,
         reserved_total_acp=reserved_s,
@@ -2175,16 +2229,21 @@ def _run_withdraw_transfer_job(
     amount_acp: str,
     fee_acp: str | None,
     from_address: str | None = None,
+    spend_addresses: list[str] | None = None,
 ) -> None:
     try:
         # Prefer indexed UTXOs so walletd skips O(tip) tip-scan (~30k blocks).
         utxo_args: list[str] = []
-        src = (from_address or "").strip()
-        if src:
+        sources = [a.strip() for a in (spend_addresses or []) if (a or "").strip()]
+        if not sources and (from_address or "").strip():
+            sources = [(from_address or "").strip()]
+        if sources:
             try:
                 from app.services import acp_utxo_index as utxo_idx
 
-                indexed_outs = utxo_idx.list_indexed_utxos(src)
+                indexed_outs: list[dict] = []
+                for src in sources:
+                    indexed_outs.extend(utxo_idx.list_indexed_utxos(src))
             except Exception:
                 indexed_outs = []
             need_units = int(
@@ -2368,6 +2427,15 @@ async def withdraw(
         else:
             on_chain_acp = _parse_decimal_or_zero(balance_res.get("acp"))
         _, _, available_acp = _personal_balance_view(on_chain_acp, in_staked, in_ledger)
+        privacy_acp, privacy_addresses = await _privacy_receive_snapshot(
+            session, user_id, wallet_address
+        )
+        if privacy_acp is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Privacy receive balance is temporarily unavailable. Retry shortly.",
+            )
+        available_acp += privacy_acp
         if required_total > available_acp:
             raise HTTPException(
                 status_code=400,
@@ -2387,6 +2455,9 @@ async def withdraw(
     # Queue chain transfer off the request path so Cloudflare/browser do not cut a long tip-scan.
     job_id = str(uuid4())
     spend_from = CUSTODIAL_HOT_ADDRESS if use_custodial_hot else wallet_address
+    spend_addresses = [spend_from]
+    if not use_custodial_hot:
+        spend_addresses.extend(privacy_addresses)
     _store_withdraw_job(
         job_id,
         {
@@ -2414,6 +2485,7 @@ async def withdraw(
             "amount_acp": _decimal_to_api_str(amount),
             "fee_acp": fee_s,
             "from_address": spend_from,
+            "spend_addresses": spend_addresses,
         },
         daemon=True,
         name=f"acp-withdraw-{job_id[:8]}",

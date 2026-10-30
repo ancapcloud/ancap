@@ -138,29 +138,61 @@ async def snapshots(session, user, project_id, source_id):
 async def upload_quality_fixtures(session, project_id: str, fixtures: dict):
     """Upload quality test fixtures for ROP-03 bounded collection."""
     from app.db.models import QualityFixture
-    # Store fixtures in a simple JSON structure (in production would use DB table)
+    
     fixture_records = []
     for fixture_type, items in fixtures.items():
         for item in items:
-            record = {
-                "fixture_id": item.get("fixture_id", "unknown"),
-                "source_type": fixture_type,
+            record = QualityFixture(
+                project_id=project_id,
+                fixture_type=fixture_type,
+                language=item.get("language"),
+                document_type=item.get("document_type"),
+                source_url=item.get("source_url"),
+                fixture_data=item,
+                expected_hash=item.get("expected_hash"),
+                status="pending"
+            )
+            session.add(record)
+            fixture_records.append({
+                "fixture_id": record.id,
                 "project_id": project_id,
-                "uploaded_at": now().isoformat(),
-                "data": item
-            }
-            fixture_records.append(record)
+                "fixture_type": fixture_type,
+                "status": "pending"
+            })
+    await session.flush()
     return {"status": "uploaded", "fixture_count": len(fixture_records), "records": fixture_records}
 
 
 async def get_quality_fixture(session, project_id: str, fixture_id: str):
     """Get a quality test fixture by ID."""
-    # Simplified lookup - in production would query DB table
-    return {"fixture_id": fixture_id, "project_id": project_id, "status": "found"}
+    from app.db.models import QualityFixture
+    row = (await session.execute(select(QualityFixture).where(
+        QualityFixture.id == fixture_id, QualityFixture.project_id == project_id
+    ))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(404, "Fixture not found")
+    return {
+        "fixture_id": str(row.id),
+        "project_id": row.project_id,
+        "fixture_type": row.fixture_type,
+        "language": row.language,
+        "document_type": row.document_type,
+        "source_url": row.source_url,
+        "status": row.status,
+        "created_at": row.created_at.isoformat()
+    }
 
 
 async def remove_quality_fixture(session, project_id: str, fixture_id: str):
     """Remove a quality test fixture."""
+    from app.db.models import QualityFixture
+    row = (await session.execute(select(QualityFixture).where(
+        QualityFixture.id == fixture_id, QualityFixture.project_id == project_id
+    ))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(404, "Fixture not found")
+    await session.delete(row)
+    await session.flush()
     return {"status": "deleted", "fixture_id": fixture_id}
 
 
