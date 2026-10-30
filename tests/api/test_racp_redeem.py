@@ -26,4 +26,5 @@ def test_racp_redeem_by_id_404(client):
 
 def test_racp_redeem_admin_requires_auth(client):
     response = client.get("/v1/racp/redeem/admin/open")
-    assert response.status_code in {401, 403}
+    # 503 = platform admin allowlist unset (fail-closed), same as other admin routes
+    assert response.status_code in {401, 403, 503}
