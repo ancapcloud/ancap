@@ -14,12 +14,21 @@
     "reserve_address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
     "initial_reserve_acp": "1000000",
     "racp_per_acp": 10,
-    "liquidity_budget": "0",
+    "liquidity_budget": null,
     "market_price": null,
     "automatic_redemption": true,
     "redeem_url": "https://ancap.cloud/tokens/racp/redeem",
     "redeem_status": "https://api.ancap.cloud/v1/racp/redeem/status",
-    "redeem_note": "Enabled when RACP_REDEEM_ENABLED=true on the API host; burn via requestRedemption, ACP from exclusive reserve."
+    "redeem_note": "Enabled when RACP_REDEEM_ENABLED=true on the API host; burn via requestRedemption, ACP from exclusive reserve.",
+    "pool_address": "0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85",
+    "pool_url": "https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood",
+    "pool_status": "live_bootstrap_small",
+    "pool_snapshot": {
+      "block": 101517870,
+      "weth": "0.005",
+      "racp": "5000",
+      "note": "Read-only reserve snapshot; changes over time. Not a market-depth guarantee."
+    }
   },
   "placements": [
     {
@@ -59,7 +68,9 @@
     },
     {
       "id": "dex_pool",
-      "status": "deferred_by_operator_zero_liquidity_budget"
+      "status": "live_bootstrap_small",
+      "url": "https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood",
+      "address": "0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85"
     },
     {
       "id": "coingecko",
@@ -93,6 +104,5 @@
     "live_status": "https://api.ancap.cloud/v1/racp/airdrop/status",
     "recipient_pays_eth_network_fee": true,
     "uniqueness": "per_account_and_verified_wallet_not_proof_of_unique_humans"
-  },
-  "primary_external_asset": "rACP"
+  }
 }

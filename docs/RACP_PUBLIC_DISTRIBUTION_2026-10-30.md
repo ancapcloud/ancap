@@ -1,3 +1,5 @@
+> **Pool update 2026-10-30:** rACP/WETH now has a small live PancakeSwap V2 pool on Robinhood Chain. Earlier statements about zero liquidity describe the initial release. Verified snapshot: 5,000 rACP and 0.005 WETH at block 101517870. Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
+
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
 # rACP public distribution — 2026-10-30

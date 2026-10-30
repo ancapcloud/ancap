@@ -1,6 +1,8 @@
 import type { Eip1193Provider } from "@/lib/evmProvider";
 
 export const RACP_CONTRACT = "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911";
+export const RACP_WETH_POOL = "0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85";
+export const RACP_POOL_URL = "https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood";
 export const RACP_CHAIN_ID = 4663;
 export const RACP_CHAIN_HEX = "0x1237";
 export const RACP_EXPLORER = "https://robinhoodchain.blockscout.com";

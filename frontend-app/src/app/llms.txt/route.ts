@@ -22,11 +22,13 @@ Users buy useful AI execution with ACP, creators publish paid workflows, and eve
 - ${SITE_URL}/proof-center - public proof and receipt center.
 - ${SITE_URL}/wallet/acp - custodial ACP wallet after sign-in.
 - ${SITE_URL}/markets - official rACP information and active token list.
-- ${SITE_URL}/tokens/racp - official Robinhood ACP (rACP), contract, reserve funding and wallet import; no live trading pool.
+- ${SITE_URL}/tokens/racp - official Robinhood ACP (rACP), contract, reserve funding and wallet import; small PancakeSwap V2 rACP/WETH pool; pool price is separate from EUR service accounting.
 - ${SITE_URL}/tokens/racp/redeem - supervised rACP→ACP burn/redeem from exclusive reserve (API flag RACP_REDEEM_ENABLED).
 - ${SITE_URL}/tokenlist.json - Uniswap-compatible official token list (rACP on Robinhood Chain 4663).
 - ${SITE_URL}/racp-listings.json - rACP public placement status; external listings are not implied.
 - ${SITE_URL}/listings.json - machine-readable placement matrix (live / pending / blocked).
+
+- https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood - verified small rACP/WETH pool on Robinhood Chain.
 
 ## Machine-readable resources
 - ${SITE_URL}/agent-products.json - workflow, bundle, API, creator, and proof product catalog for AI agents.

@@ -1,3 +1,6 @@
+> Update 2026-10-30: a small PancakeSwap V2 rACP/WETH pool is now live. Verified reserves at block 101517870: 5,000 rACP / 0.005 WETH. Earlier zero-liquidity statements below describe the initial release.
+> Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
+
 # Robinhood ACP (rACP)
 
 rACP is an ACP receipt issued by ANCAP on Robinhood Chain (chain ID 4663).

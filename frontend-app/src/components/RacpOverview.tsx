@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useLanguage } from "./LanguageProvider";
+import { racpTransitionCopy } from "@/locales/racpTransition";
 import { racpCopy } from "@/locales/racp";
 import {
   RACP_CONTRACT,
+  RACP_POOL_URL,
   RACP_EXPLORER,
   RACP_FUNDING_TX,
   RACP_ISSUANCE_TX,
@@ -48,6 +50,7 @@ export function RacpOverview({ compact = false }: { compact?: boolean }) {
       <Link className="btn btn-primary" href="/tokens/racp/redeem">{racpRedeemCopy[lang].title}</Link>
       <button type="button" className="btn btn-primary" disabled={busy} aria-busy={busy} onClick={() => void add()}>{busy ? c.opening : c.openMetaMask}</button>
       {compact ? <Link className="btn btn-ghost" href="/tokens/racp">{c.details} →</Link> : <button type="button" className="btn btn-ghost" onClick={() => void copy()}>{c.copy}</button>}
+      <a className="btn btn-ghost" href={RACP_POOL_URL} target="_blank" rel="noopener noreferrer">{racpTransitionCopy[lang].pool} ↗</a>
       <Link className="btn btn-ghost" href="/docs/racp/metamask">{c.metamaskGuide}</Link>
       <a className="btn btn-ghost" href={`${RACP_EXPLORER}/address/${RACP_CONTRACT}?tab=contract`} target="_blank" rel="noopener noreferrer">{c.explorer} ↗</a>
     </div>

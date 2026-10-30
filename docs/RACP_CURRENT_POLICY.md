@@ -27,3 +27,14 @@ Historical receipts are not rewritten into EUR or rACP.
 
 Implementation and deployment status are recorded separately; an edited file is
 not evidence that production has been updated.
+
+## Verified initial trading pool
+
+PancakeSwap V2 rACP/WETH on Robinhood Chain (4663):
+https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
+
+RPC verification at block 101517870 matched the official rACP contract and
+WETH `0x0bd7d308f8e1639fab988df18a8011f41eacad73`. Snapshot reserves:
+5,000 rACP and 0.005 WETH. Small bootstrap liquidity; neither deep market
+liquidity nor price-tracker listing is claimed. Pool price is separate from
+the operator-set EUR service accounting rate.
