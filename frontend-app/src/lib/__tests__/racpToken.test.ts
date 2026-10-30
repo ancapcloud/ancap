@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("rACP wallet import", () => {
-  it("builds a MetaMask mobile dapp deep link for phone connect", () => {
+  it("keeps MetaMask in-app browser deep link as a non-Chrome fallback", () => {
     expect(metamaskDappLink("/tokens/racp")).toBe("https://metamask.app.link/dapp/ancap.cloud/tokens/racp");
     expect(metamaskDappLink("/tokens/racp/airdrop")).toContain("/tokens/racp/airdrop");
   });

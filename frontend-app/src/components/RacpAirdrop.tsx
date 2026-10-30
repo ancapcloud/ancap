@@ -5,10 +5,10 @@ import { useLanguage } from "./LanguageProvider";
 import { TurnstileWidget } from "./TurnstileWidget";
 import { TURNSTILE_SITE_KEY } from "@/lib/turnstile";
 import { apiFetch } from "@/lib/api";
-import { getPreferredEvmProvider } from "@/lib/evmProvider";
-import { ensureRobinhoodChain, metamaskDappLink, openRacpInMetaMaskApp, RACP_EXPLORER, isLikelyMobileBrowser } from "@/lib/racpToken";
+import { ensureRobinhoodChain, RACP_EXPLORER, RACP_CHAIN_HEX } from "@/lib/racpToken";
 import { claimTransaction, RACP_AIRDROP, type AirdropVoucher } from "@/lib/racpAirdrop";
 import { racpAirdropCopy } from "@/locales/racpAirdrop";
+import { resolveEvmProvider } from "@/lib/metamaskConnect";
 
 type Status = { enabled: boolean; distributed: string; remaining_claims: number; airdrop_contract: string | null };
 export function RacpAirdrop() {
@@ -27,14 +27,7 @@ export function RacpAirdrop() {
     setBusy(true); setMessage("");
     try {
       if (TURNSTILE_SITE_KEY && !captcha) throw new Error(c.verify);
-      const provider = getPreferredEvmProvider();
-      if (!provider) {
-        if (isLikelyMobileBrowser() && openRacpInMetaMaskApp("/tokens/racp/airdrop")) {
-          setMessage("Opening MetaMask… Continue the claim inside the MetaMask browser.");
-          return;
-        }
-        throw new Error(c.error);
-      }
+      const provider = await resolveEvmProvider([RACP_CHAIN_HEX]);
       await ensureRobinhoodChain(provider);
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       const account = Array.isArray(accounts) && typeof accounts[0] === "string" ? accounts[0] : "";
@@ -69,10 +62,9 @@ export function RacpAirdrop() {
     <TurnstileWidget key={ready ? "claim" : "login"} siteKey={TURNSTILE_SITE_KEY} action={ready ? "racp_airdrop" : "login"} onTokenChange={setCaptcha} resetSignal={reset} />
     <div className="action-cluster" style={{ marginTop: 20 }}>
       <button className="btn btn-primary" type="button" onClick={() => void perform()} disabled={busy || !status?.enabled || !!txHash || (!!TURNSTILE_SITE_KEY && !captcha)}>{busy ? c.busy : ready ? c.claim : c.connect}</button>
-      <a className="btn btn-primary" href={metamaskDappLink("/tokens/racp/airdrop")} onClick={(event) => { event.preventDefault(); openRacpInMetaMaskApp("/tokens/racp/airdrop"); }}>Open in MetaMask</a>
       <button className="btn btn-ghost" type="button" onClick={() => void refresh()}>{c.refresh}</button>
       <a className="btn btn-ghost" href={`${RACP_EXPLORER}/address/${RACP_AIRDROP}`} target="_blank" rel="noopener noreferrer">Airdrop ↗</a>
-      <a className="btn btn-ghost" href="/docs/racp/metamask">Phone guide</a>
+      <a className="btn btn-ghost" href="/docs/racp/metamask">Chrome + MetaMask</a>
     </div>
     {!status?.enabled && <p>{c.paused}</p>}<p role="status" aria-live="polite" style={{ overflowWrap: "anywhere" }}>{message}</p>
     {txHash && <a href={`${RACP_EXPLORER}/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash}</a>}

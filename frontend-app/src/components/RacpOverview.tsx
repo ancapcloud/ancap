@@ -4,10 +4,7 @@ import { useState } from "react";
 import { useLanguage } from "./LanguageProvider";
 import { racpCopy } from "@/locales/racp";
 import {
-  metamaskDappLink,
-  openRacpInMetaMaskApp,
   RACP_CONTRACT,
-  RACP_DAPP_PATH,
   RACP_EXPLORER,
   RACP_FUNDING_TX,
   RACP_ISSUANCE_TX,
@@ -25,16 +22,10 @@ export function RacpOverview({ compact = false }: { compact?: boolean }) {
   const [message, setMessage] = useState("");
   const Heading = compact ? "h2" : "h1";
   async function add() {
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(c.openingMetaMask);
     try { setMessage(await watchRacpInWallet() ? c.added : c.error); }
-    catch (error) {
-      setMessage(error instanceof Error && error.message === "OPENING_METAMASK_APP" ? c.openingMetaMask : c.error);
-    }
+    catch { setMessage(c.error); }
     finally { setBusy(false); }
-  }
-  function openMetaMask() {
-    setMessage(c.openingMetaMask);
-    openRacpInMetaMaskApp(RACP_DAPP_PATH);
   }
   async function copy() {
     try { await navigator.clipboard.writeText(RACP_CONTRACT); setMessage(c.copied); }
@@ -55,8 +46,7 @@ export function RacpOverview({ compact = false }: { compact?: boolean }) {
     <div className="action-cluster" style={{ marginTop: 18 }}>
       <Link className="btn btn-primary" href="/tokens/racp/airdrop">{racpAirdropCopy[lang].title}</Link>
       <Link className="btn btn-primary" href="/tokens/racp/redeem">{racpRedeemCopy[lang].title}</Link>
-      <button type="button" className="btn btn-primary" disabled={busy} aria-busy={busy} onClick={() => void add()}>{busy ? c.opening : c.add}</button>
-      <a className="btn btn-primary" href={metamaskDappLink(RACP_DAPP_PATH)} onClick={(event) => { event.preventDefault(); openMetaMask(); }}>{c.openMetaMask}</a>
+      <button type="button" className="btn btn-primary" disabled={busy} aria-busy={busy} onClick={() => void add()}>{busy ? c.opening : c.openMetaMask}</button>
       {compact ? <Link className="btn btn-ghost" href="/tokens/racp">{c.details} →</Link> : <button type="button" className="btn btn-ghost" onClick={() => void copy()}>{c.copy}</button>}
       <Link className="btn btn-ghost" href="/docs/racp/metamask">{c.metamaskGuide}</Link>
       <a className="btn btn-ghost" href={`${RACP_EXPLORER}/address/${RACP_CONTRACT}?tab=contract`} target="_blank" rel="noopener noreferrer">{c.explorer} ↗</a>

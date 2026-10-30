@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { auth, users } from "@/lib/api";
-import { getPreferredEvmProvider } from "@/lib/evmProvider";
 import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/safeStorage";
 
 interface User {
@@ -52,9 +51,10 @@ async function signWalletChallenge(walletAddress: string, chainId?: number | nul
   if (!compact) {
     throw new Error("Wallet address is required");
   }
-  const provider = getPreferredEvmProvider();
+  const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
+  const provider = await resolveEvmProvider(["0x38", "0x1237"]);
   if (!provider) {
-    throw new Error("No injected wallet provider found");
+    throw new Error("No MetaMask provider found. Install MetaMask and reconnect from Chrome.");
   }
 
   const accountsRaw = await provider.request({ method: "eth_accounts" });

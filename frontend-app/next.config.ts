@@ -31,7 +31,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@heliofi/checkout-react"],
+  transpilePackages: ["@heliofi/checkout-react", "@metamask/connect-evm", "@metamask/connect-multichain"],
   // Avoid one slow SSR page (e.g. tokenomics RPC) killing the whole Docker build.
   staticPageGenerationTimeout: 180,
   async headers() {

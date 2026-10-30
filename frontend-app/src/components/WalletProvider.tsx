@@ -225,15 +225,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, [applyWalletState, syncFromProvider]);
 
   const connect = useCallback(async () => {
-    const provider = getProvider();
-    if (!provider) {
-      setError("MetaMask is not available in this browser. Disable Rainbow for ancap.cloud or use MetaMask directly.");
-      return;
-    }
-
     setError("");
     setIsConnecting(true);
     try {
+      let provider = getProvider();
+      if (!provider) {
+        // Chrome/iOS and other mobile browsers: MetaMask Connect deeplinks to the app, then returns a provider.
+        const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
+        provider = (await resolveEvmProvider(["0x38", "0x1237"])) as EthereumProvider;
+      }
       await provider.request({ method: "eth_requestAccounts" });
       await syncFromProvider();
       const accountsRaw = await provider.request({ method: "eth_accounts" });
@@ -242,13 +242,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (!activeAddress) {
         throw new Error("MetaMask connected but no account was returned.");
       }
+      applyWalletState(activeAddress, readStoredSession()?.chainId ?? null, true);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to connect wallet.";
       setError(message);
     } finally {
       setIsConnecting(false);
     }
-  }, [syncFromProvider]);
+  }, [applyWalletState, syncFromProvider]);
 
   const disconnect = useCallback(() => {
     clearError();

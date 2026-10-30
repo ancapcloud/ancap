@@ -60,12 +60,24 @@ async function ensureBscChain(provider: Eip1193Provider): Promise<void> {
 
 /** Prompt MetaMask (or compatible wallet) to add wACP with logo via wallet_watchAsset. */
 export async function watchWacpInWallet(contractAddress?: string): Promise<WatchWacpResult> {
-  const provider = getPreferredEvmProvider();
+  let provider: Eip1193Provider | undefined = getPreferredEvmProvider();
+  if (!provider) {
+    try {
+      const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
+      provider = await resolveEvmProvider([BSC_CHAIN_ID_HEX]);
+    } catch {
+      return {
+        ok: false,
+        reason: "no_provider",
+        message: "Install MetaMask, open this page in Chrome, then connect and return to Chrome.",
+      };
+    }
+  }
   if (!provider) {
     return {
       ok: false,
       reason: "no_provider",
-      message: "MetaMask or another EVM wallet is not available in this browser.",
+      message: "Install MetaMask, open this page in Chrome, then connect and return to Chrome.",
     };
   }
 

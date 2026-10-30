@@ -52,10 +52,10 @@
       "url": "https://ancap.cloud/tokens/racp"
     },
     {
-      "id": "metamask_mobile",
-      "status": "dapp_deep_link_available",
-      "url": "https://metamask.app.link/dapp/ancap.cloud/tokens/racp",
-      "guide": "https://ancap.cloud/docs/racp/metamask"
+      "id": "metamask_chrome_ios",
+      "status": "metamask_connect_evm",
+      "guide": "https://ancap.cloud/docs/racp/metamask",
+      "note": "Chrome on iPhone uses MetaMask Connect deeplink to the MetaMask app, then returns to Chrome"
     },
     {
       "id": "dex_pool",

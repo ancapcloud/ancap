@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "./LanguageProvider";
 import { apiFetch } from "@/lib/api";
-import { getPreferredEvmProvider } from "@/lib/evmProvider";
+import { resolveEvmProvider } from "@/lib/metamaskConnect";
 import {
   ACP_ADDRESS_RE,
   ensureRobinhoodChain,
   parseRacpHumanToWei,
   redeemTransaction,
+  RACP_CHAIN_HEX,
   RACP_EXPLORER,
   RACP_RESERVE,
 } from "@/lib/racpToken";
@@ -80,8 +81,7 @@ export function RacpRedeem() {
       if (!service?.enabled) throw new Error(c.disabled);
       if (!ACP_ADDRESS_RE.test(acpAddress.trim())) throw new Error(c.error);
       const wei = parseRacpHumanToWei(amount);
-      const provider = getPreferredEvmProvider();
-      if (!provider) throw new Error(c.error);
+      const provider = await resolveEvmProvider([RACP_CHAIN_HEX]);
       await ensureRobinhoodChain(provider);
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       const account = Array.isArray(accounts) && typeof accounts[0] === "string" ? accounts[0] : "";

@@ -13,6 +13,7 @@
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
     "@heliofi/checkout-react": "^4.0.9",
+    "@metamask/connect-evm": "^2.1.1",
     "next": "^15.5.24",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

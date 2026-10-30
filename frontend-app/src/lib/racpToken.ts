@@ -1,4 +1,4 @@
-import { getPreferredEvmProvider, type Eip1193Provider } from "@/lib/evmProvider";
+import type { Eip1193Provider } from "@/lib/evmProvider";
 
 export const RACP_CONTRACT = "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911";
 export const RACP_CHAIN_ID = 4663;
@@ -17,22 +17,15 @@ export const RACP_NETWORK = {
   blockExplorerUrls: [RACP_EXPLORER],
 };
 
-/** MetaMask mobile universal link — opens the dapp inside the MetaMask in-app browser. */
-export function metamaskDappLink(path: string = RACP_DAPP_PATH): string {
-  const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `https://metamask.app.link/dapp/ancap.cloud${normalized}`;
-}
-
 export function isLikelyMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
 
-/** Hand the phone user to MetaMask when no injected provider is present. */
-export function openRacpInMetaMaskApp(path: string = RACP_DAPP_PATH): boolean {
-  if (typeof window === "undefined") return false;
-  window.location.assign(metamaskDappLink(path));
-  return true;
+/** Fallback: open the page inside MetaMask's in-app browser (not Chrome→MetaMask Connect). */
+export function metamaskDappLink(path: string = RACP_DAPP_PATH): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `https://metamask.app.link/dapp/ancap.cloud${normalized}`;
 }
 
 export async function ensureRobinhoodChain(provider: Eip1193Provider): Promise<void> {
@@ -51,16 +44,12 @@ export async function ensureRobinhoodChain(provider: Eip1193Provider): Promise<v
 }
 
 /** No signing, token approval or transaction: only a wallet network/import prompt. */
-export async function watchRacpInWallet(provider: Eip1193Provider | null = getPreferredEvmProvider() ?? null): Promise<boolean> {
-  if (!provider) {
-    if (isLikelyMobileBrowser() && openRacpInMetaMaskApp()) {
-      throw new Error("OPENING_METAMASK_APP");
-    }
-    throw new Error("No compatible EVM wallet");
-  }
-  await provider.request({ method: "eth_requestAccounts" });
-  await ensureRobinhoodChain(provider);
-  return (await provider.request({ method: "wallet_watchAsset", params: {
+export async function watchRacpInWallet(provider?: Eip1193Provider | null): Promise<boolean> {
+  const { resolveEvmProvider } = await import("@/lib/metamaskConnect");
+  const active = provider ?? (await resolveEvmProvider([RACP_CHAIN_HEX]));
+  await active.request({ method: "eth_requestAccounts" });
+  await ensureRobinhoodChain(active);
+  return (await active.request({ method: "wallet_watchAsset", params: {
     type: "ERC20", options: { address: RACP_CONTRACT, symbol: "rACP", decimals: 18, image: `${RACP_PUBLIC_ORIGIN}/racp-logo.png` },
   } })) !== false;
 }
