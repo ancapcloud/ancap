@@ -3718,3 +3718,62 @@ class QrDailyCount(Base):
     campaign = Column(String(40), primary_key=True)
     day = Column(Date, primary_key=True)
     visits = Column(BigInteger, nullable=False, server_default=text("0"))
+
+
+class RacpRedemption(Base):
+    """Supervised rACP → ACP reverse rail (exclusive reserve, not bridge hot wallet)."""
+
+    __tablename__ = "racp_redemptions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    status = Column(String(40), nullable=False)
+    redemption_id = Column(BigInteger, nullable=False)
+    holder = Column(String(66), nullable=False)
+    amount_racp_wei = Column(Numeric(38, 0), nullable=False)
+    amount_acp_smallest = Column(Numeric(38, 0), nullable=False)
+    user_acp_address = Column(String(128), nullable=False)
+    rh_chain_id = Column(String(32), nullable=False, default="4663")
+    rh_tx_hash = Column(String(128), nullable=False)
+    rh_log_index = Column(Integer, nullable=False)
+    rh_block_number = Column(BigInteger, nullable=True)
+    acp_chain_id = Column(String(32), nullable=False, default="acp")
+    acp_tx_hash = Column(String(128), nullable=True)
+    notes = Column(Text, nullable=True)
+    version = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_racp_redemptions_status", "status"),
+        Index("ix_racp_redemptions_created", "created_at"),
+        UniqueConstraint("redemption_id", name="ux_racp_redemptions_onchain_id"),
+        Index(
+            "ux_racp_redemptions_rh_log",
+            "rh_chain_id",
+            "rh_tx_hash",
+            "rh_log_index",
+            unique=True,
+        ),
+        Index(
+            "ux_racp_redemptions_acp_tx",
+            "acp_chain_id",
+            "acp_tx_hash",
+            unique=True,
+            postgresql_where=text("acp_tx_hash IS NOT NULL"),
+        ),
+    )
+
+
+class RacpRedemptionTransition(Base):
+    __tablename__ = "racp_redemption_transitions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    redemption_id = Column(
+        UUID(as_uuid=False), ForeignKey("racp_redemptions.id", ondelete="CASCADE"), nullable=False
+    )
+    from_status = Column(String(40), nullable=True)
+    to_status = Column(String(40), nullable=False)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (Index("ix_racp_redemption_transitions_op", "redemption_id"),)

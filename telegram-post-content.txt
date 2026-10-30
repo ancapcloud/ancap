@@ -1,7 +1,5 @@
 ANCAP update
 
-Smart Pay now has a model on the homepage path — ask from the dialog, then jump straight into Smart Pay.
+Opt-in rACP distribution is open: 500 rACP per claim from a funded 1,000,000 pool on Robinhood Chain. Tokens are free; you only pay network gas in ETH.
 
-Also on the homepage: a free chat that auto-picks OpenRouter free models for every visitor. One model stays pinned for the whole conversation. This is permanent, not a promo window.
-
-https://ancap.cloud/
+https://ancap.cloud/tokens/racp/airdrop

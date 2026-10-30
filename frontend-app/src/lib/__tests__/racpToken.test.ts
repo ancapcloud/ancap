@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { RACP_CONTRACT, RACP_NETWORK, watchRacpInWallet } from "../racpToken";
+import {
+  ACP_ADDRESS_RE,
+  parseRacpHumanToWei,
+  redeemTransaction,
+  RACP_CONTRACT,
+  RACP_NETWORK,
+  RACP_WEI_PER_ACP_SMALLEST,
+  watchRacpInWallet,
+} from "../racpToken";
 import type { Eip1193Provider } from "../evmProvider";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -33,5 +41,25 @@ describe("rACP wallet import", () => {
     const list = JSON.parse(readFileSync(resolve(process.cwd(), "public/tokenlist.json"), "utf8"));
     expect(list.tokens.find((t: {symbol: string}) => t.symbol === "wACP").chainId).toBe(56);
     expect(list.tokens.find((t: {symbol: string}) => t.symbol === "rACP")).toMatchObject({ chainId: 4663, address: RACP_CONTRACT, decimals: 18 });
+  });
+});
+
+describe("rACP redeem encoding", () => {
+  it("maps 10 rACP to aligned wei and builds requestRedemption calldata", () => {
+    const wei = parseRacpHumanToWei("10");
+    expect(wei % RACP_WEI_PER_ACP_SMALLEST).toBe(0n);
+    expect(ACP_ADDRESS_RE.test("acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz")).toBe(true);
+    const account = "0x" + "11".repeat(20);
+    const tx = redeemTransaction(account, wei, "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz");
+    expect(tx.to).toBe(RACP_CONTRACT);
+    expect(tx.value).toBe("0x0");
+    expect(tx.data.startsWith("0x86511595")).toBe(true);
+    expect(tx.from).toBe(account);
+  });
+  it("rejects unaligned amounts and bad ACP addresses", () => {
+    expect(() => parseRacpHumanToWei("0.000000000000000001")).toThrow();
+    expect(() =>
+      redeemTransaction("0x" + "11".repeat(20), 10n * 10n ** 18n, "0xdead"),
+    ).toThrow(/ACP address/i);
   });
 });

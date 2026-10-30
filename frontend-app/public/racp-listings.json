@@ -16,7 +16,10 @@
     "racp_per_acp": 10,
     "liquidity_budget": "0",
     "market_price": null,
-    "automatic_redemption": false
+    "automatic_redemption": true,
+    "redeem_url": "https://ancap.cloud/tokens/racp/redeem",
+    "redeem_status": "https://api.ancap.cloud/v1/racp/redeem/status",
+    "redeem_note": "Enabled when RACP_REDEEM_ENABLED=true on the API host; burn via requestRedemption, ACP from exclusive reserve."
   },
   "placements": [
     {

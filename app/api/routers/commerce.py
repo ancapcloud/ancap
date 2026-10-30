@@ -11,14 +11,27 @@ from sqlalchemy import desc, func, select
 from app.api.deps import DbSession, require_auth, require_platform_admin
 from app.db.models import ClaimCode, MerchantAccount, PaymentLink, RampWaitlistEntry
 from app.schemas.helio import HelioAdapterStatusPublic, HelioWebhookAck
-from app.schemas.webid import WebIdAdapterStatusPublic
+from app.schemas.webid import (
+    WebIdAdapterStatusPublic,
+    WebIdSessionStartRequest,
+    WebIdSessionStartResponse,
+    WebIdWebhookAck,
+)
 from app.services.helio_commerce import (
     helio_public_status,
     parse_helio_json_body,
     summarize_helio_webhook,
     verify_helio_webhook_signature,
 )
-from app.services.webid_kyc import webid_public_status
+from app.services.webid_kyc import (
+    WebIdNotConfigured,
+    WebIdUpstreamError,
+    parse_webid_json_body,
+    start_webid_session,
+    summarize_webid_webhook,
+    verify_webid_webhook_signature,
+    webid_public_status,
+)
 from app.services.merchant_pay import get_or_create_merchant_account
 
 router = APIRouter(prefix="/commerce", tags=["Commerce"])
@@ -144,6 +157,46 @@ async def helio_adapter_status():
 async def webid_adapter_status():
     """Public WebID KYC partner-slot status — never returns secrets; never claims card issuing."""
     return webid_public_status()
+
+
+@router.post("/webid/session", response_model=WebIdSessionStartResponse)
+async def webid_start_session(
+    body: WebIdSessionStartRequest,
+    user_id: str = Depends(require_auth),
+):
+    """Start WebID KYC/KYB identification (fail-closed without commercial credentials)."""
+    try:
+        return await start_webid_session(
+            user_id=user_id,
+            return_url=str(body.return_url) if body.return_url else None,
+            product=body.product,
+            locale=body.locale,
+        )
+    except WebIdNotConfigured as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except WebIdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/webid/webhook", response_model=WebIdWebhookAck)
+async def webid_status_webhook(
+    request: Request,
+    x_signature: str | None = Header(default=None, alias="X-Signature"),
+    x_webid_signature: str | None = Header(default=None, alias="X-WebID-Signature"),
+):
+    """Ack WebID identification status webhooks (HMAC-SHA256). Identity only — no card mint."""
+    raw = await request.body()
+    signature = x_webid_signature or x_signature
+    if not verify_webid_webhook_signature(raw, signature):
+        raise HTTPException(status_code=401, detail="Invalid WebID webhook signature")
+    payload = parse_webid_json_body(raw)
+    meta = summarize_webid_webhook(payload)
+    return WebIdWebhookAck(
+        status="ok",
+        event=meta.get("event"),
+        action_id=meta.get("action_id"),
+        identification_status=meta.get("identification_status"),
+    )
 
 
 @router.post("/helio/webhook", response_model=HelioWebhookAck)

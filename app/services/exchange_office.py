@@ -226,6 +226,9 @@ def build_assets() -> list[ExchangeAssetPublic]:
     bridge_live = bool(getattr(settings, "bridge_rail_enabled", False)) and not bool(
         getattr(settings, "bridge_rail_paused", False)
     )
+    racp_redeem_live = bool(getattr(settings, "racp_redeem_enabled", False)) and not bool(
+        getattr(settings, "racp_redeem_paused", False)
+    )
     fiat_rates = getattr(settings, "exchange_fiat_acp_rates", None) or {"usd": "1", "eur": "1.08"}
 
     assets: list[ExchangeAssetPublic] = [
@@ -263,8 +266,8 @@ def build_assets() -> list[ExchangeAssetPublic]:
             symbol="rACP",
             label="Robinhood ACP",
             kind="crypto",
-            availability="beta",
-            direction="none",
+            availability="live" if racp_redeem_live else "beta",
+            direction="into_acp" if racp_redeem_live else "none",
             rail="bridge",
             quote_mode="bridge_1_10",
             unit="rACP",
@@ -273,7 +276,11 @@ def build_assets() -> list[ExchangeAssetPublic]:
             note=(
                 "Custodial ACP receipt: 1 ACP = 10 rACP. 10,000,000 rACP issued "
                 "against an initial confirmed 1,000,000 ACP reserve. "
-                "Automated redemption and continuous reserve monitoring are not available."
+                + (
+                    "Automated rACP→ACP redemption via /tokens/racp/redeem; reserve monitored on jobs/tick."
+                    if racp_redeem_live
+                    else "Automated redemption stays off until RACP_REDEEM_ENABLED."
+                )
             ),
             metadata={
                 "chain_id": 4663,
@@ -281,6 +288,7 @@ def build_assets() -> list[ExchangeAssetPublic]:
                 "explorer_url": "https://robinhoodchain.blockscout.com",
                 "gas_symbol": "ETH",
                 "website": "https://ancap.cloud/tokens/racp",
+                "redeem_url": "https://ancap.cloud/tokens/racp/redeem",
                 "logo_uri": "https://ancap.cloud/racp-logo.png",
                 "tokenlist_url": "https://ancap.cloud/tokenlist.json",
                 "source_verification": "exact_match",
@@ -297,8 +305,8 @@ def build_assets() -> list[ExchangeAssetPublic]:
                 "initial_reserve_block": 19,
                 "reserve_funding_tx": "1b369ac2dc6c21c84e1ca798bd5f4059a5c45ea4ca25ef5068042533a77cd0c2",
                 "reserve_balance_url": "/v1/acp/address/acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz/balance",
-                "reserve_monitoring": "not_implemented",
-                "redemption_available": False,
+                "reserve_monitoring": "job_tick" if racp_redeem_live else "not_implemented",
+                "redemption_available": racp_redeem_live,
             },
         ),
         ExchangeAssetPublic(
@@ -445,6 +453,9 @@ def build_pairs(assets: list[ExchangeAssetPublic] | None = None) -> list[Exchang
     for src in assets:
         for dst in assets:
             if src.id == dst.id:
+                continue
+            # rACP redeem is a supervised burn→payout rail, not exchange-office quote/settle.
+            if src.id == "racp_robinhood" or dst.id == "racp_robinhood":
                 continue
             ok, note = _pair_available(src, dst)
             if not ok:

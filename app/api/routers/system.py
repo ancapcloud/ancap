@@ -19,6 +19,7 @@ from app.db.models import AcpSwapOrder, DecisionLog, ReferralOnchainPayoutJob, S
 from app.jobs.activity_feed_materialize_tick import activity_feed_materialize_tick
 from app.jobs.agent_relationships_upsert import upsert_agent_relationships_from_orders
 from app.jobs.bridge_rail_tick import bridge_rail_tick
+from app.jobs.racp_redeem_tick import racp_redeem_tick
 from app.jobs.circuit_breaker_by_metric import circuit_breaker_by_metric_tick
 from app.jobs.edges_daily_upsert import upsert_edges_daily_from_orders
 from app.jobs.evolution_auto_ab import auto_ab_tick
@@ -506,6 +507,11 @@ async def _run_all_jobs(session: DbSession) -> dict:
     await set_ledger_invariant_halted(session, halted=len(ledger_violations) > 0)
     bridge_rail = await bridge_rail_tick(session)
     try:
+        async with session.begin_nested():
+            racp_redeem = await racp_redeem_tick(session)
+    except Exception as exc:
+        racp_redeem = {"ok": False, "error": str(exc)[:200]}
+    try:
         from app.services.wacp_liquidity_monitor import wacp_liquidity_monitor_tick
 
         wacp_liquidity = await wacp_liquidity_monitor_tick(session)
@@ -567,6 +573,7 @@ async def _run_all_jobs(session: DbSession) -> dict:
         "staking_rewards": staking_rewards,
         "ledger_invariant_violations": [{"currency": c, "sum": str(s)} for c, s in ledger_violations],
         "bridge_rail": bridge_rail,
+        "racp_redeem": racp_redeem,
         "wacp_liquidity": wacp_liquidity,
         "swap_deposit_watcher": swap_deposit_watcher,
         "mobile_indexer": mobile_indexer,

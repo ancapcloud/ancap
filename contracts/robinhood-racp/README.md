@@ -57,10 +57,12 @@ issuer; Solidity does not verify the native ACP chain. Operators must independen
 verify the exclusive reserve and archive the confirmed transfer before calling it.
 
 `requestRedemption(amount, acpAddress)` burns tokens and emits a request. It does
-not transfer native ACP. A supervised payout/reconciliation service remains to
-be implemented before promoting redemption as available. Amounts must map exactly
-to native ACP's 8 decimals (multiples of 10^11 token base units). Destination string
-syntax/ownership must be checked by the operator before any payout.
+not transfer native ACP on-chain. The supervised payout service
+(`app/services/racp_redeem_*`, `GET /v1/racp/redeem/status`, UI `/tokens/racp/redeem`)
+indexes `RedemptionRequested` and pays ACP from the exclusive reserve keystore
+(`RACP_RESERVE_KEYSTORE_FILE`) when `RACP_REDEEM_ENABLED=true`. Amounts must map
+exactly to native ACP's 8 decimals (multiples of 10^11 token base units). Any
+valid `acp1…` destination in the event is accepted; the bridge hot wallet is never used.
 
 ## Build and validation
 
@@ -101,7 +103,7 @@ Runtime bytecode is independently checked against local compilation by
 ## Remaining steps
 
 1. Preserve the exclusive reserve; prohibit reuse as wACP backing.
-2. Implement authenticated, idempotent redemption payouts and continuous reserve reconciliation.
+2. Operator go-live: `alembic upgrade head`, mount reserve keystore, set `RACP_REDEEM_ENABLED=true`, confirm `jobs/tick` runs `racp_redeem`, smoke a small burn→COMPLETED.
 3. Enable trading only after the relevant service checks and a new operator liquidity budget.
 
 ## Public distribution — 2026-10-30

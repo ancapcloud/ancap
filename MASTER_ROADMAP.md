@@ -27,8 +27,9 @@ UTXO index also no longer reports unwatched addresses as confirmed zero balances
 Robinhood Chain mainnet issuance complete: 10,000,000 rACP sent to the approved
 recipient against an exclusive 1,000,000 ACP reserve (1 ACP = 10 rACP), funded in
 native block 19. The user approved release of platform claims/three 50k stakes.
-Catalog entry is beta and non-tradeable through ANCAP; automated redemption and
-continuous reserve monitoring remain open. Evidence: [rACP](contracts/robinhood-racp/README.md).
+Catalog entry stays non-tradeable for quote/settle pairs; automated rACP→ACP
+redemption rail is shipped (fail-closed until `RACP_REDEEM_ENABLED`). Evidence:
+[rACP](contracts/robinhood-racp/README.md), `/tokens/racp/redeem`.
 
 ## ANCAP Card — 2026-10-28
 
@@ -954,7 +955,7 @@ Status: [~] Adapter shipped: env `HELIO_*`, `GET /v1/commerce/helio/status`, sig
 
 ### 4.0c WebID KYC slot + physical card / Apple Pay waitlist [MEDIUM]
 
-Status: [x] P0 — docs (`docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`), `/cards` waitlist (`interest=physical_card_apple_pay`), fail-closed `GET /v1/commerce/webid/status` (`issues_cards=false`). WebID is KYC/KYB only; plastic + Apple Pay need a separate licensed BaaS/EMI after counsel. P1 sandbox API and P2 issuer track remain open.
+Status: [~] P0 done + P1 sandbox adapter shipped (fail-closed until commercial credentials): docs (`docs/WEBID_KYC_AND_CARD_ISSUING_PATH.md`), `/cards` waitlist + live status, `GET /v1/commerce/webid/status`, authenticated `POST /v1/commerce/webid/session`, signed `POST /v1/commerce/webid/webhook`. WebID is KYC/KYB only (`issues_cards=false`); plastic + Apple Pay need a separate licensed BaaS/EMI after counsel. Remaining: operator WebID commercial account + live sandbox smoke; P2 issuer track open.
 
 ### 4.1 Stripe / fiat payment gateway [HIGH]
 

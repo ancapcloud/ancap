@@ -171,7 +171,12 @@ from app.schemas.payments import (
     StripeWebhookAck,
 )
 from app.schemas.helio import HelioAdapterStatusPublic, HelioWebhookAck, HelioWebhookDebugPublic
-from app.schemas.webid import WebIdAdapterStatusPublic
+from app.schemas.webid import (
+    WebIdAdapterStatusPublic,
+    WebIdSessionStartRequest,
+    WebIdSessionStartResponse,
+    WebIdWebhookAck,
+)
 from app.schemas.payouts import (
     PayoutMethod,
     PayoutRequestStatus,
@@ -399,6 +404,9 @@ __all__ = [
     "HelioWebhookAck",
     "HelioWebhookDebugPublic",
     "WebIdAdapterStatusPublic",
+    "WebIdSessionStartRequest",
+    "WebIdSessionStartResponse",
+    "WebIdWebhookAck",
     "PaymentMethodCardPublic",
     "PaymentMethodPublic",
     "PaymentMethodsResponse",
