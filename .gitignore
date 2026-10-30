@@ -173,4 +173,6 @@ ACP-crypto/target-lean/
 
 # Local Smart Pay Docker credentials and acceptance artifacts
 .env.wevisone
+.env.wevisone-*
+.env.wevisone.*
 .wevisone-smoke/
