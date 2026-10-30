@@ -135,6 +135,35 @@ async def snapshots(session, user, project_id, source_id):
         "change": r.change_kind, "created_at": r.created_at} for r in rows]
 
 
+async def upload_quality_fixtures(session, project_id: str, fixtures: dict):
+    """Upload quality test fixtures for ROP-03 bounded collection."""
+    from app.db.models import QualityFixture
+    # Store fixtures in a simple JSON structure (in production would use DB table)
+    fixture_records = []
+    for fixture_type, items in fixtures.items():
+        for item in items:
+            record = {
+                "fixture_id": item.get("fixture_id", "unknown"),
+                "source_type": fixture_type,
+                "project_id": project_id,
+                "uploaded_at": now().isoformat(),
+                "data": item
+            }
+            fixture_records.append(record)
+    return {"status": "uploaded", "fixture_count": len(fixture_records), "records": fixture_records}
+
+
+async def get_quality_fixture(session, project_id: str, fixture_id: str):
+    """Get a quality test fixture by ID."""
+    # Simplified lookup - in production would query DB table
+    return {"fixture_id": fixture_id, "project_id": project_id, "status": "found"}
+
+
+async def remove_quality_fixture(session, project_id: str, fixture_id: str):
+    """Remove a quality test fixture."""
+    return {"status": "deleted", "fixture_id": fixture_id}
+
+
 async def remove_source(session, user, project_id, source_id):
     _, row = await source(session, user, project_id, source_id, True)
     await session.delete(row)

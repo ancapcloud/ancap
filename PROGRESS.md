@@ -48,6 +48,15 @@
 
 # PROGRESS.md
 
+## COST-03 — admin cost evidence endpoint — 2026-10-30 (completed)
+- Implemented GET /v1/workflow-store/admin/cost-evidence/{evidence_id} for operator-attested source verification.
+- Files changed: workflow_value.py (router), models.py (WorkflowCostEvidence model), workflow_costs.py (schemas/services), test_workflow_cost_evidence_api.py (tests).
+- Commands: git add 5 files; git commit "feat(cost): implement admin cost evidence endpoint with verification".
+- Tests: 5 targeted tests passed (access control, atomicity, 404/401 handling, allocations retrieval, cache-control headers).
+- Commit: d97fbf23 on master.
+- Limitations: isolated PostgreSQL used for API tests; fixtures may drop schema.
+- Next: Research Operations P0 — ROP-03 (limited collection/fixtures quality) per docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md.
+
 ## Run Summary
 
 - **Git status:** working tree clean before run; git status showed uncommitted changes on prior launch.
