@@ -26,7 +26,8 @@ if (plan.reserveEvidence) {
 }
 const report = { chainId: plan.chainId, contractAddress: plan.contractAddress, runtimeMatchesLocalCompilation: true,
   totalSupply: (await token.totalSupply()).toString(), recipientBalance: (await token.balanceOf(plan.recipient)).toString(),
-  issued: await token.issued(), reserveEvidence: await token.reserveEvidence(), explorerSourceVerification: 'blocked-by-explorer-challenge' };
+  issued: await token.issued(), reserveEvidence: await token.reserveEvidence(),
+  explorerSourceVerification: JSON.parse(fs.readFileSync('prepared/source-verification.json', 'utf8')).blockscout.status };
 fs.writeFileSync('prepared/runtime-verification.json', JSON.stringify(report, null, 2) + '\n');
 fs.writeFileSync('prepared/standard-input.json', JSON.stringify(input, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 2));

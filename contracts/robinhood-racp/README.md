@@ -88,17 +88,39 @@ The existing signer env file is accessed only in memory; no private key is in ar
 issuer/recipient, cap and zero prior issuance, and journals before signing/sending.
 Issuance has already completed. Do not remove its journal or attempt another issuance.
 
-Explorer source verification was attempted but blocked by its Cloudflare challenge.
-`prepared/standard-input.json`, compiler 0.8.24, optimizer 200, EVM paris, and
-constructor `(issuer, recipient)` are available for manual explorer verification.
-Runtime bytecode is checked independently against local compilation by
-`verify-runtime.mjs`; that check is distinct from explorer source verification.
+Blockscout source verification completed on 2026-10-30 through its standard JSON
+form: exact match, Solidity 0.8.24, optimizer 200, EVM paris, MIT. Sourcify also
+reports creation/runtime exact matches, match ID 57603340. Archived responses:
+`prepared/source-verification.json` and `prepared/sourcify-verification.json`.
+The token's separate Blockscout name/logo profile requires account login and has
+not been updated; source verification does not imply a profile/listing approval.
+Runtime bytecode is independently checked against local compilation by
+`verify-runtime.mjs`.
 
 ## Remaining steps
 
 1. Preserve the exclusive reserve; prohibit reuse as wACP backing.
 2. Implement authenticated, idempotent redemption payouts and continuous reserve reconciliation.
-3. Enable trading only after the relevant service checks; complete explorer source verification.
+3. Enable trading only after the relevant service checks and a new operator liquidity budget.
+
+## Public distribution — 2026-10-30
+
+Operator liquidity budget: **0**; no pool, LP position or paid listing was created.
+The official page `/tokens/racp`, homepage/Markets cards, navigation link, five-language
+wallet-import flow, PNG/SVG identity, tokenlist, whitepaper and machine-readable
+`/racp-listings.json` are included in the website release. The native ACP wallet
+and Robinhood EVM wallet remain distinct; this does not add an automated bridge.
+
+CoinGecko active listing prerequisites require an active market on a tracked venue.
+CoinMarketCap tracked listing is deferred until market readiness. Trust Wallet's
+directory requires eligibility checks, established activity/audit and a fee; no
+fee or approval is claimed. These applications have not been submitted.
+Use the status JSON to distinguish live public resources from pending applications.
+
+Official requirements reviewed:
+- https://support.coingecko.com/articles/9489827481-how-to-list-a-new-cryptocurrency-on-coingecko?lang=en
+- https://support.coinmarketcap.com/hc/en-us/articles/360043659351-Listings-Criteria
+- https://developer.trustwallet.com/developer/new-asset/requirements
 
 Network details: https://docs.robinhood.com/chain/connecting/
 Contract: https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911

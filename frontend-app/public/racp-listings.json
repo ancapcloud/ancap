@@ -1,0 +1,25 @@
+{
+  "updated_at": "2026-10-30",
+  "project": "ANCAP",
+  "asset": {
+    "name": "Robinhood ACP", "symbol": "rACP", "chain_id": 4663,
+    "address": "0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911", "decimals": 18,
+    "issued_supply": "10000000", "website": "https://ancap.cloud/tokens/racp",
+    "logo": "https://ancap.cloud/racp-logo.png", "tokenlist": "https://ancap.cloud/tokenlist.json",
+    "reserve_address": "acp1qqqsdr00nem230z3e84stqkx7drh2xwncupts2lz",
+    "initial_reserve_acp": "1000000", "racp_per_acp": 10,
+    "liquidity_budget": "0", "market_price": null, "automatic_redemption": false
+  },
+  "placements": [
+    { "id": "blockscout", "status": "source_verified_exact_match", "url": "https://robinhoodchain.blockscout.com/address/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911?tab=contract" },
+    { "id": "sourcify", "status": "source_verified_exact_match", "url": "https://repo.sourcify.dev/4663/0xD53f91A63f95beAc61Ec8417c40C5e620FE3a911" },
+    { "id": "blockscout_token_profile", "status": "requires_account_login_for_name_and_logo_update" },
+    { "id": "ancap", "status": "published_with_this_release", "url": "https://ancap.cloud/tokens/racp" },
+    { "id": "tokenlist", "status": "published_with_this_release", "url": "https://ancap.cloud/tokenlist.json" },
+    { "id": "wallet_import", "status": "manual_import_available", "url": "https://ancap.cloud/tokens/racp" },
+    { "id": "dex_pool", "status": "deferred_by_operator_zero_liquidity_budget" },
+    { "id": "coingecko", "status": "not_submitted_requires_active_tracked_market", "url": "https://support.coingecko.com/articles/9489827481-how-to-list-a-new-cryptocurrency-on-coingecko?lang=en" },
+    { "id": "coinmarketcap", "status": "not_submitted_no_active_market", "url": "https://support.coinmarketcap.com/hc/en-us/articles/360043659351-Listings-Criteria" },
+    { "id": "trustwallet_assets", "status": "not_submitted_requirements_and_fee_not_met", "url": "https://developer.trustwallet.com/developer/new-asset/requirements" }
+  ]
+}

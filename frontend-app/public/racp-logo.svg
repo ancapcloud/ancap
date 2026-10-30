@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="rACP ANCAP">
+  <rect width="256" height="256" rx="64" fill="#081c20"/>
+  <circle cx="128" cy="128" r="88" fill="none" stroke="#19c38a" stroke-width="18"/>
+  <circle cx="128" cy="40" r="15" fill="#19c38a"/><circle cx="128" cy="216" r="15" fill="#19c38a"/>
+  <circle cx="40" cy="128" r="15" fill="#19c38a"/><circle cx="216" cy="128" r="15" fill="#19c38a"/>
+  <path d="M104 169V89h19v12c8-10 16-14 30-13v20c-18-2-29 6-29 25v36z" fill="#e7fff6"/>
+</svg>

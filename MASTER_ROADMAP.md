@@ -2,6 +2,13 @@
 
 ## Robinhood ACP (rACP) — 2026-10-30
 
+Public distribution: Blockscout and Sourcify exact source matches confirmed;
+official five-language token page, wallet import, homepage/Markets/navigation,
+logo, whitepaper and multi-chain tokenlist are deployed in web release `racp-20261030`.
+Liquidity budget is explicitly zero. Exchange/price-tracker applications remain
+unsubmitted; Blockscout profile edits need account login. Scope and evidence:
+[distribution record](docs/RACP_PUBLIC_DISTRIBUTION_2026-10-30.md).
+
 Wallet balance hotfix (2026-10-30): personal native UTXOs are no longer capped
 to the shared custodial wallet's ledger entitlement. Existing stake/platform
 reservations remain excluded from spendable funds. Nine targeted tests passed;

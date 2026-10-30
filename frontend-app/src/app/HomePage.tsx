@@ -9,6 +9,7 @@ import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
 import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 import { HomeChatDialog } from "@/components/HomeChatDialog";
+import { RacpOverview } from "@/components/RacpOverview";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -123,6 +124,7 @@ export function HomePage() {
         </section>
 
         <ReviewTrustSection />
+        <RacpOverview compact />
 
         <section className={s.section} id="vision">
           <p className={s.eyebrow}>{c.investors}</p>
