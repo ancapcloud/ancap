@@ -1,6 +1,7 @@
 ﻿"""SQLAlchemy models for ANCAP Core Engine."""
 import enum
 import uuid
+from decimal import Decimal
 from datetime import datetime
 from sqlalchemy import (
     String,
@@ -3808,3 +3809,27 @@ class RacpRedemptionTransition(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (Index("ix_racp_redemption_transitions_op", "redemption_id"),)
+
+
+class UnknownExpenseRecord(Base):
+    """Record for unknown/unallocated expenses during reconciliation."""
+    __tablename__ = "unknown_expense_records"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    client_id = Column(String(255), nullable=False, index=True)
+    period_start = Column(DateTime(timezone=True), nullable=False, index=True)
+    period_end = Column(DateTime(timezone=True), nullable=False, index=True)
+    currency = Column(String(10), nullable=False, default="ACP")
+    amount = Column(Numeric(36, 18), nullable=False, default=Decimal("0"))
+    category = Column(String(50), nullable=True)  # e.g., "infrastructure", "support", "unknown"
+    provider_name = Column(String(255), nullable=True)
+    description = Column(Text, nullable=True)
+    source_reference = Column(String(255), nullable=True)  # invoice ID, ticket number, etc.
+    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    recorded_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_unknown_expense_amount"),
+        Index("ix_unknown_expense_client_period", "client_id", "period_start", "period_end"),
+    )

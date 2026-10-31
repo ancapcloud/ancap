@@ -139,3 +139,28 @@ async def require_platform_admin(
     if await is_platform_admin_user(session, user_id):
         return user_id
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform admin required")
+
+
+async def require_admin(
+    user_id: Annotated[str | None, Depends(get_current_user_id)],
+) -> str:
+    """Require any authenticated admin user.
+
+    For quality fixtures and other admin-only operations.
+    Uses the same allowlist logic as require_platform_admin but without session dependency.
+    If no allowlist is configured, all authenticated users are treated as admins.
+    """
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    settings = get_settings()
+    allowed_ids = set(settings.platform_admin_user_ids_allowlist)
+    # If no allowlist configured, treat all authenticated users as admins
+    if not allowed_ids:
+        return user_id
+    # Check against user IDs in allowlist
+    if user_id in allowed_ids:
+        return user_id
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")

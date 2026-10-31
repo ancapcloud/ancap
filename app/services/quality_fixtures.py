@@ -3,7 +3,7 @@
 from pathlib import Path
 import json
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 from app.db.models import QualityFixture
 from app.schemas.quality_fixtures import QualityFixtureCreate, QualityFixtureResponse
 
@@ -14,7 +14,7 @@ def load_fixtures_from_file(file_path: str) -> List[dict]:
         return json.load(f)
 
 
-def create_quality_fixtures_batch(db: Session, fixtures_data: List[dict]) -> List[QualityFixture]:
+async def create_quality_fixtures_batch(db, fixtures_data: List[dict]) -> List[QualityFixture]:
     """Batch create quality fixtures from loaded data."""
     created = []
     for fixture_data in fixtures_data:
@@ -29,22 +29,33 @@ def create_quality_fixtures_batch(db: Session, fixtures_data: List[dict]) -> Lis
         )
         db.add(fixture)
         created.append(fixture)
-    db.commit()
+    await db.commit()
     return created
 
 
-def get_quality_fixture(db: Session, fixture_id: str) -> Optional[QualityFixture]:
+async def get_quality_fixture(db, fixture_id: str) -> Optional[QualityFixture]:
     """Get a single quality fixture by ID."""
-    return db.query(QualityFixture).filter(QualityFixture.id == fixture_id).first()
+    result = await db.execute(select(QualityFixture).where(QualityFixture.id == fixture_id))
+    return result.scalar_one_or_none()
 
 
-def get_all_quality_fixtures(db: Session, limit: int = 100, offset: int = 0) -> List[QualityFixture]:
+async def get_all_quality_fixtures(db, limit: int = 100, offset: int = 0) -> List[QualityFixture]:
     """Paginated list of all quality fixtures."""
-    return db.query(QualityFixture).order_by(QualityFixture.created_at.desc()).limit(limit).offset(offset).all()
+    result = await db.execute(
+        select(QualityFixture)
+        .order_by(QualityFixture.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return list(result.scalars().all())
 
 
-def get_quality_fixtures_by_type(db: Session, fixture_type: str, limit: int = 100) -> List[QualityFixture]:
+async def get_quality_fixtures_by_type(db, fixture_type: str, limit: int = 100) -> List[QualityFixture]:
     """Get fixtures filtered by type."""
-    return db.query(QualityFixture).filter(
-        QualityFixture.fixture_type == fixture_type
-    ).order_by(QualityFixture.created_at.desc()).limit(limit).all()
+    result = await db.execute(
+        select(QualityFixture)
+        .where(QualityFixture.fixture_type == fixture_type)
+        .order_by(QualityFixture.created_at.desc())
+        .limit(limit)
+    )
+    return list(result.scalars().all())
