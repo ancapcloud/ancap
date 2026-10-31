@@ -8,7 +8,7 @@
 
 2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
 implemented locally in five languages, with a copyable chat instruction and
-public `/connect.txt` guide. Public discovery is separate from authenticated
+public `/connect.md` guide. Public discovery is separate from authenticated
 API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
 Production deployment remains pending.
 
