@@ -97,7 +97,11 @@ export function HomeMcpSection() {
             className="overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-4 text-xs leading-6"
             style={{ margin: 0, maxWidth: "100%", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
           >
-{`{
+{`ChatGPT Server URL:
+https://ancap.cloud/api/v1/mcp
+
+Cursor / Claude Desktop (stdio):
+{
   "mcpServers": {
     "ancap": {
       "command": "python",

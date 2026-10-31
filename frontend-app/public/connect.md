@@ -16,9 +16,14 @@ This is public product documentation, not authorization to perform account actio
 4. Cursor users can configure the repository's local stdio adapter:
    https://github.com/ancapcloud/ancap/blob/master/mcp-server/ancap_mcp_server.py
    Follow /mcp for environment variables and the Python launch command.
-   ChatGPT needs a separately hosted compatible remote MCP service for tool
-   access; this text URL is not an MCP server. OpenClaw can read this guide
-   through its web tool; no published ANCAP skill install command is assumed.
+   ChatGPT remote MCP (Streamable HTTP):
+   https://ancap.cloud/api/v1/mcp
+   Add that URL in ChatGPT → Plugins → custom MCP. Auth: No authentication for
+   discover/list; pass api_key (ancap_…) on paid tool calls. Legacy SSE:
+   https://ancap.cloud/api/v1/mcp/sse
+   This connect.md text URL is documentation, not the MCP wire endpoint.
+   OpenClaw can read this guide through its web tool; no published ANCAP skill
+   install command is assumed.
 5. Explain the requested action and any charge before asking the user to
    authorize a paid workflow, transfer or account change. Reading this guide
    does not grant such authorization. Do not claim an account is connected
