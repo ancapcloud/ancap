@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import space from "./HomePage.module.css";
 import { WebInstallGuide } from "@/components/WebInstallGuide";
 import { Navigation } from "@/components/Navigation";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -22,19 +21,12 @@ export function HomePage() {
     { title: c.growth, body: c.growthBody, href: "/ai/run/crypto-campaign-builder" },
   ];
   return (
-    <div className={`${s.shell} ${space.home}`} style={{ position: "relative", zIndex: 1 }}>
+    <div className={s.shell} style={{ position: "relative", zIndex: 1 }}>
       <Navigation />
       <main className={s.main}>
-        <section className={`${s.hero} ${space.hero}`} id="product">
-          <div className={space.orbitArt} aria-hidden="true">
-            <div className={space.planet} />
-            <div className={space.orbitOne} /><div className={space.orbitTwo} />
-            <span className={space.satellite}>✦</span>
-            <span className={space.coordinates}>ANCAP / DIGITAL FRONTIER<br />AI · WORKFLOWS · rACP</span>
-          </div>
-          <div className={space.heroContent}>
+        <section className={s.hero} id="product">
+          <div>
             <p className={s.eyebrow}>ANCAP / {c.kicker}</p>
-            <div className={space.missionLabel}><span /> ANCAP — DIGITAL FRONTIER</div>
             <h1 className={s.title}>{c.title}</h1>
             <p className={s.lead}>{c.lead}</p>
             <div className={s.actions}>
@@ -42,11 +34,13 @@ export function HomePage() {
               <Link className={s.secondary} href="/dashboard/seller">{c.seller} →</Link>
               <Link className={s.secondary} href="/economy">{c.economyLink} →</Link>
             </div>
+            <a className={s.secondary} href="#connect-ai">ChatGPT · Cursor · OpenClaw ↗</a>
             <HomeChatDialog />
           </div>
         </section>
 
-        <div className={space.manifest} aria-hidden="true"><span>01 / AI WORKFLOWS</span><span>02 / HUMAN + AGENT</span><span>03 / rACP ECONOMY</span><span>EXPLORE BELOW ↓</span></div>
+        <AgentQuickStart />
+
 
         <section className={s.section} aria-label={c.how} style={{ borderTop: "none", paddingTop: 8 }}>
           <p className={s.eyebrow}>{c.how}</p>
@@ -85,7 +79,6 @@ export function HomePage() {
           <p className={s.note}>{c.smartPayMobile}</p>
         </section>
 
-        <AgentQuickStart />
         <WebInstallGuide />
 
         <PeopleAiEconomySection />

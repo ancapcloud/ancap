@@ -1,4 +1,4 @@
-2026-10-31: homepage aerospace visual redesign implemented locally with an orbital hero, responsive layout and scoped styles. Existing product sections and five-language copy retained. Local preview available; operator design review and deployment remain pending.
+2026-10-31: restored the original homepage design at operator request. Retained prominent ChatGPT/Cursor/OpenClaw quick start with tool selection and copy instructions. Local changes only; not deployed.
 
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 

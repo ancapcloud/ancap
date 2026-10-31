@@ -16,6 +16,7 @@ const copy = {
 export function AgentQuickStart() {
   const { lang } = useLanguage();
   const c = copy[lang === "zh-Hant" ? "zh-TW" : lang];
+  const [selected, setSelected] = useState("ChatGPT");
   const [message, setMessage] = useState("");
   async function copyCommand() {
     try {
@@ -30,17 +31,24 @@ export function AgentQuickStart() {
       <p className={s.eyebrow}>ChatGPT · Cursor · OpenClaw</p>
       <h2 className={s.heading} id="connect-ai-title">{c.title}</h2>
       <p className={s.lead}>{c.lead}</p>
-      <pre className="my-5 whitespace-pre-wrap break-words rounded-2xl border border-[var(--border)] p-5 text-sm"><code>{c.command}</code></pre>
-      <div className={s.actions}>
-        <button type="button" className={s.primary} onClick={copyCommand}>{c.button}</button>
-        <Link className={s.secondary} href="/mcp">{c.docs} →</Link>
-      </div>
-      <p role="status" className={s.note}>{message}</p>
-      <div className={s.grid}>
-        {[["ChatGPT", c.chat], ["Cursor", c.cursor], ["OpenClaw", c.claw]].map(([name, text]) => (
-          <article className={s.card} key={name}><h3>{name}</h3><p>{text}</p></article>
+      <div className={s.grid} role="group" aria-label="ChatGPT / Cursor / OpenClaw">
+        {[["ChatGPT", c.chat], ["Cursor", c.cursor], ["OpenClaw", c.claw]].map(([name, text], index) => (
+          <button type="button" key={name} aria-pressed={selected === name} onClick={() => { setSelected(name); setMessage(""); }}
+            className={s.card} style={{ textAlign: "left", cursor: "pointer", color: "var(--text)", borderColor: selected === name ? "var(--accent)" : undefined }}>
+            <span className={s.eyebrow}>0{index + 1} / {selected === name ? "●" : "○"}</span>
+            <h3>{name} ↗</h3><p>{text}</p>
+          </button>
         ))}
       </div>
+      <pre className="my-5 whitespace-pre-wrap break-words rounded-2xl border border-[var(--border)] p-5 text-sm"><code>{c.command}</code></pre>
+      <div className={s.actions}>
+        <button type="button" className={s.primary} onClick={copyCommand}>{c.button} · {selected}</button>
+        {selected === "ChatGPT" && <a className={s.secondary} href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT ↗</a>}
+        {selected === "Cursor" && <Link className={s.secondary} href="/mcp">Cursor · MCP →</Link>}
+        {selected === "OpenClaw" && <a className={s.secondary} href="/connect.txt" target="_blank" rel="noopener noreferrer">OpenClaw · connect.txt ↗</a>}
+        <Link className={s.secondary} href="/mcp">{c.docs} →</Link>
+      </div>
+      <p role="status" aria-live="polite" style={{ minHeight: 24, marginTop: 12, fontSize: 13 }}>{message}</p>
       <p className={s.note}>{c.note}</p>
     </section>
   );

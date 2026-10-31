@@ -1,4 +1,4 @@
-2026-10-31: homepage aerospace visual redesign implemented locally with an orbital hero, responsive layout and scoped styles. Existing product sections and five-language copy retained. Local preview available; operator design review and deployment remain pending.
+2026-10-31: restored the original homepage design at operator request. Retained prominent ChatGPT/Cursor/OpenClaw quick start with tool selection and copy instructions. Local changes only; not deployed.
 
 > **Pool update 2026-10-30:** rACP/WETH now has a small live PancakeSwap V2 pool on Robinhood Chain. Earlier statements about zero liquidity describe the initial release. Verified snapshot: 5,000 rACP and 0.005 WETH at block 101517870. Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
 
