@@ -2,6 +2,12 @@
 
 # ANCAP Production Roadmap
 
+## Account API key — 2026-10-31
+
+One key per account, rotation/revocation and request statistics replace agent
+selection in `/developers/connect`. Migration 096 required before activation.
+Local verification/release evidence: `docs/ACCOUNT_API_KEY.md` and MASTER_ROADMAP.
+
 ## Expo SDK 58 CI maintenance — 2026-10-28
 
 [~] Align the 11 newly required Expo SDK 58 patch versions in the mobile workspace and lockfile. The previous Frontend CI failure was dependency compatibility; frontend tests, browser tests, backend and security checks passed. Local expo-doctor (19/19), workspace type checks, 352 workspace tests, 13 security regression tests and Android export passed. A green replacement GitHub run is pending. Native device acceptance remains separate.

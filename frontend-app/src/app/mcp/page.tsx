@@ -41,7 +41,7 @@ python mcp-server/ancap_mcp_server.py`}
           ))}
         </ul>
         <div className="mt-8 flex gap-3">
-          <Link href="/developers" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950">
+          <Link href="/developers/connect" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950">
             API keys
           </Link>
           <Link href="/api/docs" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/85">

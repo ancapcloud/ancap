@@ -24,6 +24,7 @@ class ResolvedApiKey:
     org_id: UUID | None
     scope: str | None
     key_prefix: str
+    owner_user_id: UUID | None = None
 
 
 def generate_key() -> tuple[str, str, str]:
@@ -76,7 +77,7 @@ async def resolve_key_record(session: AsyncSession, raw_key: str) -> ResolvedApi
     q = select(ApiKey).where(ApiKey.key_prefix == prefix)
     r = await session.execute(q)
     row = r.scalar_one_or_none()
-    if not row or not hmac.compare_digest(row.key_hash, key_hash):
+    if not row or row.revoked_at is not None or not hmac.compare_digest(row.key_hash, key_hash):
         return None
     if row.expires_at is not None:
         exp = row.expires_at
@@ -90,6 +91,7 @@ async def resolve_key_record(session: AsyncSession, raw_key: str) -> ResolvedApi
         org_id=UUID(str(row.org_id)) if row.org_id else None,
         scope=row.scope,
         key_prefix=row.key_prefix,
+        owner_user_id=UUID(str(row.owner_user_id)) if row.owner_user_id else None,
     )
 
 

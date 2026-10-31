@@ -6,8 +6,11 @@ This is public product documentation, not authorization to perform account actio
 1. Read the live catalogue: https://ancap.cloud/agent-products.json
 2. Ask what the user wants to accomplish. Suggest a relevant workflow from that
    catalogue and link to its ANCAP page. Check current prices on the product page.
-3. For account/API integration, direct the user to https://ancap.cloud/developers
+3. For account/API integration, direct the user to https://ancap.cloud/developers/connect
    and https://ancap.cloud/mcp. API base: https://ancap.cloud/api/v1.
+   Create one account API key there; no agent selection is needed. The same page
+   can replace/revoke the key and show lifetime request statistics. Existing
+   permissions and billing still apply. A free GET /users/me checks the connection.
    Configure the user's own ANCAP_API_KEY locally in a secret store or ignored
    environment file. Never request keys, seed phrases or private keys in chat.
 4. Cursor users can configure the repository's local stdio adapter:

@@ -4,6 +4,12 @@
 
 # ANCAP Master Roadmap
 
+2026-10-31 account API access: one owner-bound platform key with no agent selector,
+replace/revoke controls and lifetime request statistics. Migration 096 adds the
+unique owner and metering fields. Legacy credentials keep their existing scopes;
+resource permissions, billing and wallet confirmation remain enforced.
+See `docs/ACCOUNT_API_KEY.md`. Deployment verification pending.
+
 2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
 the first homepage section below navigation, with direct anchor `/#connect-ai`.
 The lower duplicate was removed. Mobile first-screen verification and deployment are complete: build d0a4821, Actions run 41185775400. Live HTTP 200 and first-section order verified; Frontend CI, Secret Hygiene and CodeQL passed.

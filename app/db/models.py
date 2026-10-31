@@ -334,12 +334,18 @@ class ApiKey(Base):
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     org_id = Column(UUID(as_uuid=False), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
     agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="CASCADE"), nullable=True, index=True)
+    owner_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, unique=True)
     name = Column(String(80), nullable=True)
     key_prefix = Column(String(24), nullable=False, unique=True, index=True)
     key_hash = Column(String(64), nullable=False)
     scope = Column(String(64), nullable=True)
     metadata_json = Column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
     expires_at = Column(DateTime(timezone=True), nullable=True)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+    last_used_at = Column(DateTime(timezone=True), nullable=True)
+    request_count = Column(BigInteger, nullable=False, default=0, server_default=text("0"))
+    success_count = Column(BigInteger, nullable=False, default=0, server_default=text("0"))
+    error_count = Column(BigInteger, nullable=False, default=0, server_default=text("0"))
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
