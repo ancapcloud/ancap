@@ -6,8 +6,7 @@
 
 2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
 the first homepage section below navigation, with direct anchor `/#connect-ai`.
-The lower duplicate was removed. Mobile first-screen verification and deployment
-are pending.
+The lower duplicate was removed. Mobile first-screen verification and deployment are complete: build d0a4821, Actions run 41185775400. Live HTTP 200 and first-section order verified; Frontend CI, Secret Hygiene and CodeQL passed.
 
 2026-10-31 API onboarding revision: replaced the standalone homepage AI block
 with a ChatGPT/Cursor/OpenClaw discovery card beside For creators, including
