@@ -33,7 +33,7 @@ router = APIRouter(prefix="/workflow-store", tags=["Workflow Cost Evidence Admin
 async def admin_get_cost_evidence(
     evidence_id: UUID,
     session: DbSession = Depends(DbSession),
-    current_user_id = Depends(get_current_user_id),
+    current_user_id: Annotated[UUID, Depends(get_current_user_id)],
 ):
     """Admin-only endpoint to retrieve cost evidence by ID.
 
@@ -53,26 +53,30 @@ async def admin_get_cost_evidence(
     if evidence is None:
         raise HTTPException(status_code=404, detail="Cost evidence not found")
 
-    # Join allocations to get all cost allocations for this evidence
-    from app.db.models import WorkflowCostAllocation
-    allocations_query = select(WorkflowCostAllocation).where(
-        WorkflowCostAllocation.evidence_id == evidence_id
-    )
-    allocations_result = await session.execute(allocations_query)
-    allocations = [row._mapping for row in allocations_result.scalars().all()]
+    # Use service layer to get cost evidence with allocations
+    receipt = await get_cost_evidence(evidence_id, session)
 
-    # Return full evidence record with allocations
+    # Convert to dict for JSON response (remove SQLAlchemy attributes)
     return {
-        "id": str(evidence.id),
-        "source": evidence.source,
-        "document_id": evidence.document_id,
-        "line_id": evidence.line_id,
-        "document_sha256": evidence.document_sha256,
-        "category": evidence.category,
-        "currency": evidence.currency,
-        "amount": str(evidence.amount),
-        "review_note": evidence.review_note,
-        "recorded_by_user_id": str(evidence.recorded_by_user_id) if evidence.recorded_by_user_id else None,
-        "created_at": evidence.created_at.isoformat() if evidence.created_at else None,
-        "allocations": allocations,
+        "id": str(receipt.id),
+        "source": receipt.source,
+        "document_id": receipt.document_id,
+        "line_id": receipt.line_id,
+        "document_sha256": receipt.document_sha256,
+        "category": receipt.category,
+        "currency": receipt.currency,
+        "amount": str(receipt.amount),
+        "review_note": receipt.review_note,
+        "recorded_by_user_id": str(receipt.recorded_by_user_id) if receipt.recorded_by_user_id else None,
+        "allocations": [
+            {
+                "workflow_run_id": a.workflow_run_id,
+                "evidence_line_id": a.evidence_line_id,
+                "evidence_amount": str(a.evidence_amount),
+                "allocated_amount": str(a.allocated_amount),
+                "category": a.category,
+                "currency": a.currency,
+            }
+            for a in receipt.allocations
+        ],
     }

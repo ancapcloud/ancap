@@ -103,6 +103,7 @@ from app.api.routers import (
     crypto_benchmark,
     space_auction,
     animal_auction,
+    workflow_cost_evidence,
     flora_auction,
     insurance,
     arena,
@@ -284,6 +285,7 @@ ALL_ROUTERS = [
     leaderboards.router,
     growth_dashboard.router,
     workflow_value.router,
+    workflow_cost_evidence.router,
     qr_campaigns.router,
     platform_admin.router,
     metrics.router,
@@ -354,7 +356,6 @@ ALL_ROUTERS = [
     crypto_benchmark.router,
     space_auction.router,
     animal_auction.router,
-    workflow_cost_evidence.router,
     flora_auction.router,
     # dark_matter_auction retired from public launch surface (routes unmounted).
     insurance.router,
