@@ -80,6 +80,7 @@ class AcpBalanceResponse(BaseModel):
     balance_note: str | None = None
     # Non-overlapping breakdown (compat fields above retained).
     on_chain_at_deposit_acp: str | None = None
+    privacy_receive_acp: str | None = None
     platform_ledger_acp: str | None = None
     staked_acp: str | None = None
     reserved_total_acp: str | None = None

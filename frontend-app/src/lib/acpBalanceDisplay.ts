@@ -56,13 +56,15 @@ function acpFromUnits(units: bigint): string {
 export type DragonBalanceInput = AcpBalanceHeroInput & {
   address?: string | null;
   operator_hot_live_acp?: string | null;
+  privacy_receive_acp?: string | null;
   tokenomics_buckets?: { key: string; label: string; acp: string }[] | null;
 };
 
 /**
  * ACP that left the retired wACP rail and still belongs to this login:
- * live bridge-reserve coins, the deposit address, and custodial hot when it
- * is a different wallet. Chain-wide supply is not part of this balance.
+ * live bridge-reserve coins, the deposit address, one-time privacy receives,
+ * and custodial hot when it is a different wallet. Chain-wide supply is not
+ * part of this balance.
  */
 export function selectDragonAcp(
   balance: DragonBalanceInput | null | undefined,
@@ -73,10 +75,11 @@ export function selectDragonAcp(
   const bridgeLive =
     bridge && !/design|unavailable/i.test(bridge.label) ? acpUnitsExact(bridge.acp) : null;
   const deposit = acpUnitsExact(balance.on_chain_at_deposit_acp ?? balance.on_chain_acp);
+  const privacy = acpUnitsExact(balance.privacy_receive_acp);
   const address = (balance.address || "").trim();
   const hot =
     address && address !== hotAddress ? acpUnitsExact(balance.operator_hot_live_acp) : null;
-  const parts = [bridgeLive, deposit, hot].filter((part): part is bigint => part != null);
+  const parts = [bridgeLive, deposit, privacy, hot].filter((part): part is bigint => part != null);
   if (!parts.length) return null;
   return acpFromUnits(parts.reduce((sum, part) => sum + part, 0n));
 }

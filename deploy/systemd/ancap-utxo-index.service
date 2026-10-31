@@ -1,0 +1,9 @@
+[Unit]
+Description=Refresh ANCAP native ACP balance index
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/usr/bin/docker exec -i current-api-1 python - < /opt/ancap-ops/refresh-acp-utxo-index.py'
+TimeoutStartSec=180

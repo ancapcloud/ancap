@@ -37,19 +37,18 @@ for (const nullParameter of [true, false]) {
 }
 const path = require('node:path');
 const cliRoot = path.dirname(require.resolve('@expo/cli/package.json', { paths: [path.dirname(require.resolve('expo/package.json'))] }));
-const { PluginSchema, DevToolsPluginOutputSchema } = require(path.join(cliRoot, 'build/src/start/server/DevToolsPlugin.schema.js'));
-const { createMCPDevToolsExtensionSchema } = require(path.join(cliRoot, 'build/src/start/server/createMCPDevToolsExtensionSchema.js'));
+const { PluginSchema, DevToolsPluginOutputSchema } = require(path.join(cliRoot, 'build/src/start/server/devtools/DevToolsPlugin.schema.js'));
 
-test('Expo CLI plugin schemas remain compatible with patched Zod 4', () => {
-  const plugin = PluginSchema.parse({ packageName: 'ancap-test', packageRoot: '/tmp/ancap', cliExtensions: {
+const { validate } = require('@expo/schema-utils');
+
+test('Expo CLI plugin JSON schemas accept valid inputs and reject malformed data', () => {
+  const plugin = { packageName: 'ancap-test', packageRoot: '/tmp/ancap', cliExtensions: {
     description: 'local test', entryPoint: './test.js', commands: [{ name: 'status', title: 'Status', environments: ['cli', 'mcp'],
       parameters: [{ name: 'verbose', type: 'confirm' }] }],
-  } });
-  const schema = createMCPDevToolsExtensionSchema(plugin);
-  assert.equal(schema.safeParse({ command: 'status', verbose: true }).success, true);
-  assert.equal(schema.safeParse({ command: 'other' }).success, false);
-  assert.equal(schema.safeParse({ command: 'status', verbose: 'yes' }).success, false);
-  assert.equal(schema.safeParse({ command: 'status', unexpected: true }).success, false);
-  assert.equal(DevToolsPluginOutputSchema.safeParse([{ type: 'text', text: 'ok', level: 'info' }]).success, true);
-  assert.equal(DevToolsPluginOutputSchema.safeParse([{ type: 'image', url: 'not-a-url', text: 'bad' }]).success, false);
+  } };
+  assert.doesNotThrow(() => validate(PluginSchema, plugin));
+  assert.throws(() => validate(PluginSchema, { ...plugin, packageName: 123 }));
+  assert.throws(() => validate(PluginSchema, { ...plugin, cliExtensions: { ...plugin.cliExtensions, commands: [] } }));
+  assert.doesNotThrow(() => validate(DevToolsPluginOutputSchema, [{ type: 'text', text: 'ok', level: 'info' }]));
+  assert.throws(() => validate(DevToolsPluginOutputSchema, [{ type: 'image', url: 'not-a-url', text: 'bad' }]));
 });
