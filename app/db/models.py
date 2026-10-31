@@ -71,20 +71,6 @@ class WorkflowCostAllocation(Base):
     )
 
 
-class QualityFixture(Base):
-    __tablename__ = "quality_fixtures"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    fixture_name = Column(String(255), nullable=False)
-    fixture_type = Column(String(100), nullable=False)  # e.g., "address", "amount", "language"
-    language = Column(String(10), nullable=True)  # zh-Hant, ru-RU, etc.
-    test_cases = Column(JSONB, nullable=True)
-    results = Column(JSONB, nullable=True)
-    accuracy_score = Column(Numeric(5, 2), nullable=True)
-    status = Column(String(50), nullable=False, server_default="pending")  # pending, running, completed, failed
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
-
-
 # --- Enums (Python enum for DB layer) ---
 class AgentStatusEnum(str, enum.Enum):
     active = "active"
@@ -161,13 +147,6 @@ class AccessScopeEnum(str, enum.Enum):
     view = "view"
     execute = "execute"
     allocate = "allocate"
-
-
-class QualityFixtureStatusEnum(str, enum.Enum):
-    pending = "pending"
-    running = "running"
-    completed = "completed"
-    failed = "failed"
 
 
 class RiskProfileEnum(str, enum.Enum):
@@ -3814,13 +3793,3 @@ class RacpRedemptionTransition(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (Index("ix_racp_redemption_transitions_op", "redemption_id"),)
-
-
-
-    notes = Column(Text, nullable=True)
-
-
-class RacpRedemptionTransitionStatusEnum(str, enum.Enum):
-    pending = "pending"
-    approved = "approved"
-    rejected = "rejected"

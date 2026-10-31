@@ -696,9 +696,11 @@ async def _decorate_balance_for_user(
         # Personal deposit UTXOs remain spendable with the account keystore.
         # One-time privacy receives spend with the same keystore and belong to this login.
         personal_available = Decimal(0)
-        if target_address and target_address != CUSTODIAL_HOT_ADDRESS and not deposit_probe_failed:
-            _, _, personal_available = _personal_balance_view(on_chain_acp, in_staked, in_ledger)
-        personal_spendable = personal_available + (privacy_acp or Decimal(0))
+        if target_address and target_address != CUSTODIAL_HOT_ADDRESS and not deposit_probe_failed and privacy_acp is not None:
+            _, _, personal_available = _personal_balance_view(
+                on_chain_acp + privacy_acp, in_staked, in_ledger
+            )
+        personal_spendable = personal_available
         # Custodial hot float is spendable via server custodial-hot keystore (hot holders only).
         if hot_live > 0:
             available_acp = hot_live
@@ -801,9 +803,11 @@ async def _decorate_balance_for_user(
     # Regular users: always expose ledger credits separately from on-chain.
     # Hero prefers platform credits when on-chain is 0 and ledger > 0.
     if include_in_work and target_address != CUSTODIAL_HOT_ADDRESS and not is_hot_holder:
-        if privacy_acp is not None and privacy_acp > 0:
-            available_acp += privacy_acp
         visible_chain = on_chain_acp + (privacy_acp or Decimal(0))
+        _, _, available_acp = _personal_balance_view(visible_chain, in_staked, in_ledger)
+        if privacy_acp is None:
+            available_acp = Decimal(0)
+            probe_status = "degraded"
         platform_credits_s = _decimal_to_api_str(in_ledger)
         on_chain_s = None if deposit_probe_failed else _decimal_to_api_str(on_chain_acp)
         if deposit_probe_failed:
@@ -823,7 +827,7 @@ async def _decorate_balance_for_user(
                 f"Withdrawable on-chain: {_decimal_to_api_str(available_acp)} ACP."
             )
         else:
-            display_acp = on_chain_acp if on_chain_acp > 0 else real_acp
+            display_acp = visible_chain
             display_units = _units_from_acp(display_acp)
             primary_kind = "on_chain"
             primary_acp_val = (
@@ -2435,7 +2439,9 @@ async def withdraw(
                 status_code=503,
                 detail="Privacy receive balance is temporarily unavailable. Retry shortly.",
             )
-        available_acp += privacy_acp
+        _, _, available_acp = _personal_balance_view(
+            on_chain_acp + privacy_acp, in_staked, in_ledger
+        )
         if required_total > available_acp:
             raise HTTPException(
                 status_code=400,

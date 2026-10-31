@@ -360,9 +360,6 @@ class Settings(BaseSettings):
     # Cron job protection
     cron_secret: str | None = None
 
-    # Test database (optional, for API tests)
-    test_database_url: str = ""
-
     # CORS
     cors_origins: str = (
         "https://ancap.cloud,https://www.ancap.cloud,"
