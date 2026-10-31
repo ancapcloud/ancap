@@ -8,7 +8,7 @@
 implemented locally in five languages, with a copyable chat instruction and
 public `/connect.txt` guide. Public discovery is separate from authenticated
 API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
-Production deployment remains pending.
+Deployed as afd82bc via GitHub Actions run 41181936959. Live homepage section and /connect.txt returned HTTP 200; full backend/E2E CI was still running at verification.
 
 ## Robinhood ACP (rACP) — 2026-10-30
 
