@@ -6,12 +6,15 @@ GET /v1/workflow-store/admin/cost-evidence/{evidence_id}
 - Cache-Control: private, no-store
 - Guest 401, regular user 403, unknown ID 404
 """
+from __future__ import annotations
+
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 
-from app.api.deps import DbSession, get_current_user_id, require_platform_admin
+from app.api.deps import DbSession, require_platform_admin
 from app.db.models import WorkflowCostEvidence
 from app.services.workflow_costs import get_cost_evidence
 
@@ -20,7 +23,7 @@ router = APIRouter(prefix="/workflow-store", tags=["Workflow Cost Evidence Admin
 
 @router.get(
     "/admin/cost-evidence/{evidence_id}",
-    response_model=dict,  # Generic dict for flexibility
+    response_model=dict,
     summary="Admin-only cost evidence retrieval",
     description="Retrieve a single cost evidence record by ID. Admin-only access required.",
     responses={
@@ -32,31 +35,22 @@ router = APIRouter(prefix="/workflow-store", tags=["Workflow Cost Evidence Admin
 )
 async def admin_get_cost_evidence(
     evidence_id: UUID,
-    session: DbSession = Depends(DbSession),
-    current_user_id: Annotated[UUID, Depends(get_current_user_id)],
+    session: DbSession,
+    _admin_user_id: Annotated[str, Depends(require_platform_admin)],
+    response: Response,
 ):
-    """Admin-only endpoint to retrieve cost evidence by ID.
+    """Admin-only endpoint to retrieve cost evidence by ID."""
+    response.headers["Cache-Control"] = "private, no-store"
 
-    - Guest users receive 401 Unauthorized
-    - Regular (non-admin) users receive 403 Forbidden
-    - Only platform admins can access this endpoint
-    - Returns full evidence record with all allocations
-    - Cache-Control: private, no-store (enforced by FastAPI default for admin endpoints)
-    """
-    # Admin-only check
-    if not require_platform_admin(current_user_id):
-        raise HTTPException(status_code=403, detail="Admin access required")
-
-    evidence = (await session.execute(select(WorkflowCostEvidence).where(
-        WorkflowCostEvidence.id == evidence_id))).scalar_one_or_none()
+    evidence = (
+        await session.execute(select(WorkflowCostEvidence).where(WorkflowCostEvidence.id == evidence_id))
+    ).scalar_one_or_none()
 
     if evidence is None:
         raise HTTPException(status_code=404, detail="Cost evidence not found")
 
-    # Use service layer to get cost evidence with allocations
     receipt = await get_cost_evidence(evidence_id, session)
 
-    # Convert to dict for JSON response (remove SQLAlchemy attributes)
     return {
         "id": str(receipt.id),
         "source": receipt.source,

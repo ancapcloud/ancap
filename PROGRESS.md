@@ -14,6 +14,14 @@
 - **Verification**: Code reviewed; types correct; service layer used; router registered in ALL_ROUTERS list. Ready for testing.
 - **Next**: Run targeted tests for cost evidence API or proceed to next COST subtask.
 
+> **2026-10-31 — COST-03 verification: all 5 tests passed**
+
+- **Task**: Verify COST-03 implementation with targeted test suite.
+- **Verification**: `pytest tests/api/test_workflow_cost_evidence_api.py -v` — 5/5 tests passed (private_recording_conflict_and_totals, concurrent_source_line_is_recorded_once, invalid_batch_is_rejected_atomically, split_line_retains_source_identity_after_run_deletion, get_cost_evidence_by_id). Auth checks (401/403/404) and data accuracy confirmed.
+- **Commit**: `af8c3600` — "docs(progress): update ROP-03 completion and next step ROP-04" (includes COST-03 verification).
+- **Status**: COST-03 completed and verified. Ready for next COST subtask or Research Operations continuation.
+- **Next**: Proceed to next active P0 subtask (COST-04 payment provenance or ROP-04 economics).
+
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
 ## Workflow acceptance/value and Research Operations — 2026-10-27

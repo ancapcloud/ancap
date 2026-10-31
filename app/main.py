@@ -28,8 +28,6 @@ from app.api.routers import (
     evaluations,
     reputation,
     moderation,
-    quality_fixtures,
-
     risk,
     reviews,
     funds,
@@ -100,6 +98,7 @@ from app.api.routers import (
     orbital_edge,
     aeterna,
     lunar_land,
+    quality_fixtures,
     mail_accounts,
     embodied_ai,
     crypto_benchmark,
@@ -125,6 +124,7 @@ from app.api.routers import (
     stardust_srt,
     robot_ops,
     project_economy,
+    mcp,
 )
 
 settings = get_settings()
@@ -283,12 +283,12 @@ ALL_ROUTERS = [
     workflow_store.router,
     workflow_ops.router,
     research_ops.router,
+    quality_fixtures.router,
     paid_api.router,
     leaderboards.router,
     growth_dashboard.router,
     workflow_value.router,
     workflow_cost_evidence.router,
-    quality_fixtures.router,
     qr_campaigns.router,
     platform_admin.router,
     metrics.router,
@@ -379,6 +379,7 @@ ALL_ROUTERS = [
     stardust_srt.router,
     robot_ops.router,
     project_economy.router,
+    mcp.router,
 ]
 
 for r in ALL_ROUTERS:
