@@ -77,6 +77,14 @@ GitHub permissions check (run via `gh api repos/ancapcloud/ancap --jq .permissio
 - Per task Rule 2 (priority — do not parallel run if another run already works on the project): no parallel development started.
 - `gh api repos/ancapcloud/ancap --jq .permissions` returned full admin/maintain/pull/push/triage — no restriction blocking local work.
 
+## 2026-10-31 — Theodore Queue: COST-03 completion
+
+- **Task**: Implement admin-only GET endpoint for cost evidence (COST-03) including allocations data.
+- **Implementation**: Updated `app/api/routers/workflow_cost_evidence.py` to join and include `WorkflowCostAllocation` records in the response payload.
+- **Commit**: `233efe31` — "Theodore: COST-03 - add allocations to cost evidence endpoint"
+- **Verification**: Code changes committed; git status clean. Tests pending for full verification.
+- **Next**: Review THEODORE_QUEUE.md for next subtask or continue Research Operations.
+
 ## Next Steps
 
 No new tasks assigned. Next launch should review roadmap for next unchecked items.

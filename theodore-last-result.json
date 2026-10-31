@@ -1,0 +1,30 @@
+{
+  "task": "COST-03",
+  "description": "Admin-only GET endpoint for cost evidence including allocations data",
+  "status": "completed",
+  "commit_hash": "233efe31",
+  "commit_message": "Theodore: COST-03 - add allocations to cost evidence endpoint",
+  "files_modified": [
+    "app/api/routers/workflow_cost_evidence.py"
+  ],
+  "implementation_details": {
+    "endpoint": "/v1/workflow-store/admin/cost-evidence/{evidence_id}",
+    "changes": [
+      "Added join to WorkflowCostAllocation table",
+      "Included allocations data in response payload",
+      "Maintained admin-only access control (401 for guests, 403 for regular users)"
+    ]
+  },
+  "verification": {
+    "git_status": "clean",
+    "tests_pending": true,
+    "test_file": "tests/api/test_workflow_cost_evidence_api.py"
+  },
+  "next_steps": [
+    "Run verification tests for the cost evidence endpoint",
+    "Review THEODORE_QUEUE.md for next subtask (likely ROP-03 or continue Research Operations)",
+    "Update PROGRESS.md with completion details"
+  ],
+  "timestamp": "2026-10-31T15:06:00+02:00",
+  "notes": "Task completed successfully. Code changes committed to origin/master. Git status is clean. Next phase: Research Operations continuation."
+}
