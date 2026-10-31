@@ -1,12 +1,12 @@
-2026-10-31: restored the original homepage design at operator request. Retained prominent ChatGPT/Cursor/OpenClaw quick start with tool selection and copy instructions. Local changes only; not deployed.
-
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
 # ANCAP Production Roadmap
 
-2026-10-30: [x] Native ACP stale balance index recovered to block 21;
-independent UTXO refresh deployed as a 30-second systemd timer. Five index
-tests passed. [Incident evidence](docs/ACP_BALANCE_INDEX_INCIDENT_2026-10-30.md).
+## Account API key — 2026-10-31
+
+One key per account, rotation/revocation and request statistics replace agent
+selection in `/developers/connect`. Migration 096 required before activation.
+Local verification/release evidence: `docs/ACCOUNT_API_KEY.md` and MASTER_ROADMAP.
 
 ## Expo SDK 58 CI maintenance — 2026-10-28
 

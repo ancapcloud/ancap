@@ -10,7 +10,7 @@ import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 import { HomeChatDialog } from "@/components/HomeChatDialog";
 import { RacpOverview } from "@/components/RacpOverview";
-import { AgentQuickStart } from "@/components/AgentQuickStart";
+import { CreatorAiConnect } from "@/components/CreatorAiConnect";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -24,6 +24,9 @@ export function HomePage() {
     <div className={s.shell} style={{ position: "relative", zIndex: 1 }}>
       <Navigation />
       <main className={s.main}>
+        <section id="connect-ai" className="mx-auto w-full max-w-4xl pt-6 sm:pt-8" aria-labelledby="creator-ai-title">
+          <CreatorAiConnect />
+        </section>
         <section className={s.hero} id="product">
           <div>
             <p className={s.eyebrow}>ANCAP / {c.kicker}</p>
@@ -34,13 +37,9 @@ export function HomePage() {
               <Link className={s.secondary} href="/dashboard/seller">{c.seller} →</Link>
               <Link className={s.secondary} href="/economy">{c.economyLink} →</Link>
             </div>
-            <a className={s.secondary} href="#connect-ai">ChatGPT · Cursor · OpenClaw ↗</a>
             <HomeChatDialog />
           </div>
         </section>
-
-        <AgentQuickStart />
-
 
         <section className={s.section} aria-label={c.how} style={{ borderTop: "none", paddingTop: 8 }}>
           <p className={s.eyebrow}>{c.how}</p>
@@ -106,7 +105,7 @@ export function HomePage() {
         </section>
 
         <section className={s.section} id="creators">
-          <div className={s.gridTwo}>
+          <div className="max-w-3xl">
             <div>
               <p className={s.eyebrow}>{c.creators}</p>
               <h2 className={s.heading}>{c.earn}</h2>
@@ -114,15 +113,6 @@ export function HomePage() {
               <div className={s.actions}>
                 <Link href="/dashboard/seller" className={s.primary}>{c.seller} →</Link>
                 <Link href="/projects#people-ai-economy" className={s.secondary}>{c.economyLink} →</Link>
-              </div>
-            </div>
-            <div className={s.card}>
-              <h3>{c.api}</h3>
-              <p>{c.apiBody}</p>
-              <div className={s.actions}>
-                <Link className={s.secondary} href="/developers">API</Link>
-                <Link className={s.secondary} href="/mcp">MCP</Link>
-                <Link className={s.secondary} href="/proof-center">{c.trust}</Link>
               </div>
             </div>
           </div>

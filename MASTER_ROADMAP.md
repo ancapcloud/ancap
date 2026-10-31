@@ -1,20 +1,32 @@
-2026-10-31: restored the original homepage design at operator request. Retained prominent ChatGPT/Cursor/OpenClaw quick start with tool selection and copy instructions. Local changes only; not deployed.
-
 > **Pool update 2026-10-30:** rACP/WETH now has a small live PancakeSwap V2 pool on Robinhood Chain. Earlier statements about zero liquidity describe the initial release. Verified snapshot: 5,000 rACP and 0.005 WETH at block 101517870. Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
 
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
 # ANCAP Master Roadmap
 
+2026-10-31 account API access: one owner-bound platform key with no agent selector,
+replace/revoke controls and lifetime request statistics. Migration 096 adds the
+unique owner and metering fields. Legacy credentials keep their existing scopes;
+resource permissions, billing and wallet confirmation remain enforced.
+See `docs/ACCOUNT_API_KEY.md`. Deployment verification pending.
+
+2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
+the first homepage section below navigation, with direct anchor `/#connect-ai`.
+The lower duplicate was removed. Mobile first-screen verification and deployment are complete: build d0a4821, Actions run 41185775400. Live HTTP 200 and first-section order verified; Frontend CI, Secret Hygiene and CodeQL passed.
+
+2026-10-31 API onboarding revision: replaced the standalone homepage AI block
+with a ChatGPT/Cursor/OpenClaw discovery card beside For creators, including
+the copyable prompt and API/MCP links in five languages. The guide is now
+available as Markdown at `/connect.md`; the older `/connect.txt` stays available.
+The Developers create-key CTA now opens `/developers/connect` with authenticated
+owned-agent selection, explicit key creation, memory-only one-time key display,
+and curl/Python examples in five languages. Deployed as 90cdc79 via Actions run 41183822793; live /connect.md, /developers/connect, creator card and Developers CTA verified. TypeScript and four targeted browser scenarios passed.
+
 2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
 implemented locally in five languages, with a copyable chat instruction and
-public `/connect.md` guide. Public discovery is separate from authenticated
+public `/connect.txt` guide. Public discovery is separate from authenticated
 API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
-Production deployment remains pending.
-
-2026-10-30: native ACP receipt confirmed in block 21; stale balance index
-repaired live. Independent 30-second UTXO refresh timer installed and enabled.
-See [incident evidence](docs/ACP_BALANCE_INDEX_INCIDENT_2026-10-30.md).
+Deployed as afd82bc via GitHub Actions run 41181936959. Live homepage section and /connect.txt returned HTTP 200; full backend/E2E CI was still running at verification.
 
 ## Robinhood ACP (rACP) — 2026-10-30
 
