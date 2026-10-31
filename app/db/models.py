@@ -3599,6 +3599,18 @@ class ResearchClaim(Base):
     created_at = Column(DateTime(timezone=True), nullable=False)
 
 
+class QualityFixture(Base):
+    __tablename__ = "quality_fixtures"
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    source_id = Column(UUID(as_uuid=False), ForeignKey("research_sources.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_hash = Column(String(64), nullable=False)
+    statement = Column(String(1000), nullable=False)
+    excerpt = Column(String(500), nullable=False)
+    verdict = Column(String(32), nullable=False)
+    reviewer_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"))
+    created_at = Column(DateTime(timezone=True), nullable=False)
+
+
 class WorkflowConnection(Base):
     __tablename__ = "workflow_connections"
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
