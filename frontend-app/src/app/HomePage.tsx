@@ -10,6 +10,7 @@ import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 import { HomeChatDialog } from "@/components/HomeChatDialog";
 import { RacpOverview } from "@/components/RacpOverview";
+import { AgentQuickStart } from "@/components/AgentQuickStart";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -74,6 +75,7 @@ export function HomePage() {
           <p className={s.note}>{c.smartPayMobile}</p>
         </section>
 
+        <AgentQuickStart />
         <WebInstallGuide />
 
         <PeopleAiEconomySection />

@@ -4,6 +4,12 @@
 
 # ANCAP Master Roadmap
 
+2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
+implemented locally in five languages, with a copyable chat instruction and
+public `/connect.txt` guide. Public discovery is separate from authenticated
+API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
+Production deployment remains pending.
+
 ## Robinhood ACP (rACP) — 2026-10-30
 
 Opt-in airdrop funded with 1,000,000 existing rACP: 500 per claim, up to 2,000
