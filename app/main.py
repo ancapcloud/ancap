@@ -28,6 +28,8 @@ from app.api.routers import (
     evaluations,
     reputation,
     moderation,
+    quality_fixtures,
+
     risk,
     reviews,
     funds,
@@ -286,6 +288,7 @@ ALL_ROUTERS = [
     growth_dashboard.router,
     workflow_value.router,
     workflow_cost_evidence.router,
+    quality_fixtures.router,
     qr_campaigns.router,
     platform_admin.router,
     metrics.router,

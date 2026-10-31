@@ -1,10 +1,18 @@
 > **2026-10-31 — Theodore Queue: ROP-03 quality fixtures implementation**
 
 - **Task**: Implement quality_fixtures table and model for de-identified evaluation samples (ROP-03).
-- **Implementation**: Created migration `app/db/migrations/002_add_quality_fixtures_table.py` to add quality_fixtures table. Updated QualityFixture model in `app/db/models.py` to match migration schema.
-- **Commit**: `b6c39b2e` — "feat(rop-03): add quality_fixtures table and model for de-identified evaluation samples"
-- **Verification**: Model updated with correct fields (fixture_type, language, sample_id, expected_result, actual_result, confidence_score, is_available, expires_at); UniqueConstraint added. Syntax verified via py_compile.
-- **Next**: Review THEODORE_QUEUE.md for next subtask or continue Research Operations.
+- **Implementation**: Created migration `app/db/migrations/002_add_quality_fixtures_table.py` to add quality_fixtures table. Updated QualityFixture model in `app/db/models.py`. Added admin-only GET /v1/quality-fixtures/{id} and /v1/quality-fixtures/ endpoints with proper auth (401/403/404). Created Pydantic schemas, service layer functions, and fixture generation scripts.
+- **Commit**: `1e93caf` — "feat(rop-03): add quality fixtures admin API and scripts"
+- **Verification**: Model with correct fields (fixture_type, language, sample_id, expected_result, actual_result, confidence_score, is_available, expires_at); UniqueConstraint added. Router registered in ALL_ROUTERS. Syntax verified via py_compile. Ready for testing.
+- **Next**: ROP-04 — actual economics and renewal; complete provider/document reconciliation and external-payment events.
+
+> **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
+
+- **Task**: Complete COST-03 by implementing admin-only cost evidence retrieval with allocations.
+- **Implementation**: Fixed `app/api/routers/workflow_cost_evidence.py` (added Annotated[UUID] type, use service layer get_cost_evidence), registered router in `app/main.py`. Endpoint returns full evidence record with allocations, proper auth (401/403/404).
+- **Commit**: `c9add7c6` — "feat(cost-evidence): add admin GET /cost-evidence/{id} endpoint with allocations"
+- **Verification**: Code reviewed; types correct; service layer used; router registered in ALL_ROUTERS list. Ready for testing.
+- **Next**: Run targeted tests for cost evidence API or proceed to next COST subtask.
 
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
