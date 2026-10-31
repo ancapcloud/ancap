@@ -38,3 +38,8 @@ Mobile verification: 352 workspace tests and 13 security regressions passed;
 SDK builds and workspace type checks passed; Expo Doctor passed 20/20.
 Adapted the CLI validation regression to Expo's relocated JSON Schema validator;
 valid plugin/output data and malformed data are still checked.
+
+The initial Windows full regression run stalled on DNS inside the balance
+breakdown tests' unmocked vesting RPC. Added a module fixture to isolate that
+unrelated probe while preserving all accounting assertions. Restarted the full
+run against the isolated database; the interrupted run is not counted as passed.

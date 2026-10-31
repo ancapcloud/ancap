@@ -2,7 +2,17 @@
 from decimal import Decimal
 from uuid import uuid4
 
+import pytest
+
 from app.config import get_settings
+
+
+@pytest.fixture(autouse=True)
+def no_live_vesting_rpc(monkeypatch):
+    # These tests exercise balance accounting with stubbed chain probes.
+    # Vesting is unrelated and must not resolve a live node hostname.
+    from app.api.routers import wallet_acp
+    monkeypatch.setattr(wallet_acp, "_creator_vesting_snapshot", lambda address: None)
 
 
 def _free_custodial_hot_bindings() -> None:
