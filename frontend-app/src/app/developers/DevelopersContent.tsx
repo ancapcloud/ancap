@@ -28,7 +28,7 @@ export function DevelopersContent() {
             {t("developersPage.lead")}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/projects" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+            <Link href="/developers/connect" className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:opacity-90">
               {t("developersPage.createKey")}
             </Link>
             <Link href="/developers/usage" className="rounded-full border border-emerald-400/25 px-5 py-2.5 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300/50 hover:text-emerald-100">

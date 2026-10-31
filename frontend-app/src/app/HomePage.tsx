@@ -10,7 +10,7 @@ import { CardInfoSection } from "@/components/CardInfoSection";
 import { ReviewTrustSection } from "@/components/ReviewTrustSection";
 import { HomeChatDialog } from "@/components/HomeChatDialog";
 import { RacpOverview } from "@/components/RacpOverview";
-import { AgentQuickStart } from "@/components/AgentQuickStart";
+import { CreatorAiConnect } from "@/components/CreatorAiConnect";
 
 export function HomePage() {
   const { lang } = useLanguage();
@@ -75,7 +75,6 @@ export function HomePage() {
           <p className={s.note}>{c.smartPayMobile}</p>
         </section>
 
-        <AgentQuickStart />
         <WebInstallGuide />
 
         <PeopleAiEconomySection />
@@ -113,15 +112,7 @@ export function HomePage() {
                 <Link href="/projects#people-ai-economy" className={s.secondary}>{c.economyLink} →</Link>
               </div>
             </div>
-            <div className={s.card}>
-              <h3>{c.api}</h3>
-              <p>{c.apiBody}</p>
-              <div className={s.actions}>
-                <Link className={s.secondary} href="/developers">API</Link>
-                <Link className={s.secondary} href="/mcp">MCP</Link>
-                <Link className={s.secondary} href="/proof-center">{c.trust}</Link>
-              </div>
-            </div>
+            <CreatorAiConnect />
           </div>
         </section>
 

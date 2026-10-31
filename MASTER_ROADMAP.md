@@ -4,6 +4,13 @@
 
 # ANCAP Master Roadmap
 
+2026-10-31 API onboarding revision: replaced the standalone homepage AI block
+with a ChatGPT/Cursor/OpenClaw discovery card beside For creators, including
+the copyable prompt and API/MCP links in five languages.
+The Developers create-key CTA now opens `/developers/connect` with authenticated
+owned-agent selection, explicit key creation, memory-only one-time key display,
+and curl/Python examples in five languages. Deployment verification pending.
+
 2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
 implemented locally in five languages, with a copyable chat instruction and
 public `/connect.txt` guide. Public discovery is separate from authenticated
