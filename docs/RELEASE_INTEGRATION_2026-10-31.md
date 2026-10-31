@@ -43,3 +43,27 @@ The initial Windows full regression run stalled on DNS inside the balance
 breakdown tests' unmocked vesting RPC. Added a module fixture to isolate that
 unrelated probe while preserving all accounting assertions. Restarted the full
 run against the isolated database; the interrupted run is not counted as passed.
+
+## Published release
+
+PR: https://github.com/ancapcloud/ancap/pull/137
+Release: c777417d5cd9c6ca4b27a67793feb49ac95c0841.
+Deployment: https://github.com/ancapcloud/ancap/actions/runs/41203678588
+completed successfully on 2026-10-31.
+
+All PR checks passed, including browser e2e. Backend CI recorded 1251 passed,
+40 skipped, plus 60 documentation regression tests passed and 5 skipped.
+Backend CI: https://github.com/ancapcloud/ancap/actions/runs/41202980429
+Frontend/mobile/e2e: https://github.com/ancapcloud/ancap/actions/runs/41202980343
+
+Public verification after deployment:
+- /internal/frontend-build reports c777417 from .next/BUILD_ID.
+- /api/v1/system/health: ok; /api/v1/system/ready: ready, database/Redis true.
+- /connect.md and /developers/connect return HTTP 200.
+- All five home locales return HTTP 200 with one AI connection block,
+  connect.md and the original design. Published Russian home inspected visually.
+
+Merged the outstanding account-key release evidence from local branch
+codex/publish-ai-connect (81a1517d); it contains documentation only.
+This follow-up evidence commit changes no application/deployment code.
+Incomplete ROP-03 work remains preserved, not deployed or represented as complete.

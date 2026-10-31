@@ -1,4 +1,4 @@
-2026-10-31: local/published histories reconciled; original homepage and AI/API onboarding retained. Incomplete ROP-03 fixture work preserved and deferred after isolation/model/migration audit. Release verification pending; see docs/RELEASE_INTEGRATION_2026-10-31.md.
+2026-10-31: local/published histories reconciled; original homepage and AI/API onboarding retained. Incomplete ROP-03 fixture work preserved and deferred after isolation/model/migration audit. PR #137 merged and release c777417 deployed successfully via Actions 41203678588. Public build, health/readiness, five-language home and connect.md verified; see docs/RELEASE_INTEGRATION_2026-10-31.md.
 
 > **Pool update 2026-10-30:** rACP/WETH now has a small live PancakeSwap V2 pool on Robinhood Chain. Earlier statements about zero liquidity describe the initial release. Verified snapshot: 5,000 rACP and 0.005 WETH at block 101517870. Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood
 
@@ -10,7 +10,7 @@
 replace/revoke controls and lifetime request statistics. Migration 096 adds the
 unique owner and metering fields. Legacy credentials keep their existing scopes;
 resource permissions, billing and wallet confirmation remain enforced.
-See `docs/ACCOUNT_API_KEY.md`. Deployment verification pending.
+See `docs/ACCOUNT_API_KEY.md`. Deployed as 902779a via Actions run 41188124957; migration 096 applied before API activation. Live setup page and protected key routes verified. Targeted auth/organization/account-key tests, paid API regressions, migration round-trip and four browser scenarios passed; full CI backend tests/Bandit and Frontend CI passed. Backend CI, Frontend CI, deployment, Docs, Secret Hygiene and CodeQL all completed successfully.
 
 2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
 the first homepage section below navigation, with direct anchor `/#connect-ai`.
