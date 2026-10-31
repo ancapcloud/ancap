@@ -3602,13 +3602,16 @@ class ResearchClaim(Base):
 class QualityFixture(Base):
     __tablename__ = "quality_fixtures"
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    source_id = Column(UUID(as_uuid=False), ForeignKey("research_sources.id", ondelete="CASCADE"), nullable=False, index=True)
-    source_hash = Column(String(64), nullable=False)
-    statement = Column(String(1000), nullable=False)
-    excerpt = Column(String(500), nullable=False)
-    verdict = Column(String(32), nullable=False)
-    reviewer_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"))
-    created_at = Column(DateTime(timezone=True), nullable=False)
+    fixture_type = Column(String(64), nullable=False, comment="type: price_change, markup_noise, unavailable_source, contradiction, malicious_instructions")
+    language = Column(String(10), nullable=False, comment="zh-Hant, en, ru, de, fr")
+    sample_id = Column(String(64), nullable=False, comment="unique sample identifier")
+    expected_result = Column(Text(), nullable=True, comment="expected OCR output or verdict")
+    actual_result = Column(Text(), nullable=True, comment="actual OCR output from model")
+    confidence_score = Column(Numeric(5, 2), nullable=True, comment="model confidence 0.0-1.0")
+    is_available = Column(Boolean(), nullable=False, default=True, comment="source availability status")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    __table_args__ = (UniqueConstraint("fixture_type", "language", "sample_id", name="uq_quality_fixture_sample"),)
 
 
 class WorkflowConnection(Base):

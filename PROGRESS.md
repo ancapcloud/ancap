@@ -1,3 +1,11 @@
+> **2026-10-31 — Theodore Queue: ROP-03 quality fixtures implementation**
+
+- **Task**: Implement quality_fixtures table and model for de-identified evaluation samples (ROP-03).
+- **Implementation**: Created migration `app/db/migrations/002_add_quality_fixtures_table.py` to add quality_fixtures table. Updated QualityFixture model in `app/db/models.py` to match migration schema.
+- **Commit**: `b6c39b2e` — "feat(rop-03): add quality_fixtures table and model for de-identified evaluation samples"
+- **Verification**: Model updated with correct fields (fixture_type, language, sample_id, expected_result, actual_result, confidence_score, is_available, expires_at); UniqueConstraint added. Syntax verified via py_compile.
+- **Next**: Review THEODORE_QUEUE.md for next subtask or continue Research Operations.
+
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.
 
 ## Workflow acceptance/value and Research Operations — 2026-10-27
