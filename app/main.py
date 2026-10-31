@@ -354,6 +354,7 @@ ALL_ROUTERS = [
     crypto_benchmark.router,
     space_auction.router,
     animal_auction.router,
+    workflow_cost_evidence.router,
     flora_auction.router,
     # dark_matter_auction retired from public launch surface (routes unmounted).
     insurance.router,
