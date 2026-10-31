@@ -4,6 +4,12 @@
 
 # ANCAP Master Roadmap
 
+2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
+implemented locally in five languages, with a copyable chat instruction and
+public `/connect.txt` guide. Public discovery is separate from authenticated
+API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
+Production deployment remains pending.
+
 2026-10-30: native ACP receipt confirmed in block 21; stale balance index
 repaired live. Independent 30-second UTXO refresh timer installed and enabled.
 See [incident evidence](docs/ACP_BALANCE_INDEX_INCIDENT_2026-10-30.md).
