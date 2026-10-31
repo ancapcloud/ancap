@@ -10,7 +10,7 @@ the copyable prompt and API/MCP links in five languages. The guide is now
 available as Markdown at `/connect.md`; the older `/connect.txt` stays available.
 The Developers create-key CTA now opens `/developers/connect` with authenticated
 owned-agent selection, explicit key creation, memory-only one-time key display,
-and curl/Python examples in five languages. Deployment verification pending.
+and curl/Python examples in five languages. Deployed as 90cdc79 via Actions run 41183822793; live /connect.md, /developers/connect, creator card and Developers CTA verified. TypeScript and four targeted browser scenarios passed.
 
 2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
 implemented locally in five languages, with a copyable chat instruction and
