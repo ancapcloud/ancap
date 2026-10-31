@@ -8,7 +8,7 @@
 replace/revoke controls and lifetime request statistics. Migration 096 adds the
 unique owner and metering fields. Legacy credentials keep their existing scopes;
 resource permissions, billing and wallet confirmation remain enforced.
-See `docs/ACCOUNT_API_KEY.md`. Deployment verification pending.
+See `docs/ACCOUNT_API_KEY.md`. Deployed as 902779a via Actions run 41188124957; migration 096 applied before API activation. Live setup page and protected key routes verified. Targeted auth/organization/account-key tests, paid API regressions, migration round-trip and four browser scenarios passed; full CI backend tests/Bandit and Frontend CI passed. Backend CI, Frontend CI, deployment, Docs, Secret Hygiene and CodeQL all completed successfully.
 
 2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
 the first homepage section below navigation, with direct anchor `/#connect-ai`.

@@ -5,7 +5,7 @@
 ## Account API key — 2026-10-31
 
 One key per account, rotation/revocation and request statistics replace agent
-selection in `/developers/connect`. Migration 096 required before activation.
+selection in `/developers/connect`. Build 902779a deployed with migration 096 applied before activation.
 Local verification/release evidence: `docs/ACCOUNT_API_KEY.md` and MASTER_ROADMAP.
 
 ## Expo SDK 58 CI maintenance — 2026-10-28
