@@ -29,3 +29,12 @@ for targeted verification. Deployment verification will be recorded below.
 - Removed unused duplicate AgentQuickStart; published CreatorAiConnect remains
   the single first-screen entry. connect.md remains canonical; the existing
   connect.txt compatibility resource is retained.
+
+CI found fresh Expo compatibility requirements: expo 58.0.22,
+expo-dev-client 58.0.18, expo-router 58.0.29 and react-native-screens 4.30.1.
+Updated both manifests and regenerated the lockfile without bypassing doctor.
+
+Mobile verification: 352 workspace tests and 13 security regressions passed;
+SDK builds and workspace type checks passed; Expo Doctor passed 20/20.
+Adapted the CLI validation regression to Expo's relocated JSON Schema validator;
+valid plugin/output data and malformed data are still checked.
