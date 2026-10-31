@@ -6,7 +6,8 @@
 
 2026-10-31 API onboarding revision: replaced the standalone homepage AI block
 with a ChatGPT/Cursor/OpenClaw discovery card beside For creators, including
-the copyable prompt and API/MCP links in five languages.
+the copyable prompt and API/MCP links in five languages. The guide is now
+available as Markdown at `/connect.md`; the older `/connect.txt` stays available.
 The Developers create-key CTA now opens `/developers/connect` with authenticated
 owned-agent selection, explicit key creation, memory-only one-time key display,
 and curl/Python examples in five languages. Deployment verification pending.
