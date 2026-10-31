@@ -24,6 +24,9 @@ export function HomePage() {
     <div className={s.shell} style={{ position: "relative", zIndex: 1 }}>
       <Navigation />
       <main className={s.main}>
+        <section id="connect-ai" className="mx-auto w-full max-w-4xl pt-6 sm:pt-8" aria-labelledby="creator-ai-title">
+          <CreatorAiConnect />
+        </section>
         <section className={s.hero} id="product">
           <div>
             <p className={s.eyebrow}>ANCAP / {c.kicker}</p>
@@ -102,7 +105,7 @@ export function HomePage() {
         </section>
 
         <section className={s.section} id="creators">
-          <div className={s.gridTwo}>
+          <div className="max-w-3xl">
             <div>
               <p className={s.eyebrow}>{c.creators}</p>
               <h2 className={s.heading}>{c.earn}</h2>
@@ -112,7 +115,6 @@ export function HomePage() {
                 <Link href="/projects#people-ai-economy" className={s.secondary}>{c.economyLink} →</Link>
               </div>
             </div>
-            <CreatorAiConnect />
           </div>
         </section>
 

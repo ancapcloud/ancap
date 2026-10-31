@@ -2,21 +2,26 @@ import { expect, test } from "@playwright/test";
 
 test.setTimeout(90_000);
 
-test("creator section presents AI discovery beside API onboarding on mobile", async ({ page }) => {
+test("AI onboarding is the first homepage section and visible on mobile", async ({ page }) => {
   await page.route("**/v1/**", route => route.fulfill({ status: 401, json: { detail: "Sign in" } }));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const creators = page.locator("#creators");
+  const creators = page.locator("#connect-ai");
+  await expect(page.locator("main > section").first()).toHaveAttribute("id", "connect-ai");
   await expect(creators.getByRole("heading", { name: "Your expertise. Your AI. One workspace." })).toBeVisible();
   await expect(creators.getByText("ChatGPT", { exact: true })).toBeVisible();
   await expect(creators.getByText("Cursor", { exact: true })).toBeVisible();
   await expect(creators.getByText("OpenClaw", { exact: true })).toBeVisible();
   await expect(creators.getByRole("link", { name: "Connect via API" })).toHaveAttribute("href", "/developers/connect");
-  await expect(page.locator("#connect-ai")).toHaveCount(0);
-  await creators.scrollIntoViewIfNeeded();
+  await expect(page.locator("#creator-ai-title")).toHaveCount(1);
+  const copyButton = await creators.getByRole("button", { name: "Copy starter prompt" }).boundingBox();
+  expect(copyButton).not.toBeNull();
+  expect(copyButton!.y + copyButton!.height).toBeLessThan(844);
+  const cookies = page.getByRole("button", { name: "Necessary only", exact: true });
+  if (await cookies.isVisible()) await cookies.click();
   await page.screenshot({ path: test.info().outputPath("creators-mobile.png"), fullPage: false });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await creators.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: test.info().outputPath("creators-desktop.png"), fullPage: false });
 });
 

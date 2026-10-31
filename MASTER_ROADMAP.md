@@ -4,6 +4,11 @@
 
 # ANCAP Master Roadmap
 
+2026-10-31 ad landing update: ChatGPT/Cursor/OpenClaw onboarding card moved to
+the first homepage section below navigation, with direct anchor `/#connect-ai`.
+The lower duplicate was removed. Mobile first-screen verification and deployment
+are pending.
+
 2026-10-31 API onboarding revision: replaced the standalone homepage AI block
 with a ChatGPT/Cursor/OpenClaw discovery card beside For creators, including
 the copyable prompt and API/MCP links in five languages. The guide is now

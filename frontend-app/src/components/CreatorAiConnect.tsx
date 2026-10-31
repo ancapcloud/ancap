@@ -20,7 +20,7 @@ export function CreatorAiConnect() {
     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">ANCAP × AI</p>
     <h3 id="creator-ai-title" className="mt-3 text-2xl font-semibold tracking-tight">{c.title}</h3>
     <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{c.lead}</p>
-    <div className="my-6 grid gap-2 sm:grid-cols-3">
+    <div className="my-6 grid grid-cols-3 gap-2">
       {[["ChatGPT", c.chat], ["Cursor", c.cursor], ["OpenClaw", c.claw]].map(([name, text]) => <div key={name} className="rounded-2xl border border-white/10 bg-black/15 p-3"><strong className="text-sm">{name}</strong><p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{text}</p></div>)}
     </div>
     <pre className="whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6"><code>{c.command}</code></pre>
