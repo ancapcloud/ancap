@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.db.session import get_db
 from app.services.auth import decode_token
-from app.services.api_keys import resolve_key
+from app.services.api_keys import resolve_key, resolve_key_record
 
 security = HTTPBearer(auto_error=False)
 
@@ -17,17 +17,32 @@ security = HTTPBearer(auto_error=False)
 async def get_current_user_id(
     request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
+    session: Annotated[AsyncSession, Depends(get_db)],
     cookie_token: Annotated[str | None, Cookie(alias="ancap_token")] = None,
     x_requested_with: Annotated[str | None, Header(alias="X-Requested-With")] = None,
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
+    x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
 ) -> str | None:
-    """Resolve user_id from either the Authorization header or the HttpOnly cookie.
+    """Resolve user_id from an account API key, user JWT or HttpOnly cookie.
 
     For cookie-authenticated unsafe methods, require the frontend's same-origin
     X-Requested-With header so cross-site form posts cannot ride the session cookie.
     Bearer-token API clients are unaffected.
     """
     header_token = credentials.credentials if credentials else None
+    if x_api_key is not None or (header_token and header_token.startswith("ancap_")):
+        resolved = await resolve_key_record(session, x_api_key if x_api_key is not None else header_token)
+        if resolved is not None and resolved.owner_user_id is not None:
+            if header_token and not header_token.startswith("ancap_") and decode_token(header_token) != str(resolved.owner_user_id):
+                return None
+            request.state.user_id = str(resolved.owner_user_id)
+            return str(resolved.owner_user_id)
+        if resolved is not None and header_token and not header_token.startswith("ancap_"):
+            # Existing clients may supply both their user JWT and an agent key.
+            return decode_token(header_token)
+        # Legacy agent/org keys keep their existing scopes, not user privileges.
+        # An explicit invalid key must never fall back to a logged-in cookie.
+        return None
     if authorization is not None and not authorization.strip():
         cookie_token = None
     if cookie_token and not header_token and request.method.upper() not in {"GET", "HEAD", "OPTIONS"}:

@@ -314,6 +314,13 @@ else
   docker compose -f "$COMPOSE" build api
   docker compose -f "$COMPOSE" build frontend
 fi
+if [[ "$SKIP_MIG" -eq 0 ]]; then
+  # Apply additive schema changes from the new image before activating its API.
+  # The previous API keeps serving until migration succeeds.
+  docker compose -f "$COMPOSE" up -d --wait postgres redis
+  docker compose -f "$COMPOSE" run --rm --no-deps api alembic upgrade head
+fi
+
 docker compose -f "$COMPOSE" up -d
 # Bind-mounted nginx conf updates need a reload / recreate so acp1 + /rpc land.
 docker compose -f "$COMPOSE" up -d --force-recreate proxy
@@ -326,10 +333,6 @@ if [[ -f "$ROOT/scripts/ensure-acp1-host-proxy.sh" ]]; then
   bash "$ROOT/scripts/ensure-acp1-host-proxy.sh"
 else
   echo "Skipping host acp1 proxy ensure (scripts/ensure-acp1-host-proxy.sh not present)."
-fi
-
-if [[ "$SKIP_MIG" -eq 0 ]]; then
-  docker compose -f "$COMPOSE" exec -T api alembic upgrade head
 fi
 
 if [[ "$SKIP_POST_DEPLOY_CHECKS" -eq 1 ]]; then

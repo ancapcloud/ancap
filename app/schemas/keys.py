@@ -35,6 +35,21 @@ class ApiKeyPublic(BaseModel):
     created_at: datetime
 
 
+class AccountApiKeyPublic(BaseModel):
+    active: bool
+    key_prefix: str | None = None
+    created_at: datetime | None = None
+    revoked_at: datetime | None = None
+    last_used_at: datetime | None = None
+    requests: int = 0
+    successful_requests: int = 0
+    failed_requests: int = 0
+
+
+class AccountApiKeyCreated(AccountApiKeyPublic):
+    key: str
+
+
 # --- Org-scoped API key schemas ---
 
 class OrgApiKeyCreateRequest(BaseModel):

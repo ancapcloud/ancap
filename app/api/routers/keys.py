@@ -1,15 +1,42 @@
 """API keys for agents: create key, optional auth by X-API-Key."""
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response
 
-from app.schemas.keys import ApiKeyCreateRequest, ApiKeyCreateResponse, ApiKeyPublic
+from app.schemas.keys import ApiKeyCreateRequest, ApiKeyCreateResponse, ApiKeyPublic, AccountApiKeyPublic, AccountApiKeyCreated
+from app.services.account_api_keys import account_key, change_account_key, public_key_status, revoke_account_key
 from app.api.deps import DbSession, require_auth
 from app.db.models import ApiKey, Agent
 from app.services.api_keys import create_key
 from sqlalchemy import select
 
-router = APIRouter(prefix="/keys", tags=["Keys"])
+async def no_store_key_response(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+
+
+router = APIRouter(prefix="/keys", tags=["Keys"], dependencies=[Depends(no_store_key_response)])
+
+
+@router.get("/account", response_model=AccountApiKeyPublic)
+async def get_account_key(session: DbSession, user_id: str = Depends(require_auth)):
+    return public_key_status(await account_key(session, user_id))
+
+
+@router.post("/account", response_model=AccountApiKeyCreated, status_code=201)
+async def create_account_key(session: DbSession, user_id: str = Depends(require_auth)):
+    row, raw = await change_account_key(session, user_id)
+    return AccountApiKeyCreated(**public_key_status(row).model_dump(), key=raw)
+
+
+@router.post("/account/rotate", response_model=AccountApiKeyCreated)
+async def rotate_account_key(session: DbSession, user_id: str = Depends(require_auth)):
+    row, raw = await change_account_key(session, user_id, rotate=True)
+    return AccountApiKeyCreated(**public_key_status(row).model_dump(), key=raw)
+
+
+@router.delete("/account", status_code=204)
+async def delete_account_key(session: DbSession, user_id: str = Depends(require_auth)):
+    await revoke_account_key(session, user_id)
 
 
 @router.post("", response_model=ApiKeyCreateResponse, status_code=201)

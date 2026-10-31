@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.services.logging import configure_logging, get_logger
 from app.services.observability import record_http_request
+from app.api.account_key_metering import AccountKeyUsageMiddleware
 from app.api.routers import (
     auth,
     users,
@@ -180,6 +181,7 @@ app = FastAPI(
 )
 
 _cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+app.add_middleware(AccountKeyUsageMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,

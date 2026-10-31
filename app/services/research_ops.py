@@ -144,20 +144,22 @@ async def upload_quality_fixtures(session, project_id: str, fixtures: dict):
         for item in items:
             record = QualityFixture(
                 project_id=project_id,
-                fixture_type=fixture_type,
-                language=item.get("language"),
-                document_type=item.get("document_type"),
-                source_url=item.get("source_url"),
-                fixture_data=item,
-                expected_hash=item.get("expected_hash"),
-                status="pending"
+                fixture_name=item.get("fixture_name", f"{fixture_type}-{len(fixture_records)}"),
+                fixture_type=fixture_type,  # e.g., "address", "amount", "language"
+                language=item.get("language"),  # zh-Hant, ru-RU, etc.
+                test_cases=item.get("test_cases"),
+                results=item.get("results"),
+                accuracy_score=item.get("accuracy_score"),
+                status=item.get("status", "pending")  # pending, running, completed, failed
             )
             session.add(record)
             fixture_records.append({
-                "fixture_id": record.id,
+                "fixture_id": str(record.id),
                 "project_id": project_id,
+                "fixture_name": record.fixture_name,
                 "fixture_type": fixture_type,
-                "status": "pending"
+                "language": record.language,
+                "status": record.status
             })
     await session.flush()
     return {"status": "uploaded", "fixture_count": len(fixture_records), "records": fixture_records}
@@ -174,10 +176,12 @@ async def get_quality_fixture(session, project_id: str, fixture_id: str):
     return {
         "fixture_id": str(row.id),
         "project_id": row.project_id,
+        "fixture_name": row.fixture_name,
         "fixture_type": row.fixture_type,
         "language": row.language,
-        "document_type": row.document_type,
-        "source_url": row.source_url,
+        "test_cases": row.test_cases,
+        "results": row.results,
+        "accuracy_score": row.accuracy_score,
         "status": row.status,
         "created_at": row.created_at.isoformat()
     }
