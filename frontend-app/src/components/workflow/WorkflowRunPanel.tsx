@@ -379,7 +379,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
 
   async function submit() {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(`/login?next=${encodeURIComponent(`/ai/run/${workflow.slug}`)}`);
       return;
     }
     if (requiresAdultAttestation && !adultAttested) {
