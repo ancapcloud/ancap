@@ -29,7 +29,7 @@ export default function McpDocsPage() {
         <h1 className="text-3xl font-semibold">ANCAP MCP Server</h1>
         <p className="mt-3 text-sm leading-7 text-white/68">
           Hosted remote MCP for ChatGPT (Streamable HTTP), plus the local stdio adapter for Cursor / Claude Desktop.
-          Create an API key at Developers → Connect before paid tools.
+          Create an API key at Developers → Connect before authenticated tools, including free previews.
         </p>
 
         <h2 className="mt-8 text-lg font-semibold">ChatGPT (remote)</h2>
@@ -37,7 +37,7 @@ export default function McpDocsPage() {
           In ChatGPT → Plugins → Add custom MCP server, paste this Server URL. Auth:{" "}
           <span className="text-white/85">No authentication</span> for tool discovery. Pass your{" "}
           <code className="text-emerald-300">ancap_…</code> key as tool argument{" "}
-          <code className="text-emerald-300">api_key</code> on paid tools (or send{" "}
+          <code className="text-emerald-300">api_key</code> on authenticated tools (or send{" "}
           <code className="text-emerald-300">Authorization: Bearer ancap_…</code> /{" "}
           <code className="text-emerald-300">X-API-Key</code> from clients that support headers).
         </p>

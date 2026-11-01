@@ -1,3 +1,9 @@
+2026-11-01 MCP release candidate: schema/dispatch, Smart Pay arguments,
+legacy SSE delivery and stdio catalogue fixes passed 61 targeted tests.
+Fresh PostgreSQL migration and frontend TypeScript checks also passed.
+Target final scoped web/API/MCP release: 30 November 2026; production completion
+is not claimed. Evidence and acceptance gates: `docs/RELEASE_NOVEMBER_2026.md`.
+
 2026-10-31: local/published histories reconciled; original homepage and AI/API onboarding retained. Incomplete ROP-03 fixture work preserved and deferred after isolation/model/migration audit. PR #137 merged and release c777417 deployed successfully via Actions 41203678588. Public build, health/readiness, five-language home and connect.md verified; see docs/RELEASE_INTEGRATION_2026-10-31.md.
 
 > **2026-10-30 status:** wACP was an ANCAP test release on BSC and is retired from public promotion. This document contains historical test material or technical identifiers. Current policy: rACP is the primary external token; ACP remains internal; display 1 ACP = 10 rACP equivalents; service prices use EUR (1 EUR = 100 ACP). Historical balances and obligations are not erased. See `docs/RACP_CURRENT_POLICY.md` in the repository root.

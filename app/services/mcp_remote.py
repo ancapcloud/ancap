@@ -2,18 +2,25 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 import httpx
 from fastapi import FastAPI
+from pydantic import ValidationError
 
-PROTOCOL_VERSION = "2024-11-05"
+from app.schemas.claim_codes import ClaimCodeCreateRequest, ClaimCodeRedeemRequest
+from app.schemas.merchant import InvoiceCreateRequest, PaymentLinkCreateRequest
+from app.schemas.payment_scanner import PaymentScannerParseRequest
+from app.schemas.workflow_store import WorkflowRunCreateRequest
+
+PROTOCOL_VERSION = "2025-03-26"
+SUPPORTED_PROTOCOL_VERSIONS = {"2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25"}
 SERVER_INFO = {"name": "ancap-mcp", "version": "0.2.0"}
 
 # Tools that may run without an API key (public read / free preview).
 PUBLIC_TOOLS = frozenset(
     {
-        "ancap.token_snapshot",
         "ancap.check_payment_status",
     }
 )
@@ -188,6 +195,26 @@ TOOL_DEFS: dict[str, dict[str, Any]] = {
 }
 
 
+# Derive function contracts from the same models used by HTTP routes.
+REQUEST_MODELS = {
+    "ancap.create_payment_link": PaymentLinkCreateRequest,
+    "ancap.create_invoice": InvoiceCreateRequest,
+    "ancap.create_claim_code": ClaimCodeCreateRequest,
+    "ancap.redeem_claim_code": ClaimCodeRedeemRequest,
+    "ancap.quote_smart_pay": PaymentScannerParseRequest,
+    "ancap.run_workflow": WorkflowRunCreateRequest,
+}
+for _name, _model in REQUEST_MODELS.items():
+    _schema = _model.model_json_schema()
+    _schema["properties"]["api_key"] = {"type": "string", "description": "Account API key; prefer Authorization header."}
+    TOOL_DEFS[_name]["inputSchema"] = _schema
+TOOL_DEFS["ancap.token_snapshot"]["description"] += " Requires an account API key; preview does not unlock a paid result."
+TOOL_DEFS["ancap.quote_smart_pay"]["build"] = lambda args: {
+    **{k: v for k, v in args.items() if k not in {"api_key", "raw"}},
+    "raw_text": args.get("raw_text", args.get("raw")),
+}
+
+
 def list_tools_payload() -> list[dict[str, Any]]:
     return [
         {
@@ -200,9 +227,6 @@ def list_tools_payload() -> list[dict[str, Any]]:
 
 
 def extract_api_key(header_auth: str | None, header_x_api_key: str | None, arguments: dict[str, Any]) -> str:
-    raw_arg = arguments.get("api_key")
-    if isinstance(raw_arg, str) and raw_arg.strip():
-        return raw_arg.strip()
     if header_x_api_key and header_x_api_key.strip():
         return header_x_api_key.strip()
     if header_auth:
@@ -211,6 +235,9 @@ def extract_api_key(header_auth: str | None, header_x_api_key: str | None, argum
             token = token[7:].strip()
         if token.startswith("ancap_"):
             return token
+    raw_arg = arguments.get("api_key")
+    if isinstance(raw_arg, str) and raw_arg.strip():
+        return raw_arg.strip()
     return ""
 
 
@@ -234,6 +261,8 @@ async def dispatch_tool(
         code = str(arguments.get("code") or "").strip()
         if not code:
             raise ValueError("code is required")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", code):
+            raise ValueError("Invalid payment link code")
         path = f"/pay/{code}"
         method = "GET"
         payload = None
@@ -242,6 +271,9 @@ async def dispatch_tool(
         method = meta["method"]
         builder = meta["build"]
         payload = builder(arguments) if builder else None
+        model = REQUEST_MODELS.get(name)
+        if model:
+            payload = model.model_validate(payload).model_dump(mode="json")
 
     headers: dict[str, str] = {"Accept": "application/json"}
     if api_key:
@@ -290,14 +322,21 @@ async def handle_mcp_message(
     header_auth: str | None,
     header_x_api_key: str | None,
 ) -> dict[str, Any] | None:
+    if message.get("jsonrpc") != "2.0" or not isinstance(message.get("method"), str):
+        return jsonrpc_error(message.get("id"), -32600, "Invalid Request")
     method = message.get("method")
     msg_id = message.get("id")
+    params = message.get("params", {})
+    if not isinstance(params, dict):
+        return jsonrpc_error(msg_id, -32602, "params must be an object")
+    if "id" not in message:
+        return None
 
     if method == "initialize":
         return jsonrpc_result(
             msg_id,
             {
-                "protocolVersion": PROTOCOL_VERSION,
+                "protocolVersion": params.get("protocolVersion") if params.get("protocolVersion") in SUPPORTED_PROTOCOL_VERSIONS else PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
                 "serverInfo": SERVER_INFO,
                 "instructions": (
@@ -319,9 +358,10 @@ async def handle_mcp_message(
         return jsonrpc_result(msg_id, {})
 
     if method == "tools/call":
-        params = message.get("params") or {}
         name = params.get("name")
-        arguments = dict(params.get("arguments") or {})
+        arguments = params.get("arguments", {})
+        if not isinstance(arguments, dict):
+            return jsonrpc_error(msg_id, -32602, "arguments must be an object")
         if not isinstance(name, str) or name not in TOOL_DEFS:
             return jsonrpc_error(msg_id, -32601, f"Unknown tool: {name}")
         api_key = extract_api_key(header_auth, header_x_api_key, arguments)
@@ -333,8 +373,10 @@ async def handle_mcp_message(
             )
         except PermissionError as exc:
             return jsonrpc_error(msg_id, -32001, str(exc))
+        except (ValueError, ValidationError) as exc:
+            return jsonrpc_result(msg_id, {"isError": True, "content": [{"type": "text", "text": str(exc)}]})
         except Exception as exc:
-            return jsonrpc_error(msg_id, -32000, str(exc))
+            return jsonrpc_result(msg_id, {"isError": True, "content": [{"type": "text", "text": str(exc)}]})
 
     if msg_id is not None:
         return jsonrpc_error(msg_id, -32601, f"Unsupported method: {method}")

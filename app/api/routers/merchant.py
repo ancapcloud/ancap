@@ -215,7 +215,7 @@ async def create_invoice(
         unit = _parse_amount(item.unit_amount)
         qty = Decimal(str(item.quantity))
         total += unit * qty
-        serialized_items.append(item.model_dump())
+        serialized_items.append(item.model_dump(mode="json"))
 
     count = await session.scalar(
         select(func.count()).select_from(MerchantInvoice).where(MerchantInvoice.owner_user_id == user_uuid)
