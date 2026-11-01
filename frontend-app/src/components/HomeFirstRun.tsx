@@ -71,7 +71,6 @@ export function HomeFirstRun({ afterHero }: { afterHero?: ReactNode }) {
             </div>
           </div>
         </div>
-        <figcaption>{c.previewNote}</figcaption>
       </figure>
     </section>
 
