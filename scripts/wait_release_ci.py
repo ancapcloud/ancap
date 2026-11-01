@@ -5,21 +5,80 @@ import json
 import re
 import subprocess
 import time
+from pathlib import Path
+
+import yaml
 
 BLOCKING = {"Backend CI", "Frontend CI", "Crypto CI", "CodeQL", "Secret Hygiene", "Docs CI"}
+WORKFLOWS = {
+    "Backend CI": "backend-ci.yml", "Frontend CI": "frontend-ci.yml",
+    "Crypto CI": "crypto-ci.yml", "CodeQL": "codeql.yml",
+    "Secret Hygiene": "secret-hygiene.yml", "Docs CI": "docs-ci.yml",
+}
 
 
-def expected_core(files):
-    required = set()
-    if any(path.startswith(("app/", "alembic/")) or path in {"requirements.in", "requirements.txt", "pyproject.toml"} for path in files):
-        required.update({"Backend CI", "Frontend CI"})
-    if any(path.startswith(("frontend-app/", "ancap-mobile/")) or path in {".github/workflows/frontend-ci.yml", "docker-compose.yml", "Dockerfile"} for path in files):
-        required.add("Frontend CI")
-    if any(path.startswith(("ACP-crypto/", "contracts/bridge-bsc/", "contracts/robinhood-racp/")) or path == ".github/workflows/crypto-ci.yml" for path in files):
-        required.add("Crypto CI")
-    if any(path.startswith(("infra/", "mcp-server/")) or path in {"Dockerfile", "docker-compose.prod.yml", ".github/workflows/backend-ci.yml", ".github/workflows/deploy-ancap-cloud.yml", "scripts/wait_release_ci.py"} for path in files):
-        required.add("Backend CI")
-    return required or {"Backend CI"}
+def glob_matches(value, pattern):
+    """GitHub path globs: * excludes /; ** includes it; preserve pattern order."""
+    expression = ""
+    i = 0
+    while i < len(pattern):
+        if pattern[i:i + 3] == "**/":
+            expression += "(?:.*/)?"
+            i += 3
+        elif pattern[i:i + 2] == "**":
+            expression += ".*"
+            i += 2
+        elif pattern[i] == "*":
+            expression += "[^/]*"
+            i += 1
+        elif pattern[i] == "?":
+            expression += "[^/]"
+            i += 1
+        elif pattern[i] in "[]+":
+            raise ValueError("Unsupported workflow glob; review release gate before activation")
+        else:
+            expression += re.escape(pattern[i])
+            i += 1
+    return re.fullmatch(expression, value) is not None
+
+
+def matches_patterns(value, patterns):
+    if not isinstance(patterns, list) or not all(isinstance(p, str) and p for p in patterns):
+        raise ValueError("Invalid workflow filters")
+    matched = False
+    for pattern in patterns:
+        excluded = pattern.startswith("!")
+        if glob_matches(value, pattern[1:] if excluded else pattern):
+            matched = not excluded
+    return matched
+
+
+def expected_core(files, workflow_dir=Path(".github/workflows")):
+    # Secret hygiene is mandatory even if its trigger is accidentally narrowed.
+    required = {"Secret Hygiene"}
+    for name, filename in WORKFLOWS.items():
+        document = yaml.safe_load((workflow_dir / filename).read_text(encoding="utf-8"))
+        if document.get("name") != name:
+            raise ValueError(f"Release workflow name changed: {filename}")
+        # PyYAML's YAML 1.1 loader treats the unquoted key `on` as True.
+        events = document.get("on", document.get(True))
+        if not isinstance(events, dict):
+            raise ValueError(f"Unsupported workflow trigger: {filename}")
+        if "push" not in events:
+            continue
+        push = events["push"] or {}
+        if not isinstance(push, dict):
+            raise ValueError(f"Unsupported push trigger: {filename}")
+        if "branches" in push and not matches_patterns("master", push["branches"]):
+            continue
+        if "branches-ignore" in push and matches_patterns("master", push["branches-ignore"]):
+            continue
+        if "paths" in push and not any(matches_patterns(path, push["paths"]) for path in files):
+            continue
+        if "paths-ignore" in push and all(matches_patterns(path, push["paths-ignore"]) for path in files):
+            continue
+        required.add(name)
+    return required
 
 
 def ci_state(runs, sha, required):
