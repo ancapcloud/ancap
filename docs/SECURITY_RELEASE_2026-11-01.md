@@ -63,13 +63,37 @@ review, not a claim that every possible vulnerability has been eliminated.
 - Fresh PostgreSQL migrations through 098_merge_release_heads were verified in
   the preceding candidate. CI will repeat migrations on a clean database.
 
-## Publication acceptance
+## Published and verified
 
-Push, full CI, merge, deployment and live build/readiness verification are still
-pending at this document's creation. Record their evidence after publication.
-The long local full-suite run encountered two HTTP-client mock signatures;
-these are fixed and pass in the targeted rerun. Do not count that interrupted
-or failing snapshot as a fully passed final regression run.
+PR #138: https://github.com/ancapcloud/ancap/pull/138
+Runtime release: b45d5bd1e77583b2fe6e114e25233c073c1c0b72.
+Deployment: https://github.com/ancapcloud/ancap/actions/runs/41285512445
+completed successfully on 1 November 2026.
+
+All PR checks and the merged master checks passed, including Rust/native and
+operator-tool safety on Linux. Backend CI recorded 1,290 passed / 40 skipped;
+documentation regressions recorded 60 passed / 5 skipped. Browser CI recorded
+71 passed / 1 skipped. Bandit reported no medium/high findings.
+Backend CI: https://github.com/ancapcloud/ancap/actions/runs/41284682291
+Browser/mobile/frontend: https://github.com/ancapcloud/ancap/actions/runs/41284682322
+Rust/operator tools: https://github.com/ancapcloud/ancap/actions/runs/41284682333
+
+Public checks after activation:
+- Build endpoint reported b45d5bd; health ok and readiness ready, DB/Redis true.
+- Twelve HTTP probes passed, including catalogue, documentation, homepage URLs
+  and unauthenticated rejection on account keys and operator fixtures.
+- Ten desktop/mobile page checks passed with no page JavaScript errors: home,
+  account API setup, MCP guide, workflow catalogue and login. Guest API setup
+  correctly showed the localized sign-in gate. Production selects German for
+  this browser's region; the check uses a language-independent gate selector.
+- Official MCP SDK remote and stdio initialization/list/schema/error-result
+  checks passed against production, all nine functions, protocol 2025-11-25.
+- GitHub open Dependabot alerts: zero. Open CodeQL security alerts: zero.
+
+Local full-suite snapshots modified during development were interrupted and
+are not counted as successful final runs; completed CI is the release evidence.
+This documentation-only follow-up records the runtime release above. Its build
+identifier may differ when the deployment workflow rebuilds the same code.
 
 Existing uncommitted payment-provenance drafts remain preserved outside the
 release worktree and are not exposed. Physical iOS/Android store acceptance,

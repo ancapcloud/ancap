@@ -1,28 +1,32 @@
+2026-11-01 published security/usability release: PR #138 merged, runtime
+b45d5bd deployed successfully (Actions 41285512445). Full backend/native/browser
+CI passed; production readiness, 12 HTTP probes, 10 desktop/mobile pages and
+official MCP SDK remote/stdio checks passed. Known dependency vulnerabilities
+and open CodeQL security findings are cleared. Evidence and retained acceptance
+limits: `docs/SECURITY_RELEASE_2026-11-01.md`.
+
 2026-11-01 Ask ANCAP now has a site-wide Messenger-style dock sharing the homepage
 conversation across navigation. Lazy panel/status loading, minimize/reopen, mobile
 fit and fullscreen passed browser checks. In-memory history clears on refresh.
-See `docs/FRONTEND_DESIGN_SYSTEM_2026-11-01.md`. Local only.
+See `docs/FRONTEND_DESIGN_SYSTEM_2026-11-01.md`.
 
 2026-11-01 homepage concierge: local read-only workflow catalog and onboarding
 lookups, one bounded follow-up inference, current pricing-policy prompt, honest
 fallback model reporting and a shared request deadline implemented. Existing
-public API and wallet/job restrictions retained. 20 targeted tests passed;
-production deployment and live-provider behavior remain unverified.
+public API and wallet/job restrictions retained. 20 targeted tests passed.
 See `docs/HOME_CHAT_CONCIERGE.md`.
 
 2026-11-01 shared frontend design pass: central dark/light surface tokens, public
-presentation primitives, navigation/brand, form states and wider layouts revised
-locally. AI-connect and Ask ANCAP are directly below the hero; offline chat keeps
+presentation primitives, navigation/brand, form states and wider layouts revised.
+AI-connect and Ask ANCAP are directly below the hero; offline chat keeps
 browsing available. Marketing priorities and AI runtime map:
 `docs/FRONTEND_DESIGN_SYSTEM_2026-11-01.md`. 122 unit tests, 24 browser scenarios,
-TypeScript, lint and production build passed. No production deployment.
+TypeScript, lint and production build passed.
 
-2026-11-01 homepage activation redesign: local implementation prioritizes a guided
-Token Risk Report, visible quote and result/receipt journey in five languages.
-Redesigned AI onboarding sits directly under the hero; ecosystem sections follow
-discovery. Auth preserves the selected
-workflow; production deployment and real paid activation remain unverified.
-See `docs/HOMEPAGE_FIRST_RUN_2026-11-01.md`.
+2026-11-01 homepage activation redesign: guided Token Risk Report, visible quote
+and result/receipt journey in five languages. Redesigned AI onboarding sits
+directly under the hero; ecosystem sections follow discovery. Auth preserves the
+selected workflow. See `docs/HOMEPAGE_FIRST_RUN_2026-11-01.md`.
 
 2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
 MCP, invoice validation, indexer responsiveness and dependency patches verified
