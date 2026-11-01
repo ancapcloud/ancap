@@ -87,6 +87,9 @@ class CostEvidenceReceipt(BaseModel):
     document_type: str | None = None
     external_payment_event: bool = False
     delivery_event: bool = False
+    # COST-04 payment provenance reconciliation status
+    reconciliation_status: str | None = None
+    delivery_status: str | None = None
 
 
 class QualityFixturePublic(BaseModel):
