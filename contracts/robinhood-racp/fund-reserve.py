@@ -119,7 +119,7 @@ async def main():
             journal.value = json.dumps(state)
     async with SessionLocal() as s:
         signer = await wallet._get_user_wallet_signer(s, USER, password)
-    password = None
+    del password
     with tempfile.NamedTemporaryFile(mode='w', suffix='.json', dir='/dev/shm') as key:
         os.chmod(key.name, 0o600)
         key.write(signer['keystore_json'])

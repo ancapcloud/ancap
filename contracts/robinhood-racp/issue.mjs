@@ -14,7 +14,12 @@ assert.equal(proof.racpChainId, 4663);
 assert.ok(proof.confirmations >= 1 && proof.supplyInvariantOK);
 assert.ok(BigInt(proof.balanceUnits) >= 100000000000000n);
 assert.match(proof.transactionHash, /^[a-f0-9]{64}$/);
-const response = await fetch(`https://api.ancap.cloud/v1/acp/address/${plan.reserveAddress}/balance`);
+// Use the plan address only after equality checks; validate shape before network I/O.
+const reserveAddress = String(plan.reserveAddress || '');
+assert.match(reserveAddress, /^[A-Za-z0-9:_-]{8,128}$/);
+const response = await fetch(
+  `https://api.ancap.cloud/v1/acp/address/${encodeURIComponent(reserveAddress)}/balance`,
+);
 assert.ok(response.ok, 'Live reserve probe failed');
 const live = await response.json();
 assert.equal(live.address, plan.reserveAddress);
@@ -34,10 +39,11 @@ assert.equal((await token.recipient()).toLowerCase(), plan.recipient.toLowerCase
 assert.equal(await token.MAX_ISSUANCE(), BigInt(plan.maxIssuance));
 const journalFile = 'prepared/issuance-journal.json';
 let journal;
-if (fs.existsSync(journalFile)) {
+try {
   journal = JSON.parse(fs.readFileSync(journalFile, 'utf8'));
   assert.equal(journal.evidence, evidence);
-} else {
+} catch (err) {
+  if (err?.code !== 'ENOENT') throw err;
   assert.equal(await token.issued(), false);
   assert.equal(await token.totalSupply(), 0n);
   const tx = await token.issueAgainstReserve.populateTransaction(evidence);
@@ -50,7 +56,12 @@ if (fs.existsSync(journalFile)) {
   assert.ok(await provider.getBalance(wallet.address) >= maxCost, 'Insufficient ETH');
   const signed = await wallet.signTransaction(tx);
   journal = { transactionHash: keccak256(signed), evidence, status: 'broadcast-intent' };
-  fs.writeFileSync(journalFile, JSON.stringify(journal, null, 2) + '\n', { flag: 'wx' });
+  const fd = fs.openSync(journalFile, 'wx');
+  try {
+    fs.writeFileSync(fd, JSON.stringify(journal, null, 2) + '\n');
+  } finally {
+    fs.closeSync(fd);
+  }
   await provider.broadcastTransaction(signed);
   console.log('BROADCAST', journal.transactionHash);
 }

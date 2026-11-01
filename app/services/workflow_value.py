@@ -12,7 +12,7 @@ from sqlalchemy.orm import defer
 from app.db.models import PaymentIntent, WorkflowRunRecord, WorkflowResultAssessment, QualityFixture
 from app.schemas.common import Money
 from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary
-from app.schemas.workflow_costs import QualityFixturePublic, QualityFixtureCreate
+from app.schemas.workflow_costs import QualityFixturePublic
 
 VALUE_RUN_LIMIT = 200
 

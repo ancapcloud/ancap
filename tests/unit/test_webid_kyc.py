@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+from functools import partial
+from urllib.parse import urlparse
 
 import pytest
 
@@ -25,8 +27,12 @@ def _settings(**overrides):
     return type("S", (), base)()
 
 
+def _default_settings():
+    return _settings()
+
+
 def test_webid_status_fail_closed_by_default(monkeypatch):
-    monkeypatch.setattr("app.services.webid_kyc.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.webid_kyc.get_settings", _default_settings)
     assert webid.webid_is_configured() is False
     assert webid.webid_sessions_ready() is False
     status = webid.webid_public_status()
@@ -39,13 +45,14 @@ def test_webid_status_fail_closed_by_default(monkeypatch):
     assert status.waitlist_interest == "physical_card_apple_pay"
     assert status.session_path == "/v1/commerce/webid/session"
     assert status.webhook_path == "/v1/commerce/webid/webhook"
-    assert status.partner_url.startswith("https://webid-solutions.com")
+    partner = urlparse(status.partner_url)
+    assert partner.scheme == "https" and partner.hostname == "webid-solutions.com"
 
 
 def test_webid_enabled_still_fail_closed_without_credentials(monkeypatch):
     monkeypatch.setattr(
         "app.services.webid_kyc.get_settings",
-        lambda: _settings(webid_enabled=True, webid_api_base="https://example.invalid"),
+        partial(_settings, webid_enabled=True, webid_api_base="https://example.invalid"),
     )
     assert webid.webid_is_configured() is False
     status = webid.webid_public_status()
@@ -57,7 +64,7 @@ def test_webid_enabled_still_fail_closed_without_credentials(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_start_session_fail_closed(monkeypatch):
-    monkeypatch.setattr("app.services.webid_kyc.get_settings", lambda: _settings())
+    monkeypatch.setattr("app.services.webid_kyc.get_settings", _default_settings)
     with pytest.raises(webid.WebIdNotConfigured):
         await webid.start_webid_session(user_id="user-1")
 

@@ -13,11 +13,11 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-# revision identifiers, used by Alembic.
-revision: str = "30fbd2048486"
-down_revision: Union[str, None] = "096_account_api_key"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+# revision identifiers, used by Alembic (loaded by name; keep assigned).
+revision: str = "30fbd2048486"  # noqa: F841  # codeql[py/unused-global-variable]
+down_revision: Union[str, None] = "096_account_api_key"  # noqa: F841  # codeql[py/unused-global-variable]
+branch_labels: Union[str, Sequence[str], None] = None  # noqa: F841  # codeql[py/unused-global-variable]
+depends_on: Union[str, Sequence[str], None] = None  # noqa: F841  # codeql[py/unused-global-variable]
 
 _COST_CATEGORY = postgresql.ENUM(
     "model",

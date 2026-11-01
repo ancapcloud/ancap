@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from app.db.session import get_db
 from app.services.quality_fixtures import (
@@ -10,7 +9,7 @@ from app.services.quality_fixtures import (
     get_all_quality_fixtures,
 )
 from app.schemas.quality_fixtures import QualityFixtureResponse, QualityFixtureListResponse
-from app.api.deps import get_current_user_id, require_admin
+from app.api.deps import require_admin
 
 router = APIRouter(prefix="/v1/quality-fixtures", tags=["quality-fixtures-admin"])
 

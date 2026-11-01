@@ -279,10 +279,14 @@ def summarize_webid_webhook(payload: dict[str, Any]) -> dict[str, Any]:
         "action_id": action_id,
         "identification_status": status,
     }
+    # Hash webhook fields before logging so user-controlled strings cannot inject log lines.
+    event_token = _safe_log_token(meta.get("event"))
+    action_token = _safe_log_token(meta.get("action_id"))
+    status_token = _safe_log_token(meta.get("identification_status"))
     logger.info(
-        "webid_webhook event=%s action_id=%s status=%s",
-        _safe_log_token(meta.get("event")),
-        _safe_log_token(meta.get("action_id")),
-        _safe_log_token(meta.get("identification_status")),
+        "webid_webhook event_sha=%s action_sha=%s status_sha=%s",
+        hashlib.sha256(event_token.encode("utf-8")).hexdigest()[:16],
+        hashlib.sha256(action_token.encode("utf-8")).hexdigest()[:16],
+        hashlib.sha256(status_token.encode("utf-8")).hexdigest()[:16],
     )
     return meta

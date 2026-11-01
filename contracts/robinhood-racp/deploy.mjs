@@ -17,9 +17,10 @@ if (wallet.address.toLowerCase() !== plan.recipient.toLowerCase()) throw new Err
 if ((await provider.getNetwork()).chainId !== 4663n) throw new Error('Wrong chain');
 const journalPath = 'prepared/broadcast-journal.json';
 let journal;
-if (fs.existsSync(journalPath)) {
+try {
   journal = JSON.parse(fs.readFileSync(journalPath, 'utf8'));
-} else {
+} catch (err) {
+  if (err?.code !== 'ENOENT') throw err;
   if (plan.contractAddress) throw new Error('Already deployed');
   const { from, ...tx } = report.transaction;
   if (from.toLowerCase() !== wallet.address.toLowerCase() || tx.to || BigInt(tx.value) !== 0n) throw new Error('Invalid deployment');
@@ -29,8 +30,13 @@ if (fs.existsSync(journalPath)) {
   tx.nonce = await provider.getTransactionCount(wallet.address, 'pending');
   const signed = await wallet.signTransaction(tx);
   journal = { transactionHash: keccak256(signed), contractAddress: getCreateAddress({from: wallet.address, nonce: tx.nonce}), nonce: tx.nonce, status: 'broadcast-intent' };
-  fs.writeFileSync(journalPath, JSON.stringify(journal, null, 2) + '\n', {flag: 'wx'});
-  // Persist intent before sending: never create a second contract on an ambiguous response.
+  // Exclusive create: never create a second contract on an ambiguous response.
+  const fd = fs.openSync(journalPath, 'wx');
+  try {
+    fs.writeFileSync(fd, JSON.stringify(journal, null, 2) + '\n');
+  } finally {
+    fs.closeSync(fd);
+  }
   const sent = await provider.broadcastTransaction(signed);
   console.log('BROADCAST', sent.hash);
 }

@@ -1,11 +1,9 @@
 """Quality fixtures service for ROP-03 evaluation samples."""
 
-from pathlib import Path
 import json
 from typing import Optional, List
 from sqlalchemy import select
 from app.db.models import QualityFixture
-from app.schemas.quality_fixtures import QualityFixtureCreate, QualityFixtureResponse
 
 
 def load_fixtures_from_file(file_path: str) -> List[dict]:

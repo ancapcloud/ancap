@@ -68,7 +68,10 @@ def test_webid_status_public_fail_closed(client):
     assert body["waitlist_interest"] == "physical_card_apple_pay"
     assert body["session_path"] == "/v1/commerce/webid/session"
     assert body["webhook_path"] == "/v1/commerce/webid/webhook"
-    assert body["partner_url"].startswith("https://webid-solutions.com")
+    from urllib.parse import urlparse
+
+    partner = urlparse(body["partner_url"])
+    assert partner.scheme == "https" and partner.hostname == "webid-solutions.com"
     assert "client_secret" not in body
     assert "WEBID_CLIENT_SECRET" not in str(body)
 
