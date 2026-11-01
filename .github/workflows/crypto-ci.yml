@@ -7,11 +7,13 @@ on:
     paths:
       - "ACP-crypto/**"
       - "contracts/bridge-bsc/**"
+      - "contracts/robinhood-racp/**"
       - ".github/workflows/crypto-ci.yml"
   pull_request:
     paths:
       - "ACP-crypto/**"
       - "contracts/bridge-bsc/**"
+      - "contracts/robinhood-racp/**"
       - ".github/workflows/crypto-ci.yml"
   schedule:
     - cron: "17 4 * * 1"
@@ -105,3 +107,28 @@ jobs:
 
       - name: Forge test bridge contracts
         run: forge test -vv
+
+  racp-operator-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: contracts/robinhood-racp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24"
+      - name: Install and audit operator dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm audit --audit-level=moderate
+      - name: Verify journal safety and compile without broadcasting
+        run: |
+          node --test test/safe-files.test.mjs
+          node --check deploy.mjs
+          node --check deploy-airdrop.mjs
+          node --check issue.mjs
+          node --input-type=module -e "import {compile} from './compile.mjs'; compile(); compile('src/RacpAirdrop.sol', 'RacpAirdrop');"
