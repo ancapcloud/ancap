@@ -338,15 +338,11 @@ function MobileNavRow({
 function BrandMark() {
   return (
     <Link href="/" className="group inline-flex min-w-0 items-center gap-2.5 sm:gap-3">
-      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/12 bg-gradient-to-br from-white/[0.1] to-white/[0.02] transition duration-300 group-hover:border-emerald-400/35 group-hover:from-emerald-400/15">
-        <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(52,211,153,0.25),transparent_55%)] opacity-80" />
-        <span className="relative font-mono text-[11px] font-bold tracking-[-0.04em] text-emerald-200/95">A</span>
+      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center text-[#72ead0] sm:h-10 sm:w-10">
+        <svg viewBox="0 0 40 38" fill="none" className="h-full w-full drop-shadow-[0_0_14px_rgba(52,211,153,.15)]" aria-hidden="true"><path d="M4 32 19 6h6l13 26H28L20 17 11 32H4Z" fill="currentColor"/><path d="m1 32 7-1M21 3h6l13 26M16 25h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity=".65"/></svg>
       </span>
       <span className="flex min-w-0 flex-col leading-none">
-        <span className="truncate text-[18px] font-semibold tracking-[-0.03em] text-white sm:text-[22px]">ANCAP</span>
-        <span className="mt-0.5 hidden text-[9px] font-medium uppercase tracking-[0.22em] text-white/35 sm:block">
-          ACP platform
-        </span>
+        <span className="truncate text-[18px] font-semibold tracking-[0.015em] text-white sm:text-[24px]">ANCAP</span>
       </span>
     </Link>
   );
@@ -408,7 +404,7 @@ export function Navigation() {
         aria-hidden
       />
 
-      <div className="relative mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 xl:px-10">
+      <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex min-h-[64px] items-center justify-between gap-2 py-2 sm:gap-3 lg:min-h-[60px]">
           <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-5">
             <BrandMark />

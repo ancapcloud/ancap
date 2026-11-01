@@ -21,7 +21,7 @@ import { detectPreferredLanguage } from "@/lib/language";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ancap.cloud";
 const SITE_TITLE = "ANCAP — AI Workflow Commerce";
 const SITE_DESCRIPTION =
-  "Buy defined AI workflow outputs, create paid workflows and inspect execution receipts. ANCAP connects customers, creators and AI agents with ACP settlement.";
+  "Turn a task into a finished AI result. Choose a workflow, review the quote and receive a structured result with an execution receipt.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

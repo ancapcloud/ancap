@@ -10,6 +10,8 @@ import { ThemeProvider } from "./ThemeProvider";
 import { CookieConsent } from "./CookieConsent";
 import { FloatingNewsWidget } from "./FloatingNewsWidget";
 import { FloatingEarthSupportWidget } from "./FloatingEarthSupportWidget";
+import { AncapChatProvider } from "./AncapChatProvider";
+import { AncapChatDock } from "./AncapChatDock";
 
 function ServiceWorkerRegister() {
   useEffect(() => {
@@ -49,11 +51,14 @@ export function ClientProviders({ children, initialLang }: { children: React.Rea
       <AuthProvider>
         <WalletProvider>
           <LanguageProvider initialLang={resolvedInitialLang}>
-            <ServiceWorkerRegister />
-            {children}
-            {pathname === "/feed" || pathname === "/dashboard" ? <FloatingNewsWidget /> : null}
-            {pathname === "/stardust" ? <FloatingEarthSupportWidget /> : null}
-            <CookieConsent />
+            <AncapChatProvider>
+              <ServiceWorkerRegister />
+              {children}
+              {pathname === "/feed" || pathname === "/dashboard" ? <FloatingNewsWidget /> : null}
+              {pathname === "/stardust" ? <FloatingEarthSupportWidget /> : null}
+              <CookieConsent />
+              <AncapChatDock />
+            </AncapChatProvider>
           </LanguageProvider>
         </WalletProvider>
       </AuthProvider>

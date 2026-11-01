@@ -3,21 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --bg: #070b16;
-  --bg-elev-1: #0f1526;
-  --bg-card: #121a2d;
-  --text: #ecf4ff;
-  --text-muted: #9fb3cc;
-  --accent: #19c38a;
-  --accent-strong: #31d79f;
-  --accent-dim: rgba(25, 195, 138, 0.18);
-  --border: #24324b;
-  --border-strong: #33486b;
-  --node-glow: rgba(25, 195, 138, 0.65);
-  --edge-color: rgba(25, 195, 138, 0.28);
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --shadow-soft: 0 10px 28px rgba(3, 9, 20, 0.35);
+  color-scheme: dark;
+  --bg: #030712;
+  --bg-elev-1: #0c1726;
+  --bg-card: #0d1828;
+  --text: #edf4ff;
+  --text-muted: #a3b5cb;
+  --accent: #52dfb9;
+  --accent-strong: #8cebd0;
+  --accent-dim: rgba(82, 223, 185, .11);
+  --accent-secondary: #a69ae9;
+  --border: rgba(164, 196, 219, .15);
+  --border-strong: rgba(164, 196, 219, .3);
+  --surface-gradient: linear-gradient(145deg, #111f30, #0a1423);
+  --surface-wash: rgba(255, 255, 255, .025);
+  --node-glow: rgba(82, 223, 185, .5);
+  --edge-color: rgba(82, 223, 185, .2);
+  --radius-md: 11px;
+  --radius-lg: 20px;
+  --shadow-soft: 0 18px 50px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+:root.light {
+  color-scheme: light;
+  --bg: #f5f8fb;
+  --bg-elev-1: #ffffff;
+  --bg-card: #ffffff;
+  --text: #142538;
+  --text-muted: #53677b;
+  --accent: #06735e;
+  --accent-strong: #09816a;
+  --accent-dim: rgba(6, 115, 94, .08);
+  --accent-secondary: #6a58a8;
+  --border: #dce5ed;
+  --border-strong: #a8becf;
+  --surface-gradient: linear-gradient(145deg, #ffffff, #f4f8fb);
+  --surface-wash: rgba(6, 30, 50, .025);
+  --node-glow: rgba(6, 115, 94, .25);
+  --edge-color: rgba(6, 115, 94, .12);
+  --shadow-soft: 0 14px 40px rgba(24, 55, 78, .06), inset 0 1px 0 #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -173,17 +197,18 @@ footer,
 .btn-primary {
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
   color: #032216;
-  box-shadow: 0 8px 20px rgba(25, 195, 138, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 8px 24px rgba(25,195,138,.12);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(180deg, #43e2ab, var(--accent-strong));
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  filter: brightness(1.08);
   color: #032216;
   transform: translateY(-1px);
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--surface-wash);
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -196,7 +221,7 @@ footer,
 
 /* Cards */
 .card {
-  background: var(--bg-card);
+  background: var(--surface-gradient);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
@@ -207,13 +232,13 @@ footer,
 @media (max-width: 768px) {
   .card {
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 16px;
   }
 }
 
 .card:hover {
   border-color: rgba(49, 215, 159, 0.24);
-  box-shadow: 0 0 0 1px rgba(49, 215, 159, 0.08), 0 16px 34px rgba(3, 9, 20, 0.48);
+  box-shadow: var(--shadow-soft), 0 0 0 1px var(--accent-dim);
 }
 
 /* Section numbering */
@@ -784,12 +809,12 @@ textarea {
 }
 
 /* Keep form fields readable across all pages/components (including daisyUI inputs). */
-:where(input, select, textarea, .input, .select, .textarea) {
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea, .input, .select, .textarea) {
   color: var(--text) !important;
   background: var(--bg-elev-1) !important;
   border-color: var(--border) !important;
   border-radius: 10px !important;
-  min-height: 42px;
+  min-height: 44px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
@@ -802,7 +827,7 @@ textarea {
   color: var(--text) !important;
 }
 
-:where(input, select, textarea, .input, .select, .textarea):focus {
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea, .input, .select, .textarea):focus {
   border-color: rgba(49, 215, 159, 0.55) !important;
   box-shadow: 0 0 0 3px rgba(49, 215, 159, 0.14) !important;
 }
@@ -886,7 +911,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: rgba(11, 17, 31, 0.72);
+  background: var(--bg-card);
 }
 
 .table thead th {
@@ -1347,3 +1372,14 @@ textarea {
     display: none;
   }
 }
+
+::selection { color: #06251e; background: #91e8d0; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 4px; }
+button:disabled, .btn:disabled { cursor: not-allowed; opacity: .5; transform: none; filter: none; }
+input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; min-height: 17px; padding: 0 !important; accent-color: var(--accent); flex-shrink: 0; }
+.light .btn-primary { color: #fff; }
+.light .badge-active, .light .badge-success { color: #06664e; }
+.light .badge-info { color: #075c86; }
+.light .badge-warning { color: #875413; }
+.light .badge-error, .light .alert-error { color: #a23232; }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } .btn:hover { transform: none; } }

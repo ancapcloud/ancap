@@ -2,12 +2,12 @@ import { expect, test } from "@playwright/test";
 
 test.setTimeout(90_000);
 
-test("AI onboarding is the first homepage section and visible on mobile", async ({ page }) => {
+test("AI onboarding sits directly below the hero and remains usable on mobile", async ({ page }) => {
   await page.route("**/v1/**", route => route.fulfill({ status: 401, json: { detail: "Sign in" } }));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const creators = page.locator("#connect-ai");
-  await expect(page.locator("main > section").first()).toHaveAttribute("id", "connect-ai");
+  await expect(page.locator("main section").first()).toHaveAttribute("id", "product");
   await expect(creators.getByRole("heading", { name: "Your expertise. Your AI. One workspace." })).toBeVisible();
   await expect(creators.getByText("ChatGPT", { exact: true })).toBeVisible();
   await expect(creators.getByText("Cursor", { exact: true })).toBeVisible();
@@ -16,13 +16,16 @@ test("AI onboarding is the first homepage section and visible on mobile", async 
   await expect(page.locator("#creator-ai-title")).toHaveCount(1);
   const copyButton = await creators.getByRole("button", { name: "Copy starter prompt" }).boundingBox();
   expect(copyButton).not.toBeNull();
-  expect(copyButton!.y + copyButton!.height).toBeLessThan(844);
+  const order = await page.locator("main section[id]").evaluateAll(nodes => nodes.map(node => node.id));
+  expect(order.slice(0, 2)).toEqual(["product", "connect-ai"]);
   const cookies = page.getByRole("button", { name: "Necessary only", exact: true });
   if (await cookies.isVisible()) await cookies.click();
   await page.screenshot({ path: test.info().outputPath("creators-mobile.png"), fullPage: false });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: test.info().outputPath("creators-desktop.png"), fullPage: false });
+  await creators.screenshot({ path: test.info().outputPath("creators-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await creators.screenshot({ path: test.info().outputPath("creators-mobile.png") });
 });
 
 test("developer CTA opens API setup and guests must sign in", async ({ page }) => {

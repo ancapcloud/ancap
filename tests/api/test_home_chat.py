@@ -321,3 +321,87 @@ def test_rate_limit_and_automatic_reply(monkeypatch):
 
     anyio.run(_run)
     clear_rate_limit_state()
+
+
+def test_pinned_failure_reports_successful_fallback(monkeypatch):
+    clear_home_chat_state()
+    async def fake_request(method, path, json_body=None):
+        if path == '/models':
+            return 200, {'data': [{'id': 'vendor/new:free'}]}
+        if json_body['model'] == 'vendor/old:free':
+            return 503, {}
+        return 200, {'choices': [{'message': {'content': 'Answer'}}]}
+    monkeypatch.setattr('app.services.home_chat.get_settings', _settings)
+    monkeypatch.setattr('app.services.home_chat._openrouter_request', fake_request)
+    result = anyio.run(lambda: complete_home_chat(messages=[{'role':'user','content':'hi'}], session_model='vendor/old:free'))
+    assert result.model == 'vendor/new:free'
+    clear_home_chat_state()
+
+
+def test_unknown_router_identity_is_not_fabricated(monkeypatch):
+    clear_home_chat_state()
+    async def fake_request(method, path, json_body=None):
+        assert path == '/chat/completions'
+        return 200, {'choices': [{'message': {'content': 'Answer'}}]}
+    monkeypatch.setattr('app.services.home_chat.get_settings', _settings)
+    monkeypatch.setattr('app.services.home_chat._openrouter_request', fake_request)
+    result = anyio.run(lambda: complete_home_chat(messages=[{'role':'user','content':'hi'}]))
+    assert result.model == 'openrouter/free'
+    assert result.label == 'Free auto'
+
+
+def test_lookup_then_final_answer(monkeypatch):
+    clear_home_chat_state()
+    calls = []
+    async def fake_request(method, path, json_body=None):
+        calls.append(json_body)
+        text = '{"tool":"platform_guide"}' if len(calls) == 1 else 'Choose a workflow at /ai/workflows.'
+        return 200, {'model':'vendor/a:free', 'choices':[{'message':{'content':text}}]}
+    monkeypatch.setattr('app.services.home_chat.get_settings', _settings)
+    monkeypatch.setattr('app.services.home_chat._openrouter_request', fake_request)
+    result = anyio.run(lambda: complete_home_chat(messages=[{'role':'user','content':'How?'}]))
+    assert result.reply == 'Choose a workflow at /ai/workflows.'
+    assert len(calls) == 2
+    assert 'checkout' not in result.reply
+    assert 'result and receipt' in calls[1]['messages'][-1]['content']
+
+
+def test_lookup_allowlist_and_catalog(monkeypatch):
+    from app.services.home_chat import run_home_lookup, _message_text
+    for action in ({'tool':'shell'}, {'tool':'platform_guide','url':'http://evil'}, {'tool':'search_workflows','query':[]}):
+        with pytest.raises(HomeChatError):
+            run_home_lookup(action)
+    from app.config import get_settings
+    monkeypatch.setattr(get_settings(), 'external_token_racp_only', True)
+    result = run_home_lookup({'tool':'search_workflows','query':''})
+    assert 0 < len(result['items']) <= 5
+    assert all(item['currency'] == 'EUR' and item['url'].startswith('/ai/run/') for item in result['items'])
+    assert _message_text({'choices': {'bad': True}}) == ''
+    assert _message_text({'choices': [{'message': 'bad'}]}) == ''
+
+
+def test_repeated_lookup_is_bounded(monkeypatch):
+    calls = []
+    async def fake_request(method, path, json_body=None):
+        calls.append(path)
+        return 200, {'choices':[{'message':{'content':'{"tool":"platform_guide"}'}}]}
+    monkeypatch.setattr('app.services.home_chat.get_settings', _settings)
+    monkeypatch.setattr('app.services.home_chat._openrouter_request', fake_request)
+    async def run():
+        with pytest.raises(HomeChatError):
+            await complete_home_chat(messages=[{'role':'user','content':'hi'}])
+    anyio.run(run)
+    assert len(calls) == 2
+
+
+def test_total_deadline(monkeypatch):
+    async def fake_request(*args, **kwargs):
+        await anyio.sleep(1)
+        raise AssertionError('deadline did not cancel request')
+    monkeypatch.setattr('app.services.home_chat.get_settings', lambda: _settings(home_chat_timeout_seconds=0.01))
+    monkeypatch.setattr('app.services.home_chat._openrouter_request', fake_request)
+    async def run():
+        with pytest.raises(HomeChatError) as caught:
+            await complete_home_chat(messages=[{'role':'user','content':'hi'}])
+        assert caught.value.code == 'UPSTREAM'
+    anyio.run(run)

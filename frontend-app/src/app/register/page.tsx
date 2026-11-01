@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { TURNSTILE_ENABLED } from "@/lib/turnstile";
+import { safeAuthReturn } from "@/lib/authReturn";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -22,6 +23,10 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+  const [nextHref, setNextHref] = useState("/dashboard");
+  useEffect(() => {
+    setNextHref(safeAuthReturn(new URLSearchParams(window.location.search).get("next")));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +48,7 @@ export default function RegisterPage() {
       if (mnemonic) {
         setWalletMnemonic(mnemonic);
       } else {
-        router.push("/dashboard");
+        router.push(nextHref);
       }
     } catch (err: any) {
       setError(err.message || "Registration failed");
@@ -225,7 +230,7 @@ export default function RegisterPage() {
 
             <div style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--text-muted)" }}>
               {t("auth.haveAccount")}{" "}
-              <a href="/login" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+              <a href={`/login?next=${encodeURIComponent(nextHref)}`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
                 {t("nav.login")}
               </a>
             </div>
@@ -281,7 +286,7 @@ export default function RegisterPage() {
                 className="btn btn-primary"
                 onClick={() => {
                   setWalletMnemonic("");
-                  router.push("/dashboard");
+                  router.push(nextHref);
                 }}
               >
                 I saved it

@@ -9,6 +9,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { WalletConnectCard } from "@/components/WalletConnectCard";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { TURNSTILE_ENABLED } from "@/lib/turnstile";
+import { safeAuthReturn } from "@/lib/authReturn";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const nextHref = useMemo(() => {
     const raw = searchParams?.get("next")?.trim() || "";
-    return raw.startsWith("/") ? raw : "/dashboard";
+    return safeAuthReturn(raw);
   }, [searchParams]);
   const recoveryTarget = useMemo(
     () => nextHref.startsWith("/wallet/acp") && nextHref.includes("#password-security"),
@@ -256,7 +257,7 @@ export function LoginForm() {
 
             <div style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--text-muted)" }}>
               {t("auth.noAccount")}{" "}
-              <Link href="/register" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+              <Link href={`/register?next=${encodeURIComponent(nextHref)}`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
                 {t("nav.register")}
               </Link>
               <div style={{ marginTop: 8, fontSize: "0.8rem" }}>
@@ -332,7 +333,7 @@ export function LoginForm() {
                 className="btn btn-primary"
                 onClick={() => {
                   setWalletMnemonic("");
-                  router.push("/dashboard");
+                  router.push(nextHref);
                 }}
               >
                 I saved it
