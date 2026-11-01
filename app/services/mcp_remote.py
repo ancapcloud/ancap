@@ -241,83 +241,6 @@ def extract_api_key(header_auth: str | None, header_x_api_key: str | None, argum
     return ""
 
 
-# Constant API paths only — never interpolate user input into request URLs.
-_ALLOWED_POST_PATHS = frozenset(
-    {
-        "/workflow-store/runs",
-        "/pay/payment-links",
-        "/pay/invoices",
-        "/claim-codes/create",
-        "/claim-codes/redeem",
-        "/payment-scanner/parse",
-    }
-)
-
-
-async def _payment_link_status(code: str) -> dict[str, Any]:
-    """Resolve payment status in-process (no HTTP) so user codes never enter a URL."""
-    from datetime import UTC, datetime
-
-    from sqlalchemy import select
-
-    from app.api.routers.merchant import _serialize_link
-    from app.db.models import PaymentLink
-    from app.db.session import async_session_maker
-
-    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", code):
-        raise ValueError("Invalid payment link code")
-
-    async with async_session_maker() as session:
-        row = await session.scalar(select(PaymentLink).where(PaymentLink.code == code))
-        if row is None:
-            raise RuntimeError("HTTP 404: Payment link not found")
-        if row.expires_at and row.expires_at < datetime.now(UTC) and row.status == "pending":
-            row.status = "expired"
-            await session.commit()
-        return _serialize_link(row).model_dump(mode="json")
-
-
-async def _post_tool_via_asgi(
-    *,
-    app: FastAPI,
-    path: str,
-    payload: dict[str, Any],
-    api_key: str,
-) -> dict[str, Any]:
-    if path not in _ALLOWED_POST_PATHS:
-        raise RuntimeError(f"Disallowed MCP API path: {path}")
-
-    headers: dict[str, str] = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
-    if api_key:
-        headers["X-API-Key"] = api_key
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    # Nested ASGI call — avoids self-HTTP deadlock on a single uvicorn worker.
-    # URL path is restricted to the constant allowlist above.
-    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
-    async with httpx.AsyncClient(transport=transport, base_url="http://ancap.internal") as client:
-        response = await client.post(
-            f"/v1{path}",
-            headers=headers,
-            content=json.dumps(payload or {}).encode("utf-8"),
-            timeout=60.0,
-        )
-
-    body_text = response.text
-    try:
-        body: Any = response.json() if body_text else {}
-    except Exception:
-        body = {"raw": body_text}
-
-    if response.status_code >= 400:
-        detail = body.get("detail") if isinstance(body, dict) else body
-        raise RuntimeError(f"HTTP {response.status_code}: {detail}")
-    return body if isinstance(body, dict) else {"result": body}
-
-
 async def dispatch_tool(
     *,
     app: FastAPI,
@@ -338,17 +261,50 @@ async def dispatch_tool(
         code = str(arguments.get("code") or "").strip()
         if not code:
             raise ValueError("code is required")
-        return await _payment_link_status(code)
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", code):
+            raise ValueError("Invalid payment link code")
+        path = f"/pay/{code}"
+        method = "GET"
+        payload = None
+    else:
+        path = meta["path"]
+        method = meta["method"]
+        builder = meta["build"]
+        payload = builder(arguments) if builder else None
+        model = REQUEST_MODELS.get(name)
+        if model:
+            payload = model.model_validate(payload).model_dump(mode="json")
 
-    path = str(meta["path"])
-    if path not in _ALLOWED_POST_PATHS:
-        raise RuntimeError(f"Disallowed MCP tool path for {name}")
-    builder = meta["build"]
-    payload = builder(arguments) if builder else {}
-    model = REQUEST_MODELS.get(name)
-    if model:
-        payload = model.model_validate(payload).model_dump(mode="json")
-    return await _post_tool_via_asgi(app=app, path=path, payload=payload, api_key=api_key)
+    headers: dict[str, str] = {"Accept": "application/json"}
+    if api_key:
+        headers["X-API-Key"] = api_key
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    # Nested ASGI call — avoids self-HTTP deadlock on a single uvicorn worker.
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://ancap.internal", timeout=60.0) as client:
+        if method == "GET":
+            response = await client.get(httpx.URL("http://ancap.internal").copy_with(path=f"/v1{path}"), headers=headers, timeout=60.0)
+        else:
+            headers["Content-Type"] = "application/json"
+            response = await client.request(
+                method,
+                httpx.URL("http://ancap.internal").copy_with(path=f"/v1{path}"),
+                headers=headers,
+                content=json.dumps(payload or {}).encode("utf-8"),
+                timeout=60.0,
+            )
+
+    body_text = response.text
+    try:
+        body: Any = response.json() if body_text else {}
+    except Exception:
+        body = {"raw": body_text}
+
+    if response.status_code >= 400:
+        detail = body.get("detail") if isinstance(body, dict) else body
+        raise RuntimeError(f"HTTP {response.status_code}: {detail}")
+    return body if isinstance(body, dict) else {"result": body}
 
 
 def jsonrpc_result(msg_id: Any, result: Any) -> dict[str, Any]:

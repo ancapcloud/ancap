@@ -12,7 +12,8 @@ def test_backend_ci_keeps_honest_bandit_and_docker_build_guards():
     workflow_text = BACKEND_CI_PATH.read_text(encoding="utf-8")
 
     assert 'GH_TOKEN: ${{ github.token }}' in workflow_text
-    assert 'python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt' in workflow_text
+    assert 'python -m bandit -r app/ -ll -f txt 2>&1 | tee bandit-report.txt' in workflow_text
+    assert 'set -o pipefail' in workflow_text
     assert 'docker build -t ancap:build-check .' in workflow_text
     assert '.githooks/**' in workflow_text
     assert 'scripts/check_secret_hygiene.py' in workflow_text

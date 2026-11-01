@@ -42,6 +42,9 @@
     "@expo/cli": {
       "zod": "^4.6.7"
     },
-    "deepmerge": "$deepmerge"
+    "deepmerge": "$deepmerge",
+    "minimatch": "^11.0.3",
+    "glob": "^14.0.2",
+    "vite": "^6.4.5"
   }
 }

@@ -49,6 +49,10 @@ class CostEvidenceCreate(BaseModel):
     currency: str = Field(pattern=r"^(?:[A-Z]{3,10}|wACP|sACP)$")
     amount: Decimal = Field(ge=0, max_digits=36, decimal_places=18, allow_inf_nan=False)
     review_note: str = Field(min_length=1, max_length=2000, pattern=r"^\S(?:.*\S)?$")
+    provider_id: str | None = Field(default=None, min_length=1, max_length=128)
+    document_type: str | None = Field(default=None, min_length=1, max_length=64)
+    external_payment_event: bool = False
+    delivery_event: bool = False
     allocations: list[CostRunAllocation] = Field(min_length=1, max_length=200)
 
     @model_validator(mode="after")

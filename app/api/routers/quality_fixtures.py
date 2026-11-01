@@ -1,73 +1,28 @@
-"""Admin-only router for quality fixtures (ROP-03)."""
-
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
-from app.db.session import get_db
-from app.services.quality_fixtures import (
-    get_quality_fixture,
-    get_all_quality_fixtures,
-)
+"""Private operator quality-fixture inspection."""
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from app.api.deps import DbSession, require_platform_admin
 from app.schemas.quality_fixtures import QualityFixtureResponse, QualityFixtureListResponse
-from app.api.deps import require_admin
+from app.services.quality_fixtures import get_quality_fixture, get_all_quality_fixtures
 
-router = APIRouter(prefix="/v1/quality-fixtures", tags=["quality-fixtures-admin"])
+router = APIRouter(prefix="/quality-fixtures", tags=["quality-fixtures-admin"])
 
 
-@router.get(
-    "/{fixture_id}",
-    response_model=QualityFixtureResponse,
-    dependencies=[Depends(require_admin)],
-    responses={
-        401: {"description": "Not authenticated"},
-        403: {"description": "Admin access required"},
-        404: {"description": "Fixture not found"},
-    },
-)
-async def get_quality_fixture_admin(
-    fixture_id: str,
-    db: Session = Depends(get_db),
-):
-    """
-    Admin-only GET /v1/quality-fixtures/{id} for quality fixture retrieval.
-    
-    Returns full fixture record with allocations and metadata.
-    Cache-Control: private, no-store; guest 401, user 403, unknown ID 404.
-    verification_basis=operator_attested.
-    """
-    fixture = get_quality_fixture(db, fixture_id)
-    if not fixture:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Quality fixture {fixture_id} not found",
-        )
+@router.get("/{fixture_id}", response_model=QualityFixtureResponse)
+async def get_quality_fixture_admin(fixture_id: UUID, db: DbSession, response: Response,
+                                     _admin: str = Depends(require_platform_admin)):
+    response.headers["Cache-Control"] = "private, no-store"
+    fixture = await get_quality_fixture(db, fixture_id)
+    if fixture is None:
+        raise HTTPException(status_code=404, detail="Quality fixture not found")
     return fixture
 
 
-@router.get(
-    "/",
-    response_model=QualityFixtureListResponse,
-    dependencies=[Depends(require_admin)],
-    responses={
-        401: {"description": "Not authenticated"},
-        403: {"description": "Admin access required"},
-    },
-)
-async def list_quality_fixtures(
-    limit: int = 100,
-    offset: int = 0,
-    db: Session = Depends(get_db),
-):
-    """
-    Admin-only list all quality fixtures.
-    
-    Returns paginated list of fixtures with metadata.
-    Cache-Control: private, no-store; guest 401, user 403.
-    """
-    fixtures, total = get_all_quality_fixtures(db, limit=limit, offset=offset)
-    return QualityFixtureListResponse(
-        fixtures=fixtures,
-        total=total,
-        limit=limit,
-        offset=offset,
-    )
+@router.get("/", response_model=QualityFixtureListResponse)
+async def list_quality_fixtures(db: DbSession, response: Response,
+                                limit: int = Query(100, ge=1, le=200),
+                                offset: int = Query(0, ge=0),
+                                _admin: str = Depends(require_platform_admin)):
+    response.headers["Cache-Control"] = "private, no-store"
+    fixtures, total = await get_all_quality_fixtures(db, limit=limit, offset=offset)
+    return QualityFixtureListResponse(fixtures=fixtures, total=total, limit=limit, offset=offset)

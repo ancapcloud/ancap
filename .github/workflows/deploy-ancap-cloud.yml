@@ -248,9 +248,8 @@ jobs:
               if [ -f scripts/deploy-ancap-cloud.sh ]; then
                 bash scripts/deploy-ancap-cloud.sh --skip-git-pull
               else
-                timeout 1200 $COMPOSE build api frontend
-                timeout 180 $COMPOSE up -d --force-recreate api frontend proxy || true
-                timeout 120 $COMPOSE exec -T api alembic upgrade head 2>&1 | tail -20 || true
+                echo "::error::Required deployment script missing; refusing activation without migration checks."
+                exit 1
               fi
               echo "== smoke: stardust + gateway"
               proxy_health="$(timeout 15 $COMPOSE exec -T proxy wget -qO- http://127.0.0.1/api/v1/system/health 2>/dev/null || true)"

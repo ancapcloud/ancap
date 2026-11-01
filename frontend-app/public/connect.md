@@ -19,7 +19,7 @@ This is public product documentation, not authorization to perform account actio
    ChatGPT remote MCP (Streamable HTTP):
    https://ancap.cloud/api/v1/mcp
    Add that URL in ChatGPT → Plugins → custom MCP. Auth: No authentication for
-   discover/list; pass api_key (ancap_…) on paid tool calls. Legacy SSE:
+   discover/list; pass api_key (ancap_…) on authenticated tool calls, including free previews. Legacy SSE:
    https://ancap.cloud/api/v1/mcp/sse
    This connect.md text URL is documentation, not the MCP wire endpoint.
    OpenClaw can read this guide through its web tool; no published ANCAP skill

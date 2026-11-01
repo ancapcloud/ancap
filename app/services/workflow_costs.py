@@ -76,8 +76,8 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
         recorded_by_user_id=evidence.recorded_by_user_id,
         provider_id=str(evidence.provider_id) if evidence.provider_id else None,
         document_type=evidence.document_type,
-        external_payment_event=evidence.external_payment_event,
-        delivery_event=evidence.delivery_event
+        external_payment_event=bool(evidence.external_payment_event),
+        delivery_event=bool(evidence.delivery_event)
     )
     
     # Include allocations in the response with full details

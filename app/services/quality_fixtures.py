@@ -2,7 +2,7 @@
 
 import json
 from typing import Optional, List
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.db.models import QualityFixture
 
 
@@ -24,10 +24,11 @@ async def create_quality_fixtures_batch(db, fixtures_data: List[dict]) -> List[Q
             actual_result=fixture_data.get("actual_result"),
             confidence_score=fixture_data.get("confidence_score"),
             is_available=fixture_data.get("is_available", True),
+            expires_at=fixture_data.get("expires_at"),
         )
         db.add(fixture)
         created.append(fixture)
-    await db.commit()
+    await db.flush()
     return created
 
 
@@ -37,15 +38,16 @@ async def get_quality_fixture(db, fixture_id: str) -> Optional[QualityFixture]:
     return result.scalar_one_or_none()
 
 
-async def get_all_quality_fixtures(db, limit: int = 100, offset: int = 0) -> List[QualityFixture]:
+async def get_all_quality_fixtures(db, limit: int = 100, offset: int = 0) -> tuple[list[QualityFixture], int]:
     """Paginated list of all quality fixtures."""
     result = await db.execute(
         select(QualityFixture)
-        .order_by(QualityFixture.created_at.desc())
+        .order_by(QualityFixture.created_at.desc(), QualityFixture.id)
         .limit(limit)
         .offset(offset)
     )
-    return list(result.scalars().all())
+    total = await db.scalar(select(func.count()).select_from(QualityFixture))
+    return list(result.scalars().all()), int(total or 0)
 
 
 async def get_quality_fixtures_by_type(db, fixture_type: str, limit: int = 100) -> List[QualityFixture]:
@@ -53,7 +55,7 @@ async def get_quality_fixtures_by_type(db, fixture_type: str, limit: int = 100) 
     result = await db.execute(
         select(QualityFixture)
         .where(QualityFixture.fixture_type == fixture_type)
-        .order_by(QualityFixture.created_at.desc())
+        .order_by(QualityFixture.created_at.desc(), QualityFixture.id)
         .limit(limit)
     )
     return list(result.scalars().all())

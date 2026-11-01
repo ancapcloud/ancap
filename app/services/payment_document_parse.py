@@ -4,7 +4,8 @@ from __future__ import annotations
 import io
 import zipfile
 from pathlib import Path
-from xml.etree import ElementTree
+from defusedxml import ElementTree
+from defusedxml.common import DefusedXmlException
 
 import httpx
 
@@ -39,10 +40,10 @@ async def parse_payment_document(data: bytes, filename: str, content_type: str |
                 xml = archive.read(info)
                 if b"<!DOCTYPE" in xml.upper() or b"<!ENTITY" in xml.upper():
                     raise ValueError("Unsupported XML declarations")
-                root = ElementTree.fromstring(xml)
+                root = ElementTree.fromstring(xml, forbid_dtd=True)
                 ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
                 text = "\n".join("".join(p.itertext()) for p in root.iter(ns + "p"))
-        except (zipfile.BadZipFile, KeyError, ElementTree.ParseError, RuntimeError) as exc:
+        except (zipfile.BadZipFile, KeyError, ElementTree.ParseError, DefusedXmlException, RuntimeError) as exc:
             raise ValueError("Cannot read Word document. Export legacy or protected Word files to an unlocked PDF or DOCX.") from exc
     elif suffix in {".txt", ".csv", ".md", ".json", ".xml"}:
         try:

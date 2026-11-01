@@ -7,6 +7,7 @@ it in chunks from jobs/tick (and a startup catch-up thread).
 from __future__ import annotations
 from app.services.recoverable_errors import report_optional_failure
 
+import asyncio
 import json
 import logging
 import threading
@@ -453,7 +454,7 @@ async def acp_utxo_index_tick(
     caught_up = False
     try:
         for _ in range(max(1, int(max_chunks))):
-            step = advance_index_sync(chunk=chunk)
+            step = await asyncio.to_thread(advance_index_sync, chunk=chunk)
             summary["chunks"].append(step)
             if not step.get("ok"):
                 summary["ok"] = False

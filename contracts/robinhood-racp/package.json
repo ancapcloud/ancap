@@ -8,5 +8,9 @@
   "devDependencies": {
     "ethers": "^6.15.0",
     "solc": "^0.8.24"
+  },
+  "overrides": {
+    "ws": "^8.21.0",
+    "tmp": "^0.2.6"
   }
 }

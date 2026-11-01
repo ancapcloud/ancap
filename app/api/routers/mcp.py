@@ -2,22 +2,48 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Header, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.services.mcp_remote import (
     SERVER_INFO,
+    PROTOCOL_VERSION,
     handle_mcp_message,
     list_tools_payload,
 )
 
-router = APIRouter(tags=["MCP"])
+from app.config import get_settings
+from app.services.rate_limit import enforce_rate_limit, get_request_ip
+
+
+async def validate_origin(request: Request):
+    origin = request.headers.get("origin")
+    allowed = {value.strip() for value in get_settings().cors_origins.split(",")}
+    if origin is not None and origin not in allowed:
+        raise HTTPException(status_code=403, detail="Origin not allowed")
+
+
+async def bound_mcp_requests(request: Request):
+    if request.method == "OPTIONS":
+        return
+    await enforce_rate_limit(key=f"mcp:{get_request_ip(request)}", limit=120, window_seconds=60)
+    if request.method == "POST":
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > 1048576:
+                raise HTTPException(status_code=413, detail="MCP request too large")
+        request._body = bytes(body)
+
+
+router = APIRouter(tags=["MCP"], dependencies=[Depends(validate_origin), Depends(bound_mcp_requests)])
 
 # In-memory session map for legacy HTTP+SSE transport (single-process; fine for MVP).
-_SSE_SESSIONS: dict[str, dict[str, str | None]] = {}
+_SSE_SESSIONS: dict[str, asyncio.Queue] = {}
 
 
 def _cors_headers() -> dict[str, str]:
@@ -64,11 +90,11 @@ async def mcp_get(
     body = {
         "service": "ancap-mcp",
         "transport": "streamable-http",
-        "protocolVersion": "2024-11-05",
+        "protocolVersion": PROTOCOL_VERSION,
         "serverInfo": SERVER_INFO,
         "chatgpt": {
             "server_url": "https://ancap.cloud/api/v1/mcp",
-            "auth": "No authentication (discover tools); pass api_key on paid tools or use Authorization/X-API-Key",
+            "auth": "No authentication (discover tools); pass api_key on authenticated tools, including free previews or use Authorization/X-API-Key",
             "docs": "https://ancap.cloud/mcp",
             "connect_keys": "https://ancap.cloud/developers/connect",
         },
@@ -92,7 +118,9 @@ async def mcp_post(
 
     messages: list[dict[str, Any]]
     if isinstance(payload, list):
-        messages = [m for m in payload if isinstance(m, dict)]
+        if not payload or len(payload) > 32 or any(not isinstance(m, dict) for m in payload):
+            return _with_cors(JSONResponse({"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": "Invalid Request"}}, status_code=400))
+        messages = payload
     elif isinstance(payload, dict):
         messages = [payload]
     else:
@@ -115,7 +143,7 @@ async def mcp_post(
     if only_notifications and not responses:
         return _with_cors(Response(status_code=202))
 
-    if len(messages) == 1 and len(responses) == 1:
+    if len(messages) == 1 and len(responses) == 1 and not isinstance(payload, list):
         body = responses[0]
     elif len(responses) == 1 and not isinstance(payload, list):
         body = responses[0]
@@ -153,17 +181,22 @@ async def mcp_legacy_sse(request: Request):
     else:
         public_message = f"{forwarded_prefix}{message_path}" if forwarded_prefix else message_path
 
-    _SSE_SESSIONS[session_id] = {"message_path": public_message}
+    if len(_SSE_SESSIONS) >= 1000:
+        return _with_cors(Response(status_code=503))
+    queue: asyncio.Queue = asyncio.Queue(maxsize=64)
+    _SSE_SESSIONS[session_id] = queue
 
     async def event_stream():
-        # Legacy clients only need the endpoint event; JSON-RPC continues on POST /mcp/message.
-        # Optional short keepalives help intermediaries; then the stream ends cleanly.
-        yield f"event: endpoint\ndata: {public_message}\n\n"
-        for _ in range(2):
-            if await request.is_disconnected():
-                return
-            await asyncio.sleep(0.05)
-            yield ": keepalive\n\n"
+        try:
+            yield f"event: endpoint\ndata: {public_message}\n\n"
+            while not await request.is_disconnected():
+                try:
+                    result = await asyncio.wait_for(queue.get(), timeout=15)
+                    yield f"event: message\ndata: {json.dumps(result)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        finally:
+            _SSE_SESSIONS.pop(session_id, None)
 
     response = StreamingResponse(event_stream(), media_type="text/event-stream")
     response.headers["Cache-Control"] = "no-cache"
@@ -180,9 +213,11 @@ async def mcp_legacy_message(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ):
     """Legacy SSE companion POST endpoint."""
-    if sessionId and sessionId not in _SSE_SESSIONS:
-        # Accept unknown sessions for multi-worker / restart resilience.
-        _SSE_SESSIONS[sessionId] = {"message_path": None}
+    queue = _SSE_SESSIONS.get(sessionId or "")
+    if queue is None:
+        return _with_cors(Response(status_code=404))
+    if queue.full():
+        return _with_cors(Response(status_code=429))
 
     try:
         payload = await request.json()
@@ -200,4 +235,5 @@ async def mcp_legacy_message(
     )
     if result is None:
         return _with_cors(Response(status_code=202))
-    return _with_cors(JSONResponse(result))
+    queue.put_nowait(result)
+    return _with_cors(Response(status_code=202))

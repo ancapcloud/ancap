@@ -128,3 +128,19 @@ def test_advance_resets_stale_watermark_after_regenesis(monkeypatch):
     assert result["tip_hash"] == "new-genesis"
     assert "old:0" not in idx._state["unspent"]
     assert idx._state["unspent"]["genesis:0"] == (CUSTODIAL_HOT_ADDRESS, 100_000_000)
+
+
+async def test_scheduled_index_rpc_runs_off_event_loop(monkeypatch):
+    import threading
+    from unittest.mock import AsyncMock
+    event_loop_thread = threading.get_ident()
+    observed = []
+    monkeypatch.setattr(idx, '_redis_load', AsyncMock())
+    monkeypatch.setattr(idx, '_redis_save', AsyncMock())
+    def advance(**kwargs):
+        observed.append(threading.get_ident())
+        return {'ok': True, 'caught_up': True}
+    monkeypatch.setattr(idx, 'advance_index_sync', advance)
+    result = await idx.acp_utxo_index_tick(max_chunks=1)
+    assert result['ok']
+    assert observed and observed[0] != event_loop_thread

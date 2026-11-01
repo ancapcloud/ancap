@@ -1,3 +1,14 @@
+2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
+MCP, invoice validation, indexer responsiveness and dependency patches verified
+locally. CI/deployment acceptance pending; evidence and limits are tracked in
+`docs/SECURITY_RELEASE_2026-11-01.md`.
+
+2026-11-01 MCP release candidate: schema/dispatch, Smart Pay arguments,
+legacy SSE delivery and stdio catalogue fixes passed 61 targeted tests.
+Fresh PostgreSQL migration and frontend TypeScript checks also passed.
+Target final scoped web/API/MCP release: 30 November 2026; production completion
+is not claimed. Evidence and acceptance gates: `docs/RELEASE_NOVEMBER_2026.md`.
+
 2026-10-31: local/published histories reconciled; original homepage and AI/API onboarding retained. Incomplete ROP-03 fixture work preserved and deferred after isolation/model/migration audit. PR #137 merged and release c777417 deployed successfully via Actions 41203678588. Public build, health/readiness, five-language home and connect.md verified; see docs/RELEASE_INTEGRATION_2026-10-31.md.
 
 > **Pool update 2026-10-30:** rACP/WETH now has a small live PancakeSwap V2 pool on Robinhood Chain. Earlier statements about zero liquidity describe the initial release. Verified snapshot: 5,000 rACP and 0.005 WETH at block 101517870. Pool: https://pancakeswap.finance/liquidity/pool/robinhood/0x7583745440e9e8CBdCaeC3BF97dD02d9872d9c85?chain=robinhood

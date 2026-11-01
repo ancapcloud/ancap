@@ -142,6 +142,23 @@ async def _record_event(
     )
 
 
+
+def _open_provider_request(request, *, timeout):
+    """Allow HTTPS only and never forward provider credentials through redirects."""
+    import urllib.error
+    import urllib.request
+    from urllib.parse import urlsplit
+    parsed = urlsplit(request.full_url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        raise urllib.error.URLError("Invalid HTTPS provider endpoint")
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            raise urllib.error.URLError("Provider redirects are disabled")
+
+    return urllib.request.build_opener(NoRedirect).open(request, timeout=timeout)
+
+
 def default_transfer_fetcher(deposit_address: str, since_ms: int) -> list[ObservedTronTransfer]:
     """Read all confirmed pages in a bounded window; incomplete fetches fail closed."""
     import json
@@ -176,7 +193,7 @@ def default_transfer_fetcher(deposit_address: str, since_ms: int) -> list[Observ
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise TimeoutError("Tron pagination deadline exceeded")
-            with urllib.request.urlopen(req, timeout=min(20, remaining)) as resp:
+            with _open_provider_request(req, timeout=min(20, remaining)) as resp:
                 raw = resp.read(8_000_001)
                 if len(raw) > 8_000_000:
                     raise ValueError("Provider response too large")

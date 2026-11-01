@@ -52,14 +52,14 @@ class PaymentLinkCheckoutResponse(BaseModel):
 
 class InvoiceLineItem(BaseModel):
     description: str
-    quantity: Decimal = Decimal("1")
+    quantity: Decimal = Field(default=Decimal("1"), gt=0, le=1000000000, allow_inf_nan=False)
     unit_amount: str
     currency: str = "ACP"
 
 
 class InvoiceCreateRequest(BaseModel):
     customer_email: str | None = None
-    line_items: list[InvoiceLineItem]
+    line_items: list[InvoiceLineItem] = Field(min_length=1, max_length=200)
     due_in_days: int | None = Field(default=14, ge=1, le=365)
     notes: str | None = None
     create_payment_link: bool = True

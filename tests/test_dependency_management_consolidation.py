@@ -97,7 +97,7 @@ def test_ci_workflows_follow_packaging_consolidation():
     assert '      - "requirements.txt"' in backend_ci
     assert '      - "pyproject.toml"' in backend_ci
     assert 'pip install .[dev]' in backend_ci
-    assert 'python -m bandit -r app/ -f txt' in backend_ci
+    assert 'python -m bandit -r app/ -ll -f txt' in backend_ci
 
     assert 'pip install .[dev]' in release_workflow
     assert 'python -m bandit -r app/ -f txt' in release_workflow

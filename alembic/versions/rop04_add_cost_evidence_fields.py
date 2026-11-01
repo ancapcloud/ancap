@@ -39,13 +39,13 @@ def upgrade() -> None:
     # Add external_payment_event column to workflow_cost_evidence
     op.add_column('workflow_cost_evidence', sa.Column(
         'external_payment_event', sa.Boolean(), nullable=True,
-        server_default=False
+        server_default=sa.false()
     ))
 
     # Add delivery_event column to workflow_cost_evidence
     op.add_column('workflow_cost_evidence', sa.Column(
         'delivery_event', sa.Boolean(), nullable=True,
-        server_default=False
+        server_default=sa.false()
     ))
 
     # Create index on provider_id for faster lookups
