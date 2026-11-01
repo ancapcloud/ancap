@@ -2,7 +2,6 @@
 """Generate de-identified quality fixtures for ROP-03 evaluation samples."""
 
 import json
-import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 

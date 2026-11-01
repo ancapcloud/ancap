@@ -47,6 +47,5 @@ def test_all_nine_mcp_functions_with_account_keys(client):
 
 
 def test_quality_admin_fails_closed_without_operator_allowlist(client):
-    # The legacy quality router currently carries its own /v1 prefix.
-    response = client.get('/v1/v1/quality-fixtures/')
+    response = client.get('/v1/quality-fixtures/')
     assert response.status_code == 503, response.text

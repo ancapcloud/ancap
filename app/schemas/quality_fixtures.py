@@ -16,6 +16,7 @@ class QualityFixtureCreate(BaseModel):
     actual_result: Optional[str] = Field(None, description="Actual OCR output from model")
     confidence_score: Optional[float] = Field(None, ge=0.0, le=1.0, description="Model confidence 0.0-1.0")
     is_available: bool = Field(True, description="Source availability status")
+    expires_at: Optional[datetime] = None
 
 
 class QualityFixtureResponse(BaseModel):
