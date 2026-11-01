@@ -13,7 +13,7 @@ def expected_core(files):
     required = set()
     if any(path.startswith(("app/", "alembic/")) or path in {"requirements.in", "requirements.txt", "pyproject.toml"} for path in files):
         required.update({"Backend CI", "Frontend CI"})
-    if any(path.startswith(("frontend-app/", "ancap-mobile/")) or path == ".github/workflows/frontend-ci.yml" for path in files):
+    if any(path.startswith(("frontend-app/", "ancap-mobile/")) or path in {".github/workflows/frontend-ci.yml", "docker-compose.yml", "Dockerfile"} for path in files):
         required.add("Frontend CI")
     if any(path.startswith(("ACP-crypto/", "contracts/bridge-bsc/", "contracts/robinhood-racp/")) or path == ".github/workflows/crypto-ci.yml" for path in files):
         required.add("Crypto CI")

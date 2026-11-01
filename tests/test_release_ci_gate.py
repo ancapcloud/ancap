@@ -11,6 +11,8 @@ def run(name, conclusion="success", status="completed", sha=SHA, event="push"):
 def test_runtime_changes_require_both_backend_and_frontend():
     assert expected_core(["app/services/catalog_eur_prices.json"]) == {"Backend CI", "Frontend CI"}
     assert expected_core(["frontend-app/src/app/page.tsx"]) == {"Frontend CI"}
+    assert expected_core(["Dockerfile"]) == {"Backend CI", "Frontend CI"}
+    assert expected_core(["docker-compose.yml"]) == {"Frontend CI"}
     assert expected_core(["ACP-crypto/Cargo.lock"]) == {"Crypto CI"}
     assert expected_core(["docs/report.md"]) == {"Backend CI"}
 
