@@ -523,7 +523,7 @@ class Settings(BaseSettings):
     anthropic_base_url: str = "https://api.tenetauniversity.com"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
-    # Homepage dialog. The key stays on the server; the browser never receives it.
+    # Homepage dialog and optional reserve execution. The key stays on the server.
     # Model selection is automatic and limited to OpenRouter free models.
     openrouter_api_key: str = ""
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
@@ -541,6 +541,9 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 1800
     llm_daily_budget_acp: str = "250"
     llm_fallback_to_template: bool = True
+    # Explicit operator opt-in. Customer BYOK/model choices are never rerouted.
+    llm_openrouter_fallback_enabled: bool = False
+    llm_openrouter_fallback_model: str = "anthropic/claude-sonnet-4.6"
 
     # Stripe / fiat adapter
     stripe_secret_key: str = ""

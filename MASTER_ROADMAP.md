@@ -1,3 +1,10 @@
+2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
+An explicit operator opt-in adds Claude Sonnet reserve execution through the
+already configured OpenRouter account, with no data collection / zero-retention
+routing, actual provider/model receipts, and no rerouting of customer BYOK or
+pinned models. Retry backoff now yields the event loop and records actual retries.
+The Teneta credential still requires operator rotation to restore the primary.
+
 2026-11-01 referral catalogue repair: the new earnings playbook now has
 matching explicit EUR 10.79 / historical USD 12 entries across backend and
 frontend. This restores catalogue, checkout and concierge lookups. Deployment
