@@ -65,6 +65,20 @@ WORKFLOW_TEMPLATES: list[WorkflowTemplatePublic] = [
         tags=["bounty", "airdrop", "campaign"],
     ),
     WorkflowTemplatePublic(
+        slug="acp-referral-earnings-playbook",
+        title="ACP Referral Earnings Playbook",
+        category="Growth",
+        summary="Build a practical ACP referral plan: invite links, first-paid-run rewards, channel scripts, and anti-spam rules.",
+        description="Creates an operator playbook for earning ACP through ANCAP referrals after invited users complete a first captured paid workflow run. Educational growth plan only — not investment advice and not a guaranteed income claim.",
+        price=Money(amount="12", currency="ACP"),
+        accepted_currencies=["ACP", "wACP"],
+        estimated_time_minutes=25,
+        preview_items=["Reward policy map", "Invite funnel", "Channel scripts"],
+        output_items=["Referral earnings plan", "Invite scripts", "Tracking checklist", "Receipt"],
+        receipt_items=["workflow_slug", "price_snapshot", "input_hash", "proof_metadata"],
+        tags=["referral", "acp", "growth", "earnings"],
+    ),
+    WorkflowTemplatePublic(
         slug="token-risk-report",
         title="Token Risk Report",
         category="Risk",
@@ -2382,6 +2396,95 @@ def execute_workflow_template(template: WorkflowTemplatePublic, inputs: dict[str
             "artifact_kind": "telegram_ops_kit",
             "sections_generated": 6,
             "focus": ["community trust", "moderation", "onboarding", "content ops"],
+        }
+    elif template.slug == "acp-referral-earnings-playbook":
+        referral_code = str(payload.get("referral_code") or payload.get("referral_link") or "").strip()
+        weekly_capacity = str(payload.get("weekly_invite_capacity") or payload.get("weekly_capacity") or "10-20 quality invites")
+        preferred_offer = str(
+            payload.get("preferred_offer")
+            or payload.get("first_workflow")
+            or "Token Risk Report / another clear first paid workflow"
+        )
+        deliverable = {
+            "disclaimer": (
+                "Educational operator playbook only. Not investment advice, not a wage promise, "
+                "and not a guaranteed ACP income claim. Rewards follow live ANCAP referral policy."
+            ),
+            "reward_policy_map": {
+                "cabinet": "https://ancap.cloud/referrals",
+                "when_payable": "After the referred user completes a first captured paid workflow run.",
+                "typical_signup_bonus_acp": "Configured platform bonus (default 25 ACP) on eligible first captured paid run.",
+                "typical_commission_share": "Configured share of the referred paid run (default 10%).",
+                "tracking": ["referral code / link", "attributions", "eligible → rewarded events", "payout history"],
+            },
+            "setup_steps": [
+                "Open the Referral Cabinet and create a personal referral code.",
+                "Copy the invitation link and keep one canonical link per channel.",
+                f"Lead invites toward a concrete first paid workflow: {preferred_offer}.",
+                "Explain that rewards unlock after the invitee completes a captured paid run — not after signup alone.",
+                "Track clicks, attributed users, eligible/rewarded status, and recent payouts in the cabinet.",
+            ],
+            "invite_funnel": {
+                "audience": audience,
+                "channels": channels or ["Telegram", "X", "Discord", "Direct outreach"],
+                "weekly_invite_capacity": weekly_capacity,
+                "primary_cta": primary_cta or "Register with my referral link and run your first ANCAP workflow",
+                "conversion_rule": "Invite people who already need a listing, risk, or campaign deliverable — not empty airdrop farmers.",
+            },
+            "channel_scripts": {
+                "telegram": (
+                    f"If you need a finished crypto workflow result (not hype), use my ANCAP referral link"
+                    f"{(' (' + referral_code + ')') if referral_code else ''}. "
+                    f"Start with {preferred_offer}, pay in ACP, keep the receipt."
+                ),
+                "x": (
+                    f"ANCAP = paid AI workflows with proof receipts. "
+                    f"My invite: complete one real paid run after signup. Offer: {preferred_offer}."
+                ),
+                "direct_dm": (
+                    f"Quick path: open my referral link → create account → run {preferred_offer}. "
+                    "I earn ACP only after your first captured paid workflow completes."
+                ),
+            },
+            "anti_spam_rules": [
+                "No fake giveaways or guaranteed-return claims.",
+                "No mass-tagging / bot farming invites.",
+                "Disclose that you receive ACP referral rewards.",
+                "Prefer warm audiences who need listing, risk, or campaign work.",
+                *(constraints or []),
+            ],
+            "tracking_checklist": [
+                "Cabinet shows active referral code and shareable link",
+                "Attributed users appear after registration via the link",
+                "First captured paid run moves attribution toward eligible/rewarded",
+                "Signup bonus and commission-share events appear in payout history",
+                "Repeat only channels that produce paid runs, not empty clicks",
+            ],
+            "30_day_plan": {
+                "week_1": ["create referral code", "write 3 channel scripts", "pick one first-workflow offer"],
+                "week_2": ["send 10-20 quality invites", "answer objections", "log attributions"],
+                "week_3": ["push invitees to complete first paid run", "collect proof/receipt stories"],
+                "week_4": ["drop weak channels", "raise invite quality", "review ACP rewards vs effort"],
+            },
+            "goals": goals
+            or [
+                "Create a durable referral link",
+                "Convert invites into first captured paid workflow runs",
+                "Earn ACP via verified referral bonus + commission share",
+            ],
+            "inputs_echo": {
+                "project_name": project_name,
+                "audience": audience,
+                "referral_code": referral_code or None,
+                "preferred_offer": preferred_offer,
+                "posting_style": posting_style,
+            },
+        }
+        execution_summary = {
+            "mode": "workflow_specific",
+            "artifact_kind": "acp_referral_earnings_playbook",
+            "sections_generated": 7,
+            "focus": ["referral cabinet", "first paid run", "ACP rewards", "anti-spam growth"],
         }
     elif template.slug == "airdrop-bounty-builder":
         deliverable = {

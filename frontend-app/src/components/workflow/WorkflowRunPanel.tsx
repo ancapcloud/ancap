@@ -74,6 +74,19 @@ type TokenRiskForm = {
   competitors_text: string;
 };
 
+type ReferralEarningsForm = {
+  project_name: string;
+  audience: string;
+  referral_code: string;
+  preferred_offer: string;
+  primary_cta: string;
+  posting_style: string;
+  weekly_invite_capacity: string;
+  goals_text: string;
+  channels_text: string;
+  constraints_text: string;
+};
+
 const DEFAULT_LISTING_PACK_FORM: ListingPackForm = {
   project_name: "",
   token_symbol: "",
@@ -115,6 +128,19 @@ const DEFAULT_TOKEN_RISK_FORM: TokenRiskForm = {
   competitors_text: "",
 };
 
+const DEFAULT_REFERRAL_EARNINGS_FORM: ReferralEarningsForm = {
+  project_name: "My ANCAP referral desk",
+  audience: "crypto founders and operators who need finished workflow results",
+  referral_code: "",
+  preferred_offer: "Token Risk Report",
+  primary_cta: "Register with my referral link and run your first paid ANCAP workflow",
+  posting_style: "direct, disclosure-first, anti-spam",
+  weekly_invite_capacity: "10-20 quality invites",
+  goals_text: "Create a durable referral link\nConvert invites into first captured paid runs\nEarn ACP via verified bonus + commission share",
+  channels_text: "Telegram\nX\nDirect outreach",
+  constraints_text: "No guaranteed-income claims\nDisclose referral rewards\nAvoid bot/farm invites",
+};
+
 function linesToArray(value: string) {
   return value
     .split(/\r?\n/)
@@ -129,6 +155,7 @@ function supportsStructuredWorkflow(workflowSlug: string) {
     "telegram-growth-kit",
     "airdrop-bounty-builder",
     "token-risk-report",
+    "acp-referral-earnings-playbook",
   ].includes(workflowSlug);
 }
 
@@ -139,6 +166,7 @@ function buildInputsFromStructuredForm(
   telegramGrowthForm: TelegramGrowthForm,
   airdropBountyForm: AirdropBountyForm,
   tokenRiskForm: TokenRiskForm,
+  referralEarningsForm: ReferralEarningsForm,
 ) {
   if (workflowSlug === "token-listing-pack") {
     return {
@@ -191,6 +219,21 @@ function buildInputsFromStructuredForm(
     };
   }
 
+  if (workflowSlug === "acp-referral-earnings-playbook") {
+    return {
+      project_name: referralEarningsForm.project_name.trim(),
+      audience: referralEarningsForm.audience.trim(),
+      referral_code: referralEarningsForm.referral_code.trim(),
+      preferred_offer: referralEarningsForm.preferred_offer.trim(),
+      primary_cta: referralEarningsForm.primary_cta.trim(),
+      posting_style: referralEarningsForm.posting_style.trim(),
+      weekly_invite_capacity: referralEarningsForm.weekly_invite_capacity.trim(),
+      goals: linesToArray(referralEarningsForm.goals_text),
+      channels: linesToArray(referralEarningsForm.channels_text),
+      constraints: linesToArray(referralEarningsForm.constraints_text),
+    };
+  }
+
   return {};
 }
 
@@ -203,6 +246,7 @@ function hydrateStructuredFormFromInputs(
   telegramGrowthForm?: TelegramGrowthForm;
   airdropBountyForm?: AirdropBountyForm;
   tokenRiskForm?: TokenRiskForm;
+  referralEarningsForm?: ReferralEarningsForm;
 } {
   if (workflowSlug === "token-listing-pack") {
     return {
@@ -265,6 +309,23 @@ function hydrateStructuredFormFromInputs(
     };
   }
 
+  if (workflowSlug === "acp-referral-earnings-playbook") {
+    return {
+      referralEarningsForm: {
+        project_name: String(inputs.project_name || DEFAULT_REFERRAL_EARNINGS_FORM.project_name),
+        audience: String(inputs.audience || DEFAULT_REFERRAL_EARNINGS_FORM.audience),
+        referral_code: String(inputs.referral_code || inputs.referral_link || ""),
+        preferred_offer: String(inputs.preferred_offer || inputs.first_workflow || DEFAULT_REFERRAL_EARNINGS_FORM.preferred_offer),
+        primary_cta: String(inputs.primary_cta || DEFAULT_REFERRAL_EARNINGS_FORM.primary_cta),
+        posting_style: String(inputs.posting_style || DEFAULT_REFERRAL_EARNINGS_FORM.posting_style),
+        weekly_invite_capacity: String(inputs.weekly_invite_capacity || inputs.weekly_capacity || DEFAULT_REFERRAL_EARNINGS_FORM.weekly_invite_capacity),
+        goals_text: Array.isArray(inputs.goals) ? inputs.goals.join("\n") : DEFAULT_REFERRAL_EARNINGS_FORM.goals_text,
+        channels_text: Array.isArray(inputs.channels) ? inputs.channels.join("\n") : DEFAULT_REFERRAL_EARNINGS_FORM.channels_text,
+        constraints_text: Array.isArray(inputs.constraints) ? inputs.constraints.join("\n") : DEFAULT_REFERRAL_EARNINGS_FORM.constraints_text,
+      },
+    };
+  }
+
   return {};
 }
 
@@ -282,6 +343,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   const [telegramGrowthForm, setTelegramGrowthForm] = useState<TelegramGrowthForm>(DEFAULT_TELEGRAM_GROWTH_FORM);
   const [airdropBountyForm, setAirdropBountyForm] = useState<AirdropBountyForm>(DEFAULT_AIRDROP_BOUNTY_FORM);
   const [tokenRiskForm, setTokenRiskForm] = useState<TokenRiskForm>(DEFAULT_TOKEN_RISK_FORM);
+  const [referralEarningsForm, setReferralEarningsForm] = useState<ReferralEarningsForm>(DEFAULT_REFERRAL_EARNINGS_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [createdRun, setCreatedRun] = useState<WorkflowRun | null>(null);
@@ -328,6 +390,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
         if (hydrated.telegramGrowthForm) setTelegramGrowthForm(hydrated.telegramGrowthForm);
         if (hydrated.airdropBountyForm) setAirdropBountyForm(hydrated.airdropBountyForm);
         if (hydrated.tokenRiskForm) setTokenRiskForm(hydrated.tokenRiskForm);
+        if (hydrated.referralEarningsForm) setReferralEarningsForm(hydrated.referralEarningsForm);
       }
     } catch {
       // ignore malformed prefill payloads
@@ -343,6 +406,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
       telegramGrowthForm,
       airdropBountyForm,
       tokenRiskForm,
+      referralEarningsForm,
     );
     setInputsText(JSON.stringify(nextInputs, null, 2));
   }, [
@@ -354,6 +418,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
     telegramGrowthForm,
     airdropBountyForm,
     tokenRiskForm,
+    referralEarningsForm,
   ]);
 
   useEffect(() => {
@@ -533,6 +598,25 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
               <InputField label={t("workflowRunPanel.geography")} value={tokenRiskForm.geography} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, geography: value }))} />
               <div className="md:col-span-2">
                 <TextareaField label={t("workflowRunPanel.competitorsOnePerLine")} value={tokenRiskForm.competitors_text} rows={5} onChange={(value) => setTokenRiskForm((prev) => ({ ...prev, competitors_text: value }))} />
+              </div>
+            </div>
+          )}
+
+          {useStructuredForm && workflow.slug === "acp-referral-earnings-playbook" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <InputField label={t("workflowRunPanel.projectName")} value={referralEarningsForm.project_name} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, project_name: value }))} />
+              <InputField label={t("workflowRunPanel.audience")} value={referralEarningsForm.audience} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, audience: value }))} />
+              <InputField label="Referral code / link" value={referralEarningsForm.referral_code} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, referral_code: value }))} />
+              <InputField label="Preferred first workflow" value={referralEarningsForm.preferred_offer} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, preferred_offer: value }))} />
+              <div className="md:col-span-2">
+                <InputField label={t("workflowRunPanel.primaryCta")} value={referralEarningsForm.primary_cta} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, primary_cta: value }))} />
+              </div>
+              <InputField label={t("workflowRunPanel.postingStyle")} value={referralEarningsForm.posting_style} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, posting_style: value }))} />
+              <InputField label="Weekly invite capacity" value={referralEarningsForm.weekly_invite_capacity} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, weekly_invite_capacity: value }))} />
+              <TextareaField label={t("workflowRunPanel.goalsOnePerLine")} value={referralEarningsForm.goals_text} rows={5} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, goals_text: value }))} />
+              <TextareaField label={t("workflowRunPanel.channelsOnePerLine")} value={referralEarningsForm.channels_text} rows={5} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, channels_text: value }))} />
+              <div className="md:col-span-2">
+                <TextareaField label={t("workflowRunPanel.constraintsOnePerLine")} value={referralEarningsForm.constraints_text} rows={4} onChange={(value) => setReferralEarningsForm((prev) => ({ ...prev, constraints_text: value }))} />
               </div>
             </div>
           )}
