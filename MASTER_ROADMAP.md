@@ -27,7 +27,7 @@ and curl/Python examples in five languages. Deployed as 90cdc79 via Actions run 
 2026-10-31: homepage quick-start instructions for ChatGPT, Cursor and OpenClaw
 implemented locally in five languages, with a copyable chat instruction and
 public `/connect.txt` guide. Public discovery is separate from authenticated
-API/MCP setup; no hosted MCP endpoint or published OpenClaw package is claimed.
+API/MCP setup; hosted remote MCP at `https://ancap.cloud/api/v1/mcp` (Streamable HTTP) for ChatGPT; no published OpenClaw package is claimed.
 Deployed as afd82bc via GitHub Actions run 41181936959. Live homepage section and /connect.txt returned HTTP 200; full backend/E2E CI was still running at verification.
 
 ## Robinhood ACP (rACP) — 2026-10-30
