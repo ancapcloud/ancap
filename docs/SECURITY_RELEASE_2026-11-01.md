@@ -36,8 +36,10 @@ review, not a claim that every possible vulnerability has been eliminated.
 
 ## Verification before publication
 
-- 86 targeted backend tests passed, no skips. Subsequent amount precision checks
-  are being rechecked before push.
+- 86 targeted backend tests passed, no skips; 25 final invoice/fixture/TRON
+  checks also passed after the amount precision changes.
+- Fresh migrations and fixture-loader rerun passed: 50 created on first run,
+  zero duplicated on second run.
 - Frontend: 115 tests, lint, TypeScript and production build passed.
 - Mobile: 352 workspace tests plus 13 security tests, workspace type checks,
   Expo Doctor 19/19 and Android bundle export passed.
