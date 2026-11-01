@@ -3600,6 +3600,21 @@ class ResearchClaim(Base):
     created_at = Column(DateTime(timezone=True), nullable=False)
 
 
+class SourceQuota(Base):
+    """Hard per-run/project request and retry quotas (ROP-03 subtask 2).
+    One row per project; tracks requests, retries and cooldown.
+    """
+    __tablename__ = "source_quotas"
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    project_id = Column(UUID(as_uuid=False), ForeignKey("workflow_projects.id", ondelete="CASCADE"), nullable=False, unique=True)
+    requests_remaining = Column(Integer, nullable=False, default=100)  # max 100 requests per run
+    retries_remaining = Column(Integer, nullable=False, default=5)     # max 5 retries total
+    last_request_at = Column(DateTime(timezone=True), nullable=True)
+    last_retry_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+
+
 class QualityFixture(Base):
     __tablename__ = "quality_fixtures"
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)

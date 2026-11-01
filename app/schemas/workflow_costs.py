@@ -1,6 +1,6 @@
 """Evidence input for offline reconciliation; never accepts estimated costs."""
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -78,3 +78,31 @@ class CostEvidenceReceipt(BaseModel):
     currency: str | None = None
     amount: Decimal | None = None
     review_note: str | None = None
+
+
+class QualityFixturePublic(BaseModel):
+    """Quality fixture record for admin-only retrieval."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    id: UUID
+    fixture_type: str
+    language: str
+    sample_id: str
+    expected_result: Optional[str] = None
+    actual_result: Optional[str] = None
+    confidence_score: Optional[float] = None
+    is_available: bool
+    created_at: str  # ISO timestamp
+    expires_at: Optional[str] = None
+
+
+class QualityFixtureCreate(BaseModel):
+    """Admin-only fixture creation."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    fixture_type: str = Field(pattern=r"^(?:price_change|markup_noise|unavailable_source|contradiction|malicious_instructions)$")
+    language: str = Field(pattern=r"^[a-zA-Z-]{2,10}$")
+    sample_id: str = Field(min_length=1, max_length=64)
+    expected_result: Optional[str] = None
+    actual_result: Optional[str] = None
+    confidence_score: Optional[float] = Field(ge=0.0, le=1.0, allow_inf_nan=False)
+    is_available: bool = True
+    expires_at: Optional[str] = None

@@ -9,9 +9,10 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy import func, select, tuple_
 from sqlalchemy.orm import defer
-from app.db.models import PaymentIntent, WorkflowRunRecord, WorkflowResultAssessment
+from app.db.models import PaymentIntent, WorkflowRunRecord, WorkflowResultAssessment, QualityFixture
 from app.schemas.common import Money
 from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, AssessmentPublic, AssessmentState, AssessedResultPublic, ValueSummary
+from app.schemas.workflow_costs import QualityFixturePublic, QualityFixtureCreate
 
 VALUE_RUN_LIMIT = 200
 
@@ -150,3 +151,46 @@ async def assessed_result(session, owner_id: str, assessment_id: str) -> Assesse
     if workflow_result_hash(row.result_snapshot_json) != row.result_hash:
         raise HTTPException(status_code=409, detail="Archived result integrity check failed")
     return AssessedResultPublic(assessment_id=str(row.id), result_hash=row.result_hash, result=row.result_snapshot_json)
+
+
+async def get_quality_fixture(session, fixture_id: UUID) -> QualityFixturePublic:
+    """Admin-only retrieval of a quality fixture by ID."""
+    row = (await session.execute(select(QualityFixture).where(QualityFixture.id == fixture_id))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Quality fixture not found")
+    return QualityFixturePublic(
+        id=row.id,
+        fixture_type=row.fixture_type,
+        language=row.language,
+        sample_id=row.sample_id,
+        expected_result=row.expected_result,
+        actual_result=row.actual_result,
+        confidence_score=row.confidence_score,
+        is_available=row.is_available,
+        created_at=row.created_at.isoformat(),
+        expires_at=row.expires_at.isoformat() if row.expires_at else None
+    )
+
+
+async def get_quality_fixtures(session, fixture_type: str = None, language: str = None) -> list[QualityFixturePublic]:
+    """Admin-only listing of quality fixtures with optional filters."""
+    query = select(QualityFixture)
+    if fixture_type:
+        query = query.where(QualityFixture.fixture_type == fixture_type)
+    if language:
+        query = query.where(QualityFixture.language == language)
+    rows = (await session.execute(query)).scalars().all()
+    return [
+        QualityFixturePublic(
+            id=row.id,
+            fixture_type=row.fixture_type,
+            language=row.language,
+            sample_id=row.sample_id,
+            expected_result=row.expected_result,
+            actual_result=row.actual_result,
+            confidence_score=row.confidence_score,
+            is_available=row.is_available,
+            created_at=row.created_at.isoformat(),
+            expires_at=row.expires_at.isoformat() if row.expires_at else None
+        ) for row in rows
+    ]

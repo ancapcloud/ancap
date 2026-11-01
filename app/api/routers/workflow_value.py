@@ -4,8 +4,8 @@ from app.schemas.workflow_value import AssessmentCreate, AssessmentHistory, Asse
 from app.services import workflow_value
 from uuid import UUID
 from app.api.deps import require_platform_admin
-from app.schemas.workflow_costs import CostEvidenceCreate, CostEvidenceReceipt, ReconciledRunCosts
-from app.services import workflow_costs
+from app.schemas.workflow_costs import CostEvidenceCreate, CostEvidenceReceipt, ReconciledRunCosts, QualityFixturePublic
+from app.services import workflow_costs, workflow_value
 
 router = APIRouter(prefix="/workflow-store", tags=["Private Workflow Value"])
 
@@ -29,6 +29,24 @@ async def get_run_costs(run_id: UUID, session: DbSession, response: Response,
                         reviewer_id: str = Depends(require_platform_admin)):
     response.headers["Cache-Control"] = "private, no-store"
     return await workflow_costs.stored_run_costs(session, run_id)
+
+
+@router.get("/quality-fixtures", response_model=list[QualityFixturePublic])
+async def get_quality_fixtures(session: DbSession, response: Response,
+                               reviewer_id: str = Depends(require_platform_admin),
+                               fixture_type: str = Query(None),
+                               language: str = Query(None)):
+    """Admin-only listing of quality fixtures."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_value.get_quality_fixtures(session, fixture_type, language)
+
+
+@router.get("/quality-fixtures/{fixture_id}", response_model=QualityFixturePublic)
+async def get_quality_fixture(fixture_id: UUID, session: DbSession, response: Response,
+                              reviewer_id: str = Depends(require_platform_admin)):
+    """Admin-only retrieval of a quality fixture by ID."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return await workflow_value.get_quality_fixture(session, fixture_id)
 
 
 @router.get("/value", response_model=ValueSummary)
