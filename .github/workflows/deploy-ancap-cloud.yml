@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: deploy-ancap-cloud
@@ -26,6 +27,14 @@ jobs:
     if: github.repository == 'ancapcloud/ancap'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout release gate
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Wait for matching green CI
+        timeout-minutes: 35
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BEFORE: ${{ github.event.before }}
+        run: python scripts/wait_release_ci.py --repo "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --before "$RELEASE_BEFORE"
       - name: Validate deploy secrets
         env:
           DEPLOY_HOST: ${{ secrets.ANCAP_DEPLOY_HOST }}
