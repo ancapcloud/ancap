@@ -6,6 +6,7 @@ import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Language } from "@/locales/translations";
 import styles from "./HomeChatDialog.module.css";
+import { homeChatByLang } from "@/locales/homeChat";
 
 type Role = "user" | "assistant";
 type Mode = "chat" | "howto" | "workflows" | "earn";
@@ -29,167 +30,11 @@ const speechLang: Record<Language, string> = {
   "zh-Hant": "zh-TW",
 };
 
-const copy: Record<Language, {
-  placeholder: string;
-  send: string;
-  newChat: string;
-  voice: string;
-  auto: string;
-  autoHint: string;
-  pinnedHint: string;
-  thinking: string;
-  unavailable: string;
-  limited: string;
-  failed: string;
-  noVoice: string;
-  dialog: string;
-  workflows: string;
-  smartPay: string;
-  creators: string;
-  howto: string;
-  findWorkflow: string;
-  earn: string;
-  howtoPrompt: string;
-  workflowsPrompt: string;
-  earnPrompt: string;
-  expand: string;
-  collapse: string;
-}> = {
-  en: {
-    placeholder: "Ask how ANCAP works, which workflow to buy, or how to earn",
-    send: "Send",
-    newChat: "New chat",
-    voice: "Voice input",
-    auto: "Free auto",
-    autoHint: "A free OpenRouter model is chosen once and kept for this dialog.",
-    pinnedHint: "This free model stays for the whole dialog. Start a new chat to pick another.",
-    thinking: "Thinking…",
-    unavailable: "The dialog is not available right now.",
-    limited: "The free model is busy. Try again in a little while.",
-    failed: "The reply did not come through. Try again.",
-    noVoice: "Voice input is not available in this browser.",
-    dialog: "Ask ANCAP",
-    workflows: "Workflows",
-    smartPay: "Smart Pay",
-    creators: "Creators",
-    howto: "How ANCAP works",
-    findWorkflow: "Find a workflow",
-    earn: "How to earn",
-    howtoPrompt: "Explain how ANCAP works in simple terms: buying and selling defined AI workflow outputs with ACP.",
-    workflowsPrompt: "Help me choose a workflow on ANCAP for my task. Ask what I need, then suggest where to look in the catalog.",
-    earnPrompt: "How can I earn on ANCAP as a creator? What do I publish and where do paid runs settle?",
-    expand: "Full screen",
-    collapse: "Exit full screen",
-  },
-  ru: {
-    placeholder: "Спросите, как работает ANCAP, какой workflow купить или как зарабатывать",
-    send: "Отправить",
-    newChat: "Новый диалог",
-    voice: "Голосовой ввод",
-    auto: "Бесплатная",
-    autoHint: "Бесплатная модель выбирается один раз и остаётся на весь диалог.",
-    pinnedHint: "Эта бесплатная модель закреплена на весь диалог. Новый диалог — другая модель.",
-    thinking: "Думаю…",
-    unavailable: "Диалог сейчас недоступен.",
-    limited: "Бесплатная модель занята. Попробуйте чуть позже.",
-    failed: "Ответ не пришёл. Попробуйте ещё раз.",
-    noVoice: "Голосовой ввод в этом браузере недоступен.",
-    dialog: "Спросить ANCAP",
-    workflows: "Workflows",
-    smartPay: "Smart Pay",
-    creators: "Авторам",
-    howto: "Как работает ANCAP",
-    findWorkflow: "Найти workflow",
-    earn: "Как зарабатывать",
-    howtoPrompt: "Объясни простыми словами, как работает ANCAP: покупка и продажа готовых AI workflow за ACP.",
-    workflowsPrompt: "Помоги выбрать workflow на ANCAP под мою задачу. Уточни, что нужно, и куда смотреть в каталоге.",
-    earnPrompt: "Как зарабатывать на ANCAP как автор? Что публиковать и как проходят оплаченные запуски?",
-    expand: "На весь экран",
-    collapse: "Свернуть",
-  },
-  uk: {
-    placeholder: "Запитайте, як працює ANCAP, який workflow купити або як заробляти",
-    send: "Надіслати",
-    newChat: "Новий діалог",
-    voice: "Голосове введення",
-    auto: "Безкоштовна",
-    autoHint: "Безкоштовну модель обирають один раз і тримають на весь діалог.",
-    pinnedHint: "Ця безкоштовна модель закріплена на весь діалог. Новий діалог — інша модель.",
-    thinking: "Думаю…",
-    unavailable: "Діалог зараз недоступний.",
-    limited: "Безкоштовна модель зайнята. Спробуйте трохи пізніше.",
-    failed: "Відповідь не надійшла. Спробуйте ще раз.",
-    noVoice: "Голосове введення в цьому браузері недоступне.",
-    dialog: "Запитати ANCAP",
-    workflows: "Workflows",
-    smartPay: "Smart Pay",
-    creators: "Авторам",
-    howto: "Як працює ANCAP",
-    findWorkflow: "Знайти workflow",
-    earn: "Як заробляти",
-    howtoPrompt: "Поясни простими словами, як працює ANCAP: купівля і продаж готових AI workflow за ACP.",
-    workflowsPrompt: "Допоможи обрати workflow на ANCAP під мою задачу. Уточни потребу і куди дивитися в каталозі.",
-    earnPrompt: "Як заробляти на ANCAP як автор? Що публікувати і як проходять оплачені запуски?",
-    expand: "На весь екран",
-    collapse: "Згорнути",
-  },
-  de: {
-    placeholder: "Fragen Sie, wie ANCAP funktioniert, welchen Workflow Sie kaufen oder wie Sie verdienen",
-    send: "Senden",
-    newChat: "Neuer Chat",
-    voice: "Spracheingabe",
-    auto: "Kostenlos",
-    autoHint: "Ein kostenloses Modell wird einmal gewählt und bleibt für diesen Dialog.",
-    pinnedHint: "Dieses kostenlose Modell bleibt für den ganzen Dialog. Neuer Chat = neues Modell.",
-    thinking: "Denkt nach…",
-    unavailable: "Der Dialog ist gerade nicht verfügbar.",
-    limited: "Das kostenlose Modell ist ausgelastet. Bitte später erneut versuchen.",
-    failed: "Die Antwort ist nicht angekommen. Bitte erneut versuchen.",
-    noVoice: "Spracheingabe ist in diesem Browser nicht verfügbar.",
-    dialog: "ANCAP fragen",
-    workflows: "Workflows",
-    smartPay: "Smart Pay",
-    creators: "Creator",
-    howto: "So funktioniert ANCAP",
-    findWorkflow: "Workflow finden",
-    earn: "Verdienen",
-    howtoPrompt: "Erkläre einfach, wie ANCAP funktioniert: Kauf und Verkauf definierter AI-Workflow-Ergebnisse mit ACP.",
-    workflowsPrompt: "Hilf mir, einen Workflow auf ANCAP für meine Aufgabe zu finden. Frage nach dem Bedarf und zeige den Katalog.",
-    earnPrompt: "Wie verdiene ich auf ANCAP als Creator? Was veröffentliche ich und wie laufen bezahlte Runs?",
-    expand: "Vollbild",
-    collapse: "Vollbild beenden",
-  },
-  "zh-Hant": {
-    placeholder: "詢問 ANCAP 如何運作、該買哪個 workflow，或如何賺取",
-    send: "送出",
-    newChat: "新對話",
-    voice: "語音輸入",
-    auto: "免費",
-    autoHint: "免費模型只會選一次，並在這個對話中保持不變。",
-    pinnedHint: "這個免費模型會固定用於整段對話。開新對話才會換模型。",
-    thinking: "思考中…",
-    unavailable: "對話目前無法使用。",
-    limited: "免費模型忙碌中，請稍後再試。",
-    failed: "沒有收到回覆，請再試一次。",
-    noVoice: "這個瀏覽器無法使用語音輸入。",
-    dialog: "詢問 ANCAP",
-    workflows: "Workflows",
-    smartPay: "Smart Pay",
-    creators: "創作者",
-    howto: "ANCAP 如何運作",
-    findWorkflow: "找 workflow",
-    earn: "如何賺取",
-    howtoPrompt: "用簡單說明解釋 ANCAP：如何用 ACP 買賣已定義的 AI workflow 產出。",
-    workflowsPrompt: "幫我在 ANCAP 依需求選 workflow，並指出目錄該怎麼看。",
-    earnPrompt: "作為創作者如何在 ANCAP 賺錢？要發布什麼，付費執行怎麼結算？",
-    expand: "全螢幕",
-    collapse: "結束全螢幕",
-  },
-};
+
 
 export function HomeChatDialog() {
   const { lang } = useLanguage();
-  const text = copy[lang] ?? copy.en;
+  const text = homeChatByLang[lang];
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<{ role: Role; content: string }[]>([]);
   const [mode, setMode] = useState<Mode>("chat");
@@ -202,6 +47,7 @@ export function HomeChatDialog() {
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [error, setError] = useState("");
   const fieldRef = useRef<HTMLTextAreaElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const sessionModelRef = useRef<string | null>(null);
@@ -250,9 +96,28 @@ export function HomeChatDialog() {
   useEffect(() => {
     if (!fullscreen) return;
     const previous = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
+    rootRef.current?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const controls = rootRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), textarea:not([disabled])');
+      if (!controls?.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === rootRef.current)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", trapFocus);
     return () => {
       document.body.style.overflow = previous;
+      document.removeEventListener("keydown", trapFocus);
+      previousFocus?.focus();
     };
   }, [fullscreen]);
 
@@ -383,12 +248,20 @@ export function HomeChatDialog() {
 
   return (
     <section
+      ref={rootRef}
       className={`${styles.root}${fullscreen ? ` ${styles.fullscreen}` : ""}`}
       id="ask"
       data-testid="home-chat"
       data-fullscreen={fullscreen ? "true" : "false"}
+      aria-labelledby="home-chat-title"
+      role={fullscreen ? "dialog" : undefined}
+      aria-modal={fullscreen || undefined}
+      tabIndex={fullscreen ? -1 : undefined}
     >
-      <h2 className={styles.srOnly}>{text.dialog}</h2>
+      <div className={styles.heading}>
+        <div className={styles.assistantMark} aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 7h20v14H15l-7 5v-5H6zM11 12h10M11 16h6"/></svg></div>
+        <div><h2 id="home-chat-title">{text.dialog}</h2><p>{text.intro}</p></div>
+      </div>
       <div className={styles.composer}>
         <div className={styles.top}>
           <Link className={styles.chip} href="/ai/workflows">
@@ -442,7 +315,7 @@ export function HomeChatDialog() {
           rows={3}
           value={draft}
           placeholder={text.placeholder}
-          disabled={loading}
+          disabled={loading || configured === false}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
@@ -457,6 +330,7 @@ export function HomeChatDialog() {
               <path d="M8 3.2v9.6M3.2 8h9.6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
           </button>
+          <span className={styles.newChatLabel}>{text.newChat}</span>
           <div className={styles.rightTools}>
             <div className={styles.chipWrap}>
               <button
@@ -497,7 +371,7 @@ export function HomeChatDialog() {
               className={styles.send}
               data-testid="home-chat-send"
               aria-label={text.send}
-              disabled={loading || !draft.trim()}
+              disabled={loading || configured === false || !draft.trim()}
               onClick={() => void sendMessage(draft)}
             >
               <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
@@ -508,11 +382,15 @@ export function HomeChatDialog() {
         </div>
       </div>
       <div className={styles.pills}>
-        <button type="button" className={styles.pill} aria-pressed={mode === "howto"} disabled={loading} onClick={() => applyStarter("howto", text.howtoPrompt)}>{text.howto}</button>
-        <button type="button" className={styles.pill} aria-pressed={mode === "workflows"} disabled={loading} onClick={() => applyStarter("workflows", text.workflowsPrompt)}>{text.findWorkflow}</button>
-        <button type="button" className={styles.pill} aria-pressed={mode === "earn"} disabled={loading} onClick={() => applyStarter("earn", text.earnPrompt)}>{text.earn}</button>
+        {[
+          { mode: "howto" as const, label: text.howto, prompt: text.howtoPrompt, href: "/projects" },
+          { mode: "workflows" as const, label: text.findWorkflow, prompt: text.workflowsPrompt, href: "/ai/workflows" },
+          { mode: "earn" as const, label: text.earn, prompt: text.earnPrompt, href: "/creators" },
+        ].map((item, index) => configured === false
+          ? <Link key={item.mode} className={styles.pill} href={item.href}><span>0{index + 1}</span>{item.label}<span aria-hidden="true">↗</span></Link>
+          : <button key={item.mode} type="button" className={styles.pill} aria-pressed={mode === item.mode} disabled={loading} onClick={() => applyStarter(item.mode, item.prompt)}><span>0{index + 1}</span>{item.label}<span aria-hidden="true">↗</span></button>)}
       </div>
-      {configured === false && !error && <p className={styles.note}>{text.unavailable}</p>}
+      {configured === false && !error && <p className={styles.note} role="status"><span aria-hidden="true" />{text.unavailable}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
     </section>
   );

@@ -1,135 +1,215 @@
 "use client";
+
 import Link from "next/link";
-import { WebInstallGuide } from "@/components/WebInstallGuide";
-import { Navigation } from "@/components/Navigation";
-import { useLanguage } from "@/components/LanguageProvider";
-import { SolutionAreas, WorkflowFooter, presentationStyles as s } from "@/components/WorkflowPresentation";
-import { positioningByLang } from "@/locales/positioning";
-import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
 import { CardInfoSection } from "@/components/CardInfoSection";
-import { ReviewTrustSection } from "@/components/ReviewTrustSection";
-import { HomeChatDialog } from "@/components/HomeChatDialog";
-import { RacpOverview } from "@/components/RacpOverview";
 import { CreatorAiConnect } from "@/components/CreatorAiConnect";
+import { HomeChatDialog } from "@/components/HomeChatDialog";
+import { HomeFirstRun } from "@/components/HomeFirstRun";
+import h from "@/components/HomeFirstRun.module.css";
+import { Navigation } from "@/components/Navigation";
+import { PeopleAiEconomySection } from "@/components/PeopleAiEconomySection";
+import { RacpOverview } from "@/components/RacpOverview";
+import { ReviewTrustSection } from "@/components/ReviewTrustSection";
+import { useLanguage } from "@/components/LanguageProvider";
+import { WebInstallGuide } from "@/components/WebInstallGuide";
+import {
+  presentationStyles as s,
+  SolutionAreas,
+  WorkflowFooter,
+} from "@/components/WorkflowPresentation";
+import { positioningByLang } from "@/locales/positioning";
 
 export function HomePage() {
   const { lang } = useLanguage();
   const c = positioningByLang[lang];
-  const examples = [
-    { title: c.risk, body: c.riskBody, href: "/ai/run/token-risk-report-pro" },
-    { title: c.launch, body: c.launchBody, href: "/ai/run/exchange-listing-submission-pack" },
-    { title: c.growth, body: c.growthBody, href: "/ai/run/crypto-campaign-builder" },
-  ];
+
   return (
-    <div className={s.shell} style={{ position: "relative", zIndex: 1 }}>
+    <div
+      className={s.shell}
+      style={{
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
       <Navigation />
-      <main className={s.main}>
-        <section id="connect-ai" className="mx-auto w-full max-w-4xl pt-6 sm:pt-8" aria-labelledby="creator-ai-title">
-          <CreatorAiConnect />
-        </section>
-        <section className={s.hero} id="product">
-          <div>
-            <p className={s.eyebrow}>ANCAP / {c.kicker}</p>
-            <h1 className={s.title}>{c.title}</h1>
-            <p className={s.lead}>{c.lead}</p>
-            <div className={s.actions}>
-              <Link className={s.primary} href="/ai/workflows">{c.browse} →</Link>
-              <Link className={s.secondary} href="/dashboard/seller">{c.seller} →</Link>
-              <Link className={s.secondary} href="/economy">{c.economyLink} →</Link>
-            </div>
-            <HomeChatDialog />
-          </div>
+
+      <main className={`${s.main} ${h.homeMain}`}>
+        <HomeFirstRun afterHero={<>
+          <CreatorAiConnect key={lang} />
+          <HomeChatDialog />
+        </>} />
+
+        <section
+          className={s.section}
+          id="solutions"
+          aria-labelledby="solutions-title"
+        >
+          <h2
+            id="solutions-title"
+            className={s.heading}
+          >
+            {c.portfolio}
+          </h2>
+
+          <p className={s.lead}>
+            {c.portfolioLead}
+          </p>
+
+          <SolutionAreas compact />
+
+          <p className={s.note}>
+            {c.portfolioNote}
+          </p>
         </section>
 
-        <section className={s.section} aria-label={c.how} style={{ borderTop: "none", paddingTop: 8 }}>
-          <p className={s.eyebrow}>{c.how}</p>
-          <div className={s.steps}>
-            {[[c.step1, c.step1Body], [c.step2, c.step2Body], [c.step3, c.step3Body], [c.step4, c.step4Body]].map(([title, body]) => (
-              <div className={s.flowRow} key={title}>
-                <strong>{title}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <section
+          className={s.section}
+          id="smart-pay"
+          aria-labelledby="smart-pay-title"
+        >
+          <p className={s.eyebrow}>
+            ANCAP / {c.smartPay}
+          </p>
 
-        <section className={s.section} id="smart-pay" aria-labelledby="smart-pay-title">
-          <p className={s.eyebrow}>ANCAP / {c.smartPay}</p>
-          <h2 id="smart-pay-title" className={s.heading}>{c.smartPay}</h2>
-          <p className={s.lead}>{c.smartPayLead}</p>
-          <p className={s.note}>{c.smartPayLimits}</p>
-          <ol className={s.grid} style={{ padding: 0, listStyle: "none" }}>
+          <h2
+            id="smart-pay-title"
+            className={s.heading}
+          >
+            {c.smartPay}
+          </h2>
+
+          <p className={s.lead}>
+            {c.smartPayLead}
+          </p>
+
+          <p className={s.note}>
+            {c.smartPayLimits}
+          </p>
+
+          <ol
+            className={s.grid}
+            style={{
+              padding: 0,
+              listStyle: "none",
+            }}
+          >
             {[
               [c.smartPayStep1, c.smartPayStep1Body],
               [c.smartPayStep2, c.smartPayStep2Body],
               [c.smartPayStep3, c.smartPayStep3Body],
               [c.smartPayStep4, c.smartPayStep4Body],
             ].map(([title, body]) => (
-              <li className={s.card} key={title}>
+              <li
+                className={s.card}
+                key={title}
+              >
                 <h3>{title}</h3>
                 <p>{body}</p>
               </li>
             ))}
           </ol>
+
           <div className={s.actions}>
-            <Link className={s.primary} href="/payment-scanner">{c.smartPayCta} →</Link>
-            <Link className={s.secondary} href="/ai/workflows">{c.browse} →</Link>
+            <Link
+              className={s.primary}
+              href="/payment-scanner"
+            >
+              {c.smartPayCta} →
+            </Link>
+
+            <Link
+              className={s.secondary}
+              href="/ai/workflows"
+            >
+              {c.browse} →
+            </Link>
           </div>
-          <p className={s.note}>{c.smartPayMobile}</p>
+
+          <p className={s.note}>
+            {c.smartPayMobile}
+          </p>
         </section>
 
         <WebInstallGuide />
 
         <PeopleAiEconomySection />
+
         <CardInfoSection />
 
-        <section className={s.section} id="solutions">
-          <h2 className={s.heading}>{c.portfolio}</h2>
-          <p className={s.lead}>{c.portfolioLead}</p>
-          <SolutionAreas compact />
-          <p className={s.note}>{c.portfolioNote}</p>
-        </section>
-
-        <section className={s.section}>
-          <h2 className={s.heading}>{c.examples}</h2>
-          <p className={s.lead}>{c.examplesLead}</p>
-          <div className={s.grid}>
-            {examples.map(item => (
-              <article key={item.href} className={s.card}>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-                <Link className={s.secondary} href={item.href}>{c.open} →</Link>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className={s.section} id="creators">
+        <section
+          className={s.section}
+          id="creators"
+          aria-labelledby="creators-title"
+        >
           <div className="max-w-3xl">
-            <div>
-              <p className={s.eyebrow}>{c.creators}</p>
-              <h2 className={s.heading}>{c.earn}</h2>
-              <p className={s.lead}>{c.earnBody}</p>
-              <div className={s.actions}>
-                <Link href="/dashboard/seller" className={s.primary}>{c.seller} →</Link>
-                <Link href="/projects#people-ai-economy" className={s.secondary}>{c.economyLink} →</Link>
-              </div>
+            <p className={s.eyebrow}>
+              {c.creators}
+            </p>
+
+            <h2
+              id="creators-title"
+              className={s.heading}
+            >
+              {c.earn}
+            </h2>
+
+            <p className={s.lead}>
+              {c.earnBody}
+            </p>
+
+            <div className={s.actions}>
+              <Link
+                href="/dashboard/seller"
+                className={s.primary}
+              >
+                {c.seller} →
+              </Link>
+
+              <Link
+                href="/economy"
+                className={s.secondary}
+              >
+                {c.economyLink} →
+              </Link>
             </div>
           </div>
         </section>
 
         <ReviewTrustSection />
+
         <RacpOverview compact />
 
-        <section className={s.section} id="vision">
-          <p className={s.eyebrow}>{c.investors}</p>
-          <h2 className={s.heading}>{c.investmentTitle}</h2>
-          <p className={s.lead}>{c.investmentLead}</p>
+        <section
+          className={s.section}
+          id="vision"
+          aria-labelledby="vision-title"
+        >
+          <p className={s.eyebrow}>
+            {c.investors}
+          </p>
+
+          <h2
+            id="vision-title"
+            className={s.heading}
+          >
+            {c.investmentTitle}
+          </h2>
+
+          <p className={s.lead}>
+            {c.investmentLead}
+          </p>
+
           <div className={s.actions}>
-            <Link className={s.secondary} href="/investors">{c.investors} →</Link>
+            <Link
+              className={s.secondary}
+              href="/investors"
+            >
+              {c.investors} →
+            </Link>
           </div>
         </section>
       </main>
+
       <WorkflowFooter />
     </div>
   );

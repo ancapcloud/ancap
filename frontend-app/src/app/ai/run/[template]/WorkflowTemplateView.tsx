@@ -24,7 +24,7 @@ export function WorkflowTemplateView({ workflow }: { workflow: WorkflowTemplate 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-10">
         <div className="mb-6">
           <Link href="/ai/workflows" className="text-sm text-emerald-300 hover:text-emerald-200">
             {t("workflowTemplatePage.backToCatalog")}

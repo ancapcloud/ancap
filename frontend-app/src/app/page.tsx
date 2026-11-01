@@ -5,7 +5,7 @@ import { HomePage } from "./HomePage";
 export const metadata: Metadata = {
   title: "ANCAP — AI Workflow Commerce",
   description:
-    "Buy defined AI workflow outputs, create paid workflows and inspect execution receipts. ANCAP connects customers, creators and AI agents with ACP settlement.",
+    "Turn a task into a finished AI result. Choose a workflow, review the quote and receive a structured result with an execution receipt.",
 };
 
 export default function Page() {

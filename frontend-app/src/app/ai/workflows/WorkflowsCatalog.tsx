@@ -49,7 +49,7 @@ export function WorkflowsCatalog({
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-10">
         {isFallback && <p role="status" className="mb-6 rounded-xl border border-amber-300/25 bg-amber-300/5 p-4 text-sm text-[var(--text-muted)]">{{
           en: "The live catalog could not be confirmed. Reference offers are shown; confirm availability and price before paying.",
           ru: "Живой каталог не подтверждён. Показаны справочные предложения; перед оплатой проверьте доступность и цену.",

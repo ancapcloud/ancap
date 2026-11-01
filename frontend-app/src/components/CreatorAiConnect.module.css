@@ -1,0 +1,40 @@
+.section { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 72px; padding: 50px; margin: 0 0 24px; border: 1px solid #ffffff1c; border-radius: 24px; color: #edf4ff; background: linear-gradient(120deg,#101d2b,#0a1220 55%,#0d1b29); box-shadow: inset 0 1px 0 #ffffff09, 0 25px 80px #0002; scroll-margin-top: 150px; }
+.section::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: radial-gradient(ellipse at 0 0,#34d3990e,transparent 55%),radial-gradient(ellipse at 100% 100%,#3e78bc10,transparent 55%); pointer-events: none; }
+.eyebrow { display: inline-flex; align-items: center; gap: 9px; border: 1px solid #73d3c328; border-radius: 6px; padding: 5px 9px; color: #9be6d3; background: #6ad4b407; font-size: 10px; letter-spacing: .13em; font-weight: 600; }
+.eyebrow > span { font-size: 13px; }
+.intro h2 { margin: 23px 0 18px; max-width: 550px; font-size: clamp(32px,3vw,46px); font-weight: 550; letter-spacing: -.045em; line-height: 1.12; text-wrap: balance; }
+.lead { max-width: 520px; color: #acbcd0; font-size: 15px; line-height: 1.85; }
+.tools { list-style: none; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 35px; padding-top: 25px; border-top: 1px solid #ffffff12; }
+.tools li { min-width: 0; }
+.tools svg { width: 27px; height: 27px; color: #b1e4d6; margin-bottom: 12px; }
+.tools li:nth-child(2) svg { color: #b4cbed; }
+.tools li:nth-child(3) svg { color: #c4b7eb; }
+.tools h3 { font-size: 13px; font-weight: 600; }
+.tools p { color: #9fb0c6; font-size: 11px; line-height: 1.7; margin-top: 7px; max-width: 150px; }
+.setup { align-self: center; min-width: 0; }
+.promptPanel { border: 1px solid #ffffff20; border-radius: 15px; background: #080f1c; box-shadow: 0 20px 50px #0003,0 0 35px #2dd4bf05; overflow: hidden; }
+.promptBar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #ffffff13; background: #ffffff03; }
+.promptTitle { display: flex; gap: 9px; align-items: center; color: #a5b7cb; font: 11px ui-monospace,monospace; }
+.promptTitle > span { color: #85dec5; font-size: 15px; }
+.promptDots { letter-spacing: 3px; font-size: 10px; color: #5f7c91; }
+.promptContent { padding: 23px; }
+.promptLabel { color: #8ab0aa; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+.promptContent pre { margin: 16px 0 23px; color: #d1e4ec; font: 14px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 80px; user-select: text; }
+.copyButton { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; border: 1px solid #a5efd336; border-radius: 9px; background: #8ce9c9; color: #09291e; padding: 13px 16px; font-size: 12px; font-weight: 650; text-align: left; cursor: pointer; transition: background .2s; }
+.copyButton > svg { width: 18px; height: 18px; flex-shrink: 0; }
+.copyButton > span { margin-left: auto; font-size: 16px; }
+.copyButton:hover { background: #b0f3dc; }
+.apiRow { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 15px 22px; background: #ffffff03; border-top: 1px solid #ffffff12; flex-wrap: wrap; }
+.apiRow a { display: inline-flex; gap: 10px; align-items: center; color: #c7e8e1; text-decoration: none; font-size: 12px; min-height: 30px; }
+.apiRow > div { display: flex; gap: 16px; }
+.apiRow > div a { color: #9bb0c4; font-size: 11px; gap: 5px; }
+.apiRow a:hover { color: #97e8d1; }
+.note { margin: 17px 1px 0; font-size: 11px; line-height: 1.8; color: #92a8be; max-width: 550px; }
+.status { min-height: 0; color: #92e8cf; font-size: 12px; line-height: 1.8; }
+.status:not(:empty) { margin-top: 9px; }
+.section a:focus-visible,.section button:focus-visible { outline: 2px solid #89e6cd; outline-offset: 4px; }
+@media(min-width:1600px) { .section { padding: 56px; gap: 100px; } .intro h2 { font-size: 50px; } .lead { font-size: 16px; } .tools p { font-size: 12px; } .promptContent pre { font-size: 16px; } .copyButton { font-size: 13px; } }
+@media(max-width:1100px) { .section { padding: 32px; gap: 35px; } .intro h2 { font-size: 37px; } .tools { gap: 10px; } .apiRow { padding-inline: 18px; } .apiRow > div { gap: 12px; } }
+@media(max-width:800px) { .section { grid-template-columns: 1fr; gap: 32px; padding: 32px; margin-bottom: 24px; } .intro h2 { font-size: 38px !important; max-width: 540px; } .tools h3 { font-size: 13px !important; } .tools { margin-top: 25px; } .tools li { display: flex; gap: 12px; } .tools svg { flex-shrink: 0; margin-top: 2px; } .tools p { margin-top: 4px; } .lead { max-width: 580px; } .note { max-width: none; } }
+@media(max-width:480px) { .section { padding: 24px 20px; border-radius: 19px; gap: 26px; } .intro h2 { font-size: 34px !important; } .lead { font-size: 14px; } .tools { grid-template-columns: 1fr; gap: 17px; padding-top: 22px; } .tools li { gap: 13px; align-items: center; } .tools svg { width: 26px; height: 26px; margin: 0; } .tools p { font-size: 12px; max-width: none; margin-top: 2px; } .tools h3 { font-size: 14px !important; } .promptBar { padding: 12px 15px; } .promptContent { padding: 18px 15px; } .promptContent pre { font-size: 13px; line-height: 1.9; min-height: 0; } .copyButton { font-size: 12px; } .apiRow { padding: 12px 15px; gap: 8px; } .apiRow > div { gap: 15px; } .note { font-size: 11px; } }
+@media(prefers-reduced-motion:reduce) { .copyButton { transition: none; } }

@@ -1,4 +1,5 @@
 import { test, expect, type BrowserContext } from "@playwright/test";
+import { homeFirstRunByLang } from "../src/locales/homeFirstRun";
 import { positioningByLang } from "../src/locales/positioning";
 import { investorOverviewByLang } from "../src/locales/investorOverview";
 import { investorDocsByLang } from "../src/locales/investorDocs";
@@ -28,7 +29,7 @@ test("public presentation explains the workflow product in five languages", asyn
   for (const lang of supportedLanguages) {
     await setLanguage(context, lang);
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(positioningByLang[lang].title);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${homeFirstRunByLang[lang].title} ${homeFirstRunByLang[lang].accent}`);
     await expect(page.getByLabel("Локальное время, погода AccuWeather и поддержка")).toHaveCount(0);
     await expect(page.locator("#people-ai-economy")).toBeVisible();
     await expect(page.locator("#smart-pay")).toBeVisible();
