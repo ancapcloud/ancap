@@ -31,3 +31,4 @@ class AccountKeyUsageMiddleware:
         finally:
             # Never wait for our own key row while a request transaction still holds it.
             await record_key_request(key_id, status)
+        return None

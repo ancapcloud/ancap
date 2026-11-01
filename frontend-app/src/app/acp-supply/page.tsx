@@ -32,7 +32,7 @@ export const metadata = {
 };
 
 export default async function AcpSupplyPage() {
-  const { explorer, wacp, tokenomics } = await loadSupply();
+  const { explorer, tokenomics } = await loadSupply();
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">

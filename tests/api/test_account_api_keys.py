@@ -57,10 +57,14 @@ def test_rotation_revocation_reissue_and_request_statistics(client):
     assert rotation.status_code == 200, rotation.text
     new = rotation.json()["key"]
     assert new != old and rotation.json()["requests"] == 2
-    assert client.get("/v1/users/me", headers=key_headers(old)).status_code == 401
-    assert client.get("/v1/users/me", headers=key_headers(new)).status_code == 200
-    assert client.delete("/v1/keys/account", headers=headers).status_code == 204
-    assert client.get("/v1/users/me", headers=key_headers(new)).status_code == 401
+    old_status = client.get("/v1/users/me", headers=key_headers(old)).status_code
+    new_status = client.get("/v1/users/me", headers=key_headers(new)).status_code
+    delete_status = client.delete("/v1/keys/account", headers=headers).status_code
+    after_delete = client.get("/v1/users/me", headers=key_headers(new)).status_code
+    assert old_status == 401
+    assert new_status == 200
+    assert delete_status == 204
+    assert after_delete == 401
     revoked = client.get("/v1/keys/account", headers=headers).json()
     assert not revoked["active"] and revoked["requests"] == 3
     assert client.post("/v1/keys/account/rotate", headers=headers).status_code == 404
@@ -113,7 +117,10 @@ def test_expired_key_cannot_authenticate_and_self_revocation_works(client, db_cu
     key = issue(client, headers)
     db_cursor.execute("UPDATE api_keys SET expires_at = NOW() - INTERVAL '1 minute' WHERE key_prefix = %s", (key[:18],))
     db_cursor.connection.commit()
-    assert client.get("/v1/users/me", headers=key_headers(key)).status_code == 401
+    expired_status = client.get("/v1/users/me", headers=key_headers(key)).status_code
+    assert expired_status == 401
     replacement = client.post("/v1/keys/account/rotate", headers=headers).json()["key"]
-    assert client.delete("/v1/keys/account", headers=key_headers(replacement)).status_code == 204
-    assert client.get("/v1/users/me", headers=key_headers(replacement)).status_code == 401
+    revoke_status = client.delete("/v1/keys/account", headers=key_headers(replacement)).status_code
+    after_revoke = client.get("/v1/users/me", headers=key_headers(replacement)).status_code
+    assert revoke_status == 204
+    assert after_revoke == 401
