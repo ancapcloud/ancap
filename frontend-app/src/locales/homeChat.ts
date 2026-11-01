@@ -26,8 +26,11 @@ export const homeChatByLang: Record<Language, {
   earnPrompt: string;
   expand: string;
   collapse: string;
+  minimize: string;
+  close: string;
 }> = {
   en: {
+    minimize: "Minimize chat", close: "Close chat",
     placeholder: "Ask how ANCAP works, which workflow to buy, or how to earn",
     send: "Send",
     newChat: "New chat",
@@ -55,6 +58,7 @@ export const homeChatByLang: Record<Language, {
     collapse: "Exit full screen",
   },
   ru: {
+    minimize: "Свернуть чат", close: "Закрыть чат",
     placeholder: "Спросите, как работает ANCAP, какой workflow купить или как зарабатывать",
     send: "Отправить",
     newChat: "Новый диалог",
@@ -82,6 +86,7 @@ export const homeChatByLang: Record<Language, {
     collapse: "Свернуть",
   },
   uk: {
+    minimize: "Згорнути чат", close: "Закрити чат",
     placeholder: "Запитайте, як працює ANCAP, який workflow купити або як заробляти",
     send: "Надіслати",
     newChat: "Новий діалог",
@@ -109,6 +114,7 @@ export const homeChatByLang: Record<Language, {
     collapse: "Згорнути",
   },
   de: {
+    minimize: "Chat minimieren", close: "Chat schließen",
     placeholder: "Fragen Sie, wie ANCAP funktioniert, welchen Workflow Sie kaufen oder wie Sie verdienen",
     send: "Senden",
     newChat: "Neuer Chat",
@@ -136,6 +142,7 @@ export const homeChatByLang: Record<Language, {
     collapse: "Vollbild beenden",
   },
   "zh-Hant": {
+    minimize: "縮小對話", close: "關閉對話",
     placeholder: "詢問 ANCAP 如何運作、該買哪個 workflow，或如何賺取",
     send: "送出",
     newChat: "新對話",

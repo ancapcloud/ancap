@@ -59,3 +59,40 @@ a.chip:hover { background: #ffffff08; border-color: #7de0bc45; color: #e4f6f1; }
 @media(max-width:480px) { .root { padding: 23px 18px; margin-bottom: 40px; border-radius: 19px; } .heading { gap: 12px; margin-bottom: 21px; } .assistantMark { width: 36px; height: 36px; border-radius: 10px; } .assistantMark svg { width: 24px; height: 24px; } .heading h2 { font-size: 24px !important; } .heading p { font-size: 12px; } .top { padding: 11px 11px 0; gap: 5px; } .chip { font-size: 10px; padding: 6px 7px; gap: 5px; } .chip svg { width: 12px; } .iconBtn { width: 30px; height: 32px; } .field { font-size: 15px; padding: 19px 15px 9px; min-height: 130px; } .toolbar { padding: 9px 12px 12px; } .rightTools { gap: 6px; } .modelBtn { font-size: 11px; padding: 5px 8px; } .modelLabel { max-width: 125px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .pills { grid-template-columns: 1fr; gap: 9px; margin-top: 13px; } .pill { min-height: 47px; font-size: 12px; padding: 10px 14px; } .note { font-size: 11px; } .fullscreen { padding: 14px; } .fullscreen .heading p { display: none; } .fullscreen .pills { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; } .fullscreen .pill { font-size: 10px; padding: 8px; gap: 5px; } .fullscreen .pill > span { display: none; } }
 @media(prefers-reduced-motion:reduce) { .composer,.pill { transition: none; } }
 @media print { .root { display: none; } }
+.docked:not(.fullscreen) { display: flex; flex-direction: column; width: 100%; height: 100%; margin: 0; padding: 0; border: 1px solid #7fcdbb38; border-radius: 21px; background: #0b1725; overflow: hidden; outline: none; }
+.docked:not(.fullscreen) .heading { flex: none; gap: 10px; padding: 16px; margin: 0; border-bottom: 1px solid #ffffff13; background: linear-gradient(130deg,#142e39,#112030); }
+.docked .assistantMark { width: 36px; height: 36px; border-radius: 11px; background: #60cfa40c; }
+.docked .assistantMark svg { width: 24px; height: 24px; }
+.docked .heading h2 { font-size: 18px !important; letter-spacing: -.025em; }
+.docked .heading p { font-size: 10px; line-height: 1.6; margin-top: 4px; max-width: 230px; }
+.windowActions { margin-left: auto; display: flex; align-self: flex-start; gap: 4px; }
+.windowActions button { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 7px; background: transparent; color: #a5c8cd; font-size: 23px; cursor: pointer; }
+.windowActions button:hover { background: #ffffff0b; color: #dcf8ef; }
+.windowActions button:focus-visible { outline: 2px solid #8ee4cc; outline-offset: 2px; }
+.docked:not(.fullscreen) .composer { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; border: 0; border-radius: 0; background: #0b1725; box-shadow: none; }
+.docked .top { padding: 10px 12px; gap: 6px; border-bottom: 1px solid #ffffff09; }
+.docked .chip { font-size: 10px; padding: 5px 8px; min-height: 29px; }
+.docked .expandBtn { width: 28px; height: 29px; }
+.docked:not(.fullscreen) .transcript { flex: 1 1 auto; min-height: 0; max-height: none; padding: 15px 14px 0; }
+.docked .bubble { max-width: 91%; padding: 10px 12px; font-size: 13px; line-height: 1.75; }
+.docked:not(.fullscreen) .field { flex: 1 1 auto; min-height: 80px; padding: 17px 15px 10px; font-size: 14px; resize: none; }
+.docked:not(.fullscreen) .transcript + label + .field { flex: none; min-height: 70px; height: 85px; border-top: 1px solid #ffffff13; margin-top: 14px; }
+.docked .toolbar { padding: 8px 12px 13px; }
+.docked .newChatLabel { display: none; }
+.docked .iconBtn,.docked .send { width: 32px; height: 32px; }
+.docked .rightTools { gap: 7px; }
+.docked .pills { flex: none; grid-template-columns: 1fr; gap: 6px; padding: 10px 12px; margin: 0; border-top: 1px solid #ffffff13; background: #0c1b2b; }
+.docked .pill { min-height: 34px; padding: 7px 10px; font-size: 11px; background: #ffffff02; border-radius: 8px; }
+.docked .pill > span:first-child { font-size: 9px; }
+.docked .note,.docked .error { flex: none; padding: 0 14px 13px; margin: 0; font-size: 10px; line-height: 1.7; background: #0c1b2b; }
+.docked.fullscreen .heading { padding: 0; }
+.docked.fullscreen .pills { grid-template-columns: repeat(3,minmax(0,1fr)); background: transparent; margin-top: 14px; border: 0; padding: 0; }
+.docked.fullscreen .composer { background: #101e2b; }
+@media(max-width:480px) { .docked .heading p { max-width: 190px; } .docked .heading { align-items: flex-start; } .docked .top { gap: 5px; padding-inline: 10px; } .docked .chip { padding-inline: 6px; } .docked .heading p { display: block; } .docked.fullscreen .heading p { display: none; } }
+.dockWelcome { display: flex; flex: 1 1 auto; min-height: 40px; flex-direction: column; align-items: center; justify-content: center; padding: 22px; text-align: center; }
+.dockWelcome svg { width: 44px; height: 44px; color: #8de1c6; margin-bottom: 15px; }
+.dockWelcome strong { font-size: 18px; color: #e2eff7; font-weight: 550; }
+.dockWelcome p { margin-top: 9px; max-width: 240px; color: #90a9be; font-size: 12px; line-height: 1.8; }
+.docked:not(.fullscreen) .field { flex: none; height: 85px; border-top: 1px solid #ffffff13; }
+.docked.fullscreen .dockWelcome { flex: 1 1 auto; }
+.docked.fullscreen .dockWelcome + label + .field { flex: none; min-height: 80px; height: 100px; }

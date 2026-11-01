@@ -1,0 +1,15 @@
+.root { position: relative; z-index: 110; color: #edf4ff; }
+.launcher { position: fixed; right: 24px; bottom: max(22px,env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 13px 19px 13px 15px; border: 1px solid #abf6df66; border-radius: 28px; background: linear-gradient(135deg,#9aedcf,#59cfb2); color: #082b23; box-shadow: 0 10px 35px #0005,inset 0 1px 0 #ffffff50; font-size: 13px; font-weight: 650; cursor: pointer; transition: transform .2s,box-shadow .2s; }
+.launcher svg { width: 25px; height: 25px; flex-shrink: 0; }
+.launcher:hover { transform: translateY(-2px); box-shadow: 0 13px 40px #0006,0 0 24px #5bdebc12; }
+.launcher:focus-visible { outline: 2px solid #b5ffeb; outline-offset: 5px; }
+.active { background: #12283a; color: #a7efd8; border-color: #71cfb647; }
+.panel { position: fixed; right: 24px; bottom: max(90px,calc(env(safe-area-inset-bottom) + 70px)); width: min(430px,calc(100vw - 36px)); height: min(650px,calc(100dvh - 120px)); border-radius: 21px; box-shadow: 0 25px 45px #0007; animation: chatDockIn .18s ease-out; }
+.root[data-avoid-support] .launcher { bottom: max(88px,calc(env(safe-area-inset-bottom) + 74px)); }
+.root[data-avoid-support] .panel { bottom: max(154px,calc(env(safe-area-inset-bottom) + 140px)); height: min(620px,calc(100dvh - 180px)); }
+@keyframes chatDockIn { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+@media(max-width:480px) { .launcher { right: 15px; bottom: max(16px,env(safe-area-inset-bottom)); width: 54px; height: 54px; padding: 13px; justify-content: center; } .launcher > span { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; } .panel { right: 12px; bottom: max(82px,calc(env(safe-area-inset-bottom) + 68px)); width: calc(100vw - 24px); height: min(650px,calc(100dvh - 106px)); } }
+@media(prefers-reduced-motion:reduce) { .launcher { transition: none; } .launcher:hover { transform: none; } .panel { animation: none; } }
+@media print { .root { display: none; } }
+
+:global(body:has([data-fullscreen="true"])) .launcher { display: none; }

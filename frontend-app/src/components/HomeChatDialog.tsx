@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { getApiUrl } from "@/lib/api";
+import { useEffect, useId, useRef, useState } from "react";
+import { useAncapChat, type ChatMode } from "./AncapChatProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Language } from "@/locales/translations";
 import styles from "./HomeChatDialog.module.css";
 import { homeChatByLang } from "@/locales/homeChat";
 
 type Role = "user" | "assistant";
-type Mode = "chat" | "howto" | "workflows" | "earn";
+type Mode = ChatMode;
 type SpeechResult = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
 type SpeechRec = {
   lang: string;
@@ -30,50 +30,27 @@ const speechLang: Record<Language, string> = {
   "zh-Hant": "zh-TW",
 };
 
-
-
-export function HomeChatDialog() {
+export function HomeChatDialog({ surface = "inline", onMinimize }: { surface?: "inline" | "dock"; onMinimize?: () => void }) {
   const { lang } = useLanguage();
   const text = homeChatByLang[lang];
-  const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState<{ role: Role; content: string }[]>([]);
-  const [mode, setMode] = useState<Mode>("chat");
-  const [sessionModel, setSessionModel] = useState<string | null>(null);
-  const [label, setLabel] = useState(text.auto);
+  const chat = useAncapChat();
+  const { draft, setDraft, messages, mode, setMode, sessionModel, label, loading, configured, error, setError, ensureStatus } = chat;
   const [modelOpen, setModelOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
-  const [configured, setConfigured] = useState<boolean | null>(null);
-  const [error, setError] = useState("");
+  const instanceId = useId();
+  const inputId = `ancap-chat-input-${instanceId}`;
+  const headingId = `ancap-chat-title-${instanceId}`;
+  const docked = surface === "dock";
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const rootRef = useRef<HTMLElement>(null);
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
-  const sessionModelRef = useRef<string | null>(null);
+  useEffect(() => { void ensureStatus(); }, [ensureStatus]);
 
   useEffect(() => {
-    sessionModelRef.current = sessionModel;
-  }, [sessionModel]);
-
-  useEffect(() => {
-    if (!sessionModel) setLabel(text.auto);
-  }, [text.auto, sessionModel]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${getApiUrl()}/home-chat/status`, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-      .then((response) => response.json())
-      .then((body) => {
-        if (!cancelled) setConfigured(Boolean(body?.configured));
-      })
-      .catch(() => {
-        if (!cancelled) setConfigured(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (docked) rootRef.current?.focus();
+  }, [docked]);
 
   useEffect(() => {
     if (!modelOpen && !fullscreen) return;
@@ -173,72 +150,15 @@ export function HomeChatDialog() {
 
   function resetChat() {
     stopVoice();
-    setMessages([]);
-    setDraft("");
-    setMode("chat");
-    setSessionModel(null);
-    sessionModelRef.current = null;
-    setError("");
-    setLabel(text.auto);
+    chat.resetChat();
     setModelOpen(false);
     fieldRef.current?.focus();
   }
 
   async function sendMessage(raw: string, nextMode: Mode = mode) {
-    const content = raw.trim();
-    if (!content || loading) return;
     stopVoice();
-    const history = [...messages, { role: "user" as const, content }];
-    setMessages(history);
-    setDraft("");
-    setError("");
-    setLoading(true);
     setModelOpen(false);
-    setMode(nextMode);
-    try {
-      const response = await fetch(`${getApiUrl()}/home-chat/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-        body: JSON.stringify({
-          messages: history.slice(-8),
-          mode: nextMode,
-          lang,
-          session_model: sessionModelRef.current || undefined,
-        }),
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const code = body?.detail?.code as string | undefined;
-        setMessages(messages);
-        setDraft(content);
-        if (response.status === 429 || code === "RATE_LIMITED") setError(text.limited);
-        else if (response.status === 503 || code === "NOT_CONFIGURED" || code === "DISABLED") {
-          setConfigured(false);
-          setError(text.unavailable);
-        } else setError(text.failed);
-        return;
-      }
-      const reply = String(body.reply || "").trim();
-      if (!reply) {
-        setMessages(messages);
-        setDraft(content);
-        setError(text.failed);
-        return;
-      }
-      setMessages([...history, { role: "assistant", content: reply }]);
-      const nextModel = String(body.model || "").trim();
-      if (nextModel.toLowerCase().endsWith(":free")) {
-        setSessionModel(nextModel);
-        sessionModelRef.current = nextModel;
-      }
-      if (body.label) setLabel(String(body.label));
-    } catch {
-      setMessages(messages);
-      setDraft(content);
-      setError(text.failed);
-    } finally {
-      setLoading(false);
-    }
+    await chat.sendMessage(raw, nextMode);
   }
 
   function applyStarter(nextMode: Mode, prompt: string) {
@@ -249,18 +169,28 @@ export function HomeChatDialog() {
   return (
     <section
       ref={rootRef}
-      className={`${styles.root}${fullscreen ? ` ${styles.fullscreen}` : ""}`}
-      id="ask"
-      data-testid="home-chat"
+      className={`${styles.root}${docked ? ` ${styles.docked}` : ""}${fullscreen ? ` ${styles.fullscreen}` : ""}`}
+      id={docked ? "ancap-chat-panel" : "ask"}
+      data-testid={docked ? "dock-chat" : "home-chat"}
       data-fullscreen={fullscreen ? "true" : "false"}
-      aria-labelledby="home-chat-title"
-      role={fullscreen ? "dialog" : undefined}
+      aria-labelledby={headingId}
+      role={fullscreen || docked ? "dialog" : undefined}
       aria-modal={fullscreen || undefined}
-      tabIndex={fullscreen ? -1 : undefined}
+      tabIndex={fullscreen || docked ? -1 : undefined}
+      onKeyDown={event => {
+        if (event.key === "Escape" && docked && !modelOpen && !fullscreen) {
+          event.stopPropagation();
+          onMinimize?.();
+        }
+      }}
     >
       <div className={styles.heading}>
         <div className={styles.assistantMark} aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 7h20v14H15l-7 5v-5H6zM11 12h10M11 16h6"/></svg></div>
-        <div><h2 id="home-chat-title">{text.dialog}</h2><p>{text.intro}</p></div>
+        <div><h2 id={headingId}>{text.dialog}</h2><p>{text.intro}</p></div>
+        {docked && <div className={styles.windowActions}>
+          <button type="button" aria-label={text.minimize} onClick={onMinimize}>−</button>
+          <button type="button" aria-label={text.close} onClick={onMinimize}>×</button>
+        </div>}
       </div>
       <div className={styles.composer}>
         <div className={styles.top}>
@@ -279,11 +209,11 @@ export function HomeChatDialog() {
           <button
             type="button"
             className={`${styles.iconBtn} ${styles.expandBtn}`}
-            data-testid="home-chat-fullscreen"
+            data-testid={docked ? "dock-chat-fullscreen" : "home-chat-fullscreen"}
             aria-label={fullscreen ? text.collapse : text.expand}
             aria-pressed={fullscreen}
             title={fullscreen ? text.collapse : text.expand}
-            onClick={() => setFullscreen((open) => !open)}
+            onClick={() => { if (!docked) chat.setDockOpen(false); setFullscreen((open) => !open); }}
           >
             {fullscreen ? (
               <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
@@ -296,6 +226,10 @@ export function HomeChatDialog() {
             )}
           </button>
         </div>
+        {docked && messages.length === 0 && !loading && <div className={styles.dockWelcome}>
+          <svg viewBox="0 0 40 38" aria-hidden="true"><path d="M4 32 19 6h6l13 26H28L20 17 11 32Z" fill="currentColor"/></svg>
+          <strong>{text.dialog}</strong><p>{text.intro}</p>
+        </div>}
         {messages.length > 0 || loading ? (
           <div className={styles.transcript} ref={transcriptRef} aria-live="polite">
             {messages.map((message, index) => (
@@ -306,12 +240,12 @@ export function HomeChatDialog() {
             {loading && <div className={`${styles.bubble} ${styles.assistant} ${styles.pending}`}>{text.thinking}</div>}
           </div>
         ) : null}
-        <label className={styles.srOnly} htmlFor="home-chat-input">{text.placeholder}</label>
+        <label className={styles.srOnly} htmlFor={inputId}>{text.placeholder}</label>
         <textarea
-          id="home-chat-input"
+          id={inputId}
           ref={fieldRef}
           className={styles.field}
-          data-testid="home-chat-input"
+          data-testid={docked ? "dock-chat-input" : "home-chat-input"}
           rows={3}
           value={draft}
           placeholder={text.placeholder}
@@ -336,7 +270,7 @@ export function HomeChatDialog() {
               <button
                 type="button"
                 className={styles.modelBtn}
-                data-testid="home-chat-model"
+                data-testid={docked ? "dock-chat-model" : "home-chat-model"}
                 aria-expanded={modelOpen}
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={() => setModelOpen((open) => !open)}
@@ -369,7 +303,7 @@ export function HomeChatDialog() {
             <button
               type="button"
               className={styles.send}
-              data-testid="home-chat-send"
+              data-testid={docked ? "dock-chat-send" : "home-chat-send"}
               aria-label={text.send}
               disabled={loading || configured === false || !draft.trim()}
               onClick={() => void sendMessage(draft)}
