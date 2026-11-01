@@ -134,3 +134,10 @@ def test_execution_error_is_tool_result(mcp_client):
 def test_version_negotiation_and_single_batch_shape(mcp_client):
     response = mcp_client.post("/v1/mcp", json=[{"jsonrpc":"2.0", "id":1, "method":"initialize", "params":{"protocolVersion":"2025-06-18"}}])
     assert response.json()[0]["result"]["protocolVersion"] == "2025-06-18"
+
+
+def test_mcp_payload_and_batch_limits(mcp_client):
+    oversized = mcp_client.post('/v1/mcp', content=b' ' * 1048577, headers={'Content-Type':'application/json'})
+    assert oversized.status_code == 413
+    batch = mcp_client.post('/v1/mcp', json=[{'jsonrpc':'2.0','id':n,'method':'ping'} for n in range(33)])
+    assert batch.status_code == 400

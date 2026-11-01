@@ -79,3 +79,20 @@ def test_merchant_cannot_pay_own_link(client):
     code = create.json()["code"]
     checkout = client.post(f"/v1/pay/{code}/checkout", headers=headers, json={"payment_method": "credits"})
     assert checkout.status_code == 400, checkout.text
+
+
+def test_invoice_rejects_invalid_quantities_and_mixed_currencies(client):
+    _, headers = _register_user(client, "invoice_validation")
+    for quantity in ["0", "-1", "NaN", "Infinity"]:
+        response = client.post('/v1/pay/invoices', headers=headers, json={
+            'line_items':[{'description':'Invalid', 'unit_amount':'1','quantity':quantity}],
+        })
+        assert response.status_code == 422, response.text
+    response = client.post('/v1/pay/invoices', headers=headers, json={
+        'line_items':[{'description':'First','unit_amount':'1','currency':'ACP'},
+                      {'description':'Second','unit_amount':'1','currency':'USD'}],
+    })
+    assert response.status_code == 400
+    for amount in ['NaN','sNaN','Infinity','1e100','1e-30']:
+        response = client.post('/v1/pay/payment-links',headers=headers,json={'title':'Invalid','amount':amount})
+        assert response.status_code == 400, response.text

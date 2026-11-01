@@ -19,7 +19,6 @@ MAX_RETRIES = 3
 RETRY_DELAYS = [60, 300, 900]  # seconds: 1m, 5m, 15m
 REQUEST_TIMEOUT = 10
 # Do not follow redirects — prevents open-redirect SSRF pivots after URL validation.
-_HTTPX_CLIENT_KW = {"timeout": REQUEST_TIMEOUT, "follow_redirects": False}
 
 
 def sign_webhook_payload(payload: str, secret: str) -> str:
@@ -83,7 +82,7 @@ async def dispatch_webhook_event(
         }
         extensions = {"sni_hostname": target.hostname} if target.scheme == "https" else None
 
-        async with httpx.AsyncClient(**_HTTPX_CLIENT_KW) as client:
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, follow_redirects=False) as client:
             resp = await client.post(
                 request_url,
                 content=raw,

@@ -208,6 +208,8 @@ def test_referral_rewards_enqueue_onchain_payout_jobs_when_runtime_enabled(clien
 
 def test_system_jobs_tick_sends_referral_onchain_payout_jobs_when_runtime_enabled(client, db_cursor, monkeypatch):
     from app.services import referrals as referrals_service
+    from unittest.mock import AsyncMock
+    monkeypatch.setattr("app.services.acp_utxo_index.acp_utxo_index_tick", AsyncMock(return_value={"ok": True}))
 
     monkeypatch.setenv("REFERRAL_ONCHAIN_PAYOUT_ENABLED", "true")
     monkeypatch.setenv("REFERRAL_ONCHAIN_PAYOUT_KEYSTORE_FILE", "/run/secrets/referrals/operator.json")

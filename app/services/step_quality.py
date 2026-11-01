@@ -47,7 +47,7 @@ async def get_step_quality(
         "result_summary": result_summary,
     }
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=timeout_seconds) as client:
             r = await client.post(
                 scorer_url.strip(),
                 json=payload,

@@ -39,7 +39,9 @@ def test_webid_status_fail_closed_by_default(monkeypatch):
     assert status.waitlist_interest == "physical_card_apple_pay"
     assert status.session_path == "/v1/commerce/webid/session"
     assert status.webhook_path == "/v1/commerce/webid/webhook"
-    assert status.partner_url.startswith("https://webid-solutions.com")
+    from urllib.parse import urlsplit
+    assert urlsplit(status.partner_url).hostname == "webid-solutions.com"
+    assert urlsplit(status.partner_url).scheme == "https"
 
 
 def test_webid_enabled_still_fail_closed_without_credentials(monkeypatch):

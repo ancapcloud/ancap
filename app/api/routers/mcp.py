@@ -17,6 +17,7 @@ from app.services.mcp_remote import (
 )
 
 from app.config import get_settings
+from app.services.rate_limit import enforce_rate_limit, get_request_ip
 
 
 async def validate_origin(request: Request):
@@ -26,7 +27,20 @@ async def validate_origin(request: Request):
         raise HTTPException(status_code=403, detail="Origin not allowed")
 
 
-router = APIRouter(tags=["MCP"], dependencies=[Depends(validate_origin)])
+async def bound_mcp_requests(request: Request):
+    if request.method == "OPTIONS":
+        return
+    await enforce_rate_limit(key=f"mcp:{get_request_ip(request)}", limit=120, window_seconds=60)
+    if request.method == "POST":
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > 1048576:
+                raise HTTPException(status_code=413, detail="MCP request too large")
+        request._body = bytes(body)
+
+
+router = APIRouter(tags=["MCP"], dependencies=[Depends(validate_origin), Depends(bound_mcp_requests)])
 
 # In-memory session map for legacy HTTP+SSE transport (single-process; fine for MVP).
 _SSE_SESSIONS: dict[str, asyncio.Queue] = {}
@@ -80,7 +94,7 @@ async def mcp_get(
         "serverInfo": SERVER_INFO,
         "chatgpt": {
             "server_url": "https://ancap.cloud/api/v1/mcp",
-            "auth": "No authentication (discover tools); pass api_key on paid tools or use Authorization/X-API-Key",
+            "auth": "No authentication (discover tools); pass api_key on authenticated tools, including free previews or use Authorization/X-API-Key",
             "docs": "https://ancap.cloud/mcp",
             "connect_keys": "https://ancap.cloud/developers/connect",
         },
@@ -104,7 +118,7 @@ async def mcp_post(
 
     messages: list[dict[str, Any]]
     if isinstance(payload, list):
-        if not payload or any(not isinstance(m, dict) for m in payload):
+        if not payload or len(payload) > 32 or any(not isinstance(m, dict) for m in payload):
             return _with_cors(JSONResponse({"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": "Invalid Request"}}, status_code=400))
         messages = payload
     elif isinstance(payload, dict):

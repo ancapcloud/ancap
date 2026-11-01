@@ -120,7 +120,7 @@ def test_fetch_paginates_confirmed_transfers_with_fixed_filters(monkeypatch):
         response = MagicMock()
         response.__enter__.return_value.read.return_value = json.dumps(pages.pop(0)).encode()
         return response
-    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    monkeypatch.setattr("app.services.swap_tron_deposit_watcher._open_provider_request", urlopen)
     out = default_transfer_fetcher(DEPOSIT, 0)
     assert [x.txid for x in out] == ["a" * 64, "b" * 64]
     queries = [parse_qs(urlparse(req.full_url).query) for req in requests]
@@ -136,7 +136,7 @@ def test_provider_failure_is_not_an_empty_success(monkeypatch, body):
     from app.services.swap_tron_deposit_watcher import default_transfer_fetcher
     response = MagicMock()
     response.__enter__.return_value.read.return_value = json.dumps(body).encode()
-    monkeypatch.setattr("urllib.request.urlopen", lambda *_a, **_k: response)
+    monkeypatch.setattr("app.services.swap_tron_deposit_watcher._open_provider_request", lambda *_a, **_k: response)
     with pytest.raises(RuntimeError):
         default_transfer_fetcher(DEPOSIT, 0)
 
@@ -290,3 +290,22 @@ async def test_tick_duplicate_txid_skipped(monkeypatch):
     out = await tick_swap_tron_deposits(session, fetch_transfers=lambda *_: transfers)
     assert out["duplicates"] == 1
     assert out["claimed"] == 0
+
+
+def test_provider_credentials_cannot_follow_redirects_or_file_urls(monkeypatch):
+    import urllib.error
+    import urllib.request
+    from app.services.swap_tron_deposit_watcher import _open_provider_request
+    with pytest.raises(urllib.error.URLError):
+        _open_provider_request(urllib.request.Request('file:///etc/passwd'), timeout=1)
+    class FakeOpener:
+        def open(self, request, timeout):
+            return redirect.redirect_request(request,None,302,'Found',{},'https://attacker.invalid')
+    redirect = None
+    def build_opener(handler):
+        nonlocal redirect
+        redirect = handler()
+        return FakeOpener()
+    monkeypatch.setattr(urllib.request,'build_opener',build_opener)
+    with pytest.raises(urllib.error.URLError):
+        _open_provider_request(urllib.request.Request('https://api.trongrid.io'), timeout=1)

@@ -139,7 +139,9 @@ jobs:
           RUN_ANCAP_DOCS_LIVE_VERIFY: "0"
 
       - name: Security SAST — Bandit
-        run: python -m bandit -r app/ -f txt 2>&1 | tee bandit-report.txt
+        run: |
+          set -o pipefail
+          python -m bandit -r app/ -ll -f txt 2>&1 | tee bandit-report.txt
 
       - name: Upload Bandit report
         if: always()

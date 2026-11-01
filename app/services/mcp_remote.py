@@ -282,14 +282,14 @@ async def dispatch_tool(
 
     # Nested ASGI call — avoids self-HTTP deadlock on a single uvicorn worker.
     transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
-    async with httpx.AsyncClient(transport=transport, base_url="http://ancap.internal") as client:
+    async with httpx.AsyncClient(transport=transport, base_url="http://ancap.internal", timeout=60.0) as client:
         if method == "GET":
-            response = await client.get(f"/v1{path}", headers=headers, timeout=60.0)
+            response = await client.get(httpx.URL("http://ancap.internal").copy_with(path=f"/v1{path}"), headers=headers, timeout=60.0)
         else:
             headers["Content-Type"] = "application/json"
             response = await client.request(
                 method,
-                f"/v1{path}",
+                httpx.URL("http://ancap.internal").copy_with(path=f"/v1{path}"),
                 headers=headers,
                 content=json.dumps(payload or {}).encode("utf-8"),
                 timeout=60.0,

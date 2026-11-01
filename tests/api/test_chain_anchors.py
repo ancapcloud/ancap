@@ -1,4 +1,18 @@
 import os
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def restore_rpc_settings_after_test():
+    names = ("CHAIN_ANCHOR_DRIVER", "ACP_RPC_URL", "ETHEREUM_RPC_URL", "SOLANA_RPC_URL")
+    previous = {name: os.environ.get(name) for name in names}
+    yield
+    for name, value in previous.items():
+        if value is None:
+            os.environ.pop(name, None)
+        else:
+            os.environ[name] = value
+    get_settings.cache_clear()
 
 from app.config import get_settings
 
@@ -75,7 +89,7 @@ def test_chain_anchor_rpc_success_string_result(client, monkeypatch):
     monkeypatch.setattr(
         ca.httpx,
         "AsyncClient",
-        lambda: _StubAsyncClient(response=_StubResponse(json_data={"result": "0xabc123"})),
+        lambda **_kwargs: _StubAsyncClient(response=_StubResponse(json_data={"result": "0xabc123"})),
     )
 
     r = client.post(
@@ -94,7 +108,7 @@ def test_chain_anchor_rpc_success_object_result(client, monkeypatch):
     monkeypatch.setattr(
         ca.httpx,
         "AsyncClient",
-        lambda: _StubAsyncClient(response=_StubResponse(json_data={"result": {"signature": "deadbeef"}})),
+        lambda **_kwargs: _StubAsyncClient(response=_StubResponse(json_data={"result": {"signature": "deadbeef"}})),
     )
 
     r = client.post(
@@ -114,7 +128,7 @@ def test_chain_anchor_rpc_error_result_503(client, monkeypatch):
     monkeypatch.setattr(
         ca.httpx,
         "AsyncClient",
-        lambda: _StubAsyncClient(response=_StubResponse(json_data={"error": {"message": "boom"}})),
+        lambda **_kwargs: _StubAsyncClient(response=_StubResponse(json_data={"error": {"message": "boom"}})),
     )
 
     r = client.post(

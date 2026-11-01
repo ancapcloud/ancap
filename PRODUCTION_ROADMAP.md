@@ -1,3 +1,8 @@
+2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
+MCP, invoice validation, indexer responsiveness and dependency patches verified
+locally. CI/deployment acceptance pending; evidence and limits are tracked in
+`docs/SECURITY_RELEASE_2026-11-01.md`.
+
 2026-11-01 MCP release candidate: schema/dispatch, Smart Pay arguments,
 legacy SSE delivery and stdio catalogue fixes passed 61 targeted tests.
 Fresh PostgreSQL migration and frontend TypeScript checks also passed.

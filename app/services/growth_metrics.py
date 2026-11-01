@@ -13,7 +13,7 @@ from app.db.models import GrowthMetricRollup, User, Agent, Run, RunStateEnum
 
 def _dims_hash(dimensions: dict) -> str:
     raw = json.dumps(dimensions or {}, sort_keys=True, separators=(",", ":"))
-    return hashlib.md5(raw.encode()).hexdigest()
+    return hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()
 
 
 async def upsert_metric(

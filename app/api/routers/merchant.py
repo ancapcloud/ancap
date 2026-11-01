@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import io
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -73,8 +73,12 @@ def _parse_amount(raw: str) -> Decimal:
         value = Decimal(str(raw).strip())
     except (InvalidOperation, ValueError) as exc:
         raise HTTPException(status_code=400, detail="Invalid amount") from exc
-    if value <= 0:
+    if not value.is_finite() or value <= 0 or value >= Decimal("1e18"):
         raise HTTPException(status_code=400, detail="Amount must be positive")
+    with localcontext() as context:
+        context.prec = 80
+        if value != value.quantize(Decimal("0.000000000000000001")):
+            raise HTTPException(status_code=400, detail="Amount supports at most 18 decimal places")
     return value
 
 
@@ -212,10 +216,16 @@ async def create_invoice(
         )
     serialized_items: list[dict] = []
     for item in body.line_items:
+        if item.currency.strip().upper() != currency:
+            raise HTTPException(status_code=400, detail="Invoice line currencies must match")
         unit = _parse_amount(item.unit_amount)
         qty = Decimal(str(item.quantity))
-        total += unit * qty
+        with localcontext() as context:
+            context.prec = 80
+            total += unit * qty
         serialized_items.append(item.model_dump(mode="json"))
+
+    _parse_amount(str(total))
 
     count = await session.scalar(
         select(func.count()).select_from(MerchantInvoice).where(MerchantInvoice.owner_user_id == user_uuid)

@@ -932,12 +932,13 @@ def _rpc_call(
     from app.services.acp_rpc import acp_rpc_headers
 
     body = {"jsonrpc": "2.0", "id": "wallet-acp-history", "method": method, "params": params or []}
+    rpc_timeout = float(timeout_s if timeout_s is not None else 30.0)
     try:
         r = httpx.post(
             rpc_url,
             json=body,
             headers=acp_rpc_headers(),
-            timeout=float(timeout_s if timeout_s is not None else 30.0),
+            timeout=rpc_timeout,
         )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ACP RPC request failed: {exc}")

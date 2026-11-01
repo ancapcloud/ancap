@@ -92,7 +92,7 @@ def _auth_header() -> str:
 
 
 def _safe_log_token(value: Any, *, max_len: int = 64) -> str:
-    raw = "" if value is None else str(value)
+    raw = ("" if value is None else str(value)).replace("\r", "").replace("\n", "")
     cleaned = "".join(ch for ch in raw if ch.isprintable() and ch not in "\r\n\t")
     return cleaned[:max_len]
 
