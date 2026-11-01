@@ -38,6 +38,10 @@ class WorkflowCostEvidence(Base):
     amount = Column(Numeric(36, 18), nullable=False)
     review_note = Column(Text, nullable=False)
     recorded_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    provider_id = Column(String(128), nullable=True, default=None)  # ROP-04: provider reconciliation
+    document_type = Column(String(64), nullable=True, default=None)  # ROP-04: document type
+    external_payment_event = Column(Boolean, nullable=True, server_default="False")  # ROP-04: external payment event
+    delivery_event = Column(Boolean, nullable=True, server_default="False")  # ROP-04: delivery event
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     __table_args__ = (
         UniqueConstraint("source", "document_id", "line_id", name="uq_workflow_cost_source_line"),

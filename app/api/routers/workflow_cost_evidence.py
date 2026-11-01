@@ -62,6 +62,10 @@ async def admin_get_cost_evidence(
         "amount": str(receipt.amount),
         "review_note": receipt.review_note,
         "recorded_by_user_id": str(receipt.recorded_by_user_id) if receipt.recorded_by_user_id else None,
+        "provider_id": receipt.provider_id,
+        "document_type": receipt.document_type,
+        "external_payment_event": receipt.external_payment_event,
+        "delivery_event": receipt.delivery_event,
         "allocations": [
             {
                 "workflow_run_id": a.workflow_run_id,

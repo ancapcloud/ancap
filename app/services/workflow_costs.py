@@ -49,7 +49,7 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
     """Retrieve a single cost evidence record by ID.
 
     Admin-only endpoint for viewing saved cost evidence records.
-    Returns the full evidence record with all allocations.
+    Returns the full evidence record with all allocations and ROP-04 fields.
     """
     from app.schemas.workflow_costs import CostEvidenceReceipt, ReconciledCostAllocation
     
@@ -62,7 +62,7 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
     allocations = (await session.execute(select(WorkflowCostAllocation).where(
         WorkflowCostAllocation.evidence_id == evidence_id))).scalars().all()
     
-    # Convert to response schema with full details
+    # Convert to response schema with full details and ROP-04 fields
     receipt = CostEvidenceReceipt(
         id=evidence.id,
         source=evidence.source,
@@ -73,7 +73,11 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
         currency=evidence.currency,
         amount=evidence.amount,
         review_note=evidence.review_note,
-        recorded_by_user_id=evidence.recorded_by_user_id
+        recorded_by_user_id=evidence.recorded_by_user_id,
+        provider_id=str(evidence.provider_id) if evidence.provider_id else None,
+        document_type=evidence.document_type,
+        external_payment_event=evidence.external_payment_event,
+        delivery_event=evidence.delivery_event
     )
     
     # Include allocations in the response with full details

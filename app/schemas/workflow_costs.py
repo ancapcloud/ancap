@@ -78,6 +78,11 @@ class CostEvidenceReceipt(BaseModel):
     currency: str | None = None
     amount: Decimal | None = None
     review_note: str | None = None
+    # ROP-04 fields for provider reconciliation and external events
+    provider_id: str | None = None
+    document_type: str | None = None
+    external_payment_event: bool = False
+    delivery_event: bool = False
 
 
 class QualityFixturePublic(BaseModel):
