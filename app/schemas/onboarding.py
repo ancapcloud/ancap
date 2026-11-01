@@ -37,3 +37,24 @@ class AttestationPublic(BaseModel):
     id: str
     challenge_id: str
     created_at: datetime
+
+
+# --- ROP-05: Onboarding templates schemas ---
+class TemplateCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=256)
+    description: Optional[str] = Field(None, max_length=4096)
+    template_type: str = Field(..., pattern=r'^[a-z][a-z0-9-]{0,62}$')  # e.g., "quickstart", "faucet"
+    config_json: dict = Field(default_factory=dict, description="Template configuration as JSON")
+
+
+class TemplatePublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    name: str
+    description: Optional[str]
+    template_type: str
+    config_json: dict
+    created_by_user_id: Optional[str]
+    created_at: datetime
+    updated_at: datetime
