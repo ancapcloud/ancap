@@ -496,8 +496,6 @@ def _catchup_loop() -> None:
             time.sleep(0.05)
         # Persist via a short-lived event loop if possible.
         try:
-            import asyncio
-
             asyncio.run(_redis_save())
         except Exception:
             report_optional_failure('app.services.acp_utxo_index:_catchup_loop:fallback', quiet=False)

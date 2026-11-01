@@ -1,5 +1,4 @@
 from uuid import uuid4
-from app.config import get_settings
 from tests.api.test_workflow_cost_evidence_api import setup_costs
 
 
