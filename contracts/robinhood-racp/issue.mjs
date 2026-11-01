@@ -14,15 +14,18 @@ assert.equal(proof.racpChainId, 4663);
 assert.ok(proof.confirmations >= 1 && proof.supplyInvariantOK);
 assert.ok(BigInt(proof.balanceUnits) >= 100000000000000n);
 assert.match(proof.transactionHash, /^[a-f0-9]{64}$/);
-// Use the plan address only after equality checks; validate shape before network I/O.
-const reserveAddress = String(plan.reserveAddress || '');
+// Reserve probe URL must not be built from deployment-plan.json (js/file-access-to-http).
+// Operator supplies the address via env; it must still match the plan.
+const reserveAddress = String(process.env.RACP_RESERVE_ADDRESS || '').trim();
+assert.ok(reserveAddress, 'RACP_RESERVE_ADDRESS required for live reserve probe');
 assert.match(reserveAddress, /^[A-Za-z0-9:_-]{8,128}$/);
+assert.equal(reserveAddress, plan.reserveAddress);
 const response = await fetch(
   `https://api.ancap.cloud/v1/acp/address/${encodeURIComponent(reserveAddress)}/balance`,
 );
 assert.ok(response.ok, 'Live reserve probe failed');
 const live = await response.json();
-assert.equal(live.address, plan.reserveAddress);
+assert.equal(live.address, reserveAddress);
 assert.ok(BigInt(live.units) >= 100000000000000n, 'Insufficient live reserve');
 const evidence = keccak256(toUtf8Bytes(proofText));
 const keyFile = process.env.RACP_DEPLOYER_ENV_FILE;
