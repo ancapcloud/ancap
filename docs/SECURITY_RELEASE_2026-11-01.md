@@ -53,6 +53,9 @@ review, not a claim that every possible vulnerability has been eliminated.
 - CodeQL file-access-to-http alert 586 was reviewed and dismissed as a false
   positive: tracked public reserve address to a fixed ANCAP HTTPS balance URL;
   signer secrets are not sent. The rationale is preserved on the alert.
+  The subsequent concurrent fix is also retained: issue.mjs requires an explicit
+  RACP_RESERVE_ADDRESS environment value matching the deployment plan; the URL
+  no longer receives file-sourced address data.
 - Bandit: no medium/high findings; low heuristic findings remain for review.
 - Secret scanner: 2,079 tracked files, no findings.
 - Official MCP Python SDK: remote and stdio handshake, all nine schemas and
