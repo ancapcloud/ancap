@@ -1,3 +1,10 @@
+2026-11-01 published security/usability release: PR #138 merged, runtime
+b45d5bd deployed successfully (Actions 41285512445). Full backend/native/browser
+CI passed; production readiness, 12 HTTP probes, 10 desktop/mobile pages and
+official MCP SDK remote/stdio checks passed. Known dependency vulnerabilities
+and open CodeQL security findings are cleared. Evidence and retained acceptance
+limits: `docs/SECURITY_RELEASE_2026-11-01.md`.
+
 2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
 MCP, invoice validation, indexer responsiveness and dependency patches verified
 locally. CI/deployment acceptance pending; evidence and limits are tracked in

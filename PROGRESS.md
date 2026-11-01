@@ -1,3 +1,9 @@
+2026-11-01: PR #138 security/MCP/admin release merged and deployed as b45d5bd.
+1,290 backend tests and 71 browser E2E tests passed in CI; runtime readiness,
+12 HTTP checks, 10 desktop/mobile pages and official MCP remote/stdio checks
+passed. Evidence: docs/SECURITY_RELEASE_2026-11-01.md. Physical-device/store,
+real funded settlement and partner acceptance are not closed by this release.
+
 > **2026-10-31 — Theodore Queue: ROP-03 quality fixtures implementation**
 
 - **Task**: Implement quality_fixtures table and model for de-identified evaluation samples (ROP-03).
