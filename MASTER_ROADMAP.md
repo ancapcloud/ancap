@@ -1,9 +1,28 @@
+2026-11-01 Ask ANCAP now has a site-wide Messenger-style dock sharing the homepage
+conversation across navigation. Lazy panel/status loading, minimize/reopen, mobile
+fit and fullscreen passed browser checks. In-memory history clears on refresh.
+See `docs/FRONTEND_DESIGN_SYSTEM_2026-11-01.md`. Local only.
+
 2026-11-01 homepage concierge: local read-only workflow catalog and onboarding
 lookups, one bounded follow-up inference, current pricing-policy prompt, honest
 fallback model reporting and a shared request deadline implemented. Existing
 public API and wallet/job restrictions retained. 20 targeted tests passed;
 production deployment and live-provider behavior remain unverified.
 See `docs/HOME_CHAT_CONCIERGE.md`.
+
+2026-11-01 shared frontend design pass: central dark/light surface tokens, public
+presentation primitives, navigation/brand, form states and wider layouts revised
+locally. AI-connect and Ask ANCAP are directly below the hero; offline chat keeps
+browsing available. Marketing priorities and AI runtime map:
+`docs/FRONTEND_DESIGN_SYSTEM_2026-11-01.md`. 122 unit tests, 24 browser scenarios,
+TypeScript, lint and production build passed. No production deployment.
+
+2026-11-01 homepage activation redesign: local implementation prioritizes a guided
+Token Risk Report, visible quote and result/receipt journey in five languages.
+Redesigned AI onboarding sits directly under the hero; ecosystem sections follow
+discovery. Auth preserves the selected
+workflow; production deployment and real paid activation remain unverified.
+See `docs/HOMEPAGE_FIRST_RUN_2026-11-01.md`.
 
 2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
 MCP, invoice validation, indexer responsiveness and dependency patches verified
