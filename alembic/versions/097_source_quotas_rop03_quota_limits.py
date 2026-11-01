@@ -16,6 +16,9 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    if sa.inspect(bind).has_table("source_quotas"):
+        return
     op.create_table(
         "source_quotas",
         sa.Column("id", sa.UUID(as_uuid=False), nullable=False, primary_key=True),
@@ -31,4 +34,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("source_quotas")
+    bind = op.get_bind()
+    if sa.inspect(bind).has_table("source_quotas"):
+        op.drop_table("source_quotas")
