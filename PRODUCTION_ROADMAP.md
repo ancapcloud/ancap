@@ -1,3 +1,10 @@
+2026-11-01 homepage concierge: local read-only workflow catalog and onboarding
+lookups, one bounded follow-up inference, current pricing-policy prompt, honest
+fallback model reporting and a shared request deadline implemented. Existing
+public API and wallet/job restrictions retained. 20 targeted tests passed;
+production deployment and live-provider behavior remain unverified.
+See `docs/HOME_CHAT_CONCIERGE.md`.
+
 2026-11-01 security/usability release preparation: Theodore fixture/cost APIs,
 MCP, invoice validation, indexer responsiveness and dependency patches verified
 locally. CI/deployment acceptance pending; evidence and limits are tracked in
