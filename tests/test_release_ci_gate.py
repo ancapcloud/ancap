@@ -79,6 +79,7 @@ def test_only_latest_workflow_run_counts():
 
 def test_deployment_checks_ci_before_exposing_ssh_secrets():
     text = Path('.github/workflows/deploy-ancap-cloud.yml').read_text(encoding='utf-8')
+    assert 'deploy' in yaml.safe_load(text)['jobs']
     assert text.index('Wait for matching green CI') < text.index('Validate deploy secrets') < text.index('Deploy over SSH')
     assert 'actions: read' in text
     backend = Path('.github/workflows/backend-ci.yml').read_text(encoding='utf-8')
