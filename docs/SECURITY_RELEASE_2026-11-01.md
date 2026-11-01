@@ -31,6 +31,9 @@ review, not a claim that every possible vulnerability has been eliminated.
   contract bytecode, issuance, transfer or reserve transaction was performed.
 - Updated minimatch/glob/uuid/Vite/ws/tmp resolution without a framework-major
   migration. Frontend Next.js resolved its compatible patched 15.5.28 release.
+- Rust libz-sys is patched from 1.1.28 to 1.1.31 for RUSTSEC-2026-0418.
+  The locked cc version is 1.2.62, below the advisory's environment-dump trigger
+  of 1.6.0; this review found no evidence of exposed build credentials.
 - CI now fails on medium/high Bandit findings and preserves pipeline failure.
   Deployment no longer has a fallback that ignores migration failures.
 
@@ -45,6 +48,11 @@ review, not a claim that every possible vulnerability has been eliminated.
   Expo Doctor 19/19 and Android bundle export passed.
 - npm audit: zero findings in frontend, mobile and rACP operator-tool lockfiles.
 - pip-audit: no known vulnerabilities in runtime inputs.
+- cargo-audit after patch: zero vulnerabilities; six unmaintained-package
+  warnings remain and are not presented as resolved vulnerabilities.
+- CodeQL file-access-to-http alert 586 was reviewed and dismissed as a false
+  positive: tracked public reserve address to a fixed ANCAP HTTPS balance URL;
+  signer secrets are not sent. The rationale is preserved on the alert.
 - Bandit: no medium/high findings; low heuristic findings remain for review.
 - Secret scanner: 2,079 tracked files, no findings.
 - Official MCP Python SDK: remote and stdio handshake, all nine schemas and
