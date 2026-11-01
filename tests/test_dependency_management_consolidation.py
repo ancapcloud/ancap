@@ -100,7 +100,7 @@ def test_ci_workflows_follow_packaging_consolidation():
     assert 'python -m bandit -r app/ -ll -f txt' in backend_ci
 
     assert 'pip install .[dev]' in release_workflow
-    assert 'python -m bandit -r app/ -f txt' in release_workflow
+    assert 'python -m bandit -r app/ -ll -f txt' in release_workflow
 
     assert '      - "requirements.in"' in dep_review
     assert '      - "requirements.in"' in frontend_ci

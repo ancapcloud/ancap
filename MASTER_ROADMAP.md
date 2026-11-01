@@ -1,3 +1,10 @@
+2026-11-01 referral catalogue repair: the new earnings playbook now has
+matching explicit EUR 10.79 / historical USD 12 entries across backend and
+frontend. This restores catalogue, checkout and concierge lookups. Deployment
+now waits for applicable push CI on the exact release SHA before SSH activation.
+- Release gate reads the checked-out workflow push filters; every applicable security/docs check must exist and succeed. YAML parser installation uses the audited lock hashes.
+- Tagged-release SAST uses the same fail-closed medium/high severity policy as backend CI; Dockerfile changes require both runtime check sets.
+
 2026-11-01 published security/usability release: PR #138 merged, runtime
 b45d5bd deployed successfully (Actions 41285512445). Full backend/native/browser
 CI passed; production readiness, 12 HTTP probes, 10 desktop/mobile pages and

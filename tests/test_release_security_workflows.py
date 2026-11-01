@@ -35,6 +35,8 @@ def test_release_workflow_runs_secret_hygiene_gate_before_release_checks():
     workflow_text = RELEASE_WORKFLOW_PATH.read_text(encoding="utf-8")
 
     assert 'GH_TOKEN: ${{ github.token }}' in workflow_text
+    assert 'python -m bandit -r app/ -ll -f txt 2>&1 | tee bandit-report.txt' in workflow_text
+    assert 'set -o pipefail' in workflow_text
     assert '      - name: Checkout' in workflow_text
     assert '          fetch-depth: 0' in workflow_text
     assert '      - name: Secret hygiene evidence bundle' in workflow_text
