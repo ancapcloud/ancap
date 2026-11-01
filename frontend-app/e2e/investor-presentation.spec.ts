@@ -204,7 +204,7 @@ test("investor and test-project overviews support the light theme", async ({ pag
   for (const route of ["/investors", "/projects"]) {
     await page.goto(route);
     await expect(page.locator("html")).toHaveClass(/light/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveCSS("color", "rgb(15, 23, 42)");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCSS("color", "rgb(20, 37, 56)");
     await expect(page.locator("#people-ai-economy").getByRole("heading", { name: economyByLang.en.title, exact: true })).toBeVisible();
     if (route === "/projects") await expect(page.locator("#test-project-aeterna")).toBeVisible();
   }
