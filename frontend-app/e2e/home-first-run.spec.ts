@@ -16,7 +16,7 @@ for (const width of [1920, 1440, 768, 390]) {
     const primary = hero.getByRole("link", { name: "Start your first workflow" });
     await expect(primary).toHaveAttribute("href", "/ai/run/token-risk-report");
     await expect(hero.getByRole("link", { name: "Explore workflows", exact: true })).toHaveAttribute("href", "/ai/workflows");
-    await expect(hero.locator("figure")).toBeVisible();
+    await expect(hero.locator("figure")).toHaveCount(0);
     await expect(page.locator("#workflow-discovery article")).toHaveCount(3);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     expect(overflow).toBe(false);

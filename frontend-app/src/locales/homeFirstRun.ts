@@ -39,13 +39,7 @@ const en = {
   "open": "Explore workflow",
   "research": "Token research",
   "launch": "Listing preparation",
-  "growth": "Growth campaign",
-  "preview": "Execution preview",
-  "inputPreview": "Token / project brief",
-  "quotePreview": "Current price before confirmation",
-  "outputPreview": "Risk snapshot · Trust signals · Operational flags",
-  "receiptPreview": "Run ID · Status history · Payment record",
-  "outputLabel": "REPORT STRUCTURE"
+  "growth": "Growth campaign"
 };
 
 type Copy = Record<keyof typeof en, string>;
@@ -91,13 +85,7 @@ export const homeFirstRunByLang: Record<Language, Copy> = {
     "open": "Открыть процесс",
     "research": "Исследование токена",
     "launch": "Подготовка листинга",
-    "growth": "Кампания роста",
-    "preview": "Обзор исполнения",
-    "inputPreview": "Описание токена / проекта",
-    "quotePreview": "Актуальная цена до подтверждения",
-    "outputPreview": "Обзор рисков · Сигналы доверия · Операционные флаги",
-    "receiptPreview": "ID запуска · История статусов · Запись оплаты",
-    "outputLabel": "СТРУКТУРА ОТЧЁТА"
+    "growth": "Кампания роста"
   },
   "uk": {
     "kicker": "ТОРГІВЛЯ ШІ-ПРОЦЕСАМИ",
@@ -138,13 +126,7 @@ export const homeFirstRunByLang: Record<Language, Copy> = {
     "open": "Відкрити процес",
     "research": "Дослідження токена",
     "launch": "Підготовка лістингу",
-    "growth": "Кампанія зростання",
-    "preview": "Огляд виконання",
-    "inputPreview": "Опис токена / проєкту",
-    "quotePreview": "Актуальна ціна до підтвердження",
-    "outputPreview": "Огляд ризиків · Сигнали довіри · Операційні прапорці",
-    "receiptPreview": "ID запуску · Історія статусів · Запис оплати",
-    "outputLabel": "СТРУКТУРА ЗВІТУ"
+    "growth": "Кампанія зростання"
   },
   "de": {
     "kicker": "KI-WORKFLOW-HANDEL",
@@ -185,13 +167,7 @@ export const homeFirstRunByLang: Record<Language, Copy> = {
     "open": "Workflow öffnen",
     "research": "Token-Recherche",
     "launch": "Listing-Vorbereitung",
-    "growth": "Wachstumskampagne",
-    "preview": "Ausführung im Überblick",
-    "inputPreview": "Token- / Projektbriefing",
-    "quotePreview": "Aktueller Preis vor Bestätigung",
-    "outputPreview": "Risikoübersicht · Vertrauenssignale · Warnhinweise",
-    "receiptPreview": "Lauf-ID · Statusverlauf · Zahlungsnachweis",
-    "outputLabel": "BERICHTSSTRUKTUR"
+    "growth": "Wachstumskampagne"
   },
   "zh-Hant": {
     "kicker": "AI 工作流程交易",
@@ -232,12 +208,6 @@ export const homeFirstRunByLang: Record<Language, Copy> = {
     "open": "探索此流程",
     "research": "代幣研究",
     "launch": "上市準備",
-    "growth": "成長活動",
-    "preview": "執行預覽",
-    "inputPreview": "代幣／專案簡介",
-    "quotePreview": "確認前顯示目前價格",
-    "outputPreview": "風險摘要 · 信任訊號 · 營運警示",
-    "receiptPreview": "執行 ID · 狀態歷史 · 付款紀錄",
-    "outputLabel": "報告結構"
+    "growth": "成長活動"
   }
 };
