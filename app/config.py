@@ -591,6 +591,9 @@ class Settings(BaseSettings):
 
     # Redis
     redis_url: str = ""
+    # Global per-credential/IP limiter. Disabled by default so local tests and
+    # batch clients are unaffected; production enables it via the environment.
+    rate_limit_enabled: bool = False
     rate_limit_per_minute: int = 120
     rate_limit_burst: int = 240
 

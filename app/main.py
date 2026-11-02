@@ -12,6 +12,7 @@ from app.db.session import SessionLocal
 from app.services.logging import configure_logging, get_logger
 from app.services.observability import metric_path_from_scope, record_http_request
 from app.api.account_key_metering import AccountKeyUsageMiddleware
+from app.api.global_rate_limit import GlobalRateLimitMiddleware
 from app.api.routers import (
     auth,
     users,
@@ -249,6 +250,7 @@ app.add_middleware(
         "X-Request-Id",
     ],
 )
+app.add_middleware(GlobalRateLimitMiddleware)
 app.add_middleware(CanonicalApiPathMiddleware)
 
 
