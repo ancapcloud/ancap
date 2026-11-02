@@ -21,10 +21,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 COPY --from=wallet-builder /app/ACP-crypto/target/release/walletd /usr/local/bin/walletd
 RUN chmod +x /usr/local/bin/walletd
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:8000/v1/system/health || exit 1
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
