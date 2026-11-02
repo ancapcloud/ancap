@@ -61,7 +61,7 @@ Evidence refreshed: 2026-09-28 (cloud agent pre-deploy pass on `cursor/ancap-saf
 
 ## Migrations / deploy
 
-- [x] `alembic heads` is a single head (`100_merge_release_heads`); CI enforces this
+- [x] `alembic heads` is a single head; CI enforces this before migrations
 - [x] Fresh-database `alembic upgrade head` verified in CI before tests
 - [ ] Pre-deploy: record `alembic current` + take a database snapshot/backup
 - [ ] Production `alembic upgrade head` via `scripts/deploy-ancap-cloud.sh` (GitHub Actions Deploy on merge to `master`)
