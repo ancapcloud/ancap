@@ -1,4 +1,4 @@
-﻿"""SQLAlchemy models for ANCAP Core Engine."""
+"""SQLAlchemy models for ANCAP Core Engine."""
 import enum
 import uuid
 from decimal import Decimal
@@ -3622,7 +3622,7 @@ class SourceQuota(Base):
 
 class QualityFixture(Base):
     __tablename__ = "quality_fixtures"
-    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     fixture_type = Column(String(64), nullable=False, comment="type: price_change, markup_noise, unavailable_source, contradiction, malicious_instructions")
     language = Column(String(10), nullable=False, comment="zh-Hant, en, ru, de, fr")
     sample_id = Column(String(64), nullable=False, comment="unique sample identifier")

@@ -1,4 +1,4 @@
-﻿"""Add mobile ACP indexer (DB-backed tx history) and device registration for push.
+"""Add mobile ACP indexer (DB-backed tx history) and device registration for push.
 
 Revision ID: e5f2d1a80b0c
 Revises: afbea1ea0cd1

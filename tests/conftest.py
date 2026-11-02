@@ -139,10 +139,38 @@ def _seed_base_vertical_if_missing(sync_engine):
         conn.commit()
 
 
+def _schema_fallback_allowed() -> bool:
+    """Whether a failed migration may be replaced by a destructive create_all fallback.
+
+    CI sets ``TEST_SCHEMA_FALLBACK=0`` so migration drift fails the build instead of
+    silently wiping the schema. Local development keeps the fallback for convenience.
+    """
+    return os.environ.get("TEST_SCHEMA_FALLBACK", "1").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
+
+
+class SchemaInitializationError(RuntimeError):
+    """Raised when Alembic fails and the destructive fallback is disabled."""
+
+
+def _seed_after_migrations(sync_url: str) -> None:
+    """Seed rows that tests expect but the migration chain does not create."""
+    sync_engine = create_engine(sync_url, pool_pre_ping=True)
+    try:
+        _seed_base_vertical_if_missing(sync_engine)
+    finally:
+        sync_engine.dispose()
+
+
 def _run_migrations_or_create_all(sync_url: str):
     """Run Alembic migrations; on drift/failure, rebuild the test schema to current metadata and stamp head."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sync_db_url = sync_url.replace("postgresql+asyncpg", "postgresql").replace("+asyncpg", "")
+    migration_error: str | None = None
     try:
         r = subprocess.run(
             ["alembic", "upgrade", "head"],
@@ -150,12 +178,22 @@ def _run_migrations_or_create_all(sync_url: str):
             env={**os.environ, "DATABASE_URL": sync_db_url},
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=180,
         )
         if r.returncode == 0:
+            _seed_after_migrations(sync_url)
             return
-    except Exception:
-        report_optional_failure("tests.initialize_schema:alembic")
+        migration_error = (r.stderr or r.stdout or f"alembic exited with {r.returncode}").strip()
+    except Exception as exc:  # noqa: BLE001 - converted into a clear failure below
+        migration_error = f"{type(exc).__name__}: {exc}"
+
+    if not _schema_fallback_allowed():
+        raise SchemaInitializationError(
+            "Alembic migrations failed and TEST_SCHEMA_FALLBACK is disabled: "
+            f"{migration_error}"
+        )
+
+    report_optional_failure("tests.initialize_schema:alembic")
 
     # Fallback for local/dev test DB drift: wipe the schema, recreate current tables,
     # seed required baseline rows, and stamp the DB to the current Alembic head so
@@ -253,6 +291,30 @@ def _bootstrap_default_user(c: TestClient) -> str:
 
 
 @pytest.fixture(scope="session")
+def _db_schema_ready():
+    """Initialize the test schema once for service-level async tests."""
+    sync_url = _sync_database_url()
+    try:
+        _run_migrations_or_create_all(sync_url)
+    except SchemaInitializationError as exc:
+        pytest.fail(f"Database schema initialization failed: {exc}", pytrace=False)
+    except Exception as exc:
+        pytest.skip(f"Database not available (start PostgreSQL): {exc}")
+
+
+@pytest.fixture
+async def db_session(_db_schema_ready):
+    """Transactional async session for service tests; rolled back after each test."""
+    from app.db.session import SessionLocal
+
+    async with SessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.rollback()
+
+
+@pytest.fixture(scope="session")
 def client():
     """Sync HTTP client. Creates tables once via sync engine; app runs in one thread/loop.
 
@@ -263,6 +325,8 @@ def client():
     sync_url = _sync_database_url()
     try:
         _run_migrations_or_create_all(sync_url)
+    except SchemaInitializationError as exc:
+        pytest.fail(f"Database schema initialization failed: {exc}", pytrace=False)
     except Exception as e:
         pytest.skip(f"Database not available (start PostgreSQL): {e}")
 

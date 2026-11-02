@@ -1,4 +1,4 @@
-﻿"""Add LLM reliability fields: provider_status, failure_reason, retry_count.
+"""Add LLM reliability fields: provider_status, failure_reason, retry_count.
 
 Revision ID: afbea1ea0cd1
 Revises: 049_org_webhook_models
