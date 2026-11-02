@@ -42,6 +42,7 @@ class WorkflowCostEvidence(Base):
     document_type = Column(String(64), nullable=True, default=None)  # ROP-04: document type
     external_payment_event = Column(Boolean, nullable=True, server_default="False")  # ROP-04: external payment event
     delivery_event = Column(Boolean, nullable=True, server_default="False")  # ROP-04: delivery event
+    reconciliation_status = Column(String(32), nullable=True, default=None)  # ROP-04: reconciliation status (pending/verified/failed)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     __table_args__ = (
         UniqueConstraint("source", "document_id", "line_id", name="uq_workflow_cost_source_line"),

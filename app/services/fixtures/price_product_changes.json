@@ -1,0 +1,42 @@
+[
+  {
+    "fixture_type": "price_change",
+    "language": "en",
+    "sample_id": "ppc-001",
+    "expected_result": "detected_price_increase",
+    "actual_result": null,
+    "confidence_score": 0.95,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "price_change",
+    "language": "en",
+    "sample_id": "ppc-002",
+    "expected_result": "detected_price_decrease",
+    "actual_result": null,
+    "confidence_score": 0.92,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "product_change",
+    "language": "en",
+    "sample_id": "poc-001",
+    "expected_result": "detected_product_update",
+    "actual_result": null,
+    "confidence_score": 0.88,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "product_change",
+    "language": "ru",
+    "sample_id": "poc-002",
+    "expected_result": "detected_product_update",
+    "actual_result": null,
+    "confidence_score": 0.85,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }
+]

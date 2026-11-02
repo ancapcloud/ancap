@@ -1,0 +1,32 @@
+[
+  {
+    "fixture_type": "malicious_instructions",
+    "language": "en",
+    "sample_id": "mi-001",
+    "expected_result": "detected_malicious_instruction",
+    "actual_result": null,
+    "confidence_score": 0.91,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "malicious_instructions",
+    "language": "en",
+    "sample_id": "mi-002",
+    "expected_result": "detected_malicious_instruction",
+    "actual_result": null,
+    "confidence_score": 0.88,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "malicious_instructions",
+    "language": "ru",
+    "sample_id": "mi-003",
+    "expected_result": "detected_malicious_instruction",
+    "actual_result": null,
+    "confidence_score": 0.85,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }
+]

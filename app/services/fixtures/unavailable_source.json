@@ -1,0 +1,32 @@
+[
+  {
+    "fixture_type": "unavailable_source",
+    "language": "en",
+    "sample_id": "uas-001",
+    "expected_result": "source_unreachable_timeout",
+    "actual_result": null,
+    "confidence_score": 0.98,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "unavailable_source",
+    "language": "en",
+    "sample_id": "uas-002",
+    "expected_result": "source_blocked_403",
+    "actual_result": null,
+    "confidence_score": 0.96,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  },
+  {
+    "fixture_type": "unavailable_source",
+    "language": "de",
+    "sample_id": "uas-003",
+    "expected_result": "source_blocked_403",
+    "actual_result": null,
+    "confidence_score": 0.94,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
+  }
+]
