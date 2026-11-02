@@ -3852,3 +3852,22 @@ class UnknownExpenseRecord(Base):
         CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_unknown_expense_amount"),
         Index("ix_unknown_expense_client_period", "client_id", "period_start", "period_end"),
     )
+
+
+class OnboardingTemplate(Base):
+    """ROP-05: Onboarding template for workflow runs."""
+    __tablename__ = "onboarding_templates"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    template_type = Column(String(100), nullable=False)  # e.g., "quickstart", "faucet", "starter-pack"
+    config_json = Column(JSONB, nullable=True)
+    created_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+    __table_args__ = (
+        Index("ix_onboarding_templates_type", "template_type"),
+        Index("ix_onboarding_templates_created_by", "created_by_user_id"),
+    )

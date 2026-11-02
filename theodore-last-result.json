@@ -1,30 +1,29 @@
 {
-  "task": "COST-03",
-  "description": "Admin-only GET endpoint for cost evidence including allocations data",
-  "status": "completed",
-  "commit_hash": "233efe31",
-  "commit_message": "Theodore: COST-03 - add allocations to cost evidence endpoint",
-  "files_modified": [
-    "app/api/routers/workflow_cost_evidence.py"
+  "timestamp": "2026-11-01T19:30:00+01:00",
+  "commit": "e0faccae",
+  "commit_message": "feat(onboarding): implement ROP-06 templates documentation and validation",
+  "completed_task": "ROP-06: onboarding templates documentation and validation",
+  "implementation_summary": {
+    "model": "OnboardingTemplate in app/db/models.py",
+    "migration": "alembic/versions/70cb1adb8f05_add_onboarding_templates_table.py",
+    "schemas": "app/schemas/onboarding.py",
+    "service": "app/services/onboarding_templates.py",
+    "router": "app/api/routers/onboarding_templates.py",
+    "main_registration": "app/main.py (imported, added to ALL_ROUTERS, lifespan hook)",
+    "documentation": "docs/RESEARCH_OPERATIONS_ROP_06.md"
+  },
+  "features": [
+    "create_template",
+    "get_template",
+    "list_templates",
+    "delete_template",
+    "save_default_templates",
+    "get_template_by_name_and_type"
   ],
-  "implementation_details": {
-    "endpoint": "/v1/workflow-store/admin/cost-evidence/{evidence_id}",
-    "changes": [
-      "Added join to WorkflowCostAllocation table",
-      "Included allocations data in response payload",
-      "Maintained admin-only access control (401 for guests, 403 for regular users)"
-    ]
-  },
-  "verification": {
-    "git_status": "clean",
-    "tests_pending": true,
-    "test_file": "tests/api/test_workflow_cost_evidence_api.py"
-  },
+  "default_templates": ["quickstart", "faucet", "starter-pack"],
   "next_steps": [
-    "Run verification tests for the cost evidence endpoint",
-    "Review THEODORE_QUEUE.md for next subtask (likely ROP-03 or continue Research Operations)",
-    "Update PROGRESS.md with completion details"
-  ],
-  "timestamp": "2026-10-31T15:06:00+02:00",
-  "notes": "Task completed successfully. Code changes committed to origin/master. Git status is clean. Next phase: Research Operations continuation."
+    "Verify ROP-06 endpoint with test suite (tests/api/test_onboarding_templates.py)",
+    "Proceed to next active P0 subtask: ROP-07 or COST-05",
+    "Update PROGRESS.md with next task completion"
+  ]
 }
