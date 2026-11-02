@@ -8,7 +8,7 @@ real funded settlement and partner acceptance are not closed by this release.
 
 - **Task**: Complete ROP-03 by adding de-identified evaluation fixtures for quality testing.
 - **Implementation**: Created `alembic/versions/093_quality_fixtures.py` migration for quality_fixtures table with fields: fixture_type, language, sample_id, expected_result, actual_result, confidence_score, is_available, created_at, expires_at. Model `QualityFixture` exists in `app/db/models.py` (line 3622). Service layer in `app/services/quality_fixtures.py`. Router in `app/api/routers/quality_fixtures.py` with admin-only auth (401/403/404). Pydantic schemas in `app/schemas/quality_fixtures.py`. Initial fixtures: `scripts/quality_fixtures_initial.json` (50 fixtures across 5 types × 5 languages). Tests in `tests/api/test_quality_fixtures_release.py` — 2/2 passed.
-- **Commit**: `2de488cc` — "feat(quality-fixtures): add migration for ROP-03 de-identified evaluation fixtures"
+- **Commit**: `98ad855f` — "feat(rop-03): add quality fixtures model, service, router, schemas and initial data"
 - **Status**: ROP-03 completed and verified. Ready for ROP-04 economics/renewal.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
@@ -20,7 +20,7 @@ real funded settlement and partner acceptance are not closed by this release.
 - **Verification**: Code reviewed; types correct; service layer used; router registered in ALL_ROUTERS list. Ready for testing.
 - **Next**: Run targeted tests for cost evidence API or proceed to next COST subtask.
 
-> **2026-11-01 — ROP-04 verification: actual economics and renewal completed**
+> **2026-11-02 — ROP-04 verification: actual economics and renewal completed**
 
 - **Task**: Verify ROP-04 implementation with targeted test suite (provider/document reconciliation, external-payment events).
 - **Implementation**: `WorkflowCostEvidence` model in `app/db/models.py` includes ROP-04 fields: `provider_id`, `document_type`, `external_payment_event`, `delivery_event`. Service layer `get_cost_evidence()` returns full evidence with allocations and ROP-04 fields. Router `/v1/workflow-store/admin/cost-evidence/{id}` registered in `app/main.py`. Pydantic schemas in `app/schemas/workflow_costs.py` support all ROP-04 fields.
