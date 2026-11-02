@@ -5,11 +5,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.config import get_settings
 from app.db.session import SessionLocal
 from app.services.logging import configure_logging, get_logger
-from app.services.observability import record_http_request
+from app.services.observability import metric_path_from_scope, record_http_request
 from app.api.account_key_metering import AccountKeyUsageMiddleware
 from app.api.routers import (
     auth,
@@ -136,6 +137,37 @@ configure_logging()
 logger = get_logger("api")
 
 
+class CanonicalApiPathMiddleware:
+    """Keep one mounted API surface at ``/v1`` and rewrite legacy root paths.
+
+    Historically every router was mounted twice (``/`` and ``/v1``), doubling
+    the route table to ~1300 entries. Routers are now mounted once; unversioned
+    API paths are rewritten to their canonical ``/v1`` form before routing so
+    existing clients keep working. Framework endpoints (docs, OpenAPI, root)
+    are passed through untouched.
+    """
+
+    _PASSTHROUGH = {"/", "/docs", "/redoc", "/openapi.json", "/favicon.ico"}
+    _PASSTHROUGH_PREFIXES = ("/docs/", "/redoc/")
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    @classmethod
+    def _is_passthrough(cls, path: str) -> bool:
+        return path in cls._PASSTHROUGH or path.startswith(cls._PASSTHROUGH_PREFIXES)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http":
+            path = scope.get("path", "")
+            if path != "/v1" and not path.startswith("/v1/") and not self._is_passthrough(path):
+                scope["path"] = "/v1" + (path if path.startswith("/") else "/" + path)
+                raw_path = scope.get("raw_path")
+                if raw_path is not None:
+                    scope["raw_path"] = b"/v1" + raw_path
+        await self.app(scope, receive, send)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
@@ -217,6 +249,7 @@ app.add_middleware(
         "X-Request-Id",
     ],
 )
+app.add_middleware(CanonicalApiPathMiddleware)
 
 
 @app.middleware("http")
@@ -233,7 +266,7 @@ async def request_observability_middleware(request: Request, call_next):
         return response
     finally:
         duration_ms = int((time.perf_counter() - started) * 1000)
-        record_http_request(request.method, request.url.path, status_code)
+        record_http_request(request.method, metric_path_from_scope(request.scope), status_code)
         logger.info(
             "http_request",
             request_id=request_id,
@@ -401,8 +434,6 @@ ALL_ROUTERS = [
 ]
 
 for r in ALL_ROUTERS:
-    app.include_router(r, prefix="")
-    # Backward-compatible API namespace expected by tests/legacy clients.
     app.include_router(r, prefix="/v1")
 
 

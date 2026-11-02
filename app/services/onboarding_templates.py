@@ -119,11 +119,16 @@ async def save_default_templates(session: AsyncSession) -> None:
 
 
 async def get_template_by_name_and_type(session: AsyncSession, *, name: str, template_type: str) -> OnboardingTemplate | None:
-    """Get template by name and type."""
+    """Get template by name and type.
+
+    Existing databases may contain duplicates from earlier test/manual runs;
+    startup seeding must tolerate them instead of raising MultipleResultsFound.
+    """
     from app.db.models import OnboardingTemplate
     result = await session.execute(
         select(OnboardingTemplate)
         .where(OnboardingTemplate.name == name)
         .where(OnboardingTemplate.template_type == template_type)
+        .limit(1)
     )
     return result.scalar_one_or_none()
