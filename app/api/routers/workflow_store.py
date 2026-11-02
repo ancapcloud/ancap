@@ -86,6 +86,7 @@ from app.services.workflow_execution import (
     quote_credit_package_amount,
     quote_workflow_amount,
 )
+from app.services.quality_fixtures import load_fixtures_from_file, create_quality_fixtures_batch
 
 router = APIRouter(prefix="/workflow-store", tags=["Workflow Store"])
 
@@ -2377,3 +2378,38 @@ async def create_workflow_run(
         )
 
     return result
+
+
+@router.post("/admin/fixtures/load", status_code=201)
+async def load_quality_fixtures(
+    fixture_type: str,
+    file_path: str,
+    session: DbSession,
+    admin_user_id: str = Depends(require_platform_admin),
+):
+    """Load quality fixtures from JSON file for ROP-03 evaluation."""
+    try:
+        fixtures_data = load_fixtures_from_file(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to load fixtures: {str(e)}")
+
+    if not fixtures_data:
+        raise HTTPException(status_code=400, detail="No fixtures loaded")
+
+    # Verify fixture type matches
+    for fixture in fixtures_data:
+        if fixture.get("fixture_type") != fixture_type:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Fixture type mismatch: expected {fixture_type}, got {fixture.get('fixture_type')}",
+            )
+
+    # Batch create fixtures
+    created = await create_quality_fixtures_batch(session, fixtures_data)
+
+    return {
+        "status": "success",
+        "fixture_type": fixture_type,
+        "loaded_count": len(created),
+        "sample_ids": [f.sample_id for f in created],
+    }

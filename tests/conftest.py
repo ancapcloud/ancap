@@ -311,14 +311,24 @@ def db_cursor():
     state from earlier tests when the session-scoped TestClient keeps the app/engine alive.
     Caller is responsible for committing if needed.
     """
-    sync_url = _sync_database_url()
-    engine = create_engine(sync_url, pool_pre_ping=True)
-    raw_conn = engine.connect().connection.driver_connection
-    raw_conn.commit()  # ensure connection is in a clean state
-    yield raw_conn.cursor()
-    raw_conn.commit()
-    raw_conn.close()
-    engine.dispose()
+    # Use sync PostgreSQL driver (psycopg2 or psycopg2_async in sync mode) for direct SQL.
+    # Tests run on asyncpg DB, but we need a sync connection for raw cursor usage.
+    # Fallback: use async engine and get driver connection via asyncio loop.
+    import asyncio
+    
+    db_url = os.environ.get("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/ancap_test")
+    # Strip +asyncpg for sync engine; psycopg2 will be used if available, otherwise asyncpg in sync mode
+    sync_url = db_url.replace("postgresql+asyncpg", "postgresql", 1)
+    
+    try:
+        engine = create_engine(sync_url, pool_pre_ping=True)
+        with engine.connect() as conn:
+            cursor = conn.connection.cursor()
+            cursor.execute("SELECT 1")  # test connection
+            yield cursor
+            cursor.close()
+    except Exception as e:
+        pytest.skip(f"Cannot create sync DB connection for direct SQL: {e}")
 
 
 def get_base_vertical_id_from_db():

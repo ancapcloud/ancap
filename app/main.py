@@ -32,6 +32,7 @@ from app.api.routers import (
     reviews,
     funds,
     onboarding,
+    onboarding_templates,
     stakes_router,
     chain,
     wallet_acp,
@@ -125,11 +126,21 @@ from app.api.routers import (
     robot_ops,
     project_economy,
     mcp,
+    onboarding_templates,
 )
 
 settings = get_settings()
 configure_logging()
 logger = get_logger("api")
+
+# Create async database engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.pool import NullPool
+engine = create_async_engine(
+    settings.database_url,
+    echo=False,
+    poolclass=NullPool,
+)
 
 
 @asynccontextmanager
@@ -137,6 +148,11 @@ async def lifespan(app: FastAPI):
     import asyncio
     from contextlib import suppress
     from app.services.workflow_ops import workflow_ops_tick, WORKER_HEALTH
+
+    async def get_db():
+        """Dependency for routes needing database access."""
+        async with AsyncSession(engine, expire_on_commit=False) as session:
+            yield session
 
     async def workflow_worker():
         while True:
@@ -163,12 +179,21 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Failed to schedule ACP UTXO index catch-up on startup")
     try:
+        from app.services.onboarding_templates import save_default_templates
+        async with get_db() as db:
+            await save_default_templates(db)
+        logger.info("Onboarding default templates initialized")
+    except Exception:
+        logger.exception("Failed to initialize onboarding default templates")
+    try:
         yield {}
     finally:
         if workflow_task:
             workflow_task.cancel()
             with suppress(asyncio.CancelledError):
                 await workflow_task
+        # Close engine on shutdown
+        await engine.dispose()
 
 
 app = FastAPI(
@@ -300,6 +325,7 @@ ALL_ROUTERS = [
     reviews.disputes_router,
     funds.router,
     onboarding.router,
+    onboarding_templates.router,
     stakes_router.router,
     chain.router,
     wallet_acp.router,
@@ -380,6 +406,7 @@ ALL_ROUTERS = [
     robot_ops.router,
     project_economy.router,
     mcp.router,
+    onboarding_templates.router,
 ]
 
 for r in ALL_ROUTERS:
