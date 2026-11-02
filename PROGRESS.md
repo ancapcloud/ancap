@@ -5,6 +5,20 @@
 - **Status**: ROP-05 completed. Ready for validation of 30% onboarding effort reduction.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
+2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
+An explicit operator opt-in adds Claude Sonnet reserve execution through the
+already configured OpenRouter account, with no data collection / zero-retention
+routing, actual provider/model receipts, and no rerouting of customer BYOK or
+pinned models. Retry backoff now yields the event loop and records actual retries.
+The Teneta credential still requires operator rotation to restore the primary.
+
+2026-11-01 referral catalogue repair: the new earnings playbook now has
+matching explicit EUR 10.79 / historical USD 12 entries across backend and
+frontend. This restores catalogue, checkout and concierge lookups. Deployment
+now waits for applicable push CI on the exact release SHA before SSH activation.
+- Release gate reads the checked-out workflow push filters; every applicable security/docs check must exist and succeed. YAML parser installation uses the audited lock hashes.
+- Tagged-release SAST uses the same fail-closed medium/high severity policy as backend CI; Dockerfile changes require both runtime check sets.
+
 2026-11-01: PR #138 security/MCP/admin release merged and deployed as b45d5bd.
 1,290 backend tests and 71 browser E2E tests passed in CI; runtime readiness,
 12 HTTP checks, 10 desktop/mobile pages and official MCP remote/stdio checks

@@ -107,7 +107,9 @@ jobs:
         run: pytest -q
 
       - name: Security SAST — Bandit
-        run: python -m bandit -r app/ -f txt
+        run: |
+          set -o pipefail
+          python -m bandit -r app/ -ll -f txt 2>&1 | tee bandit-report.txt
 
       - name: Docker build check
         run: docker build -t ancap:release-check .

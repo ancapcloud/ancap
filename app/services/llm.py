@@ -2,6 +2,7 @@ from __future__ import annotations
 from app.services.recoverable_errors import report_optional_failure
 
 import hashlib
+import asyncio
 from contextvars import ContextVar
 import json
 import time
@@ -41,6 +42,10 @@ _RETRYABLE_STATUS_CODES = {429, 502, 503, 504}
 
 def _classify_failure(exc: Exception) -> str:
     """Classify LLM failure into: unavailable | invalid_model | auth_error | balance_error | timeout | unknown."""
+    if isinstance(exc, (TimeoutError, httpx.TimeoutException)):
+        return "timeout"
+    if isinstance(exc, httpx.NetworkError):
+        return "unavailable"
     msg = str(exc).lower()
     code = getattr(exc, "response", None)
     if isinstance(code, httpx.Response):
@@ -69,6 +74,8 @@ def _classify_failure(exc: Exception) -> str:
 
 
 def _is_retryable(exc: Exception) -> bool:
+    if isinstance(exc, (TimeoutError, httpx.TimeoutException, httpx.NetworkError)):
+        return True
     code = getattr(exc, "response", None)
     if isinstance(code, httpx.Response):
         return code.status_code in _RETRYABLE_STATUS_CODES
@@ -217,6 +224,39 @@ async def _call_openai(prompt: str, timeout: int = 45) -> tuple[str, dict[str, A
     return str(text), payload
 
 
+async def _call_openrouter_fallback(prompt: str) -> tuple[str, dict[str, Any], str]:
+    """Use the configured reserve model with explicit no-retention routing."""
+    from app.services import home_chat
+
+    settings = get_settings()
+    overrides = workflow_provider_credentials.get() or {}
+    model = settings.llm_openrouter_fallback_model
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": min(settings.llm_max_tokens, overrides.get("max_tokens", settings.llm_max_tokens)),
+        "provider": {"data_collection": "deny", "zdr": True},
+    }
+    try:
+        status, payload = await asyncio.wait_for(
+            home_chat._openrouter_request("POST", "/chat/completions", body),
+            timeout=max(1, min(settings.llm_timeout_seconds, 60)),
+        )
+    except home_chat.HomeChatError:
+        raise RuntimeError("openrouter unavailable") from None
+    if status != 200:
+        request = httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions")
+        raise httpx.HTTPStatusError("Reserve provider rejected request", request=request,
+                                    response=httpx.Response(status, request=request))
+    if not isinstance(payload, dict):
+        raise RuntimeError("Reserve provider returned invalid response")
+    text = home_chat._message_text(payload)
+    if not text:
+        raise RuntimeError("Reserve provider returned empty response")
+    used_model = payload.get("model")
+    return text, payload, used_model[:128] if isinstance(used_model, str) and used_model else model
+
+
 async def _call_ollama(prompt: str, timeout: int = 45) -> tuple[str, dict[str, Any]]:
     settings = get_settings()
     async with httpx.AsyncClient(timeout=timeout) as client:
@@ -281,6 +321,7 @@ async def _call_with_retry(
     timeout = settings.llm_timeout_seconds
 
     last_exc: Exception | None = None
+    attempt = 0
     for attempt in range(max_retries + 1):
         try:
             if provider == "openai":
@@ -295,11 +336,11 @@ async def _call_with_retry(
             if not _is_retryable(exc) or attempt >= max_retries:
                 break
             # Exponential backoff: 1s, 2s
-            time.sleep(2 ** attempt)
+            await asyncio.sleep(2 ** attempt)
 
     reason = _classify_failure(last_exc) if last_exc else "unknown"
     provider_status = "failed" if reason in ("auth_error", "balance_error", "invalid_model") else "degraded"
-    return "", {}, max_retries, provider_status, reason
+    return "", {}, attempt, provider_status, reason
 
 
 async def execute_paid_workflow_with_llm(
@@ -360,6 +401,20 @@ async def execute_paid_workflow_with_llm(
         )
 
     output_text, raw, retry_count, provider_status, failure_reason = await _call_with_retry(provider, prompt)
+    provider_fallback_used = False
+    # A caller-selected provider/model or BYOK key must never cross to another processor.
+    pinned_provider = any(overrides.get(field) for field in ("api_key", "provider", "model"))
+    if (not output_text or provider_status != "ok") and settings.llm_openrouter_fallback_enabled and settings.openrouter_api_key and not pinned_provider:
+        metadata.update(primary_provider=provider, primary_model=model,
+                        primary_failure_reason=failure_reason or "empty_response")
+        try:
+            output_text, raw, model = await _call_openrouter_fallback(prompt)
+            provider = "openrouter"
+            provider_status = "ok"
+            failure_reason = None
+            provider_fallback_used = True
+        except Exception as exc:
+            metadata["reserve_failure_reason"] = _classify_failure(exc)
     latency_ms = int((time.perf_counter() - started) * 1000)
 
     if output_text and provider_status == "ok":
@@ -396,7 +451,10 @@ async def execute_paid_workflow_with_llm(
             "status": "succeeded",
             "provider_status": provider_status,
             "retry_count": retry_count,
+            "provider_fallback_used": provider_fallback_used,
         }
+        if provider_fallback_used:
+            result["llm_usage"]["primary_failure_reason"] = metadata["primary_failure_reason"]
         return LlmExecutionResult(
             result=result,
             usage_event_id=str(event.id),
