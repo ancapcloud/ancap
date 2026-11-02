@@ -6,10 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession, require_platform_admin
 from app.services.onboarding_templates import (
-    create_template,
-    get_template,
-    list_templates,
-    delete_template,
+    create_template as _create_template,
+    get_template_by_id as _get_template,
+    list_templates as _list_templates,
+    delete_template as _delete_template,
 )
 from app.schemas.onboarding import TemplateCreateRequest, TemplatePublic
 
@@ -20,20 +20,15 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=TemplatePublic, status_code=201)
-async def create_onboarding_template(
-    body: TemplateCreateRequest,
-    session: DbSession,
-):
+async def create_onboarding_template(body: TemplateCreateRequest, session: DbSession):
     """Create a new onboarding template."""
     try:
-        template = await create_template(
+        template = await _create_template(
             session,
             name=body.name,
             description=body.description,
             template_type=body.template_type,
             config_json=body.config_json,
-            created_by_user_id=None,  # Admin creates templates
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -49,14 +44,10 @@ async def create_onboarding_template(
     )
 
 
-@router.get("/{template_id}", response_model=TemplatePublic)
-async def get_onboarding_template(
-    template_id: UUID,
-    session: DbSession,
-):
+async def get_onboarding_template(template_id: UUID, session: DbSession):
     """Get template by ID (admin only)."""
     try:
-        template = await get_template(session, template_id=template_id)
+        template = await _get_template(session, template_id=template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         return TemplatePublic(
@@ -75,15 +66,10 @@ async def get_onboarding_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("", response_model=list[TemplatePublic])
-async def list_onboarding_templates(
-    session: DbSession,
-    template_type: str | None = None,
-    limit: int = 100,
-):
+async def list_onboarding_templates(session: DbSession, template_type: str | None = None, limit: int = 100):
     """List onboarding templates (admin only)."""
     try:
-        templates = await list_templates(session, template_type=template_type, limit=limit)
+        templates = await _list_templates(session, is_active=True, limit=limit)
         return [
             TemplatePublic(
                 id=str(t.id),
@@ -101,17 +87,34 @@ async def list_onboarding_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{template_id}", status_code=204)
-async def delete_onboarding_template(
-    template_id: UUID,
-    session: DbSession,
-):
+async def delete_onboarding_template(template_id: UUID, session: DbSession):
     """Delete a template (admin only)."""
     try:
-        success = await delete_template(session, template_id=template_id)
+        success = await _delete_template(session, template_id=template_id)
         if not success:
             raise HTTPException(status_code=404, detail="Template not found")
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("", response_model=TemplatePublic, status_code=201)
+async def create_endpoint(body: TemplateCreateRequest, session: DbSession):
+    return await create_onboarding_template(body, session)
+
+
+@router.get("/{template_id}", response_model=TemplatePublic)
+async def get_endpoint(template_id: UUID, session: DbSession):
+    return await get_onboarding_template(template_id, session)
+
+
+@router.get("", response_model=list[TemplatePublic])
+async def list_endpoint(session: DbSession, template_type: str | None = None, limit: int = 100):
+    templates = await list_onboarding_templates(session, template_type=template_type, limit=limit)
+    return templates
+
+
+@router.delete("/{template_id}", status_code=204)
+async def delete_endpoint(template_id: UUID, session: DbSession):
+    await delete_onboarding_template(template_id, session)

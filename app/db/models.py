@@ -744,6 +744,35 @@ class Pool(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class OnboardingTemplate(Base):
+    """ROP-05: onboarding templates for reusable settings, source categories and packet templates."""
+    __tablename__ = "onboarding_templates"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    name = Column(String(120), nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    created_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    template_type = Column(SQLEnum("template_type_enum"), nullable=False, default="general")
+    
+    # Source categories
+    source_categories = Column(JSONB, nullable=True)  # e.g. ["news", "social", "official"]
+    
+    # Packet template configuration
+    packet_template = Column(JSONB, nullable=True)  # structure for report packets
+    
+    # Reusable settings
+    config_json = Column(JSONB, nullable=True)  # default model params, prompts, etc.
+    
+    # Validation metadata
+    validation_config = Column(JSONB, nullable=True)  # thresholds, checks
+    
+    # Status and lifecycle
+    is_active = Column(Boolean, nullable=False, default=True)
+    version = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+
 class AccountKindEnum(str, enum.Enum):
     """System account kinds for unambiguous routing (ROADMAP §3)."""
     treasury = "treasury"
