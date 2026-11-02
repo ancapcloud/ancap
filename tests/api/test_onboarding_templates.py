@@ -27,12 +27,12 @@ class TestOnboardingTemplatesAuth:
 
     def test_guest_cannot_list_templates(self, client):
         """Guest user cannot list templates (should return 401)."""
-        response = client.get("/v1/onboarding/templates")
+        response = client.get("/v1/onboarding/templates", headers={"Authorization": ""})
         assert response.status_code == 401
 
     def test_guest_cannot_get_template(self, client):
         """Guest user cannot get a template by ID (should return 401)."""
-        response = client.get("/v1/onboarding/templates/invalid-uuid")
+        response = client.get("/v1/onboarding/templates/invalid-uuid", headers={"Authorization": ""})
         assert response.status_code == 401
 
     def test_guest_cannot_create_template(self, client):
@@ -43,12 +43,12 @@ class TestOnboardingTemplatesAuth:
             "template_type": "quickstart",
             "config_json": {},
         }
-        response = client.post("/v1/onboarding/templates", json=data)
+        response = client.post("/v1/onboarding/templates", json=data, headers={"Authorization": ""})
         assert response.status_code == 401
 
     def test_guest_cannot_delete_template(self, client):
         """Guest user cannot delete templates (should return 401)."""
-        response = client.delete("/v1/onboarding/templates/invalid-uuid")
+        response = client.delete("/v1/onboarding/templates/invalid-uuid", headers={"Authorization": ""})
         assert response.status_code == 401
 
 
@@ -61,7 +61,7 @@ class TestOnboardingTemplatesAdmin:
         response = client.get("/v1/onboarding/templates", headers=headers)
         assert response.status_code == 200
         data = response.json()
-        assert "templates" in data or "total" in data
+        assert isinstance(data, list)
 
     def test_admin_can_get_template(self, client, monkeypatch):
         """Admin user can get a template by ID."""
@@ -137,4 +137,4 @@ class TestOnboardingTemplatesAdmin:
         response = client.get("/v1/onboarding/templates?template_type=faucet", headers=headers)
         assert response.status_code == 200
         data = response.json()
-        assert len(data["templates"]) >= 1
+        assert len(data) >= 1

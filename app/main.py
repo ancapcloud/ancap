@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.db.session import SessionLocal
 from app.services.logging import configure_logging, get_logger
 from app.services.observability import record_http_request
 from app.api.account_key_metering import AccountKeyUsageMiddleware
@@ -134,26 +135,12 @@ settings = get_settings()
 configure_logging()
 logger = get_logger("api")
 
-# Create async database engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.pool import NullPool
-engine = create_async_engine(
-    settings.database_url,
-    echo=False,
-    poolclass=NullPool,
-)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
     from contextlib import suppress
     from app.services.workflow_ops import workflow_ops_tick, WORKER_HEALTH
-
-    async def get_db():
-        """Dependency for routes needing database access."""
-        async with AsyncSession(engine, expire_on_commit=False) as session:
-            yield session
 
     async def workflow_worker():
         while True:
@@ -185,8 +172,9 @@ async def lifespan(app: FastAPI):
         logger.exception("Failed to schedule ACP UTXO index catch-up on startup")
     try:
         from app.services.onboarding_templates import save_default_templates
-        async with get_db() as db:
+        async with SessionLocal() as db:
             await save_default_templates(db)
+            await db.commit()
         logger.info("Onboarding default templates initialized")
     except Exception:
         logger.exception("Failed to initialize onboarding default templates")
@@ -197,8 +185,6 @@ async def lifespan(app: FastAPI):
             workflow_task.cancel()
             with suppress(asyncio.CancelledError):
                 await workflow_task
-        # Close engine on shutdown
-        await engine.dispose()
 
 
 app = FastAPI(

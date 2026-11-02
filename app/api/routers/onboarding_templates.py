@@ -13,7 +13,11 @@ from app.services.onboarding_templates import (
 )
 from app.schemas.onboarding import TemplateCreateRequest, TemplatePublic
 
-router = APIRouter(prefix="/onboarding/templates", tags=["Onboarding Templates (ROP-05)"])
+router = APIRouter(
+    prefix="/onboarding/templates",
+    tags=["Onboarding Templates (ROP-05)"],
+    dependencies=[Depends(require_platform_admin)],
+)
 
 
 @router.post("", response_model=TemplatePublic, status_code=201)
