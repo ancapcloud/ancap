@@ -744,35 +744,6 @@ class Pool(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
-class OnboardingTemplate(Base):
-    """ROP-05: onboarding templates for reusable settings, source categories and packet templates."""
-    __tablename__ = "onboarding_templates"
-
-    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    name = Column(String(120), nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    created_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
-    template_type = Column(SQLEnum("template_type_enum"), nullable=False, default="general")
-    
-    # Source categories
-    source_categories = Column(JSONB, nullable=True)  # e.g. ["news", "social", "official"]
-    
-    # Packet template configuration
-    packet_template = Column(JSONB, nullable=True)  # structure for report packets
-    
-    # Reusable settings
-    config_json = Column(JSONB, nullable=True)  # default model params, prompts, etc.
-    
-    # Validation metadata
-    validation_config = Column(JSONB, nullable=True)  # thresholds, checks
-    
-    # Status and lifecycle
-    is_active = Column(Boolean, nullable=False, default=True)
-    version = Column(Integer, nullable=False, default=1)
-    created_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
-
-
 class AccountKindEnum(str, enum.Enum):
     """System account kinds for unambiguous routing (ROADMAP §3)."""
     treasury = "treasury"
@@ -3882,6 +3853,37 @@ class UnknownExpenseRecord(Base):
     __table_args__ = (
         CheckConstraint("amount >= 0 AND amount != 'NaN'::numeric", name="ck_unknown_expense_amount"),
         Index("ix_unknown_expense_client_period", "client_id", "period_start", "period_end"),
+    )
+
+
+class PacketTemplate(Base):
+    """ROP-06: Packet template for structured packet creation."""
+    __tablename__ = "packet_templates"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(120), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    version = Column(Integer, nullable=False, server_default="1")
+    source_categories = Column(JSONB, nullable=False, default=list)
+    max_sources_per_packet = Column(Integer, nullable=False, default=10)
+    max_snapshots_per_source = Column(Integer, nullable=False, default=20)
+    max_claims_per_source = Column(Integer, nullable=False, default=50)
+    check_cooldown_seconds = Column(Integer, nullable=False, default=60)
+    retention_days = Column(Integer, nullable=False, default=30)
+    packet_structure = Column(JSONB, nullable=False, default=dict)
+    languages = Column(String(10), nullable=False, server_default="en")  # en, ru, uk, de, zh-Hant
+    status = Column(String(24), nullable=False, server_default="draft", index=True)  # draft, active, archived
+    is_active = Column(Boolean, nullable=False, server_default="False")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+    __table_args__ = (
+        UniqueConstraint("slug", name="uq_packet_template_slug"),
+        Index("ix_packet_templates_owner", "owner_user_id"),
+        Index("ix_packet_templates_status", "status"),
+        Index("ix_packet_templates_created", "created_at"),
     )
 
 

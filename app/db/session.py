@@ -6,6 +6,8 @@ from app.db.base import Base as Base
 
 settings = get_settings()
 
+settings = get_settings()
+
 engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,
@@ -55,5 +57,18 @@ async def get_db():
 
 
 
-# Stable imports used by application startup, migrations and test utilities.
 __all__ = ["Base", "engine", "async_session_maker", "SessionLocal", "get_db"]
+
+
+async def init_db(session: AsyncSession):
+    """Apply all pending migrations to the database."""
+    from app.db.models import Base
+    await session.execute("SELECT max(version) FROM alembic_version")
+    result = await session.execute("SELECT max(version) FROM alembic_version")
+    current_max = result.scalar_one_or_none()
+    if current_max is None:
+        # No migrations applied yet, create initial record
+        from sqlalchemy import text
+        await session.execute(text("INSERT INTO alembic_version (version) VALUES ('base')"))
+        await session.commit()
+    await Base.metadata.create_all(bind=engine)
