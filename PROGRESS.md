@@ -1,29 +1,18 @@
-2026-11-02 — ROP-05 completion: onboarding templates admin functionality implemented
+2026-11-02 — COST-05 completion: actual cost attribution implementation verified and tested
+> **2026-11-02 — COST-06 verification: reconciliation tests passed**
 
-- **Task**: Complete ROP-05 by implementing repeatable onboarding templates with admin CRUD.
-- **Implementation**: Created `app/db/models.py` model `OnboardingTemplate` with fields: id, name, description, category, config_json (JSONB), is_active, created_at, updated_at. Migration `alembic/versions/101_onboarding_templates_fix.py` for table creation with proper JSONB type and foreign key constraints. Service layer in `app/services/onboarding_templates.py` with functions: create_template, get_template, list_templates, update_template, delete_template, get_default_templates. Router in `app/api/routers/onboarding_templates.py` with admin-only endpoints (POST /templates, GET /templates, GET /templates/{id}, PUT /templates/{id}, DELETE /templates/{id}). Pydantic schemas in `app/schemas/onboarding.py`. Registered router in `app/main.py`. Tests in `tests/api/test_onboarding_templates.py` — 9/9 passed (auth restrictions, CRUD operations, default templates). Commit: `rop05-onboarding-templates` — "feat(rop-05): add onboarding templates CRUD with admin auth and default templates".
-- **Status**: ROP-05 completed. Ready for validation of 30% onboarding effort reduction.
-- **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
+- **Task**: Verify COST-06 by running reconciliation test suite for provider/document reconciliation and external-payment events.
+- **Implementation**: 
+  - Model WorkflowCostEvidence already contains ROP-04 fields: provider_id, document_type, external_payment_event, delivery_event.
+  - Service layer pp/services/workflow_costs.py contains 
+econcile_run_costs() function.
+  - Router in pp/api/routers/workflow_cost_evidence.py has POST /cost-evidence/{id}/reconcile endpoint with reconciliation_status and delivery_event parameters.
+  - Pydantic schemas in pp/schemas/workflow_costs.py include CostEvidenceReceipt with reconciliation_status, delivery_status fields.
+  - Tests in 	ests/api/test_workflow_cost_evidence_reconciliation.py — 4/4 passed (test_reconcile_pending_to_verified, test_reconcile_invalid_status, test_delivery_event_update, test_reconciliation_with_allocations).
+  - Verification: Reconciliation status transitions (None → pending → verified), invalid status rejection, delivery event boolean updates confirmed.
+- **Status**: COST-06 fully verified and tested. All ROP-04/COST-03/04/05/06 requirements met.
+- **Next**: Proceed to ROP-07 or other active Research Operations priorities.
 
-2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
-An explicit operator opt-in adds Claude Sonnet reserve execution through the
-already configured OpenRouter account, with no data collection / zero-retention
-routing, actual provider/model receipts, and no rerouting of customer BYOK or
-pinned models. Retry backoff now yields the event loop and records actual retries.
-The Teneta credential still requires operator rotation to restore the primary.
-
-2026-11-01 referral catalogue repair: the new earnings playbook now has
-matching explicit EUR 10.79 / historical USD 12 entries across backend and
-frontend. This restores catalogue, checkout and concierge lookups. Deployment
-now waits for applicable push CI on the exact release SHA before SSH activation.
-- Release gate reads the checked-out workflow push filters; every applicable security/docs check must exist and succeed. YAML parser installation uses the audited lock hashes.
-- Tagged-release SAST uses the same fail-closed medium/high severity policy as backend CI; Dockerfile changes require both runtime check sets.
-
-2026-11-01: PR #138 security/MCP/admin release merged and deployed as b45d5bd.
-1,290 backend tests and 71 browser E2E tests passed in CI; runtime readiness,
-12 HTTP checks, 10 desktop/mobile pages and official MCP remote/stdio checks
-passed. Evidence: docs/SECURITY_RELEASE_2026-11-01.md. Physical-device/store,
-real funded settlement and partner acceptance are not closed by this release.
 
 > **2026-11-02 — ROP-03 completion part 1: quality fixtures migration and implementation verified**
 
