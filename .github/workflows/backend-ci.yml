@@ -26,6 +26,7 @@ on:
       - ".githooks/**"
       - "scripts/bootstrap_ancap_docs_repo.py"
       - "scripts/check_secret_hygiene.py"
+      - "scripts/check_alembic_single_head.py"
       - "scripts/check_pricing_sync.py"
       - "scripts/deploy-ancap-cloud.sh"
       - "scripts/ensure-acp1-host-proxy.sh"
@@ -38,6 +39,8 @@ on:
       - "scripts/install_git_hooks.py"
       - "scripts/render_secret_rotation_evidence.py"
       - "requirements.in"
+      - "requirements-dev.in"
+      - "requirements-dev.txt"
       - "requirements.txt"
       - "pyproject.toml"
       - "pytest.ini"
@@ -65,6 +68,7 @@ on:
       - ".githooks/**"
       - "scripts/bootstrap_ancap_docs_repo.py"
       - "scripts/check_secret_hygiene.py"
+      - "scripts/check_alembic_single_head.py"
       - "scripts/check_pricing_sync.py"
       - "scripts/deploy-ancap-cloud.sh"
       - "scripts/ensure-acp1-host-proxy.sh"
@@ -77,6 +81,8 @@ on:
       - "scripts/install_git_hooks.py"
       - "scripts/render_secret_rotation_evidence.py"
       - "requirements.in"
+      - "requirements-dev.in"
+      - "requirements-dev.txt"
       - "requirements.txt"
       - "pyproject.toml"
       - "pytest.ini"
@@ -109,6 +115,8 @@ jobs:
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/ancap
       GH_TOKEN: ${{ github.token }}
+      # A failed migration must fail the job instead of wiping the schema.
+      TEST_SCHEMA_FALLBACK: "0"
 
     steps:
       - name: Checkout
@@ -122,13 +130,42 @@ jobs:
       - name: Install runtime + dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev]
+          pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+
+      - name: Check single Alembic head
+        run: python scripts/check_alembic_single_head.py
 
       - name: Run Alembic migrations
         run: alembic upgrade head
 
+      - name: Verify migration state
+        run: |
+          alembic current
+          alembic heads
+
+      - name: Alembic drift report (non-blocking baseline)
+        # There is a large pre-existing metadata/migration drift backlog. Keep the
+        # report visible without failing unrelated work until the drift is burned
+        # down; the blocking guarantees are single-head + upgrade-on-empty-DB.
+        continue-on-error: true
+        run: alembic check
+
       - name: Run backend tests
-        run: pytest -q
+        run: pytest -q --cov=app --cov-report=term --cov-report=xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: coverage.xml
+          retention-days: 14
+
+      - name: Dependency audit (non-blocking baseline)
+        # First pass surfaces advisories without failing unrelated work; tighten
+        # to blocking once the known-vulnerability baseline is cleared.
+        continue-on-error: true
+        run: python -m pip_audit --progress-spinner off
 
       - name: Verify frontend and backend catalogue parity
         run: python scripts/check_pricing_sync.py
@@ -163,3 +200,25 @@ jobs:
           done
           echo "docker build failed after 5 attempts"
           exit 1
+
+  test-unit:
+    # Fast, database-free signal so PRs do not wait for the full PostgreSQL suite.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Install runtime + dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+
+      - name: Run unit tests
+        run: pytest tests/unit -q
+

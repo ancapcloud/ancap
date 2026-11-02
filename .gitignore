@@ -33,9 +33,8 @@ env/
 
 # Environment variables and secrets
 .env
-.env.local
-.env.*.local
-.env.turnstile-backup
+.env.*
+!.env.example
 *.key
 *.pem
 secrets/
