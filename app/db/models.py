@@ -3872,3 +3872,28 @@ class OnboardingTemplate(Base):
         Index("ix_onboarding_templates_type", "template_type"),
         Index("ix_onboarding_templates_created_by", "created_by_user_id"),
     )
+
+
+class SourceSchedule(Base):
+    """ROP-03: Bounded source collection schedule for Research Operations."""
+    __tablename__ = "source_schedules"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id = Column(String(255), nullable=False, index=True)
+    source_type = Column(String(100), nullable=False)  # e.g., "crypto-client", "competitor", "news"
+    source_pattern = Column(String(512), nullable=True)  # regex or glob pattern for sources
+    check_interval_minutes = Column(Integer, nullable=False, default=60)
+    retention_days = Column(Integer, nullable=False, default=30)
+    max_sources = Column(Integer, nullable=False, default=10)
+    max_snapshots_per_source = Column(Integer, nullable=False, default=20)
+    max_claims_per_source = Column(Integer, nullable=False, default=50)
+    check_cooldown_seconds = Column(Integer, nullable=False, default=60)
+    enabled = Column(Boolean, nullable=False, server_default="True")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+    __table_args__ = (
+        Index("ix_source_schedules_project_type", "project_id", "source_type"),
+        CheckConstraint("check_interval_minutes >= 1 AND check_interval_minutes <= 1440", name="ck_schedule_interval"),
+        CheckConstraint("retention_days >= 1 AND retention_days <= 365", name="ck_schedule_retention"),
+    )
