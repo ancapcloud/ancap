@@ -175,3 +175,6 @@ ACP-crypto/target-lean/
 .env.wevisone-*
 .env.wevisone.*
 .wevisone-smoke/
+
+# Private Cursor MCP configuration (may contain account credentials)
+/.cursor/mcp.json

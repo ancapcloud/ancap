@@ -1706,3 +1706,9 @@ Before ending every session:
 
 
 
+
+
+2026-11-02 GitGuardian incident #39433693: private Cursor MCP configuration
+removed from tracking and ignored; secret-free MCP example added. Operator
+reports key reissued; revocation, production replacement and access-log review
+remain unverified. Historical commit 4405779a still contains the exposed key.

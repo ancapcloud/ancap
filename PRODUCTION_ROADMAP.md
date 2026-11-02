@@ -376,3 +376,9 @@ Production smoke targets to keep using:
 - **Embodied AI security** — open humanoid / VLA models (e.g. UnifoLM-WLA-1.0) stay off settlement hosts; `FF_EMBODIED_ADAPTER` default false; public status `GET /v1/embodied-ai/security`; controls in `docs/EMBODIED_AI_SECURITY_CONTROLS.md`.
 - **Crypto Benchmark Library (QOBLIB-style)** — public scorecard for ACP/wACP/sACP rails vs published baselines; `GET /v1/crypto/benchmark` · `/reserves` · `docs/CRYPTO_BENCHMARK_LIBRARY.md`. Snapshot-backed reserve proof + stale/mismatch transparency on public surfaces.
 
+
+
+2026-11-02 GitGuardian incident #39433693: private Cursor MCP configuration
+removed from tracking and ignored; secret-free MCP example added. Operator
+reports key reissued; revocation, production replacement and access-log review
+remain unverified. Historical commit 4405779a still contains the exposed key.
