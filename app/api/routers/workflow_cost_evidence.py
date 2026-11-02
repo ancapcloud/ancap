@@ -66,9 +66,14 @@ async def reconcile_provider_payment(
     await session.flush()
     
     receipt = await get_cost_evidence(evidence_id, session)
-    
-    return CostEvidenceReceipt(
-        **receipt.model_dump(),
-        reconciliation_status=reconciliation_status or evidence.reconciliation_status,
-        delivery_status="verified" if (evidence.delivery_event and evidence.external_payment_event) else "pending"
+
+    payload = receipt.model_dump()
+    payload["reconciliation_status"] = (
+        reconciliation_status or evidence.reconciliation_status
     )
+    payload["delivery_status"] = (
+        "verified"
+        if (evidence.delivery_event and evidence.external_payment_event)
+        else "pending"
+    )
+    return CostEvidenceReceipt(**payload)
