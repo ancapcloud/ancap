@@ -90,6 +90,8 @@ class CostEvidenceReceipt(BaseModel):
     # COST-04 payment provenance reconciliation status
     reconciliation_status: str | None = None
     delivery_status: str | None = None
+    # COST-05 cost attribution data
+    attribution_data: dict | None = None
 
 
 class QualityFixturePublic(BaseModel):
@@ -118,3 +120,14 @@ class QualityFixtureCreate(BaseModel):
     confidence_score: Optional[float] = Field(ge=0.0, le=1.0, allow_inf_nan=False)
     is_available: bool = True
     expires_at: Optional[str] = None
+
+
+class CostAttributionRequest(BaseModel):
+    """Cost attribution request for evidence."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_cost: Decimal = Field(ge=0.0, description="Model inference cost")
+    data_cost: Decimal = Field(ge=0.0, description="Data retrieval cost")
+    infrastructure_cost: Decimal = Field(ge=0.0, description="Infrastructure cost")
+    retry_cost: Optional[Decimal] = Field(default=None, ge=0.0, description="Retry cost (optional)")
+    review_support_cost: Optional[Decimal] = Field(default=None, ge=0.0, description="Review/support cost (optional)")
+    payment_fee: Optional[Decimal] = Field(default=None, ge=0.0, description="Payment fee (optional)")

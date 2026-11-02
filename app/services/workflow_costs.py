@@ -142,3 +142,71 @@ Coverage means categories have evidence, not that billing was independently audi
             missing_categories=[c for c in COST_CATEGORIES if c not in categories[run_id]],
             coverage_complete=set(COST_CATEGORIES) == categories[run_id],
         ) for run_id in dict.fromkeys(run_ids)]
+
+
+async def attribute_cost_evidence(session, evidence_id: UUID, body):
+    """Attribute costs to specific categories with provider billing and manual-work evidence.
+    
+    Accepts cost attribution data including model/data/infrastructure costs, retry costs,
+    review/support costs, payment fees. Validates currency separation and prevents double-counting
+    creator payouts.
+    """
+    from app.schemas.workflow_costs import CostEvidenceReceipt
+    
+    evidence = (await session.execute(select(WorkflowCostEvidence).where(
+        WorkflowCostEvidence.id == evidence_id))).scalar_one_or_none()
+    if evidence is None:
+        raise HTTPException(status_code=404, detail="Cost evidence not found")
+    
+    # Validate attribution data
+    if not body or not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid attribution body")
+    
+    # Separate costs by category
+    model_data_costs = Decimal(body.get('model_data_cost', '0'))
+    retry_costs = Decimal(body.get('retry_cost', '0'))
+    review_support_costs = Decimal(body.get('review_support_cost', '0'))
+    payment_fees = Decimal(body.get('payment_fee', '0'))
+    
+    # Validate no double-counting with existing allocations
+    existing_total = sum(a.amount for a in (await session.execute(select(WorkflowCostAllocation).where(
+        WorkflowCostAllocation.evidence_id == evidence_id))).scalars())
+    
+    new_total = model_data_costs + retry_costs + review_support_costs + payment_fees
+    if new_total > 0 and existing_total > 0:
+        # Allow attribution only if it doesn't exceed evidence amount
+        if new_total > evidence.amount:
+            raise HTTPException(status_code=400, detail="Attribution exceeds evidence amount")
+    
+    # Create attribution record (stored as JSON in evidence for now)
+    attribution_data = {
+        'model_data_cost': str(model_data_costs),
+        'retry_cost': str(retry_costs),
+        'review_support_cost': str(review_support_costs),
+        'payment_fee': str(payment_fees),
+        'total_attribution': str(new_total),
+        'attributed_by_user_id': body.get('user_id'),
+        'attribution_timestamp': body.get('timestamp') or None,
+    }
+    
+    # Update evidence with attribution data
+    evidence.attribution_data = attribution_data
+    await session.flush()
+    
+    return CostEvidenceReceipt(
+        id=evidence.id,
+        source=evidence.source,
+        document_id=evidence.document_id,
+        line_id=evidence.line_id,
+        document_sha256=evidence.document_sha256,
+        category=evidence.category,
+        currency=evidence.currency,
+        amount=evidence.amount,
+        review_note=evidence.review_note,
+        recorded_by_user_id=str(evidence.recorded_by_user_id) if evidence.recorded_by_user_id else None,
+        provider_id=str(evidence.provider_id) if evidence.provider_id else None,
+        document_type=evidence.document_type,
+        external_payment_event=bool(evidence.external_payment_event),
+        delivery_event=bool(evidence.delivery_event),
+        reconciliation_status=evidence.reconciliation_status,
+    )

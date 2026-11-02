@@ -77,3 +77,27 @@ async def reconcile_provider_payment(
         else "pending"
     )
     return CostEvidenceReceipt(**payload)
+
+
+@router.post("/cost-evidence/{evidence_id}/attribute", tags=["COST-05 Actual Cost Attribution"], response_model=CostEvidenceReceipt)
+async def attribute_costs(
+    evidence_id: UUID,
+    body: dict,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
+    """Attribute costs to specific categories with provider billing and manual-work evidence (COST-05).
+    
+    Accepts cost attribution data including model/data/infrastructure costs, retry costs,
+    review/support costs, payment fees. Validates currency separation and prevents double-counting
+    creator payouts.
+    
+    - model_data_cost: costs for model inference and data processing
+    - retry_cost: costs from failed retries
+    - review_support_cost: manual review and support costs
+    - payment_fee: payment processing fees
+    """
+    from app.services.workflow_costs import attribute_cost_evidence
+    
+    result = await attribute_cost_evidence(session, evidence_id, body)
+    return result

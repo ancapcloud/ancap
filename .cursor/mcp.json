@@ -1,0 +1,14 @@
+﻿{
+  "mcpServers": {
+    "ancap": {
+      "command": "C:\\Program Files\\Python311\\python.exe",
+      "args": [
+        "C:\\Users\\drago\\Desktop\\ANCAP\\mcp-server\\ancap_mcp_server.py"
+      ],
+      "env": {
+        "ANCAP_API_BASE": "https://ancap.cloud/api/v1",
+        "ANCAP_API_KEY": "ancap_LkVYwf1UZVsZsOEQTp_zL8_CG0Lbgeul"
+      }
+    }
+  }
+}

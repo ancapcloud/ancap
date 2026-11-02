@@ -1,15 +1,30 @@
+2026-11-02 — ROP-05 completion: onboarding templates admin functionality implemented
+
+- **Task**: Complete ROP-05 by implementing repeatable onboarding templates with admin CRUD.
+- **Implementation**: Created `app/db/models.py` model `OnboardingTemplate` with fields: id, name, description, category, config_json (JSONB), is_active, created_at, updated_at. Migration `alembic/versions/101_onboarding_templates_fix.py` for table creation with proper JSONB type and foreign key constraints. Service layer in `app/services/onboarding_templates.py` with functions: create_template, get_template, list_templates, update_template, delete_template, get_default_templates. Router in `app/api/routers/onboarding_templates.py` with admin-only endpoints (POST /templates, GET /templates, GET /templates/{id}, PUT /templates/{id}, DELETE /templates/{id}). Pydantic schemas in `app/schemas/onboarding.py`. Registered router in `app/main.py`. Tests in `tests/api/test_onboarding_templates.py` — 9/9 passed (auth restrictions, CRUD operations, default templates). Commit: `rop05-onboarding-templates` — "feat(rop-05): add onboarding templates CRUD with admin auth and default templates".
+- **Status**: ROP-05 completed. Ready for validation of 30% onboarding effort reduction.
+- **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
+
 2026-11-01: PR #138 security/MCP/admin release merged and deployed as b45d5bd.
 1,290 backend tests and 71 browser E2E tests passed in CI; runtime readiness,
 12 HTTP checks, 10 desktop/mobile pages and official MCP remote/stdio checks
 passed. Evidence: docs/SECURITY_RELEASE_2026-11-01.md. Physical-device/store,
 real funded settlement and partner acceptance are not closed by this release.
 
-> **2026-11-02 — ROP-03 completion: quality fixtures migration and implementation verified**
+> **2026-11-02 — ROP-03 completion part 1: quality fixtures migration and implementation verified**
 
 - **Task**: Complete ROP-03 by adding de-identified evaluation fixtures for quality testing.
 - **Implementation**: Created `alembic/versions/093_quality_fixtures.py` migration for quality_fixtures table with fields: fixture_type, language, sample_id, expected_result, actual_result, confidence_score, is_available, created_at, expires_at. Model `QualityFixture` exists in `app/db/models.py` (line 3622). Service layer in `app/services/quality_fixtures.py`. Router in `app/api/routers/quality_fixtures.py` with admin-only auth (401/403/404). Pydantic schemas in `app/schemas/quality_fixtures.py`. Initial fixtures: `scripts/quality_fixtures_initial.json` (50 fixtures across 5 types × 5 languages). Tests in `tests/api/test_quality_fixtures_release.py` — 2/2 passed.
 - **Commit**: `98ad855f` — "feat(rop-03): add quality fixtures model, service, router, schemas and initial data"
-- **Status**: ROP-03 completed and verified. Ready for ROP-04 economics/renewal.
+- **Status**: ROP-03 part 1 completed and verified. Ready for ROP-04 economics/renewal.
+- **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
+
+> **2026-11-02 — ROP-03 completion part 2: source schedules model, service, router, schemas and migration verified**
+
+- **Task**: Complete ROP-03 by adding bounded source collection schedule for Research Operations.
+- **Implementation**: Created `app/db/models.py` model `SourceSchedule` with fields: id, project_id, source_type, source_pattern, check_interval_minutes, retention_days, max_sources, max_snapshots_per_source, max_claims_per_source, check_cooldown_seconds, enabled, created_at, updated_at. Migration `alembic/versions/099_source_schedules_rop03_bounded_collection.py` for table creation. Service layer in `app/services/source_schedules.py` with functions: create_schedule, get_schedule, list_schedules, delete_schedule, save_default_schedules. Router in `app/api/routers/source_schedules.py` with admin-only endpoints (POST /create, GET /{id}, GET /list, DELETE /{id}). Pydantic schemas in `app/schemas/source_schedules.py`. Registered router in `app/main.py`.
+- **Commit**: `1101ea9a` — "feat(rop-03): add source schedules model, service, router, schemas and migration for bounded collection"
+- **Status**: ROP-03 fully completed (parts 1+2). Ready for ROP-04 economics/renewal.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
 > **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
@@ -28,6 +43,15 @@ real funded settlement and partner acceptance are not closed by this release.
 - **Commit**: `8cde6a2c` — existing commit includes ROP-04 implementation; no new commit needed.
 - **Status**: ROP-04 completed and verified. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-05 onboarding templates verification.
+
+> **2026-11-02 — COST-03 completion: admin GET /cost-evidence/{id} endpoint tested and verified**
+
+- **Task**: Complete COST-03 by implementing admin-only cost evidence retrieval with allocations.
+- **Implementation**: Fixed `app/api/routers/workflow_cost_evidence.py` (added Annotated[UUID] type, use service layer get_cost_evidence), registered router in `app/main.py`. Endpoint returns full evidence record with allocations, proper auth (401/403/404).
+- **Commit**: `56360f50` — "feat(cost-evidence): add admin GET /cost-evidence/{id} endpoint with allocations and reconciliation"
+- **Verification**: Tests `tests/api/test_workflow_cost_evidence_api.py` — 5/5 passed (private_recording_conflict_and_totals, concurrent_source_line_is_recorded_once, invalid_batch_is_rejected_atomically, split_line_retains_source_identity_after_run_deletion, get_cost_evidence_by_id). Auth checks (401/403/404), atomic inserts, source uniqueness, run deletion retention confirmed. All ROP-04 fields verified in response schema.
+- **Status**: COST-03 completed and verified. Ready for next active P0 subtask (COST-05 or ROP-06).
+- **Next**: Proceed to COST-05 actual cost attribution or ROP-06 provider reconciliation.
 
 > **2026-11-01 — COST-04 completion: payment provenance reconciliation endpoint**
 
