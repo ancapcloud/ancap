@@ -35,12 +35,15 @@ async def admin_get_cost_evidence(evidence_id: UUID, session: DbSession, respons
 async def reconcile_provider_payment(
     evidence_id: UUID,
     session: DbSession,
-    _admin: str = Depends(require_platform_admin)
+    _admin: str = Depends(require_platform_admin),
+    reconciliation_status: str | None = None,
+    delivery_event: bool | None = None
 ):
     """Verify provider reconciliation for payment provenance (COST-04).
     
-    Checks that the external payment event and delivery event are properly
-    reconciled with the provider's records. Returns updated evidence record.
+    Updates the evidence record with reconciliation status and delivery event.
+    - reconciliation_status: pending/verified/failed
+    - delivery_event: boolean flag for delivery completion
     """
     from app.db.models import WorkflowCostEvidence
     
@@ -49,14 +52,23 @@ async def reconcile_provider_payment(
     if evidence is None:
         raise HTTPException(status_code=404, detail="Cost evidence not found")
     
-    # Check provider reconciliation status
-    reconciliation_status = "pending" if not evidence.external_payment_event else "verified"
-    delivery_status = "pending" if not evidence.delivery_event else "verified"
+    # Update reconciliation status if provided
+    if reconciliation_status:
+        valid_statuses = {"pending", "verified", "failed"}
+        if reconciliation_status.lower() not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Invalid reconciliation_status. Must be one of: {', '.join(valid_statuses)}")
+        evidence.reconciliation_status = reconciliation_status
+    
+    # Update delivery event if provided
+    if delivery_event is not None:
+        evidence.delivery_event = delivery_event
+    
+    await session.flush()
     
     receipt = await get_cost_evidence(evidence_id, session)
     
     return CostEvidenceReceipt(
         **receipt.model_dump(),
-        reconciliation_status=reconciliation_status,
-        delivery_status=delivery_status
+        reconciliation_status=reconciliation_status or evidence.reconciliation_status,
+        delivery_status="verified" if (evidence.delivery_event and evidence.external_payment_event) else "pending"
     )

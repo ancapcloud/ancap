@@ -73,11 +73,12 @@ async def get_cost_evidence(evidence_id: UUID, session: DbSession):
         currency=evidence.currency,
         amount=evidence.amount,
         review_note=evidence.review_note,
-        recorded_by_user_id=evidence.recorded_by_user_id,
+        recorded_by_user_id=str(evidence.recorded_by_user_id) if evidence.recorded_by_user_id else None,
         provider_id=str(evidence.provider_id) if evidence.provider_id else None,
         document_type=evidence.document_type,
         external_payment_event=bool(evidence.external_payment_event),
-        delivery_event=bool(evidence.delivery_event)
+        delivery_event=bool(evidence.delivery_event),
+        reconciliation_status=evidence.reconciliation_status
     )
     
     # Include allocations in the response with full details

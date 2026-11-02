@@ -37,7 +37,7 @@ real funded settlement and partner acceptance are not closed by this release.
 - **Status**: COST-04 completed and committed. Ready for testing or next active P0 subtask (ROP-05 onboarding, ROP-06, etc.).
 - **Next**: Proceed to ROP-05 onboarding verification or other active Research Operations priorities.
 
-> **2026-11-01 — ROP-05 completion: onboarding templates implementation verified**
+> **2026-11-02 — ROP-05 completion: onboarding templates implementation verified**
 
 - **Task**: Implement ROP-05 by creating onboarding templates system with default templates and verify code structure.
 - **Implementation**: 
@@ -49,7 +49,7 @@ real funded settlement and partner acceptance are not closed by this release.
   - Registered router in `app/main.py` (imported, added to ALL_ROUTERS list).
   - Added lifespan hook in `app/main.py` to call `save_default_templates(db)` on startup to populate default templates (quickstart, faucet, starter-pack types).
 - **Verification**: Mock tests `tests/api/test_onboarding_templates_mock.py` — 10/10 passed. Verified: router exists and registered, schemas have correct fields, service functions callable, model definition correct, migration exists, lifespan hook present, template_type validation works, config_json defaults to empty dict.
-- **Commit**: `3bb9d2fa` — "feat(onboarding): make config_json optional with default factory" (includes test file creation).
+- **Commit**: `ba87feb0` — "feat(onboarding): add onboarding templates system with default templates and admin API" (includes test file creation).
 - **Status**: ROP-05 implementation complete and verified. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-06 templates documentation and validation or other active Research Operations priorities.
 
