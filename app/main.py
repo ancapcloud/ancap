@@ -167,6 +167,10 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(delay)
 
     workflow_task = asyncio.create_task(workflow_worker()) if get_settings().workflow_operations_worker_enabled else None
+    if settings.environment == "production" and not (
+        settings.platform_admin_user_ids_allowlist or settings.platform_admin_emails_allowlist
+    ):
+        logger.warning("platform_admin_allowlist_empty")
     try:
         from app.api.routers.wallet_acp import _schedule_chain_scan_warm
 
@@ -408,7 +412,6 @@ ALL_ROUTERS = [
     robot_ops.router,
     project_economy.router,
     mcp.router,
-    onboarding_templates.router,
 ]
 
 for r in ALL_ROUTERS:

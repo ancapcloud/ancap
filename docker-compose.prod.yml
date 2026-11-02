@@ -50,8 +50,9 @@ services:
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)
       ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-walletd}
       # Operator emails allowed to remain bound to custodial hot (comma-separated).
-      # Override in host .env; fallback keeps the known operator account on hot after deploy.
-      ACP_CUSTODIAL_HOT_HOLDER_EMAILS: ${ACP_CUSTODIAL_HOT_HOLDER_EMAILS:-dragon.cat.trx@gmail.com}
+      # Required in production when custodial hot access is needed; no personal
+      # address is baked into the repository.
+      ACP_CUSTODIAL_HOT_HOLDER_EMAILS: ${ACP_CUSTODIAL_HOT_HOLDER_EMAILS:-}
       # Custodial hot spend keystore (operator withdraw). Distinct from ACP_HOT_* bridge reserve.
       ACP_CUSTODIAL_HOT_KEYSTORE_FILE: ${ACP_CUSTODIAL_HOT_KEYSTORE_FILE:-/run/secrets/custodial-hot.keystore.json}
       # IMPORTANT: keep bridge runtime pinned to bridge-scoped signer material.
@@ -64,8 +65,11 @@ services:
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://ancap.cloud}
       PASSWORD_RESET_TOKEN_TTL_MINUTES: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:-30}
       ACP_WALLET_RECOVERY_MASTER_KEY: ${ACP_WALLET_RECOVERY_MASTER_KEY:-}
+      # Platform admin allowlist. Set PLATFORM_ADMIN_USER_IDS (preferred) or
+      # PLATFORM_ADMIN_EMAILS in the host environment; empty means admin endpoints
+      # fail closed with 503 rather than granting a default account.
       PLATFORM_ADMIN_USER_IDS: ${PLATFORM_ADMIN_USER_IDS:-}
-      PLATFORM_ADMIN_EMAILS: ${PLATFORM_ADMIN_EMAILS:-dragon.cat.trx@gmail.com}
+      PLATFORM_ADMIN_EMAILS: ${PLATFORM_ADMIN_EMAILS:-}
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
       ALLOW_INSECURE_CRON: ${ALLOW_INSECURE_CRON:-false}
       MAIL_ENABLED: ${MAIL_ENABLED:-false}

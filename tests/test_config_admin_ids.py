@@ -1,6 +1,18 @@
 import pytest
 
 from app.config import Settings
+from pathlib import Path
+
+
+def test_platform_admin_allowlists_have_no_default_account():
+    assert Settings.model_fields["platform_admin_user_ids"].default == ""
+    assert Settings.model_fields["platform_admin_emails"].default == ""
+
+
+def test_prod_compose_has_no_default_personal_admin_email():
+    compose = Path(__file__).resolve().parents[1] / "docker-compose.prod.yml"
+    text = compose.read_text(encoding="utf-8")
+    assert "dragon.cat.trx@gmail.com" not in text
 
 
 def test_settings_parses_platform_admin_user_ids_from_csv():
