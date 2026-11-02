@@ -4,6 +4,12 @@ from app.config import Settings
 from pathlib import Path
 
 
+@pytest.fixture(autouse=True)
+def _settings_ignore_local_dotenv(monkeypatch):
+    """Keep these unit tests independent of a developer's local .env file."""
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
+
+
 def test_platform_admin_allowlists_have_no_default_account():
     assert Settings.model_fields["platform_admin_user_ids"].default == ""
     assert Settings.model_fields["platform_admin_emails"].default == ""

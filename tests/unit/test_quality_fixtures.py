@@ -1,5 +1,7 @@
 """Unit tests for quality fixtures service."""
 
+from uuid import uuid4
+
 import pytest
 from app.services.quality_fixtures import (
     load_fixtures_from_file,
@@ -90,16 +92,19 @@ async def test_get_all_quality_fixtures(db_session):
     # Retrieve with pagination
     results, total = await get_all_quality_fixtures(db_session, limit=3, offset=0)
     assert len(results) == 3
-    assert total == 5
+    # Other tests may have committed fixtures already; only the page size is scoped here.
+    assert total >= 5
 
 
 @pytest.mark.asyncio
 async def test_get_quality_fixtures_by_type(db_session):
     """Test filtering fixtures by type."""
+    price_type = f"price_{uuid4().hex[:8]}"
+    unavailable_type = f"unavail_{uuid4().hex[:8]}"
     # Create fixtures of different types
     fixtures_data = [
         {
-            "fixture_type": "price_change",
+            "fixture_type": price_type,
             "language": "en",
             "sample_id": f"pc-{i:03d}",
             "expected_result": "detected_price_increase",
@@ -107,7 +112,7 @@ async def test_get_quality_fixtures_by_type(db_session):
         for i in range(3)
     ] + [
         {
-            "fixture_type": "unavailable_source",
+            "fixture_type": unavailable_type,
             "language": "en",
             "sample_id": f"us-{i:03d}",
             "expected_result": "source_unreachable_timeout",
@@ -118,8 +123,8 @@ async def test_get_quality_fixtures_by_type(db_session):
     await create_quality_fixtures_batch(db_session, fixtures_data)
 
     # Filter by type
-    price_fixtures = await get_quality_fixtures_by_type(db_session, "price_change")
-    unavailable_fixtures = await get_quality_fixtures_by_type(db_session, "unavailable_source")
+    price_fixtures = await get_quality_fixtures_by_type(db_session, price_type)
+    unavailable_fixtures = await get_quality_fixtures_by_type(db_session, unavailable_type)
 
     assert len(price_fixtures) == 3
     assert len(unavailable_fixtures) == 2
