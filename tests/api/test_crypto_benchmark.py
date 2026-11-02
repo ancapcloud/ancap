@@ -6,7 +6,6 @@ from app.main import app
 
 def test_crypto_benchmark_route_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/crypto/benchmark" in paths
     assert "/v1/crypto/benchmark" in paths
 
 

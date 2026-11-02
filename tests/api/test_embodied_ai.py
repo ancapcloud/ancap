@@ -7,7 +7,6 @@ from app.services import embodied_ai as svc
 
 def test_embodied_ai_route_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/embodied-ai/security" in paths
     assert "/v1/embodied-ai/security" in paths
 
 

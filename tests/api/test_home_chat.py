@@ -186,7 +186,6 @@ def test_routes_registered():
     paths = {getattr(route, "path", "") for route in app.routes}
     assert "/v1/home-chat/messages" in paths
     assert "/v1/home-chat/status" in paths
-    assert "/home-chat/messages" in paths
 
 
 def test_fallback_skips_paid_models(monkeypatch):

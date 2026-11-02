@@ -22,10 +22,9 @@ def _register_user(client, label="fauna"):
 
 def test_animal_auction_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/animal-auction/catalog" in paths
     assert "/v1/animal-auction/catalog" in paths
-    assert "/animal-auction/lots" in paths
-    assert "/animal-auction/lots/{lot_id}/bids" in paths
+    assert "/v1/animal-auction/lots" in paths
+    assert "/v1/animal-auction/lots/{lot_id}/bids" in paths
 
 
 def test_animal_auction_catalog_has_dogs_and_cats(client):

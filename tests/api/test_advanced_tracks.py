@@ -13,19 +13,15 @@ from app.services.workflow_execution import WORKFLOW_TEMPLATES
 
 def test_advanced_track_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/organizations/{org_id}/securities/intake" in paths
-    assert "/organizations/{org_id}/watch-fleet/watches" in paths
-    assert "/orbital-edge/status" in paths
-    assert "/aeterna/status" in paths
-    assert "/space-auction/catalog" in paths
-    assert "/v1/space-auction/catalog" in paths
-    assert "/animal-auction/catalog" in paths
-    assert "/v1/animal-auction/catalog" in paths
-    assert "/aeterna/vault" in paths
+    assert "/v1/organizations/{org_id}/securities/intake" in paths
+    assert "/v1/organizations/{org_id}/watch-fleet/watches" in paths
+    assert "/v1/orbital-edge/status" in paths
     assert "/v1/aeterna/status" in paths
+    assert "/v1/space-auction/catalog" in paths
+    assert "/v1/animal-auction/catalog" in paths
+    assert "/v1/aeterna/vault" in paths
     assert "/v1/organizations/{org_id}/securities/summary" in paths
     assert "/v1/organizations/{org_id}/watch-fleet/summary" in paths
-    assert "/v1/orbital-edge/status" in paths
 
 
 def test_advanced_track_schema_smoke():
@@ -917,5 +913,4 @@ def test_teleport_intent_retired(client):
 
 def test_advanced_track_routes_include_org_aeterna_intents():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/organizations/{org_id}/aeterna/intents" in paths
     assert "/v1/organizations/{org_id}/aeterna/intents" in paths

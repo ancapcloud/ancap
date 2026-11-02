@@ -22,10 +22,9 @@ def _register_user(client, label="flora"):
 
 def test_flora_auction_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/flora-auction/catalog" in paths
     assert "/v1/flora-auction/catalog" in paths
-    assert "/flora-auction/lots" in paths
-    assert "/flora-auction/lots/{lot_id}/bids" in paths
+    assert "/v1/flora-auction/lots" in paths
+    assert "/v1/flora-auction/lots/{lot_id}/bids" in paths
 
 
 def test_flora_auction_catalog_has_black_beauty_and_forms(client):

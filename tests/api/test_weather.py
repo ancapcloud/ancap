@@ -7,9 +7,8 @@ from app.main import app
 
 def test_weather_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/weather/current" in paths
     assert "/v1/weather/current" in paths
-    assert "/weather/status" in paths
+    assert "/v1/weather/status" in paths
 
 
 def test_weather_current_fallback_without_key(client, monkeypatch):

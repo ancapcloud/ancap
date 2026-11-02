@@ -23,9 +23,8 @@ def _register_user(client):
 
 def test_space_auction_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/space-auction/catalog" in paths
     assert "/v1/space-auction/catalog" in paths
-    assert "/space-auction/lots/{lot_id}/bids" in paths
+    assert "/v1/space-auction/lots/{lot_id}/bids" in paths
 
 
 def test_otc_space_catalog_has_star_planet_satellite_prices():

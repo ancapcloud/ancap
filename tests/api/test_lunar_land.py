@@ -8,9 +8,9 @@ from app.main import app
 
 def test_lunar_routes_registered():
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/lunar/status" in paths
+    assert "/v1/lunar/status" in paths
     assert "/v1/lunar/parcels" in paths
-    assert "/lunar/interests" in paths
+    assert "/v1/lunar/interests" in paths
 
 
 def test_lunar_status_and_catalog_seed(client, monkeypatch):
