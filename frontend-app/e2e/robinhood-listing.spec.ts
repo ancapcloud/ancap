@@ -9,7 +9,7 @@ test("prepare, download, review and view a Robinhood listing",async({page})=>{
     inputs:{},preview:{},result:null,created_at:new Date().toISOString(),receipt:{workflow_slug:slug,status:"completed",quoted_price:price,proof:{},receipt_items:[]}};
   let packet:Record<string,unknown>={},status="",contact="";
   await page.addInitScript(()=>localStorage.setItem("ancap_cookie_consent_v1",JSON.stringify({necessary:true})));
-  await page.route("**/api/v1/**",async route=>{
+  await page.route("**/v1/**",async route=>{
     const req=route.request(),path=new URL(req.url()).pathname;
     let body:unknown=null;
     if(path.endsWith("/users/me"))body=owner;
