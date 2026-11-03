@@ -1,42 +1,47 @@
 [
   {
     "fixture_type": "price_change",
-    "language": "en",
-    "sample_id": "ppc-001",
-    "expected_result": "detected_price_increase",
+    "language": "zh-Hant",
+    "sample_id": "zh-price-001",
+    "expected_result": "價格：$299.99",
     "actual_result": null,
-    "confidence_score": 0.95,
-    "is_available": true,
-    "expires_at": "2026-12-31T23:59:59Z"
+    "confidence_score": null,
+    "is_available": true
   },
   {
     "fixture_type": "price_change",
     "language": "en",
-    "sample_id": "ppc-002",
-    "expected_result": "detected_price_decrease",
+    "sample_id": "en-price-001",
+    "expected_result": "Price: $299.99",
     "actual_result": null,
-    "confidence_score": 0.92,
-    "is_available": true,
-    "expires_at": "2026-12-31T23:59:59Z"
+    "confidence_score": null,
+    "is_available": true
   },
   {
-    "fixture_type": "product_change",
-    "language": "en",
-    "sample_id": "poc-001",
-    "expected_result": "detected_product_update",
-    "actual_result": null,
-    "confidence_score": 0.88,
-    "is_available": true,
-    "expires_at": "2026-12-31T23:59:59Z"
-  },
-  {
-    "fixture_type": "product_change",
+    "fixture_type": "price_change",
     "language": "ru",
-    "sample_id": "poc-002",
-    "expected_result": "detected_product_update",
+    "sample_id": "ru-price-001",
+    "expected_result": "Цена: $299.99",
     "actual_result": null,
-    "confidence_score": 0.85,
-    "is_available": true,
-    "expires_at": "2026-12-31T23:59:59Z"
+    "confidence_score": null,
+    "is_available": true
+  },
+  {
+    "fixture_type": "price_change",
+    "language": "de",
+    "sample_id": "de-price-001",
+    "expected_result": "Preis: $299.99",
+    "actual_result": null,
+    "confidence_score": null,
+    "is_available": true
+  },
+  {
+    "fixture_type": "price_change",
+    "language": "fr",
+    "sample_id": "fr-price-001",
+    "expected_result": "Prix: $299.99",
+    "actual_result": null,
+    "confidence_score": null,
+    "is_available": true
   }
 ]
