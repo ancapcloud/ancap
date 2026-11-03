@@ -36,7 +36,9 @@ def roadmap_has_fake_rop(text: str) -> list[str]:
     return found
 
 
-def validate_receipt(path: Path, queue_status: dict[str, str]) -> list[str]:
+def validate_receipt(
+    path: Path, queue_status: dict[str, str], forbidden_tasks: list[str] | None = None
+) -> list[str]:
     errors: list[str] = []
     if not path.exists():
         return errors
@@ -47,8 +49,8 @@ def validate_receipt(path: Path, queue_status: dict[str, str]) -> list[str]:
     if not isinstance(data, dict):
         return ["receipt must be a JSON object"]
 
-    task_id = str(data.get("task_id") or data.get("completed_task") or "")
-    next_step = str(data.get("next") or data.get("next_steps") or "")
+    task_id = json.dumps([data.get("task_id"), data.get("completed_task")])
+    next_step = json.dumps([data.get("next"), data.get("next_steps")])
     fields = {key: data.get(key) for key in (
         "task_id", "completed_task", "next", "next_steps", "checked"
     )}
@@ -56,6 +58,11 @@ def validate_receipt(path: Path, queue_status: dict[str, str]) -> list[str]:
     for token in sorted(set(re.findall(r"\bROP-\d+\b", blob))):
         if token not in VALID_ROP:
             errors.append(f"receipt invents unknown roadmap id {token}")
+
+    proposed_work = task_id + " " + next_step
+    for task in forbidden_tasks or []:
+        if re.search(rf"\b{re.escape(task)}\b", proposed_work, re.I):
+            errors.append(f"receipt proposes forbidden task {task}")
 
     for task, state in queue_status.items():
         if state != "done":
@@ -104,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         if queue_status.get(task) == "open":
             errors.append(f"forbidden task {task} is still open in THEODORE_QUEUE.md")
 
-    errors.extend(validate_receipt(args.receipt, queue_status))
+    errors.extend(validate_receipt(args.receipt, queue_status, args.forbid_task))
 
     # Two consecutive dry runs: a completed COST-03 must not be reselected.
     first = select_open_tasks(queue_status)

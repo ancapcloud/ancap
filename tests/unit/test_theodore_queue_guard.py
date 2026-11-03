@@ -54,3 +54,22 @@ def test_unknown_rop_ids_rejected_in_every_receipt_field(tmp_path):
         assert any("ROP-08" in error for error in errors), field
     receipt.write_text(json.dumps({"task_id": "ROP-05", "next": "ROP-04"}))
     assert validate_receipt(receipt, {}) == []
+
+
+def test_forbidden_tasks_rejected_without_queue_header(tmp_path):
+    receipt = tmp_path / "receipt.json"
+    for field in ("task_id", "completed_task", "next", "next_steps"):
+        receipt.write_text(json.dumps({field: "COST-05-attribution"}))
+        errors = validate_receipt(receipt, {}, ["COST-05"])
+        assert any("forbidden task COST-05" in error for error in errors), field
+    receipt.write_text(json.dumps({"checked": ["COST-05"], "next": "ROP-05"}))
+    assert validate_receipt(receipt, {}, ["COST-05"]) == []
+
+
+def test_forbid_task_cli_checks_receipt(tmp_path):
+    from scripts.theodore_queue_guard import main
+
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps({"task_id": "ROP-05", "status": "partial", "next": "COST-05"}))
+    result = main(["--receipt", str(receipt), "--forbid-task", "COST-05"])
+    assert result == 1
