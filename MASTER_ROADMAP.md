@@ -3,9 +3,13 @@
 [~] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
 live GitHub despite RUN_ANCAP_DOCS_LIVE_VERIFY=0. A cross-repository branch
 protection request failed under the Actions token, blocking Backend CI and the
-release gate. Both ordinary CLI tests now use a deterministic child helper;
+release gate. Both ordinary wrapper CLI tests now use a deterministic child helper;
 exit code 2 on drift, artifact persistence and alias controls remain tested.
-Explicitly opted-in live tests are retained. CI and deployment recovery pending.
+Explicitly opted-in live tests are retained. PR #147 merged as eef562a0.
+Push CI then exposed one remaining UTF-8 output test calling live Discussions.
+It now checks the real UTF-8 writer/stdout directly with multilingual text.
+All valid live CLI invocations in these two test modules were audited.
+CI and deployment recovery remain pending.
 
 
 ## GitHub PR and security cleanup — 2026-11-03
