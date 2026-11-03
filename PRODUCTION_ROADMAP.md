@@ -1,6 +1,6 @@
 ## GitHub Actions documentation regression — 2026-11-03
 
-[~] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
+[x] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
 live GitHub despite RUN_ANCAP_DOCS_LIVE_VERIFY=0. A cross-repository branch
 protection request failed under the Actions token, blocking Backend CI and the
 release gate. Both ordinary wrapper CLI tests now use a deterministic child helper;
@@ -9,7 +9,15 @@ Explicitly opted-in live tests are retained. PR #147 merged as eef562a0.
 Push CI then exposed one remaining UTF-8 output test calling live Discussions.
 It now checks the real UTF-8 writer/stdout directly with multilingual text.
 All valid live CLI invocations in these two test modules were audited.
-CI and deployment recovery remain pending.
+PR #148 merged as a9395368. CI and deployment for a9395368 succeeded:
+
+- Backend CI Actions 41645358246 — success
+- Deploy ancap.cloud Actions 41645358135 — success
+- Docs CI 41645358235 — success
+- CodeQL 41645358248 — success
+- Secret Hygiene 41645358179 — success
+
+Commercial/user acceptance (interviews, paid pilots, renewals) remains open.
 
 
 ## GitHub PR and security cleanup — 2026-11-03
