@@ -34,21 +34,28 @@ async def create_packet_template(
     response: Response,
 ):
     response.headers["Cache-Control"] = "private, no-store"
-    row = await templates_service.create_template(
-        session,
-        name=body.name,
-        slug=body.slug,
-        description=body.description,
-        source_categories=body.source_categories,
-        max_sources_per_packet=body.max_sources_per_packet,
-        max_snapshots_per_source=body.max_snapshots_per_source,
-        max_claims_per_source=body.max_claims_per_source,
-        check_cooldown_seconds=body.check_cooldown_seconds,
-        retention_days=body.retention_days,
-        packet_structure=body.packet_structure,
-        languages=body.languages,
-        status=body.status,
-    )
+    try:
+        row = await templates_service.create_template(
+            session,
+            name=body.name,
+            slug=body.slug,
+            description=body.description,
+            source_categories=body.source_categories,
+            max_sources_per_packet=body.max_sources_per_packet,
+            max_snapshots_per_source=body.max_snapshots_per_source,
+            max_claims_per_source=body.max_claims_per_source,
+            check_cooldown_seconds=body.check_cooldown_seconds,
+            retention_days=body.retention_days,
+            packet_structure=body.packet_structure,
+            languages=body.languages,
+            status=body.status,
+        )
+    except templates_service.DuplicateTemplateSlug as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+            headers={"Cache-Control": "private, no-store"},
+        ) from exc
     return _public(row)
 
 

@@ -74,6 +74,13 @@ def test_packet_templates_admin_crud_and_auth(client, monkeypatch):
     assert body["source_categories"] == ["news", "official"]
     assert body["is_active"] is True
 
+    duplicate = client.post("/v1/packet-templates", json=payload, headers=headers)
+    assert duplicate.status_code == 409, duplicate.text
+    assert duplicate.headers["cache-control"] == "private, no-store"
+    retry_payload = {**payload, "slug": f"retry-{uuid4().hex[:8]}"}
+    retry = client.post("/v1/packet-templates", json=retry_payload, headers=headers)
+    assert retry.status_code == 201, retry.text
+
     listed = client.get("/v1/packet-templates?status=active", headers=headers)
     assert listed.status_code == 200, listed.text
     assert listed.json()["total"] >= 1
@@ -85,5 +92,6 @@ def test_packet_templates_admin_crud_and_auth(client, monkeypatch):
     assert fetched.json()["name"] == "Pilot Packet"
 
     assert client.get(f"/v1/packet-templates/{uuid4()}", headers=headers).status_code == 404
-    assert client.delete(f"/v1/packet-templates/{template_id}", headers=headers).status_code == 204
+    deleted = client.delete(f"/v1/packet-templates/{template_id}", headers=headers)
+    assert deleted.status_code == 204
     assert client.get(f"/v1/packet-templates/{template_id}", headers=headers).status_code == 404

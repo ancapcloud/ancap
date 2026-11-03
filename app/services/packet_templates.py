@@ -8,8 +8,13 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.db.models import PacketTemplate
+
+
+class DuplicateTemplateSlug(ValueError):
+    """A reusable packet template already owns this slug."""
 
 
 async def create_template(
@@ -49,8 +54,15 @@ async def create_template(
         created_at=now,
         updated_at=now,
     )
-    session.add(template)
-    await session.flush()
+    try:
+        async with session.begin_nested():
+            session.add(template)
+            await session.flush()
+    except IntegrityError:
+        existing = await session.scalar(select(PacketTemplate.id).where(PacketTemplate.slug == slug))
+        if existing is not None:
+            raise DuplicateTemplateSlug("Template slug already exists") from None
+        raise
     return template
 
 
