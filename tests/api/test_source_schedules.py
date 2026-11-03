@@ -72,5 +72,6 @@ def test_source_schedules_admin_crud_and_auth(client, monkeypatch):
     assert fetched.json()["source_type"] == "crypto-client"
 
     assert client.get(f"/v1/source-schedules/{uuid4()}", headers=headers).status_code == 404
-    assert client.delete(f"/v1/source-schedules/{schedule_id}", headers=headers).status_code == 204
+    deleted = client.delete(f"/v1/source-schedules/{schedule_id}", headers=headers)
+    assert deleted.status_code == 204
     assert client.get(f"/v1/source-schedules/{schedule_id}", headers=headers).status_code == 404
