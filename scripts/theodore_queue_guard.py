@@ -36,14 +36,6 @@ def roadmap_has_fake_rop(text: str) -> list[str]:
     return found
 
 
-def _tokens_from_checked(checked: object) -> list[str]:
-    if isinstance(checked, list):
-        return [str(item).upper() for item in checked]
-    if isinstance(checked, str):
-        return re.findall(r"ROP-\d+", checked.upper())
-    return []
-
-
 def validate_receipt(path: Path, queue_status: dict[str, str]) -> list[str]:
     errors: list[str] = []
     if not path.exists():
@@ -57,15 +49,13 @@ def validate_receipt(path: Path, queue_status: dict[str, str]) -> list[str]:
 
     task_id = str(data.get("task_id") or data.get("completed_task") or "")
     next_step = str(data.get("next") or data.get("next_steps") or "")
-    blob = " ".join([task_id, next_step, json.dumps(data.get("checked"), ensure_ascii=False)])
-
-    for fake in FAKE_ROP:
-        if fake in blob.upper():
-            errors.append(f"receipt invents unknown roadmap id {fake}")
-
-    for token in _tokens_from_checked(data.get("checked")):
-        if token.startswith("ROP-") and token not in VALID_ROP:
-            errors.append(f"receipt checked list invents {token}")
+    fields = {key: data.get(key) for key in (
+        "task_id", "completed_task", "next", "next_steps", "checked"
+    )}
+    blob = json.dumps(fields, ensure_ascii=False).upper()
+    for token in sorted(set(re.findall(r"\bROP-\d+\b", blob))):
+        if token not in VALID_ROP:
+            errors.append(f"receipt invents unknown roadmap id {token}")
 
     for task, state in queue_status.items():
         if state != "done":

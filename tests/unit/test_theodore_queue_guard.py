@@ -44,3 +44,13 @@ def test_two_consecutive_selections_skip_done_cost03():
     second = select_open_tasks(parse_queue_status(text))
     assert "COST-03" not in first
     assert first == second
+
+
+def test_unknown_rop_ids_rejected_in_every_receipt_field(tmp_path):
+    receipt = tmp_path / "receipt.json"
+    for field in ("task_id", "completed_task", "next", "next_steps", "checked"):
+        receipt.write_text(json.dumps({field: "rop-08-packet-templates"}))
+        errors = validate_receipt(receipt, {})
+        assert any("ROP-08" in error for error in errors), field
+    receipt.write_text(json.dumps({"task_id": "ROP-05", "next": "ROP-04"}))
+    assert validate_receipt(receipt, {}) == []
