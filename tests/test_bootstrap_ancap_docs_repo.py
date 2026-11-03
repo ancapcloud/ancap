@@ -1253,32 +1253,18 @@ def test_build_discussion_admin_action_automation_summary_emits_graphql_commands
 
 
 
-def test_bootstrap_script_output_writes_utf8_file(tmp_path: Path):
+def test_bootstrap_script_output_writes_utf8_file(tmp_path: Path, capsys):
+    module = load_bootstrap_script_module()
     output_path = tmp_path / 'ancap-docs-live-checklist.md'
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT_PATH),
-            '--repo',
-            'ancapcloud/ancap-docs',
-            '--verify-live',
-            '--verify-live-community',
-            '--format',
-            'markdown',
-            '--output',
-            str(output_path),
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    text = '# ANCAP docs live follow-up checklist\n\nУкраїнська · Deutsch · 中文\n'
 
-    assert result.returncode == 0, result.stderr or result.stdout
-    assert output_path.exists()
-    assert output_path.read_text(encoding='utf-8') == result.stdout
-    assert output_path.read_bytes()[:2] != b'\xff\xfe'
-    assert '# ANCAP docs live follow-up checklist for ancapcloud/ancap-docs' in result.stdout
+    module.emit_output(text, output_path=str(output_path))
+
+    captured = capsys.readouterr()
+    assert captured.out == text
+    assert captured.err == ''
+    assert output_path.read_bytes() == text.encode('utf-8')
+    assert output_path.read_text(encoding='utf-8') == captured.out
 
 
 def test_bootstrap_script_issue_reroute_helpers_render_edit_commands():
