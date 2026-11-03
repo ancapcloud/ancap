@@ -1,15 +1,23 @@
 """Quality fixtures service for ROP-03 evaluation samples."""
 
 import json
+from pathlib import Path
 from typing import Optional, List
 from sqlalchemy import select, func
 from app.db.models import QualityFixture
 
 
+FIXTURES_ROOT = Path(__file__).resolve().parents[2] / "scripts"
+
+
 def load_fixtures_from_file(file_path: str) -> List[dict]:
-    """Load fixtures from JSON file."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    """Load JSON only from the repository's operator fixture directory."""
+    root = FIXTURES_ROOT.resolve()
+    candidate = (root / file_path).resolve()
+    if not candidate.is_relative_to(root) or candidate.suffix.lower() != ".json":
+        raise ValueError("Fixture must be a JSON file within the fixture directory")
+    with candidate.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
 
 
 async def create_quality_fixtures_batch(db, fixtures_data: List[dict]) -> List[QualityFixture]:

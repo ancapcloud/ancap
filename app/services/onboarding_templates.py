@@ -1,5 +1,4 @@
 """ROP-05: Onboarding templates service for reuse."""
-import json
 from uuid import UUID
 
 from sqlalchemy import select

@@ -6,8 +6,7 @@ These tests verify the implementation is correct by checking:
 3. Service function signatures
 4. Model field definitions
 """
-import inspect
-from pathlib import Path
+import app.main as main
 
 
 def test_router_exists_and_registered():
@@ -28,14 +27,12 @@ def test_router_exists_and_registered():
 
 def test_router_registered_in_main():
     """Verify router is imported and registered in app/main.py."""
-    from app.main import ALL_ROUTERS
     
     # Check that onboarding_templates router is in the list
-    router_names = [getattr(r, 'tags', [None])[0] if hasattr(r, 'tags') else None for r in ALL_ROUTERS]
     
     # Or check by inspecting the module
     from app.api.routers import onboarding_templates
-    assert onboarding_templates is not None
+    assert onboarding_templates.router in main.ALL_ROUTERS
 
 
 def test_schema_models_exist():
@@ -98,7 +95,6 @@ def test_migration_exists():
 
 def test_router_imported_in_main():
     """Verify onboarding_templates router is imported in app/main.py."""
-    import app.main as main
     
     # Check that the router is imported (should be in imports or ALL_ROUTERS)
     assert hasattr(main, 'ALL_ROUTERS'), "app/main.py should have ALL_ROUTERS"
@@ -106,12 +102,10 @@ def test_router_imported_in_main():
 
 def test_lifespan_hook_exists():
     """Verify lifespan hook exists in app."""
-    from app.main import app
     
     # FastAPI apps have a lifespan attribute when defined
     # Check by importing and inspecting the module
-    import app.main as main
-    assert hasattr(main, 'app'), "app should be defined"
+    assert hasattr(main.app, 'router'), "app should be defined"
     # The lifespan is defined in the module, even if not directly on app object
     # We verified it's called via the lifespan context manager
 
