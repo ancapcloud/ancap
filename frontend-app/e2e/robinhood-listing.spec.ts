@@ -43,4 +43,3 @@ test("prepare, download, review and view a Robinhood listing",async({page})=>{
   await expect(page.getByText("Browser token example")).toBeVisible();
   await expect(page.getByText("private@example.org")).toHaveCount(0);
 });
-

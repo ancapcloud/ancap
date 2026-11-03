@@ -62,4 +62,3 @@ export function ListingQueue(){
     {items.map(r=><article key={r.run_id}><pre>{JSON.stringify(r.packet,null,2)}</pre><p>{r.contact}</p><label>Комментарий <input value={notes[r.run_id]||""} onChange={e=>setNotes({...notes,[r.run_id]:e.target.value})}/></label>
       {["approved","revision","rejected"].map(d=><button className="m-2" disabled={!notes[r.run_id]?.trim()} key={d} onClick={()=>decide(r,d)}>{labels[d]}</button>)}</article>)}</main>;
 }
-

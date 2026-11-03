@@ -1,9 +1,12 @@
+from uuid import uuid4
 import pytest
 from app.config import get_settings
 from app.api.routers import robinhood_listing as listing
 from app.api.deps import require_platform_admin
 from tests.api.test_workflow_store import _deposit_user_credits
 
+
+ADDRESS = "0x" + uuid4().hex + "ab" * 4
 
 @pytest.mark.parametrize("chain", [4663, 46630])
 def test_listing_lifecycle(client, monkeypatch, chain):
@@ -24,7 +27,7 @@ def test_listing_lifecycle(client, monkeypatch, chain):
     assert client.get(path).json() is None
     draft = {
         "chain_id": chain,
-        "address": "0x" + "Ab" * 20,
+        "address": ADDRESS,
         "website": "https://example.org",
         "description": "Token description",
         "contact": "private@example.org",
