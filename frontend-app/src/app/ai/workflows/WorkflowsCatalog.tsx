@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { solutionPortfolio, portfolioByLang, workflowArea } from "@/lib/solutionPortfolio";
 import { positioningByLang } from "@/locales/positioning";
@@ -31,12 +32,16 @@ export function WorkflowsCatalog({
   const shortlist = useWorkflowShortlist(workflows);
   const c = positioningByLang[lang];
   const p = portfolioByLang[lang];
-  const [query, setQuery] = useState("");
-  const [area, setArea] = useState("crypto");
-  const isFiltering = area !== "all" || query.trim().length > 0;
+  const params = useSearchParams();
+  const [query, setQuery] = useState(params?.get("q") ?? "");
+  const [tag, setTag] = useState(params?.get("tag") ?? "");
+  const tags = Array.from(new Set(workflows.flatMap(item => item.tags))).filter(Boolean).sort();
+  const requestedArea = params?.get("area");
+  const [area, setArea] = useState(requestedArea && (requestedArea === "all" || solutionPortfolio.some(item => item.id === requestedArea)) ? requestedArea : "crypto");
+  const isFiltering = Boolean(tag) || area !== "all" || query.trim().length > 0;
   const visibleWorkflows = workflows.filter(workflow => {
     const text = [workflow.title, workflow.summary, workflow.description, workflow.category, ...workflow.tags].join(" ").toLocaleLowerCase();
-    return (area === "all" || workflowArea(workflow.category) === area) && text.includes(query.trim().toLocaleLowerCase());
+    return (!tag || workflow.tags.includes(tag)) && (area === "all" || workflowArea(workflow.category) === area) && text.includes(query.trim().toLocaleLowerCase());
   });
   const premiumWorkflows = workflows.filter((workflow) => PREMIUM_SLUGS.includes(workflow.slug));
   const steps = [
@@ -238,6 +243,19 @@ export function WorkflowsCatalog({
                 {solutionPortfolio.map((item, index) => <option key={item.id} value={item.id}>{p.areas[index].title}</option>)}
               </select>
             </label>
+          </div>
+          <div id="catalog-selection" className="mb-5 flex flex-wrap items-center gap-4">
+            <label>
+              {{ en: "Topic", ru: "Тема", uk: "Тема", de: "Thema", "zh-Hant": "主題" }[lang]}{" "}
+              <select className="rounded-lg bg-[var(--bg-card)] p-2" value={tag} onChange={event => setTag(event.target.value)}>
+                <option value="">{c.all}</option>
+                {tag && !tags.includes(tag) && <option value={tag}>{tag}</option>}
+                {tags.map(value => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <a className="text-emerald-300 underline" href={`?${new URLSearchParams({ area, q: query.trim(), tag })}#catalog-selection`}>
+              {{ en: "Link to selection", ru: "Ссылка на подборку", uk: "Посилання на добірку", de: "Link zur Auswahl", "zh-Hant": "此選集的連結" }[lang]}
+            </a>
           </div>
           {visibleWorkflows.length === 0 && <p role="status" className="py-8 text-white/70">{c.empty}</p>}
           {solutionPortfolio.map((group, index) => {
