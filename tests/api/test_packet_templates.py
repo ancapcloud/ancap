@@ -3,22 +3,41 @@
 import pytest
 from uuid import uuid4
 from decimal import Decimal
+import asyncio
 
-from app.db.session import init_db, LocalSession
+from app.db.session import init_db, SessionLocal
 from app.db.models import PacketTemplate
 from app.main import app
 
 
-@pytest.fixture(scope="module")
-async def db_session(event_loop):
-    """Create test database session."""
-    from app.config import get_test_settings
+@pytest.fixture(scope="function")
+async def db_session():
+    """Create test database session for each test."""
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import sessionmaker
     
-    settings = get_test_settings()
-    async with LocalSession(settings.database_url) as session:
-        await init_db(session)
-        yield session
-        # Cleanup not needed for module-scoped tests
+    # Use SQLite for tests (in-memory per test)
+    test_db_url = "sqlite:///./test_packets.db"
+    engine = create_engine(test_db_url, echo=False, connect_args={"check_same_thread": False})
+    
+    # Create tables
+    from app.db.models import Base
+    Base.metadata.create_all(bind=engine)
+    
+    SessionLocalTest = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    session = SessionLocalTest()
+    
+    # Initialize with base migration
+    await asyncio.to_thread(
+        lambda: session.execute(text("INSERT INTO alembic_version (version) VALUES ('base')"))
+    )
+    await session.commit()
+    
+    yield session
+    
+    # Cleanup
+    await session.close()
+    engine.dispose()
 
 
 @pytest.mark.anyio

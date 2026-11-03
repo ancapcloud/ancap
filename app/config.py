@@ -616,3 +616,57 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+@lru_cache
+def get_test_settings() -> Settings:
+    """Test settings with in-memory SQLite for pytest."""
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    
+    # Use SQLite for tests (in-memory)
+    test_db_url = "sqlite:///:memory:"
+    engine = create_engine(test_db_url, echo=False)
+    
+    # Create tables
+    from app.db.models import Base
+    Base.metadata.create_all(bind=engine)
+    
+    SessionLocalTest = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    
+    class TestSettings(Settings):
+        environment = "test"
+        debug = True
+        database_url = test_db_url
+        postgres_user = "postgres"
+        postgres_db = "ancap_test"
+        postgres_password = ""
+        secret_key = "test-secret-key-for-development-only"
+        cursor_secret = "test-cursor-secret"
+        cron_secret = "test-cron-secret"
+        llm_provider = "ollama_claude"
+        llm_model = "claude-sonnet-4.6"
+        anthropic_base_url = "http://localhost:11434"
+        anthropic_api_key = "test-key"
+        openrouter_api_key = ""
+        home_chat_enabled = False
+        llm_daily_budget_acp = "0"
+        mobile_smart_pay_enabled = False
+        ff_sacp = False
+        ff_dna_rna_bank = False
+        ff_perimeter_cleanup = False
+        ff_tech_auction = False
+        mail_enabled = False
+        instantly_enabled = False
+        coingecko_enabled = True
+        accuweather_enabled = True
+        rate_limit_enabled = False
+        bridge_anchor_driver = "mock"
+        auction_escrow_driver = "mock"
+        digital_passport_driver = "mock"
+        chain_anchor_driver = "mock"
+        llm_openrouter_fallback_enabled = True
+        llm_openrouter_fallback_model = "anthropic/claude-sonnet-4.6"
+        llm_openrouter_base_url = "https://openrouter.ai/api/v1"
+    
+    return TestSettings()
