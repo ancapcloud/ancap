@@ -542,7 +542,7 @@ class Settings(BaseSettings):
     llm_daily_budget_acp: str = "250"
     llm_fallback_to_template: bool = True
     # Explicit operator opt-in. Customer BYOK/model choices are never rerouted.
-    llm_openrouter_fallback_enabled: bool = False
+    llm_openrouter_fallback_enabled: bool = True
     llm_openrouter_fallback_model: str = "anthropic/claude-sonnet-4.6"
 
     # Stripe / fiat adapter
