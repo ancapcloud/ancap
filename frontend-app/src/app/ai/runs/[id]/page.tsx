@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ListingForm } from "@/components/workflow/RobinhoodListing";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { WorkflowResultAssessment } from "@/components/WorkflowResultAssessment";
@@ -451,6 +452,7 @@ export default function WorkflowRunDetailPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navigation />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        {run?.workflow_slug === "exchange-listing-submission-pack" && <ListingForm key={run.id} id={run.id} />}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="text-xs uppercase tracking-[0.18em] text-white/45">{t("workflowRunDetail.kicker")}</div>

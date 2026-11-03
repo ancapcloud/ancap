@@ -3898,3 +3898,17 @@ class SourceSchedule(Base):
         CheckConstraint("check_interval_minutes >= 1 AND check_interval_minutes <= 1440", name="ck_schedule_interval"),
         CheckConstraint("retention_days >= 1 AND retention_days <= 365", name="ck_schedule_retention"),
     )
+
+class RobinhoodListing(Base):
+    __tablename__ = "robinhood_listings"
+    run_id = Column(UUID(as_uuid=False), ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
+    chain_id = Column(Integer, nullable=False)
+    address = Column(String(42), nullable=False)
+    status = Column(String(20), nullable=False)
+    version = Column(Integer, nullable=False)
+    packet = Column(JSONB, nullable=False)
+    contact = Column(String(320), nullable=False)
+    comment = Column(Text)
+    __table_args__ = (
+        Index("uq_robinhood_published", "chain_id", "address", unique=True, postgresql_where=text("status = 'approved'")),
+    )
