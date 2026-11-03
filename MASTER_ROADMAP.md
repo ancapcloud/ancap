@@ -1,14 +1,22 @@
+## GitHub Actions documentation regression — 2026-11-03
+
+[~] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
+live GitHub despite RUN_ANCAP_DOCS_LIVE_VERIFY=0. A cross-repository branch
+protection request failed under the Actions token, blocking Backend CI and the
+release gate. Both ordinary CLI tests now use a deterministic child helper;
+exit code 2 on drift, artifact persistence and alias controls remain tested.
+Explicitly opted-in live tests are retained. CI and deployment recovery pending.
+
 
 ## GitHub PR and security cleanup — 2026-11-03
 
-[~] Fixes pushed to PRs #143–145: source/packet deletion outside assertions,
+[x] Fixes merged through PR #146 (c8bd9142), including PRs #142–145: source/packet deletion outside assertions,
 receipt ROP allowlist across all supported fields, and packet slug conflicts
 returned as HTTP 409 with a savepoint rollback. Local targeted checks passed
 (2 source API, 4 queue guard, 12 packet/onboarding checks). PR #142 already had
-green CI. All four PR heads (#142–145) are now integrated into #146. Required reviewer
-approval and integration into master are still pending.
+green CI. All four PR heads (#142–145) reached master through #146.
 
-[~] Security cleanup: fixture loading is restricted to JSON files under the
+[x] Security cleanup merged into master: fixture loading is restricted to JSON files under the
 repository `scripts/` directory, including resolved symlink containment.
 Supply a filename such as `quality_fixtures_initial.json` or an absolute path
 inside that directory; arbitrary server paths are rejected. Unused imports and
@@ -19,7 +27,9 @@ passed on disposable PostgreSQL. Duplicate packet index metadata and the
 receipt --forbid-task bypass are corrected. Alembic metadata and API-key
 rate-limit fingerprints were triaged as documented
 false positives. Combined integration checks: 53 passed, 1 Windows symlink-permission skip.
-Security fixes are not claimed deployed or merged.
+Master CodeQL passed with zero open alerts after merging #146. Production
+activation was blocked by an unrelated documentation test calling live GitHub
+without explicit opt-in; deployment is not claimed complete.
 
 2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
 An explicit operator opt-in adds Claude Sonnet reserve execution through the
