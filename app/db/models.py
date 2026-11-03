@@ -3893,7 +3893,7 @@ class PacketTemplate(Base):
     retention_days = Column(Integer, nullable=False, default=30)
     packet_structure = Column(JSONB, nullable=False, default=dict)
     languages = Column(String(10), nullable=False, server_default="en")
-    status = Column(String(24), nullable=False, server_default="draft", index=True)
+    status = Column(String(24), nullable=False, server_default="draft")
     is_active = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))

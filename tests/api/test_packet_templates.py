@@ -95,3 +95,11 @@ def test_packet_templates_admin_crud_and_auth(client, monkeypatch):
     deleted = client.delete(f"/v1/packet-templates/{template_id}", headers=headers)
     assert deleted.status_code == 204
     assert client.get(f"/v1/packet-templates/{template_id}", headers=headers).status_code == 404
+
+
+def test_packet_template_metadata_has_unique_index_names():
+    from app.db.models import PacketTemplate
+
+    names = [index.name for index in PacketTemplate.__table__.indexes]
+    assert len(names) == len(set(names))
+    assert names.count("ix_packet_templates_status") == 1
