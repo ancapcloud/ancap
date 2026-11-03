@@ -222,6 +222,14 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Failed to initialize packet templates")
     try:
+        from app.services.source_schedules import save_default_schedules
+        async with SessionLocal() as db:
+            save_default_schedules(db)
+            await db.commit()
+        logger.info("Source schedules default data initialized")
+    except Exception:
+        logger.exception("Failed to initialize source schedules default data")
+    try:
         yield {}
     finally:
         if workflow_task:
