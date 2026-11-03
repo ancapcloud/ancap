@@ -57,3 +57,18 @@ test("investor evidence links identify a recorded test demonstration", async ({ 
   await expect(evidence.getByRole("link", { name: "Inspect receipt" })).toHaveAttribute("href", /588ebb765c6ec1e62d39dbc206bc8c0f9e177bcc.*receipt.json$/);
   await expect(evidence.getByText(/Customer revenue, production-provider acceptance/)).toBeVisible();
 });
+
+test("a shared catalog selection restores topic, area and search", async ({ page }) => {
+  await page.goto("/ai/workflows?area=all");
+  const topic = page.getByRole("combobox", { name: "Topic", exact: true });
+  await topic.selectOption({ index: 1 });
+  const value = await topic.inputValue();
+  const search = page.locator('input[type="search"]').last();
+  await search.fill(value);
+  const href = await page.getByRole("link", { name: "Link to selection" }).getAttribute("href");
+  expect(href).toBeTruthy();
+  await page.goto("/ai/workflows" + href);
+  await expect(topic).toHaveValue(value);
+  await expect(search).toHaveValue(value);
+  await expect(page.locator('[aria-labelledby^="catalog-"] article').first()).toBeVisible();
+});
