@@ -25,18 +25,20 @@ ROP numbering in the pilot roadmap:
 
 - ROP-01 sources/claims/draft — implemented; CI/live acceptance still open.
 - ROP-02 reviewed packet release — implemented; CI/live acceptance still open.
-- ROP-03 bounded schedules/fixtures — code present; fix `/v1/v1` mount and async
-  service before claiming done.
+- ROP-03 bounded schedules/fixtures — canonical mount and async/admin CRUD fixed
+  in PR #143 and integrated into #146; CI/live acceptance remains separate.
 - ROP-04 evidenced economics — cost-evidence fields/reconcile present; commercial
   renewal measurement remains operator work.
 - ROP-05 repeatable onboarding + packet templates — onboarding templates are in
-  `master`; packet templates still need a clean migration onto `master`.
+  `master`; packet templates are integrated into #146, including the 103 table
+  migration and 104 merge of listing/template heads. CI/live and 30% effort
+  reduction acceptance remain open.
 - There is **no ROP-06** in the pilot roadmap. Onboarding docs labeled ROP-06 are a
   Theodore mis-ID of ROP-05 work. Packet templates belong under ROP-05, not a new ID.
 
-Next engineer step: repair source-schedules mount/service, then integrate packet
-templates with a migration that revises from the current Alembic head. Do not
-re-implement COST-03. Smart Pay OCR remains archived below.
+Next engineer step: review and integrate PR #146, then verify live acceptance
+for ROP-01/02/03/05. Do not re-implement COST-03 or invent ROP-06/07.
+Smart Pay OCR remains archived below.
 
 ## Архив OCR — отложено за активными P0
 
