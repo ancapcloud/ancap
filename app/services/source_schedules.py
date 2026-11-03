@@ -1,17 +1,22 @@
 """Service layer for source schedules (ROP-03)."""
 
-from typing import List, Optional
-from sqlalchemy.orm import Session
-import uuid
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import SourceSchedule
 
 
-def create_schedule(
-    db: Session,
+async def create_schedule(
+    session: AsyncSession,
+    *,
     project_id: str,
     source_type: str,
-    source_pattern: Optional[str] = None,
+    source_pattern: str | None = None,
     check_interval_minutes: int = 60,
     retention_days: int = 30,
     max_sources: int = 10,
@@ -20,9 +25,9 @@ def create_schedule(
     check_cooldown_seconds: int = 60,
     enabled: bool = True,
 ) -> SourceSchedule:
-    """Create a new source schedule."""
+    now = datetime.now(timezone.utc)
     schedule = SourceSchedule(
-        id=uuid.uuid4(),
+        id=uuid4(),
         project_id=project_id,
         source_type=source_type,
         source_pattern=source_pattern,
@@ -33,103 +38,56 @@ def create_schedule(
         max_claims_per_source=max_claims_per_source,
         check_cooldown_seconds=check_cooldown_seconds,
         enabled=enabled,
+        created_at=now,
+        updated_at=now,
     )
-    db.add(schedule)
-    db.flush()  # Don't commit yet
+    session.add(schedule)
+    await session.flush()
     return schedule
 
 
-def get_schedule(db: Session, schedule_id: str) -> Optional[SourceSchedule]:
-    """Get a schedule by ID."""
-    return db.query(SourceSchedule).filter(SourceSchedule.id == schedule_id).first()
+async def get_schedule(session: AsyncSession, schedule_id: UUID) -> SourceSchedule | None:
+    return (
+        await session.execute(select(SourceSchedule).where(SourceSchedule.id == schedule_id))
+    ).scalar_one_or_none()
 
 
-def list_schedules(
-    db: Session,
-    project_id: Optional[str] = None,
-    source_type: Optional[str] = None,
-    enabled: Optional[bool] = None,
+async def list_schedules(
+    session: AsyncSession,
+    *,
+    project_id: str | None = None,
+    source_type: str | None = None,
+    enabled: bool | None = None,
     limit: int = 100,
     offset: int = 0,
-) -> tuple[List[SourceSchedule], int]:
-    """List schedules with optional filters."""
-    query = db.query(SourceSchedule)
-    
-    if project_id:
-        query = query.filter(SourceSchedule.project_id == project_id)
-    if source_type:
-        query = query.filter(SourceSchedule.source_type == source_type)
+) -> tuple[list[SourceSchedule], int]:
+    filters = []
+    if project_id is not None:
+        filters.append(SourceSchedule.project_id == project_id)
+    if source_type is not None:
+        filters.append(SourceSchedule.source_type == source_type)
     if enabled is not None:
-        query = query.filter(SourceSchedule.enabled == enabled)
-    
-    schedules, total = query.order_by(SourceSchedule.created_at.desc()).offset(offset).limit(limit).all()
-    total_query = db.query(SourceSchedule).filter(
-        (SourceSchedule.project_id == project_id) if project_id else True,
-        (SourceSchedule.source_type == source_type) if source_type else True,
-        (SourceSchedule.enabled == enabled) if enabled is not None else True,
-    )
-    
-    return schedules, total_query.count()
+        filters.append(SourceSchedule.enabled == enabled)
+
+    total = (
+        await session.execute(select(func.count()).select_from(SourceSchedule).where(*filters))
+    ).scalar_one()
+    rows = (
+        await session.execute(
+            select(SourceSchedule)
+            .where(*filters)
+            .order_by(SourceSchedule.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+    ).scalars().all()
+    return list(rows), int(total)
 
 
-def delete_schedule(db: Session, schedule_id: str) -> bool:
-    """Delete a schedule by ID."""
-    schedule = db.query(SourceSchedule).filter(SourceSchedule.id == schedule_id).first()
-    if schedule:
-        db.delete(schedule)
-        db.flush()
-        return True
-    return False
-
-
-def save_default_schedules(db: Session) -> None:
-    """Save default schedules for common use cases."""
-    # Crypto client monitoring schedule
-    crypto_client_schedule = SourceSchedule(
-        id=uuid.uuid4(),
-        project_id="default",
-        source_type="crypto-client",
-        source_pattern=r"^(https?://)?(?:www\.)?(?:etherscan|blockscout)\.io/.*$",
-        check_interval_minutes=60,
-        retention_days=30,
-        max_sources=10,
-        max_snapshots_per_source=20,
-        max_claims_per_source=50,
-        check_cooldown_seconds=60,
-        enabled=True,
-    )
-    db.add(crypto_client_schedule)
-    
-    # Competitor analysis schedule
-    competitor_schedule = SourceSchedule(
-        id=uuid.uuid4(),
-        project_id="default",
-        source_type="competitor",
-        source_pattern=r"^(https?://)?(?:www\.)?(?:ancap|blockscout)\.cloud/.*$",
-        check_interval_minutes=30,
-        retention_days=60,
-        max_sources=5,
-        max_snapshots_per_source=15,
-        max_claims_per_source=30,
-        check_cooldown_seconds=30,
-        enabled=True,
-    )
-    db.add(competitor_schedule)
-    
-    # News aggregation schedule
-    news_schedule = SourceSchedule(
-        id=uuid.uuid4(),
-        project_id="default",
-        source_type="news",
-        source_pattern=r"^(https?://)?(?:www\.)?(?:coindesk|cointelegraph|decrypt)\.com/.*$",
-        check_interval_minutes=120,
-        retention_days=45,
-        max_sources=8,
-        max_snapshots_per_source=25,
-        max_claims_per_source=40,
-        check_cooldown_seconds=60,
-        enabled=True,
-    )
-    db.add(news_schedule)
-    
-    db.flush()
+async def delete_schedule(session: AsyncSession, schedule_id: UUID) -> bool:
+    schedule = await get_schedule(session, schedule_id)
+    if schedule is None:
+        return False
+    await session.delete(schedule)
+    await session.flush()
+    return True

@@ -1,86 +1,82 @@
-"""Router for source schedules (ROP-03)."""
+"""Admin router for source schedules (ROP-03)."""
 
-from typing import Optional
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from app.services.source_schedules import create_schedule, get_schedule, list_schedules, delete_schedule
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+
+from app.api.deps import DbSession, require_platform_admin
 from app.schemas.source_schedules import (
     SourceScheduleCreate,
-    SourceScheduleResponse,
     SourceScheduleListResponse,
+    SourceScheduleResponse,
 )
-from app.api.deps import require_admin
-from app.db.session import get_db
+from app.services import source_schedules as schedules_service
+
+router = APIRouter(prefix="/source-schedules", tags=["source-schedules"])
 
 
-router = APIRouter(prefix="/v1/source-schedules", tags=["source-schedules"])
+def _public(row) -> SourceScheduleResponse:
+    return SourceScheduleResponse.model_validate(
+        {
+            "id": str(row.id),
+            "project_id": row.project_id,
+            "source_type": row.source_type,
+            "source_pattern": row.source_pattern,
+            "check_interval_minutes": row.check_interval_minutes,
+            "retention_days": row.retention_days,
+            "max_sources": row.max_sources,
+            "max_snapshots_per_source": row.max_snapshots_per_source,
+            "max_claims_per_source": row.max_claims_per_source,
+            "check_cooldown_seconds": row.check_cooldown_seconds,
+            "enabled": row.enabled,
+            "created_at": row.created_at,
+            "updated_at": row.updated_at,
+        }
+    )
 
 
 @router.post(
-    "/{schedule_id}",
+    "",
     response_model=SourceScheduleResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_admin)],
 )
-async def create_schedule_endpoint(
-    schedule_id: str,  # Ignored - using UUID for id field
-    schedule_data: SourceScheduleCreate,
-    db: Session = Depends(get_db),
+async def create_schedule(
+    body: SourceScheduleCreate,
+    session: DbSession,
+    response: Response,
+    _admin: str = Depends(require_platform_admin),
 ):
-    """Create a new source schedule."""
-    # Generate a new UUID since the endpoint expects POST to create
-    actual_schedule = create_schedule(
-        db=db,
-        project_id=schedule_data.project_id,
-        source_type=schedule_data.source_type,
-        source_pattern=schedule_data.source_pattern,
-        check_interval_minutes=schedule_data.check_interval_minutes,
-        retention_days=schedule_data.retention_days,
-        max_sources=schedule_data.max_sources,
-        max_snapshots_per_source=schedule_data.max_snapshots_per_source,
-        max_claims_per_source=schedule_data.max_claims_per_source,
-        check_cooldown_seconds=schedule_data.check_cooldown_seconds,
-        enabled=schedule_data.enabled,
+    response.headers["Cache-Control"] = "private, no-store"
+    row = await schedules_service.create_schedule(
+        session,
+        project_id=body.project_id,
+        source_type=body.source_type,
+        source_pattern=body.source_pattern,
+        check_interval_minutes=body.check_interval_minutes,
+        retention_days=body.retention_days,
+        max_sources=body.max_sources,
+        max_snapshots_per_source=body.max_snapshots_per_source,
+        max_claims_per_source=body.max_claims_per_source,
+        check_cooldown_seconds=body.check_cooldown_seconds,
+        enabled=body.enabled,
     )
-    return actual_schedule
+    return _public(row)
 
 
-@router.get(
-    "/{schedule_id}",
-    response_model=SourceScheduleResponse,
-    dependencies=[Depends(require_admin)],
-)
-async def get_schedule_endpoint(
-    schedule_id: str,
-    db: Session = Depends(get_db),
+@router.get("", response_model=SourceScheduleListResponse)
+async def list_schedules(
+    session: DbSession,
+    response: Response,
+    project_id: str | None = None,
+    source_type: str | None = None,
+    enabled: bool | None = None,
+    limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    _admin: str = Depends(require_platform_admin),
 ):
-    """Get a schedule by ID."""
-    schedule = get_schedule(db=db, schedule_id=schedule_id)
-    if not schedule:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Source schedule {schedule_id} not found",
-        )
-    return schedule
-
-
-@router.get(
-    "/",
-    response_model=SourceScheduleListResponse,
-    dependencies=[Depends(require_admin)],
-)
-async def list_schedules_endpoint(
-    project_id: Optional[str] = None,
-    source_type: Optional[str] = None,
-    enabled: Optional[bool] = None,
-    limit: int = 100,
-    offset: int = 0,
-    db: Session = Depends(get_db),
-):
-    """List schedules with optional filters."""
-    schedules, total = list_schedules(
-        db=db,
+    response.headers["Cache-Control"] = "private, no-store"
+    rows, total = await schedules_service.list_schedules(
+        session,
         project_id=project_id,
         source_type=source_type,
         enabled=enabled,
@@ -88,27 +84,34 @@ async def list_schedules_endpoint(
         offset=offset,
     )
     return SourceScheduleListResponse(
-        schedules=schedules,
+        schedules=[_public(row) for row in rows],
         total=total,
         limit=limit,
         offset=offset,
     )
 
 
-@router.delete(
-    "/{schedule_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_admin)],
-)
-async def delete_schedule_endpoint(
-    schedule_id: str,
-    db: Session = Depends(get_db),
+@router.get("/{schedule_id}", response_model=SourceScheduleResponse)
+async def get_schedule(
+    schedule_id: UUID,
+    session: DbSession,
+    response: Response,
+    _admin: str = Depends(require_platform_admin),
 ):
-    """Delete a schedule by ID."""
-    result = delete_schedule(db=db, schedule_id=schedule_id)
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Source schedule {schedule_id} not found",
-        )
-    return None
+    response.headers["Cache-Control"] = "private, no-store"
+    row = await schedules_service.get_schedule(session, schedule_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Source schedule not found")
+    return _public(row)
+
+
+@router.delete("/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_schedule(
+    schedule_id: UUID,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
+    deleted = await schedules_service.delete_schedule(session, schedule_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Source schedule not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
