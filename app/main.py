@@ -36,6 +36,7 @@ from app.api.routers import (
     funds,
     onboarding,
     onboarding_templates,
+    packet_templates,
     stakes_router,
     chain,
     wallet_acp,
@@ -212,6 +213,15 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Failed to initialize onboarding default templates")
     try:
+        from app.services.packet_templates import save_default_templates as save_packet_templates
+
+        async with SessionLocal() as db:
+            count = await save_packet_templates(db)
+            await db.commit()
+        logger.info("Packet templates initialized: %s inserted", count)
+    except Exception:
+        logger.exception("Failed to initialize packet templates")
+    try:
         yield {}
     finally:
         if workflow_task:
@@ -352,6 +362,7 @@ ALL_ROUTERS = [
     funds.router,
     onboarding.router,
     onboarding_templates.router,
+    packet_templates.router,
     stakes_router.router,
     chain.router,
     wallet_acp.router,

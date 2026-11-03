@@ -1,41 +1,30 @@
-# ANCAP Theodore Queue — 2026-10-28
+# ANCAP Theodore Queue — 2026-11-03
 
-## [ ] COST-03 — просмотр первичной записи затрат
+## [~] COST-03 — просмотр первичной записи затрат
 
-Очередь подчиняется актуальному началу MASTER_ROADMAP.md и
-docs/WORKFLOW_VALUE_ROADMAP.md. Копии роадмапов в Theodore/ и workspace устарели.
-ae166b4 и 539c982 уже реализовали расчёт, миграцию 092, запись cost-evidence и
-итоги по запуску. Не повторяй их и не закрывай весь P0 по себестоимости.
+Canonical admin GET is verified on PR #142 (`codex/theodore-integrate-20261103`).
+Do not re-implement here. Mark `[x]` only after that PR reaches `master`.
 
-Следующий небольшой результат: admin-only
-GET /v1/workflow-store/admin/cost-evidence/{evidence_id} для сверки сохранённого
-источника, document_sha256, времени, автора, review_note и распределений.
-Pydantic-модель — в schemas, чтение — в services, обработчик — в workflow_value.
-Cache-Control: private, no-store; гость 401, обычный пользователь 403,
-неизвестный ID 404; verification_basis=operator_attested.
-Не загружай документ по сети, не меняй баланс и не добавляй PATCH/DELETE.
+## Active — Research Operations gaps
 
-Проверка: tests/api/test_workflow_cost_evidence_api.py, включая доступы,
-точность сумм и отсутствие мутаций при GET. Только отдельная одноразовая
-PostgreSQL с явным TEST_DATABASE_URL: fixtures могут удалить schema.
-Недоступная БД/skip — не успешная проверка; задача остаётся partial.
+Queue follows `MASTER_ROADMAP.md` and `docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md`.
+Copies under Theodore/ or the OpenClaw workspace are stale. Pilot IDs are only
+ROP-01 … ROP-05. There is **no ROP-06 / ROP-07**.
 
-После проверки — локальный коммит собственных файлов, запись PROGRESS.md и
-обновление именно этого подпункта. Далее перечитай активный P0 и выбери один
-следующий небольшой пробел в происхождении затрат/платежей или сверке.
-Не создавай новый отчёт вместо реализации; не начинай другую большую систему.
+- ROP-01 sources/claims/draft — implemented; CI/live acceptance still open.
+- ROP-02 reviewed packet release — implemented; CI/live acceptance still open.
+- ROP-03 bounded schedules/fixtures — code present; mount/async repair on PR #143.
+- ROP-04 evidenced economics — cost-evidence fields/reconcile present; commercial
+  renewal measurement remains operator work.
+- ROP-05 onboarding templates — already on `master`. Packet templates admin API +
+  migration `103_packet_templates_rop05` land in this branch (behavior from
+  Theodore `8a42905f`/`b1440775`, retargeted under ROP-05, async/admin-auth fixed).
+  Do not merge packet templates with onboarding templates. Effort-reduction
+  validation (30%) remains open.
 
-## После текущего COST-03 — Research Operations
-
-После текущего COST-03 продолжай актуальный Research Operations P0 по
-docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md. ROP-01 (источники, версии, связи
-утверждений и черновик) уже реализован в отдельной исследовательской ветке:
-перед работой проверь наличие интеграции в Git, не повторяй его реализацию.
-ROP-02 тоже реализован в этой ветке: точные версии, приёмка Studio и защита
-существующей очереди отправки. Перед работой проверь интеграцию обоих коммитов.
-Следующий этап ROP-03 — ограниченный сбор и fixtures качества; расписания
-включать после подтверждения потребности платным пилотом. Делить на небольшие проверяемые шаги; не подключать
-автоматическую отправку, платные вызовы или кошелёк ради демонстрации.
+Next engineer step after merge: CI/live acceptance for ROP-01/02 and source-schedules
+fix; do not invent new ROP IDs. Smart Pay OCR remains archived below.
+Run `scripts/theodore_queue_guard.py` when present before rewriting a receipt.
 
 ## Архив OCR — отложено за активными P0
 
