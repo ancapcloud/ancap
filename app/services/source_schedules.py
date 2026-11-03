@@ -3,7 +3,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 import uuid
-from datetime import datetime
 
 from app.db.models import SourceSchedule
 

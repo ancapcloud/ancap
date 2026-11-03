@@ -13,7 +13,8 @@ from app.services.quality_fixtures import (
 
 
 @pytest.mark.asyncio
-async def test_load_fixtures_from_file(tmp_path):
+async def test_load_fixtures_from_file(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.services.quality_fixtures.FIXTURES_ROOT", tmp_path)
     """Test loading fixtures from JSON file."""
     fixture_data = [
         {
@@ -145,3 +146,24 @@ async def test_create_duplicate_sample_id_raises(db_session):
     # Try to create duplicate - should fail due to unique constraint on sample_id
     with pytest.raises(Exception):  # SQLAlchemy will raise IntegrityError
         await create_quality_fixtures_batch(db_session, [fixture_data])
+
+
+@pytest.mark.parametrize("path", ["../outside.json", "/etc/passwd", "fixture.txt"])
+def test_load_fixture_rejects_unsafe_paths(tmp_path, monkeypatch, path):
+    monkeypatch.setattr("app.services.quality_fixtures.FIXTURES_ROOT", tmp_path)
+    with pytest.raises(ValueError, match="within the fixture directory"):
+        load_fixtures_from_file(path)
+
+
+def test_load_fixture_rejects_symlink_escape(tmp_path, monkeypatch):
+    root = tmp_path / "fixtures"
+    root.mkdir()
+    outside = tmp_path / "outside.json"
+    outside.write_text("[]")
+    try:
+        (root / "link.json").symlink_to(outside)
+    except OSError:
+        pytest.skip("Creating symbolic links requires OS permission")
+    monkeypatch.setattr("app.services.quality_fixtures.FIXTURES_ROOT", root)
+    with pytest.raises(ValueError, match="within the fixture directory"):
+        load_fixtures_from_file("link.json")

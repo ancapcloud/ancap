@@ -1,18 +1,17 @@
 """Router for source schedules (ROP-03)."""
 
-from typing import List, Optional
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.models import SourceSchedule
 from app.services.source_schedules import create_schedule, get_schedule, list_schedules, delete_schedule
 from app.schemas.source_schedules import (
     SourceScheduleCreate,
     SourceScheduleResponse,
     SourceScheduleListResponse,
 )
-from app.api.deps import DbSession, require_admin
+from app.api.deps import require_admin
 from app.db.session import get_db
-from app.api.deps import DbSession, require_admin
 
 
 router = APIRouter(prefix="/v1/source-schedules", tags=["source-schedules"])

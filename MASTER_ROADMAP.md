@@ -1,3 +1,21 @@
+
+## GitHub PR and security cleanup — 2026-11-03
+
+[~] Fixes pushed to PRs #143–145: source/packet deletion outside assertions,
+receipt ROP allowlist across all supported fields, and packet slug conflicts
+returned as HTTP 409 with a savepoint rollback. Local targeted checks passed
+(2 source API, 4 queue guard, 12 packet/onboarding checks). PR #142 already had
+green CI. Required reviewer approval and integration are still pending.
+
+[~] Security cleanup: fixture loading is restricted to JSON files under the
+repository `scripts/` directory, including resolved symlink containment.
+Supply a filename such as `quality_fixtures_initial.json` or an absolute path
+inside that directory; arbitrary server paths are rejected. Unused imports and
+onboarding test checks are corrected. Local checks: 28 passed, one symlink test
+skipped because Windows does not grant symlink creation. Linux CI must cover it.
+Alembic metadata and API-key rate-limit fingerprints were triaged as documented
+false positives. Security fixes are not claimed deployed or merged.
+
 2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
 An explicit operator opt-in adds Claude Sonnet reserve execution through the
 already configured OpenRouter account, with no data collection / zero-retention
