@@ -378,11 +378,37 @@ def test_summary_exit_code_returns_two_when_fail_on_not_ok_requested():
 
 
 
-def test_generate_followup_script_fail_on_not_ok_returns_nonzero_and_writes_artifacts(tmp_path: Path):
+@pytest.fixture
+def offline_bootstrap_script(tmp_path: Path) -> Path:
+    """Exercise the real wrapper CLI with a deterministic child, without GitHub auth."""
+    helper = tmp_path / "offline_bootstrap.py"
+    helper.write_text(
+        "import argparse, json\n"
+        "from pathlib import Path\n"
+        "parser = argparse.ArgumentParser()\n"
+        "parser.add_argument('--repo', required=True)\n"
+        "parser.add_argument('--verify-live', action='store_true')\n"
+        "parser.add_argument('--verify-live-community', action='store_true')\n"
+        "parser.add_argument('--format', choices=['markdown', 'json'], required=True)\n"
+        "parser.add_argument('--output', required=True)\n"
+        "args = parser.parse_args()\n"
+        "payload = {'repo': args.repo, 'ok': False, 'driftCount': 1, 'unknownCount': 0}\n"
+        "text = json.dumps(payload) if args.format == 'json' else '# Offline drift fixture\\n'\n"
+        "Path(args.output).write_text(text, encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    return helper
+
+
+def test_generate_followup_script_fail_on_not_ok_returns_nonzero_and_writes_artifacts(
+    tmp_path: Path, offline_bootstrap_script: Path
+):
     result = subprocess.run(
         [
             sys.executable,
             str(SCRIPT_PATH),
+            "--bootstrap-script",
+            str(offline_bootstrap_script),
             "--repo",
             "ancapcloud/ancap-docs",
             "--output-dir",
@@ -411,11 +437,15 @@ def test_generate_followup_script_fail_on_not_ok_returns_nonzero_and_writes_arti
     assert "Live follow-up summary is not OK; exiting non-zero because --fail-on-not-ok was requested." in result.stderr
 
 
-def test_generate_followup_script_can_skip_latest_alias_writes(tmp_path: Path):
+def test_generate_followup_script_can_skip_latest_alias_writes(
+    tmp_path: Path, offline_bootstrap_script: Path
+):
     result = subprocess.run(
         [
             sys.executable,
             str(SCRIPT_PATH),
+            "--bootstrap-script",
+            str(offline_bootstrap_script),
             "--repo",
             "ancapcloud/ancap-docs",
             "--output-dir",
