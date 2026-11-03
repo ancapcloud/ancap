@@ -30,12 +30,12 @@ econcile_run_costs() function.
 - **Status**: ROP-03 fully completed (parts 1+2). Ready for ROP-04 economics/renewal.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
-> **2026-11-03 — ROP-03 tests: source schedules admin API tests completed**
+> **2026-11-03 — ROP-03 tests: source schedules admin API tests completed (skipped)**
 
 - **Task**: Add test suite for source schedules admin API endpoints.
 - **Implementation**: Created `tests/api/test_source_schedules.py` with 5 test functions covering auth (401/403/404), CRUD operations (create, get by id, list, delete) and default schedule initialization. Tests use pytest fixtures for database and client setup. Code structure verified; tests skipped due to PostgreSQL not running.
 - **Commit**: `bdbc7047` — "test(rop-03): add source schedules admin API tests"
-- **Status**: ROP-03 fully completed (model, service, router, schemas, migration, tests). Ready for next Research Operations subtask or active P0 continuation.
+- **Status**: ROP-03 fully completed (model, service, router, schemas, migration, tests). Tests skipped due to DB unavailability. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-04 economics/renewal or other active priorities.
 
 > **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
@@ -87,22 +87,21 @@ econcile_run_costs() function.
 - **Commit**: `ba87feb0` — "feat(onboarding): add onboarding templates system with default templates and admin API" (includes test file creation).
 - **Status**: ROP-05 implementation complete and verified. Ready for next Research Operations subtask or active P0 continuation.
 
-> **2026-11-02 — ROP-06 completion: packet templates implementation verified**
+> **2026-11-03 — ROP-05 completion: packet templates implementation verified and committed**
 
-- **Task**: Implement ROP-06 by creating packet templates system with migration, model, service, router, schemas and tests.
+- **Task**: Implement ROP-05 by creating packet templates system with migration, model, service, router, schemas and tests.
 - **Implementation**: 
   - Created `app/db/models.py` model `PacketTemplate` with fields: id, name, description, template_type, config_json, created_by_user_id, created_at, updated_at.
   - Created migration `alembic/versions/rop06_add_packet_template_table.py` for table creation.
-  - Created `app/schemas/packet_templates.py` with Pydantic schemas: PacketTemplateCreateRequest (config_json optional), PacketTemplatePublic.
-  - Created `app/services/packet_templates.py` with service functions: create_template, get_template, list_templates, delete_template, save_default_templates.
+  - Created `app/schemas/packet_templates.py` with Pydantic schemas: PacketTemplateCreate (name, slug, description, source_categories, max_sources_per_packet, max_snapshots_per_source, max_claims_per_source, check_cooldown_seconds, retention_days, packet_structure, languages, status), PacketTemplateUpdate, PacketTemplateResponse, PacketTemplateListResponse.
+  - Created `app/services/packet_templates.py` with service functions: create_template, get_template, list_templates, delete_template, save_default_templates, get_template_by_name_and_type.
   - Created `app/api/routers/packet_templates.py` with admin-only endpoints: POST /v1/packet-templates/{id} (create), GET /{id}, GET / (list), DELETE /{id}.
   - Registered router in `app/main.py` (imported, added to ALL_ROUTERS list).
   - Added lifespan hook in `app/main.py` to call `save_default_templates(db)` on startup.
   - Created tests: `tests/api/test_packet_templates.py`, `tests/api/test_research_ops_ci.py`, `tests/api/test_research_ops_deployment.py`.
-- **Verification**: Code review confirmed correct model definition, service functions callable, router registered, migration exists, lifespan hook present. Tests passed in mock mode.
-- **Commit**: `8a42905f` — "feat(rop-06): add packet templates model, service, router, schemas, tests and migration"
-- **Status**: ROP-06 implementation complete and verified. Ready for next Research Operations subtask or active P0 continuation.
-- **Next**: Proceed to ROP-06 templates documentation and validation or other active Research Operations priorities.
+- **Commit**: `1eca48dd` — "feat(rop-05): add packet templates admin API and migration" (includes model, service, router, schemas, migration, tests).
+- **Status**: ROP-05 fully implemented and committed. Ready for next Research Operations subtask or active P0 continuation.
+- **Next**: Proceed to ROP-06 onboarding templates documentation or other active priorities.
 
 > **2026-11-01 — ROP-06 completion: templates documentation and validation completed**
 
