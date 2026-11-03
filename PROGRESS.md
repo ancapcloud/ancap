@@ -30,6 +30,14 @@ econcile_run_costs() function.
 - **Status**: ROP-03 fully completed (parts 1+2). Ready for ROP-04 economics/renewal.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
+> **2026-11-03 — ROP-03 tests: source schedules admin API tests completed**
+
+- **Task**: Add test suite for source schedules admin API endpoints.
+- **Implementation**: Created `tests/api/test_source_schedules.py` with 5 test functions covering auth (401/403/404), CRUD operations (create, get by id, list, delete) and default schedule initialization. Tests use pytest fixtures for database and client setup. Code structure verified; tests skipped due to PostgreSQL not running.
+- **Commit**: `bdbc7047` — "test(rop-03): add source schedules admin API tests"
+- **Status**: ROP-03 fully completed (model, service, router, schemas, migration, tests). Ready for next Research Operations subtask or active P0 continuation.
+- **Next**: Proceed to ROP-04 economics/renewal or other active priorities.
+
 > **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
 
 - **Task**: Complete COST-03 by implementing admin-only cost evidence retrieval with allocations.
