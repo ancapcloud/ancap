@@ -3,6 +3,11 @@
 from tests.api.test_organizations import _register_and_login
 
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 def test_cryo_catalog(client):
     r = client.get("/v1/cryo/catalog")
     assert r.status_code == 200, r.text
@@ -82,6 +87,7 @@ def test_service_and_ai_reviews(client):
             "rating": 5,
             "text": "Clear partner handoff and compliance note.",
         },
+        headers=headers,
     )
     assert created.status_code == 201, created.text
     assert created.json()["rating"] == 5

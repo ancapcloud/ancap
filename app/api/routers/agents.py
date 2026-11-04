@@ -50,17 +50,14 @@ async def register_agent(
         except ValueError:
             created_by_agent_id = None
     owner_user_id = None
-    # Prefer authenticated user as owner (golden path). Optional override via body.owner_user_id.
+    # The authenticated user always owns agents they create.
     if user_id:
         try:
             owner_user_id = UUID(user_id)
         except ValueError:
             owner_user_id = None
-    elif body.owner_user_id:
-        try:
-            owner_user_id = UUID(body.owner_user_id)
-        except ValueError:
-            owner_user_id = None
+    # An unauthenticated caller must not attribute a new agent to someone
+    # else's account (agent ownership now gates strategy/listing writes).
     agent = Agent(
         display_name=body.display_name,
         public_key=body.public_key,

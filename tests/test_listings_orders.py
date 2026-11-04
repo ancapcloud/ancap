@@ -2,6 +2,11 @@
 from tests.conftest import unique_name
 
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 USER_AUTH_HEADER = {"X-Requested-With": "XMLHttpRequest"}
 
 VERTICAL_SPEC = {
