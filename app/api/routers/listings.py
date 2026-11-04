@@ -35,7 +35,7 @@ from app.db.models import (
     Vertical,
     PublicActivityFeedEvent,
 )
-from app.services.ledger import get_or_create_account, append_event, balance_for_account
+from app.services.ledger import append_event, balance_for_account, get_or_create_account, lock_account_for_spend
 from app.db.models import LedgerEventTypeEnum
 from app.constants import PLATFORM_ACCOUNT_OWNER_ID
 from app.services.stakes import require_activated_if_stake_required
@@ -143,6 +143,7 @@ async def create_listing(body: ListingCreateRequest, session: DbSession, caller:
 
     if fee_value > 0:
         acc_agent = await get_or_create_account(session, "agent", strat.owner_agent_id)
+        await lock_account_for_spend(session, acc_agent.id)
         acc_platform = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
         bal = await balance_for_account(session, acc_agent.id, fee_currency)
         if (bal.get(fee_currency) or Decimal(0)) < fee_value:
@@ -435,7 +436,8 @@ async def promote_listing(
     body: ListingPromotionCreateRequest,
     session: DbSession,
     caller: Caller,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=200),
+    # Matches IdempotencyKey.key (String(128)); longer keys would fail on insert.
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=128),
 ):
     """Buy (or extend) sponsored placement; the fee is paid from the owner agent's balance."""
     listing = await session.get(Listing, listing_id)
@@ -448,6 +450,9 @@ async def promote_listing(
 
     scope = f"listing_promotion:{listing_id}"
     payload = body.model_dump(mode="json")
+    # Lock before the idempotency lookup so an overlapping retry with the same
+    # key waits for the first purchase and then replays its stored response.
+    await listing_promotions.lock_listing_purchase(session, str(listing_id))
     if idempotency_key:
         hit = await get_idempotency_hit(session, scope=scope, key=idempotency_key, request_payload=payload)
         if hit is not None:

@@ -29,6 +29,7 @@ from app.services.ledger import (
     balance_for_account,
     get_or_create_account,
     is_ledger_invariant_halted,
+    lock_account_for_spend,
 )
 
 
@@ -67,8 +68,15 @@ async def active_until(session: AsyncSession, listing_id: str) -> datetime | Non
 
 
 async def _lock(session: AsyncSession, key: str) -> None:
-    # Serialize slot accounting and balance checks for the same category/agent.
     await session.execute(text("SELECT pg_advisory_xact_lock(hashtext(:k))"), {"k": key})
+
+
+async def lock_listing_purchase(session: AsyncSession, listing_id: str) -> None:
+    """Serialize purchases for one listing (taken before the idempotency lookup).
+
+    Lock order everywhere: listing -> category -> account spend lock.
+    """
+    await _lock(session, f"listing_promotion:listing:{listing_id}")
 
 
 async def purchase(
@@ -90,8 +98,8 @@ async def purchase(
         raise HTTPException(status_code=503, detail="Ledger is halted; payments are paused")
 
     vertical_id = str(strategy.vertical_id) if strategy.vertical_id else None
+    await lock_listing_purchase(session, str(listing.id))
     await _lock(session, f"listing_promotion:vertical:{vertical_id}")
-    await _lock(session, f"listing_promotion:agent:{strategy.owner_agent_id}")
 
     now = _now()
     current_end = await active_until(session, str(listing.id))
@@ -117,6 +125,9 @@ async def purchase(
     ledger_event_id = None
     if amount > 0:
         acc_agent = await get_or_create_account(session, "agent", strategy.owner_agent_id)
+        # Shared with withdrawals and listing fees, so concurrent debits of the
+        # same account cannot both pass the balance check.
+        await lock_account_for_spend(session, acc_agent.id)
         acc_platform = await get_or_create_account(session, "system", PLATFORM_ACCOUNT_OWNER_ID)
         bal = await balance_for_account(session, acc_agent.id, cfg.currency)
         if (bal.get(cfg.currency) or Decimal(0)) < amount:

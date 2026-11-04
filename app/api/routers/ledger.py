@@ -18,7 +18,13 @@ from app.schemas import (
 from app.api.deps import DbSession, require_auth, is_platform_admin_user
 from app.config import get_settings
 from app.db.models import LedgerEvent, LedgerEventTypeEnum, Account, Agent
-from app.services.ledger import get_or_create_account, append_event, balance_for_account, is_ledger_invariant_halted
+from app.services.ledger import (
+    append_event,
+    balance_for_account,
+    get_or_create_account,
+    is_ledger_invariant_halted,
+    lock_account_for_spend,
+)
 from sqlalchemy import select
 
 router = APIRouter(prefix="/ledger", tags=["Ledger"])
@@ -176,6 +182,7 @@ async def withdraw(body: WithdrawRequest, session: DbSession, user_id: str = Dep
     value = Decimal(body.amount.amount)
     if value <= 0:
         raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
+    await lock_account_for_spend(session, acc.id)
     balances = await balance_for_account(session, acc.id, body.amount.currency)
     available = balances.get(body.amount.currency) or Decimal(0)
     if available < value:

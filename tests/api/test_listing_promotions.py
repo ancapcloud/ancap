@@ -155,3 +155,40 @@ def test_category_slots_are_limited(client, promo_settings, monkeypatch):
     assert second.status_code == 201, second.text
     r = client.post(f"/v1/listings/{second.json()['id']}/promotions", json={"days": 1})
     assert r.status_code == 409, r.text
+
+
+def test_idempotency_key_longer_than_column_is_rejected_cleanly(client, promo_settings):
+    agent_id, _sid, listing_id = _strategy_with_listing(client)
+    _fund_agent(client, agent_id)
+    r = client.post(
+        f"/v1/listings/{listing_id}/promotions",
+        json={"days": 1},
+        headers={"Idempotency-Key": "k" * 129},
+    )
+    assert r.status_code == 422, r.text
+
+
+@pytest.mark.asyncio
+async def test_promotion_and_withdraw_share_account_spend_lock(_db_schema_ready):
+    """A second transaction cannot take the spend lock while a debit holds it."""
+    import os
+
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.pool import NullPool
+
+    from app.services.ledger import lock_account_for_spend
+
+    engine = create_async_engine(os.environ["DATABASE_URL"], poolclass=NullPool)
+    key = {"k": f"ledger_spend:{uuid.uuid4()}"}
+    probe = text("SELECT pg_try_advisory_xact_lock(hashtext(:k))")
+    try:
+        async with AsyncSession(engine) as holder, AsyncSession(engine) as other:
+            await lock_account_for_spend(holder, key["k"].removeprefix("ledger_spend:"))
+            assert (await other.execute(probe, key)).scalar_one() is False
+            await other.rollback()
+            await holder.rollback()  # releases the transaction-scoped lock
+            assert (await other.execute(probe, key)).scalar_one() is True
+            await other.rollback()
+    finally:
+        await engine.dispose()
