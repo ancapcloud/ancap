@@ -1,14 +1,11 @@
 from app.services.recoverable_errors import report_optional_failure
-import json
 import os
-import subprocess
 import re
 import threading
 import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-import shutil
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
@@ -110,45 +107,15 @@ _INTERACTIVE_RPC_TIMEOUT_S = 5.0
 _ACP_SUPPLY_CAP_UNITS = 210_000_000 * 100_000_000
 
 
-def _walletd_cmd() -> list[str]:
-    """
-    Uses a dedicated helper binary implemented in ACP-crypto/acp-wallet/src/bin/walletd.rs.
-    For production set ACP_WALLETD_PATH to the compiled binary path.
-    """
-    p = os.getenv("ACP_WALLETD_PATH", "").strip()
-    if p:
-        return [p]
-    # Fallback to PATH lookup to simplify container deployments where walletd is mounted into /usr/local/bin.
-    if shutil.which("walletd"):
-        return ["walletd"]
-    raise HTTPException(
-        status_code=503,
-        detail="ACP wallet helper is not configured (set ACP_WALLETD_PATH or make 'walletd' available in PATH)",
-    )
-
-
 def _run_walletd(args: list[str], timeout_s: int = 90) -> dict:
-    try:
-        r = subprocess.run(
-            _walletd_cmd() + args,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_s,
-        )
-    except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=504, detail="ACP wallet helper timed out")
+    from app.services.walletd_process import run_walletd, WalletdError, WalletdTimeout
 
-    out = (r.stdout or "").strip()
     try:
-        payload = json.loads(out) if out else {}
-    except Exception:
-        raise HTTPException(status_code=502, detail=f"ACP wallet helper returned non-JSON output: {out[:200]}")
-
-    if r.returncode != 0 or not payload.get("ok"):
-        err = payload.get("error") or (r.stderr or "").strip() or "unknown"
-        raise HTTPException(status_code=502, detail=f"ACP wallet helper failed: {err}")
-    return payload["result"]
+        return run_walletd(args, timeout_s)
+    except WalletdTimeout:
+        raise HTTPException(status_code=504, detail="ACP wallet helper timed out") from None
+    except WalletdError:
+        raise HTTPException(status_code=502, detail="ACP wallet helper request failed") from None
 
 
 def _utc_now_iso() -> str:
