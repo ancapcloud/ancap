@@ -1,3 +1,20 @@
+## Status corrections — 2026-11-04 (read first)
+
+This file is a work log, not the roadmap. Later corrections override earlier entries:
+
+- **ROP-06 and ROP-07 do not exist.** The pilot roadmap defines ROP-01..ROP-05
+  only (`docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md`). Entries below labeled
+  ROP-06 describe ROP-05 work (onboarding/packet templates;
+  `docs/RESEARCH_OPERATIONS_ROP_06.md` is a mis-ID), and every "Next: ROP-07"
+  line is void. Use `THEODORE_QUEUE.md` for the active queue.
+- The quality-fixtures migration is `094_quality_fixtures.py`, not
+  `093_quality_fixtures.py`; `093_research_operations.py` belongs to ROP-01.
+- "All ROP-04 … requirements met" (2026-11-02 entry) is not a roadmap
+  acceptance. ROP-04 reconciliation completeness, unknown expenses and
+  due-renewal cohorts remain open in the pilot roadmap.
+- CI/deployment and migration evidence for release `a9395368`:
+  `docs/ROP01_ACCEPTANCE_2026-11-04.md`.
+
 2026-11-02 — COST-05 completion: actual cost attribution implementation verified and tested
 > **2026-11-02 — COST-06 verification: reconciliation tests passed**
 
