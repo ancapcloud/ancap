@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Header, Query, HTTPException
 
 from app.schemas import (
     ListingCreateRequest,
@@ -13,10 +13,19 @@ from app.schemas import (
     MarketplaceListingsResponse,
     Money,
 )
-from app.api.deps import DbSession
+from app.schemas.listings import (
+    ListingPromotionCreateRequest,
+    ListingPromotionPricingPublic,
+    ListingPromotionPublic,
+    ListingPromotionsResponse,
+)
+from app.services import listing_promotions
+from app.services.idempotency import get_idempotency_hit, store_idempotency_result
+from app.api.deps import Caller, DbSession, require_agent_control
 from app.config import get_settings
 from app.db.models import (
     Listing,
+    ListingPromotion,
     ListingStatusEnum,
     Strategy,
     StrategyVersion,
@@ -84,7 +93,7 @@ def _float_or_zero(value) -> float:
 
 
 @router.post("", response_model=ListingPublic, status_code=201)
-async def create_listing(body: ListingCreateRequest, session: DbSession):
+async def create_listing(body: ListingCreateRequest, session: DbSession, caller: Caller):
     strategy_id = UUID(body.strategy_id)
     strat = await session.get(Strategy, strategy_id)
     if not strat:
@@ -95,6 +104,9 @@ async def create_listing(body: ListingCreateRequest, session: DbSession):
         raise HTTPException(status_code=404, detail="Strategy version not found")
     if str(ver.strategy_id) != str(strategy_id):
         raise HTTPException(status_code=400, detail="Strategy version does not belong to strategy")
+    # The listing fee is debited from the owner agent's balance, so only that
+    # agent (or the user who owns it) may list the strategy.
+    await require_agent_control(session, caller, strat.owner_agent_id)
     await require_activated_if_stake_required(session, strat.owner_agent_id)
     gate = await evaluate_agent_gate(session, strat.owner_agent_id)
     if not gate.ok:
@@ -262,11 +274,17 @@ async def list_marketplace_listings(
         .scalar_subquery()
     )
 
+    sponsored_now_sq = listing_promotions.sponsored_now_subquery()
+    sponsored_until_sq = listing_promotions.sponsored_until_subquery()
+    sponsored_rank = func.coalesce(sponsored_now_sq, 0) > 0
+
     base_query = (
         select(
             Listing,
             Strategy,
             Vertical,
+            sponsored_rank.label("is_sponsored"),
+            sponsored_until_sq.label("sponsored_until"),
             listing_price_amount.label("listing_price_amount"),
             listing_price_currency.label("listing_price_currency"),
             order_count_sq.label("listing_purchases"),
@@ -308,10 +326,14 @@ async def list_marketplace_listings(
         MarketplaceSort.price_desc: [listing_price_amount.desc(), Listing.created_at.desc()],
         MarketplaceSort.rating: [desc(review_avg_sq), desc(review_count_sq), Listing.created_at.desc()],
     }
+    # Paid placements lead the default "popular" view only; explicit sorts
+    # (price, rating, recency) and searches keep their organic order so
+    # buyers who ask for cheapest or best-rated get exactly that.
+    lead = [desc(sponsored_rank)] if sort == MarketplaceSort.popular and not use_fts else []
     if use_fts:
         query = base_query.order_by(desc(search_rank), *sort_exprs[sort]).limit(limit).offset(offset)
     else:
-        query = base_query.order_by(*sort_exprs[sort]).limit(limit).offset(offset)
+        query = base_query.order_by(*lead, *sort_exprs[sort]).limit(limit).offset(offset)
     rows = (await session.execute(query)).all()
 
     total_query = select(func.count()).select_from(base_query.order_by(None).subquery())
@@ -327,7 +349,20 @@ async def list_marketplace_listings(
     available_categories = [name for name in (await session.execute(categories_query)).scalars().all() if name]
 
     items: list[MarketplaceListingPublic] = []
-    for listing, strategy, vertical, price_amount, price_currency, listing_purchases, rating, rating_count, listing_views, _search_rank in rows:
+    for (
+        listing,
+        strategy,
+        vertical,
+        is_sponsored,
+        sponsored_until,
+        price_amount,
+        price_currency,
+        listing_purchases,
+        rating,
+        rating_count,
+        listing_views,
+        _search_rank,
+    ) in rows:
         purchase_count = int(listing_purchases or 0)
         view_count = int(listing_views or 0)
         avg_rating = _float_or_zero(rating)
@@ -354,6 +389,8 @@ async def list_marketplace_listings(
                 rating_count=int(rating_count or 0),
                 is_featured=is_featured,
                 is_trending=is_trending,
+                is_sponsored=bool(is_sponsored),
+                sponsored_until=sponsored_until if is_sponsored else None,
                 created_at=listing.created_at,
             )
         )
@@ -364,6 +401,97 @@ async def list_marketplace_listings(
         limit=limit,
         offset=offset,
         available_categories=available_categories,
+    )
+
+
+def _promotion_public(row: ListingPromotion) -> ListingPromotionPublic:
+    return ListingPromotionPublic(
+        id=str(row.id),
+        listing_id=str(row.listing_id),
+        days=int(row.days),
+        starts_at=row.starts_at,
+        ends_at=row.ends_at,
+        amount=Money(amount=format(Decimal(row.amount_value).normalize(), "f"), currency=row.amount_currency),
+        ledger_event_id=str(row.ledger_event_id) if row.ledger_event_id else None,
+        created_at=row.created_at,
+    )
+
+
+@router.get("/promotions/pricing", response_model=ListingPromotionPricingPublic)
+async def listing_promotion_pricing():
+    """Public price list for sponsored marketplace placement."""
+    cfg = listing_promotions.pricing()
+    return ListingPromotionPricingPublic(
+        enabled=cfg.enabled,
+        daily_fee=Money(amount=format(cfg.daily_fee.normalize(), "f"), currency=cfg.currency),
+        max_days=cfg.max_days,
+        slots_per_category=cfg.slots_per_category,
+    )
+
+
+@router.post("/{listing_id}/promotions", response_model=ListingPromotionPublic, status_code=201)
+async def promote_listing(
+    listing_id: UUID,
+    body: ListingPromotionCreateRequest,
+    session: DbSession,
+    caller: Caller,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=200),
+):
+    """Buy (or extend) sponsored placement; the fee is paid from the owner agent's balance."""
+    listing = await session.get(Listing, listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    strategy = await session.get(Strategy, listing.strategy_id)
+    if not strategy:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    await require_agent_control(session, caller, strategy.owner_agent_id)
+
+    scope = f"listing_promotion:{listing_id}"
+    payload = body.model_dump(mode="json")
+    if idempotency_key:
+        hit = await get_idempotency_hit(session, scope=scope, key=idempotency_key, request_payload=payload)
+        if hit is not None:
+            return ListingPromotionPublic.model_validate(hit.response_json)
+
+    row = await listing_promotions.purchase(
+        session,
+        listing=listing,
+        strategy=strategy,
+        days=body.days,
+        purchased_by_user_id=caller.user_id,
+    )
+    result = _promotion_public(row)
+    if idempotency_key:
+        await store_idempotency_result(
+            session,
+            scope=scope,
+            key=idempotency_key,
+            request_payload=payload,
+            status_code=201,
+            response_json=result.model_dump(mode="json"),
+        )
+    return result
+
+
+@router.get("/{listing_id}/promotions", response_model=ListingPromotionsResponse)
+async def list_listing_promotions(listing_id: UUID, session: DbSession, caller: Caller):
+    """Sponsored placement history for a listing (owner only)."""
+    listing = await session.get(Listing, listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    strategy = await session.get(Strategy, listing.strategy_id)
+    await require_agent_control(session, caller, strategy.owner_agent_id if strategy else None)
+    rows = (
+        await session.scalars(
+            select(ListingPromotion)
+            .where(ListingPromotion.listing_id == str(listing_id))
+            .order_by(ListingPromotion.starts_at.desc())
+            .limit(100)
+        )
+    ).all()
+    return ListingPromotionsResponse(
+        items=[_promotion_public(x) for x in rows],
+        active_until=await listing_promotions.active_until(session, str(listing_id)),
     )
 
 
