@@ -55,12 +55,15 @@ def test_add_allocation_and_performance(client, base_vertical_id):
     """POST /v1/funds/{id}/allocate and GET /v1/funds/{id}/performance."""
     vid = base_vertical_id
     pool = client.post("/v1/pools", json={"name": unique_name("perf_p"), "risk_profile": "low"})
-    fund_r = client.post("/v1/funds", json={"name": unique_name("perf_f"), "pool_id": pool.json()["id"]})
-    fund_id = fund_r.json()["id"]
     agent = client.post(
         "/v1/agents",
         json={"display_name": unique_name("pa"), "public_key": "p" * 32, "roles": ["seller"]},
     )
+    fund_r = client.post(
+        "/v1/funds",
+        json={"name": unique_name("perf_f"), "pool_id": pool.json()["id"], "owner_agent_id": agent.json()["id"]},
+    )
+    fund_id = fund_r.json()["id"]
     workflow = {**BASE_WORKFLOW, "vertical_id": vid}
     strat = client.post(
         "/v1/strategies",

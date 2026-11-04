@@ -3,7 +3,7 @@ import uuid
 from tests.conftest import unique_name
 
 
-def test_set_risk_limits(client):
+def test_set_risk_limits(client, as_platform_admin):
     """POST /v1/risk/limits sets policy for a scope."""
     pool = client.post(
         "/v1/pools",
@@ -25,7 +25,7 @@ def test_set_risk_limits(client):
     assert data["scope_id"] == pool_id
 
 
-def test_risk_kill(client):
+def test_risk_kill(client, as_platform_admin):
     """POST /v1/risk/kill sets circuit breaker to halted."""
     pool = client.post(
         "/v1/pools",

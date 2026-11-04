@@ -48,12 +48,13 @@ def _balance(client, token: str, owner_type: str, owner_id: str, currency: str =
     return Decimal("0")
 
 
-def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str):
-    strat = client.post("/v1/strategies", json={"name": unique_name("ms_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": owner_agent_id})
+def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str, token: str | None = None):
+    auth = {"Authorization": f"Bearer {token}"} if token else {}
+    strat = client.post("/v1/strategies", json={"name": unique_name("ms_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": owner_agent_id}, headers=auth)
     assert strat.status_code == 201, strat.text
     sid = strat.json()["id"]
     workflow = {"vertical_id": base_vertical_id, "version": "1.0", "steps": [{"id": "s1", "action": "const", "args": {"value": 1}}]}
-    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow})
+    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow}, headers=auth)
     assert ver.status_code == 201, ver.text
     vid = ver.json()["id"]
     pool = client.post("/v1/pools", json={"name": unique_name("ms_pool"), "risk_profile": "experimental"})
@@ -88,7 +89,7 @@ def test_fixed_milestones_partial_payout_and_refund(client, base_vertical_id):
     assert c.status_code == 201, c.text
     cid = c.json()["id"]
     if c.json()["status"] == "draft":
-        client.post(f"/v1/contracts/{cid}/propose")
+        client.post(f"/v1/contracts/{cid}/propose", headers={"Authorization": f"Bearer {token}"})
 
     # Create milestones (sum <= fixed_amount_value)
     m1 = client.post(
@@ -113,7 +114,7 @@ def test_fixed_milestones_partial_payout_and_refund(client, base_vertical_id):
     )
 
     # Accept contract -> escrow funded
-    a = client.post(f"/v1/contracts/{cid}/accept")
+    a = client.post(f"/v1/contracts/{cid}/accept", headers={"Authorization": f"Bearer {token}"})
     assert a.status_code == 200, a.text
 
     before_worker = _balance(client, token, "agent", worker)
@@ -125,7 +126,7 @@ def test_fixed_milestones_partial_payout_and_refund(client, base_vertical_id):
 
     # Cancel contract -> refund remainder
     before_employer = _balance(client, token, "agent", employer)
-    cancel = client.post(f"/v1/contracts/{cid}/cancel")
+    cancel = client.post(f"/v1/contracts/{cid}/cancel", headers={"Authorization": f"Bearer {token}"})
     assert cancel.status_code == 200, cancel.text
     after_employer = _balance(client, token, "agent", employer)
     assert after_employer >= before_employer
@@ -158,8 +159,8 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
     assert c.status_code == 201, c.text
     cid = c.json()["id"]
     if c.json()["status"] == "draft":
-        client.post(f"/v1/contracts/{cid}/propose")
-    client.post(f"/v1/contracts/{cid}/accept")
+        client.post(f"/v1/contracts/{cid}/propose", headers={"Authorization": f"Bearer {token}"})
+    client.post(f"/v1/contracts/{cid}/accept", headers={"Authorization": f"Bearer {token}"})
 
     # Milestone budget 10, per-run payout 7 -> first run pays 7, second run pays 3
     m = client.post(
@@ -176,7 +177,7 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
         json={"status": "active"},
     )
 
-    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
+    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id, token)
     before = _balance(client, token, "agent", worker)
 
     r1 = client.post(

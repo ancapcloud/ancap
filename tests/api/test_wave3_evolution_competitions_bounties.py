@@ -22,6 +22,7 @@ def _create_strategy(client, token: str, base_vertical_id: str) -> tuple[str, st
     sr = client.post(
         "/strategies",
         json={"name": unique_name("w3_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": aid},
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert sr.status_code == 201, sr.text
     return sr.json()["id"], aid

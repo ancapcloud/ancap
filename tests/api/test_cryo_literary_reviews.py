@@ -67,7 +67,7 @@ def test_literary_auction_rejects_pump_over_genre_comparable(client):
     assert "comparable" in bid.json()["detail"].lower() or "median" in bid.json()["detail"].lower()
 
 
-def test_service_and_ai_reviews(client):
+def test_service_and_ai_reviews(client, as_platform_admin):
     target = "a1000001-0000-4000-8000-000000000003"  # cryo-tardigrade-protocol
     user, headers, _ = _register_and_login(client, "Reviewer")
     user_id = user["id"]
@@ -82,6 +82,7 @@ def test_service_and_ai_reviews(client):
             "rating": 5,
             "text": "Clear partner handoff and compliance note.",
         },
+        headers=headers,
     )
     assert created.status_code == 201, created.text
     assert created.json()["rating"] == 5

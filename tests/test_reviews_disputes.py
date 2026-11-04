@@ -56,7 +56,7 @@ def test_list_disputes(client):
     assert "items" in r.json()
 
 
-def test_get_dispute_and_verdict(client):
+def test_get_dispute_and_verdict(client, as_platform_admin):
     """GET /v1/disputes/{id} and POST verdict."""
     create = client.post("/v1/disputes", json={"subject": "Test dispute"})
     dispute_id = create.json()["id"]

@@ -323,6 +323,7 @@ def test_decision_logs_written_for_listing_gate(client, base_vertical_id, monkey
         strategy_resp = client.post(
             "/strategies",
             json={"name": unique_name("gate_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": agent_id},
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert strategy_resp.status_code == 201, strategy_resp.text
         strategy_id = strategy_resp.json()["id"]
@@ -337,6 +338,7 @@ def test_decision_logs_written_for_listing_gate(client, base_vertical_id, monkey
                     "steps": [{"id": "s1", "action": "const", "args": {"value": 1}}],
                 },
             },
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert ver_resp.status_code == 201, ver_resp.text
         version_id = ver_resp.json()["id"]
@@ -349,6 +351,7 @@ def test_decision_logs_written_for_listing_gate(client, base_vertical_id, monkey
                 "fee_model": {"type": "one_time", "one_time_price": {"amount": "10", "currency": "USD"}},
                 "status": "active",
             },
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert listing_resp.status_code == 403, listing_resp.text
 

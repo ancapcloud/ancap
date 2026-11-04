@@ -294,7 +294,7 @@ def test_get_run_steps(client, base_vertical_id):
         assert "latency" in score_types
 
 
-def test_run_steps_quality_score_when_policy_has_record_quality_score(client, base_vertical_id):
+def test_run_steps_quality_score_when_policy_has_record_quality_score(as_platform_admin, client, base_vertical_id):
     """When policy has record_quality_score: true, GET /v1/runs/{id}/steps returns quality in scores (ROADMAP §5)."""
     vid = base_vertical_id
     agent = client.post(

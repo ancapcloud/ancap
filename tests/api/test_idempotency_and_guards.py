@@ -125,7 +125,7 @@ def test_self_dealing_forbidden(client, base_vertical_id):
   assert "Self-dealing" in (r.json().get("detail") or "")
 
 
-def test_quarantine_and_graph_gate_return_readable_error(client, base_vertical_id):
+def test_quarantine_and_graph_gate_return_readable_error(client, base_vertical_id, as_platform_admin):
   seller_id, buyer_id = _create_seller_and_buyer(client)
   _, version_id, listing_id = _strategy_version_with_listing(client, base_vertical_id, seller_id)
   _fund_buyer(client, buyer_id, amount="100")

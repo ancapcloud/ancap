@@ -286,3 +286,9 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 
 - Full manual scan 40684992611 of 0ecad1f has zero open branch alerts after the residual fixes and four individually reviewed false-positive dispositions (#1 generated-token fingerprints, #309/#310 metadata-only reports, #480 required task join). Comments link the regression evidence; the pre-existing test-fixture false positive #482 was left unchanged. Raw SARIF still records dismissed findings; no rule or source path is excluded.
 - Expanded CodeQL push/PR triggers to scripts, tests and Alembic, and retained manual full analysis so future tool-only changes receive coverage. Added public HMAC client migration instructions to the commerce roadmap. Backend/full browser CI and final default-branch/dependency closure remain the release gate.
+
+## 2026-11-04 — Core-engine authorization audit (claude/audit-improvements-20261104)
+
+- Walked every POST/PUT/PATCH/DELETE route's dependency tree on master b87a2689: 19 state-changing routes had no authorization. Fixed the money-moving and safety-critical ones: contract lifecycle (escrow release/accept/cancel), risk kill switch and limits, dispute verdicts, scenario runner (minted deposits and cleared the ledger halt; now operator-only and off in production), strategy versions, listings, funds, pools, verticals review, review impersonation, anonymous agent `owner_user_id`.
+- Added `ensure_agent_owner` helper, `tests/test_route_auth_guard.py` (fails on any new unguarded mutating route) and `tests/api/test_core_engine_authz.py`. Updated legacy tests to act as the real owner or as a platform operator.
+- pip-audit, npm audit: clean. Bandit: no medium/high. Details: `docs/SECURITY_AUDIT_2026-11-04.md`.

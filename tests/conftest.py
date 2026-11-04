@@ -459,3 +459,15 @@ def reset_test_runtime_state(request):
     clear_rate_limit_state()
     yield
     clear_rate_limit_state()
+
+
+@pytest.fixture
+def as_platform_admin(client):
+    """Temporarily treat the default test user as a platform operator."""
+    from app.api.deps import require_platform_admin
+
+    client.app.dependency_overrides[require_platform_admin] = lambda: "test-operator"
+    try:
+        yield client
+    finally:
+        client.app.dependency_overrides.pop(require_platform_admin, None)

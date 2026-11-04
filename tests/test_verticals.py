@@ -45,7 +45,7 @@ def test_get_vertical_with_spec(client):
     assert data["spec"]["allowed_actions"]
 
 
-def test_review_vertical_approve(client):
+def test_review_vertical_approve(client, as_platform_admin):
     create = client.post(
         "/v1/verticals/propose",
         json={"name": unique_name("review"), "spec": VERTICAL_SPEC},
@@ -56,7 +56,7 @@ def test_review_vertical_approve(client):
     assert r.json()["status"] == "active"
 
 
-def test_review_vertical_reject(client):
+def test_review_vertical_reject(client, as_platform_admin):
     create = client.post(
         "/v1/verticals/propose",
         json={"name": unique_name("reject"), "spec": VERTICAL_SPEC},
