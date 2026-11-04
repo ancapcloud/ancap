@@ -175,3 +175,11 @@ ACP-crypto/target-lean/
 .env.wevisone-*
 .env.wevisone.*
 .wevisone-smoke/
+
+# Editor/agent tool configs often embed live API keys (2026-11-04 leak).
+.cursor/
+.mcp.json
+# Local scratch worktrees, recordings and wallet folders must never be committed.
+/worktree-dev*/
+/*.mp4
+**/wallets/

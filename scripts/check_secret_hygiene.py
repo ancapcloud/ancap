@@ -32,6 +32,32 @@ TOKEN_PATTERNS: tuple[tuple[bytes, str], ...] = (
     (b"gh" + b"r_", "GitHub refresh token pattern"),
 )
 
+# Platform-issued credentials have no fixed vendor prefix that is safe to grep
+# for ("ancap_" is also a common identifier prefix), so match the generated
+# shape: "ancap_" + secrets.token_urlsafe(24) (32 URL-safe chars) with mixed
+# character classes that snake_case identifiers do not have.
+_ANCAP_KEY_RE = re.compile(rb"(?<![A-Za-z0-9_])ancap_[A-Za-z0-9_-]{32}(?![A-Za-z0-9_-])")
+REGEX_PATTERNS: tuple[tuple[re.Pattern[bytes], str], ...] = (
+    (_ANCAP_KEY_RE, "ANCAP platform API key"),
+)
+
+
+def _looks_like_generated_token(candidate: bytes) -> bool:
+    body = candidate[len(b"ancap_"):]
+    return (
+        any(c in b"ABCDEFGHIJKLMNOPQRSTUVWXYZ" for c in body)
+        and any(c in b"abcdefghijklmnopqrstuvwxyz" for c in body)
+        and any(c in b"0123456789" for c in body)
+    )
+
+
+def _regex_findings(line: bytes) -> list[str]:
+    labels: list[str] = []
+    for pattern, label in REGEX_PATTERNS:
+        if any(_looks_like_generated_token(m.group(0)) for m in pattern.finditer(line)):
+            labels.append(label)
+    return labels
+
 
 @dataclass(frozen=True)
 class SecretMatch:
@@ -292,6 +318,7 @@ def _redact_token_like_substrings(line: str) -> str:
             prefix_text + "<redacted>",
             redacted,
         )
+    redacted = re.sub(r"ancap_[A-Za-z0-9_-]{32}", "ancap_<redacted>", redacted)
     return redacted
 
 def _format_line_snippet(line: bytes) -> str:
@@ -322,6 +349,16 @@ def _scan_line_bytes(
                     source_ref=source_ref,
                 )
             )
+    for label in _regex_findings(line):
+        matches.append(
+            SecretMatch(
+                path=relative_path,
+                line_number=line_number,
+                label=label,
+                line=_format_line_snippet(line),
+                source_ref=source_ref,
+            )
+        )
     return matches
 
 
