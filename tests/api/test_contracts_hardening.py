@@ -54,15 +54,17 @@ def _balance(client, token: str, owner_type: str, owner_id: str, currency: str =
     return Decimal("0")
 
 
-def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str):
+def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str, token: str | None = None):
+    auth = {"Authorization": f"Bearer {token}"} if token else {}
     strat = client.post(
         "/v1/strategies",
         json={"name": unique_name("hard_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": owner_agent_id},
+        headers=auth,
     )
     assert strat.status_code == 201, strat.text
     sid = strat.json()["id"]
     workflow = {"vertical_id": base_vertical_id, "version": "1.0", "steps": [{"id": "s1", "action": "const", "args": {"value": 1}}]}
-    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow})
+    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow}, headers=auth)
     assert ver.status_code == 201, ver.text
     vid = ver.json()["id"]
     pool = client.post("/v1/pools", json={"name": unique_name("hard_pool"), "risk_profile": "experimental"})
@@ -101,7 +103,7 @@ def test_run_under_contract_requires_auth_and_worker(client, base_vertical_id):
         client.post(f"/v1/contracts/{cid}/propose")
     client.post(f"/v1/contracts/{cid}/accept")
 
-    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
+    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id, token)
 
     # Not authenticated -> 401 when contract_id provided.
     # Empty Authorization header opts out of the session-wide default token
@@ -144,7 +146,7 @@ def test_per_run_one_run_one_payout_and_max_runs(client, base_vertical_id):
         client.post(f"/v1/contracts/{cid}/propose")
     client.post(f"/v1/contracts/{cid}/accept")
 
-    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
+    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id, token)
 
     before = _balance(client, token, "agent", worker)
     run = client.post(

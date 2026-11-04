@@ -104,12 +104,13 @@ def test_social_follow_and_copy(client):
     assert v.status_code == 200, v.text
     vertical_id = (v.json().get("items") or [])[0]["id"]
 
-    s = client.post("/v1/strategies", json={"name": unique_name("grow_s"), "vertical_id": vertical_id, "owner_agent_id": agent_id})
+    s = client.post("/v1/strategies", json={"name": unique_name("grow_s"), "vertical_id": vertical_id, "owner_agent_id": agent_id}, headers={"Authorization": f"Bearer {token}"})
     assert s.status_code == 201, s.text
     strategy_id = s.json()["id"]
     ver = client.post(
         f"/v1/strategies/{strategy_id}/versions",
         json={"semver": "1.0.0", "workflow": {"vertical_id": vertical_id, "version": "1.0", "steps": [{"id": "s1", "action": "const", "args": {"value": 1}}]}},
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert ver.status_code == 201, ver.text
 

@@ -35,6 +35,8 @@ type Listing = {
   rating_count?: number;
   is_featured?: boolean;
   is_trending?: boolean;
+  is_sponsored?: boolean;
+  sponsored_until?: string | null;
   created_at?: string;
 };
 
@@ -347,6 +349,11 @@ export default function MarketplacePage() {
                       </div>
                       <div style={{ display: "grid", gap: 6, justifyItems: "end" }}>
                         <span className="badge badge-active">{listing.status}</span>
+                        {listing.is_sponsored ? (
+                          <span className="badge" title={listing.sponsored_until ?? undefined}>
+                            {t("marketplace.sponsoredBadge")}
+                          </span>
+                        ) : null}
                         {listing.is_featured ? <span className="badge">{t("marketplace.featuredBadge")}</span> : null}
                         {listing.is_trending ? <span className="badge">{t("marketplace.trendingBadge")}</span> : null}
                       </div>

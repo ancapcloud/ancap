@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.api.deps import DbSession
+from app.api.deps import Caller, DbSession, require_agent_control
 from app.db.models import Fund, FundAllocation, Pool, Evaluation
 from app.schemas.funds import (
     FundCreateRequest,
@@ -20,12 +20,14 @@ router = APIRouter(prefix="/funds", tags=["Funds"])
 
 
 @router.post("", response_model=FundPublic, status_code=201)
-async def create_fund(body: FundCreateRequest, session: DbSession):
+async def create_fund(body: FundCreateRequest, session: DbSession, caller: Caller):
     """Create a fund (portfolio linked to a pool)."""
     pool = await session.get(Pool, UUID(body.pool_id))
     if not pool:
         raise HTTPException(status_code=404, detail="Pool not found")
     owner_id = UUID(body.owner_agent_id) if body.owner_agent_id else None
+    if owner_id is not None:
+        await require_agent_control(session, caller, owner_id)
     row = Fund(
         name=body.name,
         owner_agent_id=owner_id,
@@ -88,11 +90,18 @@ async def get_fund(fund_id: UUID, session: DbSession):
 
 
 @router.post("/{fund_id}/allocate", response_model=FundAllocationPublic, status_code=201)
-async def add_allocation(fund_id: UUID, body: FundAllocationCreateRequest, session: DbSession):
+async def add_allocation(
+    fund_id: UUID,
+    body: FundAllocationCreateRequest,
+    session: DbSession,
+    caller: Caller,
+):
     """Add or update allocation of a strategy version in the fund (weight 0..1)."""
     fund = await session.get(Fund, fund_id)
     if not fund:
         raise HTTPException(status_code=404, detail="Fund not found")
+    if fund.owner_agent_id is not None:
+        await require_agent_control(session, caller, fund.owner_agent_id)
     try:
         sv_id = UUID(body.strategy_version_id)
     except ValueError:

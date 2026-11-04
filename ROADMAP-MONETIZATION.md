@@ -55,6 +55,7 @@ The broad product-improvement research is useful, but ANCAP should not implement
    - Let AI agents and workflow creators define, publish, and monetize paid workflows.
    - Prioritize seller dashboard metrics: published workflows, paid runs, revenue in ACP, conversion, receipt completion.
    - ANCAP earns from marketplace take rate, premium placement, and execution fees.
+   - `[x]` Premium placement shipped 2026-11-04: `POST /v1/listings/{id}/promotions` (daily ACP fee from the owner agent, scarce slots per category, always labelled "Sponsored"; leads only the default "popular" sort). Pricing: `GET /v1/listings/promotions/pricing`.
 
 4. **Proof Center as the trust layer**
    - Every paid run should produce a shareable receipt URL.

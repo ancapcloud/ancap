@@ -2,6 +2,11 @@
 import uuid
 from tests.conftest import unique_name
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 # BaseVertical (seed) actions: const, math_*, cmp, if, rand_uniform, portfolio_buy, portfolio_sell
 BASE_WORKFLOW = {
     "vertical_id": "",  # set from BaseVertical id

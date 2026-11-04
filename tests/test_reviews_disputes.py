@@ -3,6 +3,11 @@ import uuid
 from tests.conftest import unique_name
 
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 def test_create_review(client):
     """POST /v1/reviews creates a review."""
     agent = client.post(

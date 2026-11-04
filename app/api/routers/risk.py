@@ -1,9 +1,9 @@
 """Risk API: limits, kill switch, run status."""
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.deps import DbSession
+from app.api.deps import DbSession, require_platform_admin
 from app.db.models import RiskPolicy, CircuitBreaker, Run
 from app.schemas.risk import (
     RiskLimitsRequest,
@@ -18,7 +18,11 @@ router = APIRouter(prefix="/risk", tags=["Risk"])
 
 
 @router.post("/limits", response_model=RiskLimitsResponse)
-async def set_risk_limits(body: RiskLimitsRequest, session: DbSession):
+async def set_risk_limits(
+    body: RiskLimitsRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
     """Set or update risk policy (limits) for a scope. Upserts by (scope_type, scope_id)."""
     try:
         scope_id = UUID(body.scope_id)
@@ -43,7 +47,11 @@ async def set_risk_limits(body: RiskLimitsRequest, session: DbSession):
 
 
 @router.post("/kill", response_model=RiskKillResponse)
-async def risk_kill(body: RiskKillRequest, session: DbSession):
+async def risk_kill(
+    body: RiskKillRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
     """Set circuit breaker to halted for the given scope (pool, agent, or strategy)."""
     try:
         scope_id = UUID(body.scope_id)

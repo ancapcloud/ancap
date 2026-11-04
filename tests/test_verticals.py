@@ -2,6 +2,11 @@
 import uuid
 from tests.conftest import unique_name
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 VERTICAL_SPEC = {
     "allowed_actions": [
         {"name": "fetch", "args_schema": {"type": "object"}, "description": "Fetch data"},

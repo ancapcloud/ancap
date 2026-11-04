@@ -10,7 +10,7 @@ from app.schemas import (
     StrategyStatus,
     Pagination,
 )
-from app.api.deps import DbSession
+from app.api.deps import Caller, DbSession, require_agent_control
 from app.db.models import Strategy, StrategyVersion, StrategyStatusEnum
 from sqlalchemy import select
 
@@ -18,7 +18,8 @@ router = APIRouter(prefix="/strategies", tags=["Strategies"])
 
 
 @router.post("", response_model=StrategyPublic, status_code=201)
-async def create_strategy(body: StrategyCreateRequest, session: DbSession):
+async def create_strategy(body: StrategyCreateRequest, session: DbSession, caller: Caller):
+    await require_agent_control(session, caller, body.owner_agent_id)
     strategy = Strategy(
         name=body.name,
         vertical_id=UUID(body.vertical_id),
@@ -143,12 +144,19 @@ async def list_versions(
 
 
 @router.post("/{strategy_id}/versions", response_model=StrategyVersionPublic, status_code=201)
-async def publish_version(strategy_id: UUID, body: StrategyPublishVersionRequest, session: DbSession):
+async def publish_version(
+    strategy_id: UUID,
+    body: StrategyPublishVersionRequest,
+    session: DbSession,
+    caller: Caller,
+):
     q = select(Strategy).where(Strategy.id == strategy_id)
     r = await session.execute(q)
     strategy = r.scalar_one_or_none()
     if not strategy:
         raise HTTPException(status_code=404, detail="Strategy not found")
+    # Only the strategy owner may publish workflow code that buyers will run.
+    await require_agent_control(session, caller, strategy.owner_agent_id)
     workflow_dict = body.workflow.model_dump()
     version = StrategyVersion(
         strategy_id=strategy_id,

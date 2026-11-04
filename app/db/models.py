@@ -499,6 +499,33 @@ class Listing(Base):
     strategy = relationship("Strategy", back_populates="listings")
 
 
+class ListingPromotion(Base):
+    """Paid, time-boxed "Sponsored" placement of a marketplace listing.
+
+    Each row is one purchase; consecutive purchases extend the window. The
+    charge is a ledger ``fee`` event from the owner agent to the platform.
+    """
+
+    __tablename__ = "listing_promotions"
+    __table_args__ = (
+        Index("ix_listing_promotions_listing_ends", "listing_id", "ends_at"),
+        Index("ix_listing_promotions_vertical_ends", "vertical_id", "ends_at"),
+    )
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    listing_id = Column(UUID(as_uuid=False), ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
+    vertical_id = Column(UUID(as_uuid=False), ForeignKey("verticals.id", ondelete="SET NULL"), nullable=True)
+    owner_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True)
+    purchased_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    days = Column(Integer, nullable=False)
+    starts_at = Column(DateTime(timezone=True), nullable=False)
+    ends_at = Column(DateTime(timezone=True), nullable=False)
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    amount_currency = Column(String(16), nullable=False)
+    ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
 # --- Orders / Access ---
 class Order(Base):
     __tablename__ = "orders"

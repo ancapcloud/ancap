@@ -229,6 +229,13 @@ class Settings(BaseSettings):
     listing_fee_percent: str = "1"
     listing_fee_amount: str = "0"
     listing_fee_currency: str = "ACP"
+    # Sponsored marketplace placement (paid boost). 1 EUR = 100 ACP, so the
+    # default 500 ACP/day is ~5 EUR/day. Slots per category keep it scarce.
+    listing_promotion_enabled: bool = True
+    listing_promotion_daily_fee: str = "500"
+    listing_promotion_currency: str = "ACP"
+    listing_promotion_max_days: int = 30
+    listing_promotion_slots_per_category: int = 3
     # Marketplace take rate: % of each paid order routed to the platform account.
     order_fee_percent: str = "10"
 
