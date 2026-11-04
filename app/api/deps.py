@@ -146,3 +146,41 @@ async def require_admin(
 ) -> str:
     """Compatibility name for the fail-closed platform admin dependency."""
     return user_id
+
+
+async def user_owned_agent_ids(session: AsyncSession, user_id: str | None) -> set[str]:
+    """Return the agent ids owned by ``user_id`` (empty set when anonymous)."""
+    if not user_id:
+        return set()
+    try:
+        uid = UUID(str(user_id))
+    except ValueError:
+        return set()
+    from sqlalchemy import select
+
+    from app.db.models import Agent
+
+    rows = await session.execute(select(Agent.id).where(Agent.owner_user_id == uid))
+    return {str(x) for x in rows.scalars().all()}
+
+
+async def ensure_agent_owner(
+    session: AsyncSession,
+    user_id: str,
+    agent_ids: "list[str | UUID | None] | tuple[str | UUID | None, ...]",
+    *,
+    detail: str = "You do not own this agent",
+) -> str:
+    """Raise 403 unless ``user_id`` owns at least one of ``agent_ids`` (or is a platform admin).
+
+    Returns the first owned agent id, or ``""`` for platform admins acting on behalf of
+    a party. Used to close object-level authorization gaps on legacy core-engine routes
+    (contracts, strategies, listings, funds) that previously trusted body/path ids.
+    """
+    owned = await user_owned_agent_ids(session, user_id)
+    for agent_id in agent_ids:
+        if agent_id is not None and str(agent_id) in owned:
+            return str(agent_id)
+    if await is_platform_admin_user(session, user_id):
+        return ""
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
