@@ -1,5 +1,8 @@
 # Security Policy
 
+Developer/recruitment malware, AI tool isolation and custody cutover:
+[operational controls and remaining gates](docs/DEVELOPER_SOCIAL_ENGINEERING_DEFENSE.md).
+
 ## Security boundary
 
 ANCAP aims to be open-source where transparency increases trust, integration, and adoption.

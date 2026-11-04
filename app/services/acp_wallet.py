@@ -5,7 +5,6 @@ import json
 import os
 import secrets
 import shutil
-import subprocess
 import uuid
 from datetime import datetime, timezone
 
@@ -29,15 +28,6 @@ BINDING_KIND_DEPOSIT = "deposit"
 BINDING_KIND_PRIVACY = "privacy"
 BINDING_KIND_PREVIOUS_DEPOSIT = "previous_deposit"
 BINDING_KIND_IMPORTED = "imported"
-
-
-def _walletd_cmd() -> list[str]:
-    p = os.getenv("ACP_WALLETD_PATH", "").strip()
-    if p:
-        return [p]
-    if shutil.which("walletd"):
-        return ["walletd"]
-    raise RuntimeError("ACP wallet helper is not configured (set ACP_WALLETD_PATH or put walletd in PATH)")
 
 
 def _walletd_available() -> bool:
@@ -68,27 +58,9 @@ def _fallback_address(seed_text: str) -> str:
 
 
 def _run_walletd(args: list[str], timeout_s: int = 90) -> dict:
-    try:
-        r = subprocess.run(
-            _walletd_cmd() + args,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_s,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError("ACP wallet helper timed out") from exc
+    from app.services.walletd_process import run_walletd
 
-    out = (r.stdout or "").strip()
-    try:
-        payload = json.loads(out) if out else {}
-    except Exception as exc:
-        raise RuntimeError(f"ACP wallet helper returned non-JSON output: {out[:200]}") from exc
-
-    if r.returncode != 0 or not payload.get("ok"):
-        err = payload.get("error") or (r.stderr or "").strip() or "unknown"
-        raise RuntimeError(f"ACP wallet helper failed: {err}")
-    return payload["result"]
+    return run_walletd(args, timeout_s)
 
 
 def generate_mnemonic() -> str:

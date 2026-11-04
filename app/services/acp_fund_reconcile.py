@@ -5,10 +5,7 @@ policy allows (ledger credit, zero/low on-chain). Does not invent issuance.
 """
 from __future__ import annotations
 
-import json
 import logging
-import shutil
-import subprocess
 from decimal import Decimal
 from typing import Any
 
@@ -30,29 +27,10 @@ def _parse_decimal(value: object) -> Decimal:
         return Decimal(0)
 
 
-def _walletd_cmd() -> list[str]:
-    import os
-
-    p = (os.getenv("ACP_WALLETD_PATH") or "").strip()
-    if p:
-        return [p]
-    if shutil.which("walletd"):
-        return ["walletd"]
-    raise RuntimeError("walletd not configured")
-
-
 def _run_walletd(args: list[str], timeout_s: int = 90) -> dict:
-    proc = subprocess.run(
-        _walletd_cmd() + args,
-        capture_output=True,
-        text=True,
-        timeout=timeout_s,
-    )
-    out = (proc.stdout or "").strip()
-    payload = json.loads(out) if out else {}
-    if proc.returncode != 0 or not payload.get("ok"):
-        raise RuntimeError(payload.get("error") or proc.stderr or "walletd failed")
-    return payload.get("result") or {}
+    from app.services.walletd_process import run_walletd
+
+    return run_walletd(args, timeout_s)
 
 
 def _on_chain_acp(address: str) -> Decimal:

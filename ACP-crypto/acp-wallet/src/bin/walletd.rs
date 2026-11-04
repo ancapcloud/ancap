@@ -20,9 +20,12 @@ use rand_core::OsRng;
 use reqwest::blocking::Client;
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashSet};
+use std::io::Read;
 use std::time::Duration;
 
 const RPC_USER_AGENT: &str = "ancap-walletd/1.0";
+// Covers the protocol's 10,000 indexed inputs plus keystore/JSON overhead.
+const MAX_PRIVATE_REQUEST_BYTES: usize = 2 * 1024 * 1024;
 
 fn rpc(client: &Client, rpc_url: &str, method: &str, params: Value) -> anyhow::Result<Value> {
     let body = json!({
@@ -52,11 +55,17 @@ fn best_height(client: &Client, rpc_url: &str) -> anyhow::Result<u64> {
 }
 
 fn get_chain_id(client: &Client, rpc_url: &str) -> anyhow::Result<u32> {
-    rpc(client, rpc_url, "getnetworkinfo", json!({}))?
+    let chain_id = rpc(client, rpc_url, "getnetworkinfo", json!({}))?
         .get("chain_id")
         .and_then(|v| v.as_u64())
-        .map(|v| v as u32)
-        .ok_or_else(|| anyhow!("getnetworkinfo.chain_id missing"))
+        .ok_or_else(|| anyhow!("getnetworkinfo.chain_id missing"))?;
+    let chain_id = u32::try_from(chain_id).context("invalid chain id")?;
+    if let Ok(expected) = std::env::var("ACP_EXPECTED_CHAIN_ID") {
+        if chain_id != expected.parse::<u32>().context("invalid expected chain id")? {
+            anyhow::bail!("unexpected chain id");
+        }
+    }
+    Ok(chain_id)
 }
 
 #[derive(Debug, Clone)]
@@ -399,7 +408,12 @@ fn cmd_transfer(
     } else {
         anyhow::bail!("either --mnemonic or --keystore-json is required")
     };
-    let _from_address = id.receive_address_v0()?;
+    let from_address = id.receive_address_v0()?;
+    if let Ok(expected) = std::env::var("ACP_EXPECTED_SOURCE_ADDRESS") {
+        if from_address != expected {
+            anyhow::bail!("unexpected source wallet");
+        }
+    }
     let scan_window = acp_crypto::DEFAULT_SUBADDR_SCAN_WINDOW;
 
     // Prefer preloaded UTXOs (from ANCAP UTXO index) to avoid O(tip) tip-scans (~30k blocks).
@@ -484,8 +498,28 @@ fn main() {
     }
 }
 
+fn read_private_request(reader: impl Read) -> anyhow::Result<Vec<String>> {
+    let mut bytes = Vec::new();
+    reader.take((MAX_PRIVATE_REQUEST_BYTES + 1) as u64).read_to_end(&mut bytes)?;
+    if bytes.len() > MAX_PRIVATE_REQUEST_BYTES {
+        anyhow::bail!("private request too large");
+    }
+    let args: Vec<String> = serde_json::from_slice(&bytes)
+        .map_err(|_| anyhow!("invalid private request"))?;
+    if args.is_empty() || args[0] == "--request-stdin" {
+        anyhow::bail!("invalid private request");
+    }
+    Ok(args)
+}
+
 fn real_main() -> anyhow::Result<()> {
-    let mut args = std::env::args().skip(1);
+    let raw: Vec<String> = std::env::args().skip(1).collect();
+    let private = raw.first().map(String::as_str) == Some("--request-stdin");
+    let request = if private {
+        if raw.len() != 1 { anyhow::bail!("private request accepts no argv options"); }
+        read_private_request(std::io::stdin().lock())?
+    } else { raw };
+    let mut args = request.into_iter();
     let cmd = args.next().ok_or_else(|| anyhow!("missing command"))?;
 
     let out = match cmd.as_str() {
@@ -552,6 +586,10 @@ fn real_main() -> anyhow::Result<()> {
                     "--mnemonic" => mnemonic = args.next(),
                     "--keystore-json" => keystore_json = args.next(),
                     "--keystore-file" => keystore_file = args.next(),
+                    "--mnemonic-file" => {
+                        let path = args.next().ok_or_else(|| anyhow!("mnemonic file required"))?;
+                        mnemonic = Some(std::fs::read_to_string(path)?.trim().to_string());
+                    }
                     "--to" => to = args.next(),
                     "--amount-acp" => amount_acp = args.next(),
                     "--fee-acp" => fee_acp = args.next(),
@@ -641,5 +679,27 @@ fn real_main() -> anyhow::Result<()> {
 
     println!("{}", json!({ "ok": true, "result": out }));
     Ok(())
+}
+
+#[cfg(test)]
+mod private_request_tests {
+    use super::*;
+
+    #[test]
+    fn private_channel_preserves_secret_and_rejects_invalid_shapes() {
+        let args = read_private_request(br#"["address","--mnemonic","fixture secret"]"#.as_slice()).unwrap();
+        assert_eq!(args[2], "fixture secret");
+        for invalid in ["{}", "[]", "[1]", "[\"--request-stdin\"]"] {
+            assert!(read_private_request(invalid.as_bytes()).is_err());
+        }
+        assert!(read_private_request(vec![b' '; MAX_PRIVATE_REQUEST_BYTES + 1].as_slice()).is_err());
+        let mut indexed = vec!["transfer".to_string()];
+        for _ in 0..acp_crypto::protocol_params::MAX_TX_INPUTS_OUTPUTS {
+            indexed.push("--utxo".into());
+            indexed.push(format!("{}:4294967295:21000000000000000", "a".repeat(64)));
+        }
+        let encoded = serde_json::to_vec(&indexed).unwrap();
+        assert_eq!(read_private_request(encoded.as_slice()).unwrap(), indexed);
+    }
 }
 

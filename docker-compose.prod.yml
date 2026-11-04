@@ -48,7 +48,7 @@ services:
       ETHEREUM_RPC_URL: ${ETHEREUM_RPC_URL:-}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-}
       # ACP custodial hot-wallet helper (optional, required to enable /wallet/acp/*)
-      ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-walletd}
+      ACP_WALLETD_PATH: ${ACP_WALLETD_PATH:-/usr/local/bin/walletd}
       # Operator emails allowed to remain bound to custodial hot (comma-separated).
       # Required in production when custodial hot access is needed; no personal
       # address is baked into the repository.
