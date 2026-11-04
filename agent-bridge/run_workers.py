@@ -4,6 +4,7 @@ import ctypes
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -102,18 +103,41 @@ def run_agent(name, acceptance=False):
     logs.mkdir(exist_ok=True)
     with (logs / (name + '.log')).open('a', encoding='utf-8') as out:
         out.write(f'\nSTART {state["started_at"]} CYCLE {cycle} MODE {state["mode"]}\n'); out.flush()
-        p = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=out, stderr=subprocess.STDOUT, creationflags=FLAGS)
-        state.update(pid=p.pid, state='running')
-        write_state(name + '-process', state)
         deadline = time.monotonic() + 960
-        while p.poll() is None and time.monotonic() < deadline:
-            state['updated_at'] = now()
+        for attempt in range(3):
+            offset = (logs / (name + '.log')).stat().st_size
+            p = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=out, stderr=subprocess.STDOUT, creationflags=FLAGS)
+            state.update(pid=p.pid, state='running', attempt=attempt + 1)
             write_state(name + '-process', state)
-            time.sleep(5)
-        code = p.poll()
-        if code is None:
-            subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True, creationflags=FLAGS)
-            code = 124
+            while p.poll() is None and time.monotonic() < deadline:
+                state['updated_at'] = now()
+                write_state(name + '-process', state)
+                time.sleep(5)
+            code = p.poll()
+            if code is None:
+                subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True, creationflags=FLAGS)
+                code = 124
+            if code or valid_evidence(read_state(name + '-evidence'), name, cycle) or attempt == 2 or deadline - time.monotonic() < 60:
+                break
+            # A final promise is not task completion. Continue the same conversation,
+            # preserving its context instead of discarding it in a new scheduled cycle.
+            followup = ('Your last response ended before executing the task. Continue NOW with actual tools. '
+                        'First call terminal/exec to run git status --short in your assigned worktree, '
+                        'then inspect the relevant source and perform the scoped task already assigned. '
+                        'Do not respond with plans. Before finishing, run this exact verification command: '
+                        f'{PYTHON.as_posix()} {(ROOT / "verify_worker.py").as_posix()} {name} {cycle}')
+            if name == 'hermes':
+                with (logs / (name + '.log')).open('rb') as source:
+                    source.seek(offset)
+                    output = source.read().decode('utf-8', errors='replace')
+                matches = re.findall(r'(?:Session:\s+|--resume\s+)([a-zA-Z0-9_-]+)', output)
+                if not matches:
+                    break
+                cmd = [str(PYTHON), '-u', str(ROOT / 'hermes_headless.py'), 'chat', '-t', 'terminal,file',
+                       '--max-turns', '20', '--resume', matches[-1], '-q', followup]
+            else:
+                cmd[cmd.index('--message') + 1] = followup
+            out.write(f'\nCONTINUE {cycle} after response without tool receipt\n'); out.flush()
         changed = git(cwd, 'diff', '--name-only', baseline).splitlines()
         changed += sorted(set(git(cwd, 'ls-files', '--others', '--exclude-standard').splitlines()) - before)
         violations = sorted({path for path in changed if not allowed(name, path)})

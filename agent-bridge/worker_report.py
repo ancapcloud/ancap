@@ -74,6 +74,12 @@ def render_report(current=None):
         if not is_current:
             last = load(name + '-last-result')
             result_state, receipt = last.get('state', {}), last.get('receipt', {})
+            if not result_state:
+                acceptance = load(name + '-acceptance')
+                receipt = load(name + '-evidence')
+                result_state = dict(agent=name, cycle_id=acceptance.get('cycle_id'),
+                                    verified=acceptance.get('verified') is True,
+                                    finished_at=acceptance.get('completed_at'))
         if checked_receipt(result_state, receipt):
             if not is_current:
                 lines.append('Последний подтверждённый цикл: ' + result_state.get('finished_at', '?'))

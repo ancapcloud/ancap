@@ -1,5 +1,8 @@
 import datetime as dt
 import unittest
+import tempfile
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 import run_workers as workers
 import worker_report as report
@@ -47,6 +50,52 @@ class SupervisionTests(unittest.TestCase):
         state = dict(agent='hermes', cycle_id='new', verified=True)
         receipt = dict(agent='hermes', cycle_id='old', test_passed=True, exit_code=0)
         self.assertFalse(report.checked_receipt(state, receipt))
+
+    def test_report_keeps_accepted_tool_check_visible_during_next_cycle(self):
+        current = dt.datetime.now(dt.timezone.utc)
+        def data(name):
+            if name == 'supervisor':
+                return dict(enabled=True, pid=1)
+            role = name.split('-')[0]
+            if name.endswith('-process'):
+                return dict(agent=role, state='running', pid=2, cycle_id='new', updated_at=current.isoformat())
+            if name.endswith('-acceptance'):
+                return dict(verified=True, cycle_id='accepted', completed_at=current.isoformat())
+            if name.endswith('-evidence'):
+                return dict(agent=role, cycle_id='accepted', test_passed=True, exit_code=0)
+            return {}
+        with patch.object(report, 'load', side_effect=data), patch.object(report, 'pid_alive', return_value=True):
+            text = report.render_report(current)
+        self.assertEqual(text.count('Работает:'), 2)
+        self.assertEqual(text.count('PASS'), 2)
+        self.assertEqual(text.count('Последний подтверждённый цикл:'), 2)
+
+    def test_promise_continues_same_session_until_actual_test_receipt(self):
+        commands = []
+        cycle = 'a' * 32
+        class Child:
+            pid = 123
+            def poll(self):
+                return 0
+        def spawn(cmd, **kwargs):
+            commands.append(cmd)
+            kwargs['stdout'].write('Session: test_session\n')
+            kwargs['stdout'].flush()
+            if len(commands) == 2:
+                workers.write_state('hermes-evidence', dict(agent='hermes', cycle_id=cycle,
+                                    test_passed=True, exit_code=0, command='pytest'))
+            return Child()
+        def git(cwd, *args):
+            return 'h' * 40 if args[0] == 'rev-parse' else 'codex/hermes-parallel' if args[0] == 'branch' else ''
+        with tempfile.TemporaryDirectory() as folder, patch.object(workers, 'ROOT', Path(folder)), \
+             patch.object(workers, 'git', side_effect=git), \
+             patch.object(workers, 'build_prompt', return_value='Perform task'), \
+             patch.object(workers.uuid, 'uuid4', return_value=SimpleNamespace(hex=cycle)), \
+             patch.object(workers.subprocess, 'Popen', side_effect=spawn):
+            self.assertEqual(workers.run_agent('hermes'), 0)
+            self.assertTrue(workers.read_state('hermes-process')['verified'])
+        self.assertEqual(len(commands), 2)
+        self.assertEqual(commands[1][commands[1].index('--resume') + 1], 'test_session')
 
 if __name__ == '__main__':
     unittest.main()
