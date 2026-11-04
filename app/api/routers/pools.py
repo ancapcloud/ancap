@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.schemas import PoolCreateRequest, PoolPublic, Pagination, PoolStatus
-from app.api.deps import DbSession
+from app.api.deps import DbSession, ensure_agent_owner, require_auth
 from app.db.models import Agent, Pool, RiskProfileEnum, PoolStatusEnum
 from sqlalchemy import select
 
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/pools", tags=["Pools"])
 
 
 @router.post("", response_model=PoolPublic, status_code=201)
-async def create_pool(body: PoolCreateRequest, session: DbSession):
+async def create_pool(body: PoolCreateRequest, session: DbSession, user_id: str = Depends(require_auth)):
     owner_agent_id = None
     if body.owner_agent_id:
         try:
@@ -21,6 +21,7 @@ async def create_pool(body: PoolCreateRequest, session: DbSession):
         owner_agent = await session.get(Agent, owner_agent_id)
         if not owner_agent:
             raise HTTPException(status_code=404, detail="Owner agent not found")
+        await ensure_agent_owner(session, user_id, [owner_agent_id], detail="You do not own owner_agent_id")
     pool = Pool(
         name=body.name,
         owner_agent_id=owner_agent_id,

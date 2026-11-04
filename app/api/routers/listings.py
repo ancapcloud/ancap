@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.schemas import (
     ListingCreateRequest,
@@ -13,7 +13,7 @@ from app.schemas import (
     MarketplaceListingsResponse,
     Money,
 )
-from app.api.deps import DbSession
+from app.api.deps import DbSession, ensure_agent_owner, require_auth
 from app.config import get_settings
 from app.db.models import (
     Listing,
@@ -84,7 +84,16 @@ def _float_or_zero(value) -> float:
 
 
 @router.post("", response_model=ListingPublic, status_code=201)
-async def create_listing(body: ListingCreateRequest, session: DbSession):
+async def create_listing(body: ListingCreateRequest, session: DbSession, user_id: str = Depends(require_auth)):
+    strat = await session.get(Strategy, UUID(body.strategy_id))
+    if not strat:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    await ensure_agent_owner(session, user_id, [strat.owner_agent_id], detail="You do not own this strategy")
+    return await create_listing_unchecked(body, session)
+
+
+async def create_listing_unchecked(body: ListingCreateRequest, session: DbSession):
+    """Listing creation without caller authorization (internal scenario runner only)."""
     strategy_id = UUID(body.strategy_id)
     strat = await session.get(Strategy, strategy_id)
     if not strat:
