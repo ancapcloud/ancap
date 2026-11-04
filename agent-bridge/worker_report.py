@@ -65,6 +65,8 @@ def render_report(current=None):
         if active and live_worker(state, current):
             mode = 'проверка выполнения инструментов' if state.get('mode') == 'acceptance' else 'разработка'
             lines.append(f'Работает: PID {state["pid"]}, {mode}, ветка {state.get("branch", "?")}.')
+            if state.get('task_id'):
+                lines.append('Текущая задача: ' + state['task_id'] + f'; прошло {state.get("elapsed_seconds", 0) // 60} мин. Результат ещё не подтверждён.')
         elif active and state.get('state') == 'exited':
             lines.append('Между циклами; следующий запуск выполняется независимо от другого агента.')
         else:

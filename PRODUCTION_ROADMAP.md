@@ -1,3 +1,5 @@
+2026-11-04 agent execution repair: double-prefixed prompt paths fixed; exact-source scoped tickets, real commit completion and frontend type verification added. Background process presence alone is not task acceptance. See `agent-bridge/OPERATIONS.md`.
+
 2026-11-04 agent runtime correction: independent worker loops, heartbeat/PID reporting and cycle-bound real-test receipts replace legacy cron-based readiness. Acceptance evidence is required before claiming a working agent; see `agent-bridge/OPERATIONS.md`.
 
 2026-11-04 local agent coordination: isolated OpenClaw/Hermes worktrees and roles, shared Ollama model, supervisor and scoped-change checks configured. Runtime acceptance tracked in `agent-bridge/OPERATIONS.md`; no production deployment or automatic branch integration.

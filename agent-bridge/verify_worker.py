@@ -23,22 +23,32 @@ def main():
         cmd = [str(Path.home() / 'Desktop/ANCAP/.venv/Scripts/python.exe'), '-m', 'pytest',
                '--noconftest', 'tests/test_acp_rpc_headers.py', '-q']
         test_cwd = cwd
-    result = subprocess.run(cmd, cwd=test_cwd, capture_output=True, text=True, encoding='utf-8',
-                            errors='replace', timeout=120, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-    output = result.stdout + result.stderr
+    commands = [cmd]
+    if name == 'openclaw':
+        commands.append(['C:/Program Files/nodejs/node.exe',
+                         str(cwd / 'frontend-app/node_modules/typescript/bin/tsc'), '--noEmit'])
+    output = ''
+    exit_code = 0
+    for command in commands:
+        result = subprocess.run(command, cwd=test_cwd, capture_output=True, text=True, encoding='utf-8',
+                                errors='replace', timeout=240, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+        output += '\nCOMMAND: ' + subprocess.list2cmdline(command) + '\n' + result.stdout + result.stderr
+        if result.returncode:
+            exit_code = result.returncode
+            break
     folder = ROOT / 'runtime'
     folder.mkdir(exist_ok=True)
     logfile = folder / f'{name}-tests-{cycle}.log'
     logfile.write_text(output, encoding='utf-8')
     receipt = dict(agent=name, cycle_id=cycle, updated_at=datetime.now(timezone.utc).isoformat(),
-                   workdir=str(cwd), command=subprocess.list2cmdline(cmd), exit_code=result.returncode,
-                   test_passed=result.returncode == 0, output_log=str(logfile))
+                   workdir=str(cwd), command='; '.join(subprocess.list2cmdline(command) for command in commands),
+                   exit_code=exit_code, test_passed=exit_code == 0, output_log=str(logfile))
     dest = ROOT / 'status' / (name + '-evidence.json')
     tmp = dest.with_suffix('.tmp')
     tmp.write_text(json.dumps(receipt, indent=2), encoding='utf-8'); tmp.replace(dest)
     print(output[-3000:])
     print('Tool receipt saved:', dest)
-    return result.returncode
+    return exit_code
 
 if __name__ == '__main__':
     raise SystemExit(main())

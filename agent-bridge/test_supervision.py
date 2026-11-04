@@ -97,5 +97,23 @@ class SupervisionTests(unittest.TestCase):
         self.assertEqual(len(commands), 2)
         self.assertEqual(commands[1][commands[1].index('--resume') + 1], 'test_session')
 
+    def test_task_context_refuses_paths_outside_worktree_and_secret_files(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(workers, 'WORK', Path(folder)):
+            cwd = Path(folder) / 'wt-hermes'
+            cwd.mkdir()
+            (cwd / 'safe.py').write_text('print(1)', encoding='utf-8')
+            self.assertIn('print(1)', workers.source_context('hermes', {'sources': ['safe.py']}))
+            for path in ('../outside.py', '.env', 'Sicret/key.txt'):
+                with self.assertRaises(ValueError):
+                    workers.source_context('hermes', {'sources': [path]})
+
+    def test_assigned_prompt_has_exact_sources_without_double_absolute_paths(self):
+        prompt = workers.build_prompt('hermes', 'b' * 32, False)
+        self.assertIn('FILE: app/services/acp_rpc.py', prompt)
+        self.assertIn('FILE: tests/test_acp_rpc_headers.py', prompt)
+        self.assertNotIn('agent-bridge\\C:', prompt)
+        self.assertNotIn('agent-bridge/C:', prompt)
+        self.assertNotIn('YOUR INBOX', prompt)
+
 if __name__ == '__main__':
     unittest.main()
