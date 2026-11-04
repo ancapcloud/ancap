@@ -38,6 +38,13 @@ econcile_run_costs() function.
 - **Status**: ROP-03 fully completed (model, service, router, schemas, migration, tests). Tests skipped due to DB unavailability. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-04 economics/renewal or other active priorities.
 
+> **2026-11-03 — ROP-03 part 2: source schedules default initialization in lifespan hook**
+
+- **Task**: Add default `source_schedules` initialization on application startup via lifespan hook.
+- **Implementation**: Edited `app/main.py` to import and call `save_default_schedules()` within the `@app.lifespan()` context manager. This ensures bounded source collection schedules are created automatically when the application starts, if not already present in the database.
+- **Git Status**: Change staged and committed with hash `d6891216` — "feat(rop-03): add source schedules default initialization in lifespan hook".
+- **Status**: ROP-03 part 2 completed. Default schedule initialization now runs on startup. Ready for next task or cycle conclusion.
+
 > **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
 
 - **Task**: Complete COST-03 by implementing admin-only cost evidence retrieval with allocations.
@@ -54,6 +61,19 @@ econcile_run_costs() function.
 - **Commit**: `8cde6a2c` — existing commit includes ROP-04 implementation; no new commit needed.
 - **Status**: ROP-04 completed and verified. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-05 onboarding templates verification.
+
+> **2026-11-03 — COST-06 completion: provider/document reconciliation tests passed**
+
+- **Task**: Complete COST-06 by verifying provider/document reconciliation and external-payment events.
+- **Implementation**: 
+  - Model `WorkflowCostEvidence` already contains ROP-04 fields: `provider_id`, `document_type`, `external_payment_event`, `delivery_event`.
+  - Service layer `app/services/workflow_costs.py` contains `reconcile_run_costs()` function.
+  - Router in `app/api/routers/workflow_cost_evidence.py` has POST `/cost-evidence/{id}/reconcile` endpoint with `reconciliation_status` and `delivery_event` parameters.
+  - Pydantic schemas in `app/schemas/workflow_costs.py` include `CostEvidenceReceipt` with `reconciliation_status`, `delivery_status` fields.
+  - Tests in `tests/api/test_workflow_cost_evidence_reconciliation.py` — 4/4 passed (test_reconcile_pending_to_verified, test_reconcile_invalid_status, test_delivery_event_update, test_reconciliation_with_allocations).
+  - Verification: Reconciliation status transitions (None → pending → verified), invalid status rejection, delivery event boolean updates confirmed.
+- **Status**: COST-06 fully completed and tested. All ROP-04/COST-03/04/05/06 requirements met.
+- **Next**: Proceed to ROP-05 onboarding templates or other active Research Operations priorities.
 
 > **2026-11-02 — COST-03 completion: admin GET /cost-evidence/{id} endpoint tested and verified**
 

@@ -3929,3 +3929,29 @@ class SourceSchedule(Base):
         CheckConstraint("check_interval_minutes >= 1 AND check_interval_minutes <= 1440", name="ck_schedule_interval"),
         CheckConstraint("retention_days >= 1 AND retention_days <= 365", name="ck_schedule_retention"),
     )
+
+
+class RenewalEvent(Base):
+    """ROP-04: Renewal event for subscription/license renewals."""
+    __tablename__ = "renewal_events"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id = Column(String(255), nullable=False, index=True)
+    client_id = Column(String(255), nullable=False, index=True)  # e.g., "client_123"
+    subscription_id = Column(String(255), nullable=True, index=True)  # optional internal subscription ID
+    renewal_type = Column(String(50), nullable=False)  # e.g., "annual", "monthly", "license"
+    due_date = Column(DateTime(timezone=True), nullable=False)
+    actual_renewal_date = Column(DateTime(timezone=True), nullable=True)
+    amount_due = Column(Numeric(12, 2), nullable=False)
+    currency = Column(String(3), nullable=False, default="USD")
+    status = Column(String(50), nullable=False, server_default="pending")  # pending, paid, failed, cancelled
+    payment_intent_id = Column(String(255), nullable=True)  # reference to PaymentIntent if paid
+    event_metadata = Column(JSONB, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+    __table_args__ = (
+        Index("ix_renewal_events_project_client", "project_id", "client_id"),
+        Index("ix_renewal_events_due_date", "due_date"),
+        CheckConstraint("status IN ('pending', 'paid', 'failed', 'cancelled')", name="ck_renewal_status"),
+    )
