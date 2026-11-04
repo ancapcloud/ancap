@@ -47,3 +47,18 @@ def test_review_does_not_follow_hardlinks(tmp_path):
     os.link(private, source / "innocent.txt")
     review.stage_sources(source, stage)
     assert list(stage.iterdir()) == []
+
+
+def test_isolated_bootstrap_can_import_staged_sibling_modules(tmp_path):
+    import subprocess
+    import sys
+    review = module()
+    (tmp_path / "helper.py").write_text("VALUE = 42\n")
+    entry = tmp_path / "main.py"
+    entry.write_text("import helper; print(helper.VALUE)\n")
+    command = review.container_command("sha256:" + "a" * 64, tmp_path, "main.py", "fixture")
+    index = command.index("python")
+    # Execute only the authored fixture with the actual guest bootstrap/flags.
+    result = subprocess.run([sys.executable, *command[index + 1:-1], str(entry)], capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "42"

@@ -24,6 +24,8 @@ use std::io::Read;
 use std::time::Duration;
 
 const RPC_USER_AGENT: &str = "ancap-walletd/1.0";
+// Covers the protocol's 10,000 indexed inputs plus keystore/JSON overhead.
+const MAX_PRIVATE_REQUEST_BYTES: usize = 2 * 1024 * 1024;
 
 fn rpc(client: &Client, rpc_url: &str, method: &str, params: Value) -> anyhow::Result<Value> {
     let body = json!({
@@ -498,8 +500,8 @@ fn main() {
 
 fn read_private_request(reader: impl Read) -> anyhow::Result<Vec<String>> {
     let mut bytes = Vec::new();
-    reader.take(131_073).read_to_end(&mut bytes)?;
-    if bytes.len() > 131_072 {
+    reader.take((MAX_PRIVATE_REQUEST_BYTES + 1) as u64).read_to_end(&mut bytes)?;
+    if bytes.len() > MAX_PRIVATE_REQUEST_BYTES {
         anyhow::bail!("private request too large");
     }
     let args: Vec<String> = serde_json::from_slice(&bytes)
@@ -690,7 +692,14 @@ mod private_request_tests {
         for invalid in ["{}", "[]", "[1]", "[\"--request-stdin\"]"] {
             assert!(read_private_request(invalid.as_bytes()).is_err());
         }
-        assert!(read_private_request(vec![b' '; 131_073].as_slice()).is_err());
+        assert!(read_private_request(vec![b' '; MAX_PRIVATE_REQUEST_BYTES + 1].as_slice()).is_err());
+        let mut indexed = vec!["transfer".to_string()];
+        for _ in 0..acp_crypto::protocol_params::MAX_TX_INPUTS_OUTPUTS {
+            indexed.push("--utxo".into());
+            indexed.push(format!("{}:4294967295:21000000000000000", "a".repeat(64)));
+        }
+        let encoded = serde_json::to_vec(&indexed).unwrap();
+        assert_eq!(read_private_request(encoded.as_slice()).unwrap(), indexed);
     }
 }
 

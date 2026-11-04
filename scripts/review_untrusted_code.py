@@ -74,7 +74,9 @@ def container_command(image: str, stage: Path, entry: str, name: str) -> list[st
             "--pids-limit=64", "--memory=512m", "--cpus=1", "--user=65534:65534",
             "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=64m", "--workdir=/tmp",
             "--mount", f"type=bind,src={stage},dst=/review,readonly",
-            image, "python", "-I", "-B", "/review/" + entry_path.as_posix()]
+            image, "python", "-I", "-B", "-c",
+            "import os,sys,runpy; p=sys.argv[1]; sys.path.insert(0,os.path.dirname(p)); sys.argv=sys.argv[1:]; runpy.run_path(p,run_name='__main__')",
+            "/review/" + entry_path.as_posix()]
 
 
 def main(argv: list[str] | None = None) -> int:
