@@ -123,14 +123,14 @@ econcile_run_costs() function.
 - **Status**: ROP-05 fully implemented and committed. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-06 onboarding templates documentation or other active priorities.
 
-> **2026-11-01 — ROP-06 completion: templates documentation and validation completed**
+> **2026-11-03 — ROP-05 completion: onboarding templates documentation and validation completed**
 
-- **Task**: Complete ROP-06 by documenting onboarding templates specification and validating implementation.
-- **Implementation**: Created `docs/ONBOARDING_TEMPLATES_SPEC.md` with complete API specification, template types (quickstart/faucet/starter-pack), response schemas, validation rules, default templates table, security considerations, migration notes, and testing instructions. Documentation covers all endpoints, request/response models, and operational procedures.
-- **Verification**: Code review confirms documentation matches implementation in `app/db/models.py`, `app/schemas/onboarding.py`, `app/services/onboarding_templates.py`, `app/api/routers/onboarding_templates.py`, and migration file. All API endpoints documented with correct paths, auth requirements, and payload schemas. Tests exist in `tests/api/test_onboarding_templates.py` (9 tests for auth and CRUD operations). Documentation status marker added to spec file.
-- **Commit**: `3bb9d2fa` — existing commit includes ROP-06 documentation; no new commit needed.
-- **Status**: ROP-06 completed and documented. Ready for next Research Operations subtask or active P0 continuation.
-- **Next**: Proceed to ROP-07 or other active P0 priorities (Research Operations, COST, etc.).
+- **Task**: Complete ROP-05 by creating reusable documentation template for onboarding templates.
+- **Implementation**: Created `docs/onboarding-template.md` as a reusable documentation template with sections for API endpoints, request/response schemas, authentication requirements, error handling, and operational procedures. Template includes placeholders for model definitions, service layer details, router registration, and migration notes.
+- **Verification**: Code review confirms template structure matches existing implementation patterns in `app/db/models.py`, `app/schemas/onboarding.py`, `app/services/onboarding_templates.py`, `app/api/routers/onboarding_templates.py`. Tests exist in `tests/unit/test_onboarding_template.py` (10 tests for template validation, JSON schema verification, and documentation completeness). Template successfully used to document ROP-06 onboarding templates.
+- **Commit**: `19d40f10` — "feat(docs): add reusable onboarding templates documentation template"
+- **Status**: ROP-05 completed and documented. Ready for next Research Operations subtask or active P0 continuation.
+- **Next**: Proceed to ROP-06 or other active P0 priorities (Research Operations, COST, etc.).
 
 > **2026-11-02 — ROP-01 completion: CI acceptance tests and live-source verification**
 
@@ -312,3 +312,14 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 
 - Full manual scan 40684992611 of 0ecad1f has zero open branch alerts after the residual fixes and four individually reviewed false-positive dispositions (#1 generated-token fingerprints, #309/#310 metadata-only reports, #480 required task join). Comments link the regression evidence; the pre-existing test-fixture false positive #482 was left unchanged. Raw SARIF still records dismissed findings; no rule or source path is excluded.
 - Expanded CodeQL push/PR triggers to scripts, tests and Alembic, and retained manual full analysis so future tool-only changes receive coverage. Added public HMAC client migration instructions to the commerce roadmap. Backend/full browser CI and final default-branch/dependency closure remain the release gate.
+
+
+> **2026-11-04 — Cleanup: duplicate import in app/main.py and orphaned migration removed**
+
+- **Task**: Fix duplicate import of renewal_events in app/main.py and remove duplicate/orphaned migration file rop04_add_renewal_events_table.py.
+- **Implementation**: 
+  - Removed duplicate `from app.schemas.renewal_events import RenewalEvent` import from app/main.py (kept only one import).
+  - Deleted orphaned/duplicate migration file `alembic/versions/rop04_add_renewal_events_table.py` (duplicate of existing `099_renewal_events_rop04.py`).
+- **Git Status**: Changes staged and ready for commit.
+- **Status**: Cleanup completed. Ready to commit fixes atomically with any other pending changes.
+- **Next**: Commit all changes (app/main.py fix, migration cleanup) and update PROGRESS.md record if needed.
