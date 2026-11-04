@@ -27,5 +27,5 @@ catch {
     }
     if (-not $taskReady) { throw 'Ollama did not become ready.' }
 }
-& $taskPython "$taskRoot\run_parallel.py"
+& $taskPython "$taskRoot\coordinator.py"
 exit $LASTEXITCODE

@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "task_id": "runtime-recovery-20261104-backend-v3",
+  "sources": ["app/services/acp_rpc.py", "tests/test_acp_rpc_headers.py"],
+  "allowed_files": ["docs/agent-runtime-check.md"],
+  "instructions": "Create docs/agent-runtime-check.md using the write_file tool. Write a short maintenance note (100-200 words) describing the ACP RPC header function and existing three tests: User-Agent/Content-Type, whitespace trimming, and absent blank token. Mention the source paths but no token values. State that tests are performed separately by the supervisor; do not invent test results. Do not edit Python, migrations, schemas, frontend, or any other file. Finish after writing this single file.",
+  "commit_message": "docs(backend): record verified agent runtime recovery"
+}

@@ -1,3 +1,5 @@
+2026-11-04 [x] local agent runtime recovery: preserved both WIP trees, removed freeform inbox fallback, enforced task file scopes before writes, isolated role failures, and verified two new scoped tasks/commits. Active runtime: agent-bridge/coordinator.py; CONTRACT.md v4. Empty queue means ready, not failed. Reboot autostart remains unverified.
+
 2026-11-04 agent execution repair: double-prefixed prompt paths fixed; exact-source scoped tickets, real commit completion and frontend type verification added. Background process presence alone is not task acceptance. See `agent-bridge/OPERATIONS.md`.
 
 2026-11-04 agent runtime correction: independent worker loops, heartbeat/PID reporting and cycle-bound real-test receipts replace legacy cron-based readiness. Acceptance evidence is required before claiming a working agent; see `agent-bridge/OPERATIONS.md`.
