@@ -10,7 +10,7 @@
 
 Одна модель `ancap-qwen:9b`: общие веса Qwen3.5 9B, без дублирования весов на диске; num_ctx=65536, num_thread=6, num_batch=256. Hermes требует минимум 64K; этот размер задан также в Modelfile, чтобы OpenAI-совместимый endpoint действительно использовал его. Ollama: NUM_PARALLEL=1, MAX_LOADED_MODELS=1, FLASH_ATTENTION=1, KV_CACHE_TYPE=q8_0, KEEP_ALIVE=30m. Часть весов/контекста может размещаться в RAM: 8 GB VRAM ограничивают полную выгрузку на GPU. Лимиты потоков сборки — 4 на процесс. Пользовательские переменные Ollama сохранены для следующего входа в Windows.
 
-Автозапуск при входе в Windows: ярлык `ANCAP Parallel Agents.lnk` в пользовательской Startup.
+Автозапуск при входе в Windows: скрипт `ANCAP Parallel Agents.vbs` в пользовательской Startup.
 
 Запуск: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\drago\Desktop\ANCAP\agent-bridge\Start-ParallelAgents.ps1`.
 
@@ -23,3 +23,7 @@
 Acceptance 2026-11-04: OpenClaw and Hermes both returned their correct roles and isolated directories using the local model. The scope guard caught a misplaced OpenClaw status during smoke; both worktrees now use a junction to the canonical bridge, verified by write/read roundtrip. Worktree-specific excludes keep that shared channel outside agent commits. Duplicate supervisor invocation was rejected by the mutex. Python/PowerShell syntax checks passed. Sustained development quality is evaluated per subsequent task, not implied by this readiness check.
 
 2026-11-04 worker recovery: run_workers.py supervises independent role loops with 5-second heartbeat and cycle-bound test evidence. Empty acknowledgements return diagnostic exit 126. Hermes is restricted to terminal,file toolsets to reduce prompt size and prevent messaging/scheduling tools. First acceptance cycle must execute verify_worker.py through its own tool. OpenClaw runs the existing racpDisplay Vitest test; Hermes runs the existing ACP RPC headers pytest test with --noconftest, without DB fixtures. These acceptance tests prove tool execution, not completed development. Reports use actual supervisor/worker PID and latest verified receipts, not legacy cron or the main checkout commit.
+
+Hermes Windows fixes: hermes_headless.py supplies a plain-text prompt_toolkit session for CREATE_NO_WINDOW. Workers pin HERMES_GIT_BASH_PATH to C:/Program Files/Git/bin/bash.exe so the system32 WSL shim cannot intercept local terminal calls. No installed Hermes source files were patched. Worker startup is a hidden VBS in the user Startup folder; the main Gateway remains a separate service/process.
+
+Recovery acceptance evidence (2026-11-04): OpenClaw invoked its exec tool and passed 2 existing racpDisplay frontend tests; Hermes invoked its terminal tool with pinned Git Bash and passed the existing backend ACP RPC headers test (1 passed, --noconftest, no DB). Receipts are recorded in status/*-evidence.json with distinct cycle IDs and actual command/exit code; log paths are included in each receipt. Both worktrees remained clean during acceptance. Supervisor/report regressions: 5 passed; existing report helper tests: 4 passed. No Telegram messages were sent manually during repair.

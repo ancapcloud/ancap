@@ -88,6 +88,9 @@ def run_agent(name, acceptance=False):
     env.update(PYTHONIOENCODING='utf-8', PYTHONUNBUFFERED='1', OMP_NUM_THREADS='4', MKL_NUM_THREADS='4',
                OPENBLAS_NUM_THREADS='4', CMAKE_BUILD_PARALLEL_LEVEL='4', CARGO_BUILD_JOBS='4',
                HERMES_HOME=str(USER / 'AppData/Local/hermes'))
+    # The Windows system32 bash shim launches WSL, which cannot cd to C:\\ paths.
+    # Pin the installed Git Bash for Hermes' native local terminal backend.
+    env['HERMES_GIT_BASH_PATH'] = 'C:/Program Files/Git/bin/bash.exe'
     prompt = build_prompt(name, cycle, acceptance)
     if name == 'openclaw':
         cmd = [str(NODE), str(CLAW), '--profile', 'ancap', 'agent', '--local', '--agent', 'ancap-site',
