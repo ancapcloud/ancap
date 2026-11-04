@@ -33,6 +33,8 @@ Hermes не правит JSX/CSS в `frontend-app/`. Если без правк�
 | OpenClaw | `C:\Users\drago\Desktop\ANCAP-agents\wt-openclaw` | `codex/openclaw-parallel` |
 | Hermes | `C:\Users\drago\Desktop\ANCAP-agents\wt-hermes` | `codex/hermes-parallel` |
 
+В обеих рабочих копиях `agent-bridge` — junction на общий каталог, исключённый из их git через отдельный core.excludesFile. Поэтому абсолютные и относительные пути связи ведут в одну копию.
+
 Общий канал связи — только `C:\Users\drago\Desktop\ANCAP\agent-bridge\` (абсолютный путь, одна копия на обоих).
 
 Автоматических rebase и merge внутри циклов нет: они могут внести чужие пути и спутать проверку зон. Синхронизацию с основной веткой, проверку совместимости и интеграцию выбранных коммитов выполняют отдельно. Push и deploy — только отдельным разрешённым действием.

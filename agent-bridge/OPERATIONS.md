@@ -19,3 +19,5 @@
 Старые ANCAP development cron обоих агентов отключены, настройки сохранены в резервных копиях. Внешние сообщения, push, merge и deploy супервизор не выполняет. Ранее существовавший Telegram-отчёт не активируется новым профилем. Интеграция результатов — отдельная проверка выбранных коммитов обеих веток; автоматического слияния нет.
 
 Рабочие копии созданы от текущего HEAD основной папки, без переноса её незакоммиченных изменений. Зависимости фронтенда устанавливаются отдельно в рабочей копии OpenClaw. При несовпадении API/сайта агенты сначала согласуют зависимость через inbox.
+
+Acceptance 2026-11-04: OpenClaw and Hermes both returned their correct roles and isolated directories using the local model. The scope guard caught a misplaced OpenClaw status during smoke; both worktrees now use a junction to the canonical bridge, verified by write/read roundtrip. Worktree-specific excludes keep that shared channel outside agent commits. Duplicate supervisor invocation was rejected by the mutex. Python/PowerShell syntax checks passed. Sustained development quality is evaluated per subsequent task, not implied by this readiness check.
