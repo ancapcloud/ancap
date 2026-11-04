@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from scripts.theodore_queue_guard import (
+    VALID_ROP,
     parse_queue_status,
     select_open_tasks,
     validate_receipt,
@@ -17,6 +18,17 @@ def test_parse_queue_marks_cost03_done():
     status = parse_queue_status(text)
     assert status.get("COST-03") == "done"
     assert "COST-03" not in select_open_tasks(status)
+
+
+def test_queue_exposes_open_rop_tasks_without_fake_ids():
+    text = Path("THEODORE_QUEUE.md").read_text(encoding="utf-8")
+    status = parse_queue_status(text)
+    rop_tasks = {task for task in status if task.startswith("ROP-")}
+    assert rop_tasks, "queue must mark ROP tasks with '## [ ] ROP-0x' headers"
+    assert rop_tasks <= VALID_ROP, f"queue invented ids outside the pilot roadmap: {rop_tasks - VALID_ROP}"
+    assert any(status[task] == "open" for task in rop_tasks), (
+        "queue must not mark every ROP task done while ROP-01/02/03/05 acceptance stays open"
+    )
 
 
 def test_validate_receipt_rejects_fake_rop_and_reopen(tmp_path: Path):
