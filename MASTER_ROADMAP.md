@@ -1,3 +1,19 @@
+## Developer social-engineering protection — 2026-11-04
+
+[~] Defense-in-depth implementation: private-stdin walletd transport, scrubbed
+child environment, static helper errors, absolute production executable path,
+credential-free CI checkout and a bounded no-network external-code runner.
+Native parser and real Docker/stdlib isolation probes passed locally.
+Theodore/OpenClaw tools were changed from full/off to per-session Docker,
+no host workspace/network/elevated access; installed-schema validation passed.
+A restricted ACP-only signer worker provides expiring independent approvals,
+atomic durable daily caps and replay/uncertain-outcome handling. It is not
+connected to production: the operator confirmed that a separate signer host and
+clean operator device still need preparation. Raw production keys were not moved.
+The legacy API secret mount and non-ACP adapters remain explicit cutover gates.
+Implementation, validation and remaining host gates:
+`docs/DEVELOPER_SOCIAL_ENGINEERING_DEFENSE.md`. CI/release acceptance pending.
+
 ## GitHub Actions documentation regression — 2026-11-03
 
 [x] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
