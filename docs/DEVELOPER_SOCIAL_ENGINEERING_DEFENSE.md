@@ -32,6 +32,14 @@ to reach deployment identities and signing keys. Background:
   no elevated/host/browser/gateway/node/scheduler controls. Both global and
   configured per-agent overrides are hardened. The gateway still runs on the
   host: this is not isolation of a compromised gateway or trusted plugin.
+  At the owner's explicit request, `web_search`, `web_fetch`, `github_publish`
+  and `github_identity_status` are allowed at both tool-policy layers. Search
+  and lightweight fetching use the gateway's configured provider; shell commands
+  keep no network. GitHub publication uses OpenClaw's native gateway broker and
+  its workspace/identity checks, never a token mounted into the guest. Use an
+  ANCAP project/worktree session for publication; a session without an eligible
+  Git workspace cannot publish. Arbitrary host Git commands, direct production
+  deployment and signing are not granted by these permissions.
 
 ## Running an external assignment
 
@@ -65,9 +73,13 @@ configuration was applied locally after schema validation. `sandbox explain`
 confirmed `sessionIsSandboxed=true` for `agent:main:main`, isolated workspace and
 elevated access disabled. Gateway restart could not identify an installed Windows
 task; no gateway was listening on configured loopback port 18789 at the check.
-No new background service was installed or started. Recheck containment when the
-operator next starts the gateway. The agent no longer has general
-host execution, arbitrary host files, deployment credentials or outbound tools.
+No new persistent service was installed. A direct start refused to take over
+the already-owned state directory; the existing loopback gateway was then
+verified reachable, and an authenticated `web_search` invocation succeeded.
+`github_publish` is run-dependent and requires an eligible project/worktree
+session; a standalone HTTP tool invocation does not expose it. The agent no longer has general
+host execution, arbitrary host files or deployment credentials. Brokered web
+search/fetch and GitHub publication remain explicitly allowed.
 Gateway normal model/chat transport is separate from the guest's disabled network.
 The minimal existing Python image supports Python/shell review; Node/Rust builds
 need a separately reviewed prebuilt sandbox image, not a return to host execution.

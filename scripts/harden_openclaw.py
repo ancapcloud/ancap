@@ -31,13 +31,18 @@ def harden(config: dict, image: str) -> dict:
     }
     def protect_tools(tools: dict) -> None:
         tools["profile"] = "coding"
-        tools["allow"] = ["read", "ls", "write", "edit", "apply_patch", "exec", "process"]
+        tools["allow"] = ["read", "ls", "write", "edit", "apply_patch", "exec", "process",
+                          "web_search", "web_fetch", "github_publish", "github_identity_status"]
         tools["deny"] = sorted(set(tools.get("deny", [])) | {"gateway", "nodes", "browser", "cron", "sessions_send", "sessions_spawn"})
         tools["elevated"] = {"enabled": False}
         tools["sandbox"] = {"tools": {"allow": list(tools["allow"]), "deny": list(tools["deny"])}}
         tools.setdefault("fs", {})["workspaceOnly"] = True
         tools.setdefault("exec", {})["host"] = "sandbox"
     protect_tools(result.setdefault("tools", {}))
+    web = result["tools"].setdefault("web", {})
+    web.setdefault("search", {})["enabled"] = True
+    web["search"].setdefault("provider", "duckduckgo")
+    web.setdefault("fetch", {})["enabled"] = True
     agents = result.setdefault("agents", {})
     agents.setdefault("defaults", {})["sandbox"] = copy.deepcopy(sandbox)
     entries = agents.get("entries", {})
@@ -64,7 +69,7 @@ def main() -> int:
     original = args.config.read_bytes()
     result = harden(json.loads(original.decode("utf-8-sig")), args.image)
     if not args.apply:
-        print("Planned: all sessions sandboxed; no host workspace/network/elevated exec/browser; credentials retained outside tool containers.")
+        print("Planned: sandboxed code, brokered web search/fetch and GitHub publication; credentials retained outside tool containers.")
         return 0
     # Use the installed CLI, and validate against its actual schema before replacing anything.
     executable = shutil.which("openclaw.cmd" if os.name == "nt" else "openclaw")

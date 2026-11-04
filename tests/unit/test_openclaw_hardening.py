@@ -18,5 +18,8 @@ def test_hardening_preserves_auth_but_removes_tool_escape_paths():
     assert sandbox["docker"]["binds"] == [] and sandbox["docker"]["env"] == {}
     assert result["tools"]["elevated"] == {"enabled": False}
     assert result["tools"]["exec"]["host"] == "sandbox"
+    assert {"web_search", "web_fetch", "github_publish", "github_identity_status"} <= set(result["tools"]["allow"])
+    assert result["tools"]["web"]["search"]["enabled"] is True
+    assert result["tools"]["web"]["fetch"]["enabled"] is True
     assert "gateway" in result["tools"]["deny"]
     assert result["agents"]["entries"]["theodore"]["sandbox"] == sandbox
