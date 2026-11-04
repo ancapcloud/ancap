@@ -59,13 +59,43 @@ Do not claim the entire historical expansion roadmap complete for this release.
 - [x] All nine functions passed against real account keys and PostgreSQL.
   Account-key/merchant/claim/scanner regressions passed (25 tests).
 - [x] Empty PostgreSQL database upgraded from base through all migrations to
-  098_merge_release_heads, without the test schema fallback.
+  098_merge_release_heads, without the test schema fallback. (Historical: the
+  head has since advanced to `104_merge_packet_listing`; a base→104 rehearsal
+  has not been re-run — see the 4 November update below.)
 - [x] Frontend TypeScript check passed. Invoice Decimal JSON serialization fixed.
 - [ ] Unfinished provenance/quality-fixture work reconciled or explicitly excluded.
 - [ ] Full backend, frontend build and security CI green on the release commit.
 - [ ] Real remote-client connection and all nine function results verified live.
 - [ ] Provider-backed execution, funded payment, receipt and reconciliation accepted.
 - [ ] Exact build deployed; migrations, rollback and production readiness verified.
+
+## Evidence update — 4 November 2026
+
+Release under test: `a9395368d74cea2218b0e7265d373062c07bfef4` (deployed build
+`a939536`). Full inventory and re-verification commands:
+`docs/ROP01_ACCEPTANCE_2026-11-04.md`.
+
+- **Migration head**: single head `104_merge_packet_listing`. Deploy 41645358135
+  log shows the production upgrade `102_cost_evidence_attribution ->
+  103_packet_templates_rop05`, then `103_packet_templates_rop05 +
+  103_robinhood_listing -> 104_merge_packet_listing` on 2026-11-03T13:49:22Z.
+  Production is past 098; a full base→104 empty-database rehearsal has not been
+  re-run and is still required before freeze.
+- **CI on the release commit**: Backend CI 41645358246 (1384 passed, 47 skipped;
+  unit job 277/7; documentation block 60/5), Docs CI 41645358235, CodeQL
+  41645358248, Secret Hygiene 41645358179 — all success.
+- **Frontend CI did not run on a9395368**: `frontend-ci.yml` is path-filtered and
+  the release commit changed documentation only. The last green Frontend CI is
+  41639480462 on `c8bd9142`. The "frontend build on the release commit" part of
+  the gate above is therefore still unproven for `a9395368`.
+- **Deployment/readiness**: `/api/v1/system/health` → ok;
+  `/api/v1/system/ready` → ready with `database` and `redis` true;
+  `/internal/frontend-build` → `a939536`. Rollback was not exercised.
+- **Security**: no open CodeQL, Dependabot or secret-scanning alerts at
+  verification time (2026-11-04).
+
+These facts do not close funded payments, live remote-client acceptance or
+commercial acceptance.
 
 ## Migration repair
 
