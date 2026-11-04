@@ -72,18 +72,23 @@ test("growth UI: onboarding + public follow/copy + leaderboards", async ({ page,
     if (!baseVerticalId) throw new Error("no vertical for fallback quickstart");
 
     const strat = await request.post(`${apiBase}/strategies`, {
+      headers: { Authorization: `Bearer ${token}` },
       data: { name: `QS-${uniq()}`, vertical_id: baseVerticalId, owner_agent_id: ownerAgentId },
     });
     if (!strat.ok()) throw new Error(`strategy create failed: ${strat.status()} ${await strat.text()}`);
     const strategyId = (await strat.json()).id as string;
 
     const ver = await request.post(`${apiBase}/strategies/${strategyId}/versions`, {
+      headers: { Authorization: `Bearer ${token}` },
       data: { semver: "1.0.0", workflow: { vertical_id: baseVerticalId, version: "1.0", steps: [{ id: "s1", action: "const", args: { value: 1 } }] } },
     });
     if (!ver.ok()) throw new Error(`version create failed: ${ver.status()} ${await ver.text()}`);
     const versionId = (await ver.json()).id as string;
 
-    const pool = await request.post(`${apiBase}/pools`, { data: { name: `QS-P-${uniq()}`, risk_profile: "experimental" } });
+    const pool = await request.post(`${apiBase}/pools`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { name: `QS-P-${uniq()}`, risk_profile: "experimental" },
+    });
     if (!pool.ok()) throw new Error(`pool create failed: ${pool.status()} ${await pool.text()}`);
     const poolId = (await pool.json()).id as string;
 
