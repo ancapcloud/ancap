@@ -44,6 +44,14 @@ def stage_sources(source: Path, destination: Path) -> None:
                 raise ValueError("Assignment exceeds the 16 MiB / 2000 file review limit")
             target = destination / path.relative_to(source)
             target.parent.mkdir(parents=True, exist_ok=True)
+            # mkdir's mode is filtered by the host umask, including parents.
+            # The guest must traverse every staged directory as UID 65534.
+            directory = target.parent
+            while True:
+                directory.chmod(0o755)
+                if directory == destination:
+                    break
+                directory = directory.parent
             # Copy bytes, not links, modes or host metadata. Never run setup/install hooks.
             with path.open("rb") as stream:
                 opened = os.fstat(stream.fileno())

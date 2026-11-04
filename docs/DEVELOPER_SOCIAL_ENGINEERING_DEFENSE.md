@@ -72,13 +72,15 @@ On 2026-11-04 the inspected configuration had `tools.profile=full` and
 configuration was applied locally after schema validation. `sandbox explain`
 confirmed `sessionIsSandboxed=true` for `agent:main:main`, isolated workspace and
 elevated access disabled. Gateway restart could not identify an installed Windows
-task; no gateway was listening on configured loopback port 18789 at the check.
+task; the initial listener probe did not find the gateway.
 No new persistent service was installed. A direct start refused to take over
 the already-owned state directory; the existing loopback gateway was then
 verified reachable, and an authenticated `web_search` invocation succeeded.
 `github_publish` is run-dependent and requires an eligible project/worktree
-session; a standalone HTTP tool invocation does not expose it. The agent no longer has general
-host execution, arbitrary host files or deployment credentials. Brokered web
+session; a standalone HTTP tool invocation does not expose it.
+The `ANCAP` project is registered, and `tools.github.status` verified the native
+`ancapcloud` identity through the GitHub API without exporting its credential.
+The agent no longer has general host execution, arbitrary host files or deployment credentials. Brokered web
 search/fetch and GitHub publication remain explicitly allowed.
 Gateway normal model/chat transport is separate from the guest's disabled network.
 The minimal existing Python image supports Python/shell review; Node/Rust builds
