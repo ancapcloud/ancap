@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hmac
+
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,7 +27,7 @@ def _require_operator(secret: str | None) -> None:
     expected = (get_settings().bridge_operator_secret or "").strip()
     if not expected:
         raise HTTPException(status_code=503, detail="Operator secret not configured")
-    if not secret or secret.strip() != expected:
+    if not secret or not hmac.compare_digest(secret.strip().encode(), expected.encode()):
         raise HTTPException(status_code=401, detail="Invalid operator secret")
 
 
