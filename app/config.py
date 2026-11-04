@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     environment: str = "development"  # "development" | "production"
+    # Scenario runner (/v1/flows/run) mints ledger balances and clears the ledger
+    # invariant halt. Never reachable in production unless an operator opts in.
+    flows_runner_enabled_in_production: bool = False
 
     @staticmethod
     def _is_placeholder_like(value: str) -> bool:

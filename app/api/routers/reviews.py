@@ -1,9 +1,9 @@
 """L2: Reviews and Disputes API — users, agents, and AI service reviews."""
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.api.deps import DbSession
+from app.api.deps import DbSession, ensure_agent_owner, require_auth, require_platform_admin
 from app.db.models import Review, Dispute
 from app.schemas.reviews import (
     AiReviewCreateRequest,
@@ -41,8 +41,32 @@ def _public(row: Review) -> ReviewPublic:
 
 
 @router.post("", response_model=ReviewPublic, status_code=201)
-async def create_review(body: ReviewCreateRequest, session: DbSession):
+async def create_review(body: ReviewCreateRequest, session: DbSession, user_id: str = Depends(require_auth)):
     """Create a review (weighted by run_ref and reviewer reputation in future)."""
+    try:
+        reviewer_id = UUID(body.reviewer_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID in reviewer_id, target_id or run_id") from None
+    await _authorize_reviewer(session, body.reviewer_type, reviewer_id, user_id)
+    return await create_review_unchecked(body, session)
+
+
+async def _authorize_reviewer(session, reviewer_type: str, reviewer_id: UUID, user_id: str) -> None:
+    # Reviewer identity must belong to the caller (no review impersonation / reputation forging).
+    if reviewer_type == "user":
+        if str(reviewer_id) != str(user_id):
+            raise HTTPException(status_code=403, detail="reviewer_id must be your own user id")
+    elif reviewer_type == "agent":
+        await ensure_agent_owner(session, user_id, [reviewer_id], detail="You do not own the reviewer agent")
+    else:
+        from app.api.deps import is_platform_admin_user
+
+        if not await is_platform_admin_user(session, user_id):
+            raise HTTPException(status_code=403, detail="Only platform operators may post AI reviews")
+
+
+async def create_review_unchecked(body: ReviewCreateRequest, session: DbSession) -> ReviewPublic:
+    """Persist a review without caller authorization (internal scenario runner only)."""
     try:
         reviewer_id = UUID(body.reviewer_id)
         target_id = UUID(body.target_id)
@@ -68,7 +92,11 @@ async def create_review(body: ReviewCreateRequest, session: DbSession):
 
 
 @router.post("/ai", response_model=ReviewPublic, status_code=201)
-async def create_ai_review(body: AiReviewCreateRequest, session: DbSession):
+async def create_ai_review(
+    body: AiReviewCreateRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
     """Attach a structured AI reviewer note to any reviewable target (services included)."""
     try:
         target_id = UUID(body.target_id)
@@ -138,7 +166,7 @@ disputes_router = APIRouter(prefix="/disputes", tags=["Disputes"])
 
 
 @disputes_router.post("", response_model=DisputePublic, status_code=201)
-async def create_dispute(body: DisputeCreateRequest, session: DbSession):
+async def create_dispute(body: DisputeCreateRequest, session: DbSession, _user_id: str = Depends(require_auth)):
     """Open a dispute."""
     row = Dispute(
         subject=body.subject,
@@ -211,7 +239,12 @@ async def get_dispute(dispute_id: UUID, session: DbSession):
 
 
 @disputes_router.post("/{dispute_id}/verdict", response_model=DisputePublic)
-async def set_dispute_verdict(dispute_id: UUID, body: DisputeVerdictRequest, session: DbSession):
+async def set_dispute_verdict(
+    dispute_id: UUID,
+    body: DisputeVerdictRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
     """Set verdict and resolve/reject dispute."""
     from datetime import datetime, timezone
 

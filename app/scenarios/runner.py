@@ -27,10 +27,10 @@ from app.services.ledger import append_event, get_or_create_account, set_ledger_
 from app.db.models import LedgerEventTypeEnum
 from app.services.stakes import stake as stake_agent
 
-from app.api.routers.listings import create_listing
+from app.api.routers.listings import create_listing_unchecked as create_listing
 from app.api.routers.orders import place_order
 from app.api.routers.runs import request_run
-from app.api.routers.reviews import create_review
+from app.api.routers.reviews import create_review_unchecked as create_review
 from app.api.routers.risk import set_risk_limits
 from app.api.routers.system import (
     upsert_edges_daily_from_orders,
