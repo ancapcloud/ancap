@@ -1,3 +1,5 @@
+2026-11-04 local agent coordination: isolated OpenClaw/Hermes worktrees and roles, shared Ollama model, supervisor and scoped-change checks configured. Runtime acceptance tracked in `agent-bridge/OPERATIONS.md`; no production deployment or automatic branch integration.
+
 2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
 An explicit operator opt-in adds Claude Sonnet reserve execution through the
 already configured OpenRouter account, with no data collection / zero-retention

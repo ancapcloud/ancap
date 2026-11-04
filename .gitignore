@@ -178,3 +178,9 @@ ACP-crypto/target-lean/
 
 # Private Cursor MCP configuration (may contain account credentials)
 /.cursor/mcp.json
+
+# Live agent status. The contract in agent-bridge/ is tracked.
+agent-bridge/status/*.json
+
+# Agent supervisor local logs and process state
+agent-bridge/runtime/
