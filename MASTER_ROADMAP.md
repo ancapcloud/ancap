@@ -1,3 +1,7 @@
+2026-11-05 [x] actual agent development accepted: flows demo UI d9f66793 (Vitest/tsc) and missing-token test 9dd881ea (4 pytest). Ticket constraints run before tests; no-change cycles are rejected. Finite queues are completed; ongoing autonomous roadmap planning is not configured.
+
+2026-11-05 agent queue correction: the supervisor and Gateway were healthy, but both recovery-only queues were exhausted. Queued actual frontend flows-demo UI and backend RPC header-isolation tasks; fixed UTF-8 console reporting and made idle reports explicitly say no active development. Completion evidence is recorded in agent-bridge/status/*-last-result.json; do not confuse running PID with accepted results.
+
 2026-11-04 [x] local agent runtime recovery: preserved both WIP trees, removed freeform inbox fallback, enforced task file scopes before writes, isolated role failures, and verified two new scoped tasks/commits. Active runtime: agent-bridge/coordinator.py; CONTRACT.md v4. Empty queue means ready, not failed. Reboot autostart remains unverified.
 
 2026-11-04 agent execution repair: double-prefixed prompt paths fixed; exact-source scoped tickets, real commit completion and frontend type verification added. Background process presence alone is not task acceptance. See `agent-bridge/OPERATIONS.md`.

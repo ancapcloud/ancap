@@ -1,3 +1,9 @@
+Verified 2026-11-05: OpenClaw completed flows preview commit d9f667935e55 (Vitest + TypeScript); Hermes completed missing-token regression commit 9dd881eacc47 (4 pytest tests, no DB). First Hermes draft was rejected and preserved in runtime/recovery-20261105; no out-of-role changes accepted. Coordinator now checks ticket required/forbidden content before tests and rejects unchanged artifacts as new development. Nine coordinator regressions passed. Both finite tickets are complete; no autonomous roadmap planner or unlimited development loop is configured.
+
+# 2026-11-05: queue exhaustion
+
+A live coordinator alone does not mean development is progressing. The two recovery notes completed on 2026-11-04 and no further tickets were queued. Actual development tickets now target the operator-only flows preview and RPC header isolation. Idle reports explicitly identify an exhausted queue and the ticket path. Never rerun the same completed ticket ID merely to fabricate activity; add a new bounded task with real acceptance criteria.
+
 # Действующий режим: scoped queue v3 (2026-11-04, 23:15 Берлин)
 
 Запуск: `Start-ParallelAgents.ps1` → `coordinator.py`. Действующий контракт — `CONTRACT.md` v4. Старые описания run_workers/tasks ниже — история, не текущая конфигурация.

@@ -3,6 +3,7 @@ import ctypes
 from datetime import datetime, timezone
 import json
 import os
+import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -42,7 +43,9 @@ def render_report():
         lines.append(title)
         if active and phase=='running' and fresh(state) and alive(state.get('pid')):
             lines.append(f'Выполняет задание {state.get("task_id", "?")}; PID {state["pid"]}. Результат ещё не принят.')
-        elif active and phase=='idle' and fresh(state):lines.append('Готов; очередь выполнена, ожидает новое разрешённое задание.')
+        elif active and phase=='idle' and fresh(state):
+            lines.append('Готов; активной разработки нет: очередь заданий исчерпана.')
+            lines.append('Следующее задание: agent-bridge/queue/'+role+'.json с новым task_id.')
         elif active and phase in ('starting','checking'):lines.append('Подготовка/независимая проверка задания; это ещё не завершённый результат.')
         elif phase=='blocked':lines.append('Приостановлен только этот агент: '+state.get('reason','требуется разбор'))
         elif phase=='completed':lines.append('Последнее задание завершено и проверено.')
@@ -55,4 +58,6 @@ def render_report():
             if result.get('commit'):lines.append('Локальный коммит: '+result['commit'][:12])
     return '\n'.join(lines)
 
-if __name__=='__main__':print(render_report())
+if __name__=='__main__':
+    sys.stdout.reconfigure(encoding='utf-8')
+    print(render_report())

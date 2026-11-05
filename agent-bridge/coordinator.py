@@ -69,6 +69,17 @@ def quarantine(role, state, reason, paths=None):
     save(role + '-quarantine', state)
     return False
 
+def validate_outputs(policy, task):
+    """Check ticket acceptance constraints before executing any generated tests."""
+    for path, rules in task.get('acceptance', {}).items():
+        if path not in task['allowed_files']:
+            raise ValueError('Acceptance path must be an allowed output')
+        content = policy.path(path).read_text(encoding='utf-8')
+        if any(text not in content for text in rules.get('required', [])):
+            raise ValueError('Required task acceptance content missing: ' + path)
+        if any(text in content for text in rules.get('forbidden', [])):
+            raise ValueError('Forbidden task acceptance content found: ' + path)
+
 def execute(role, task):
     cwd = WORK / ('wt-' + role)
     baseline = git(cwd, 'rev-parse', 'HEAD')
@@ -119,6 +130,9 @@ def execute(role, task):
     # requires the output and an independent successful check, regardless of prose.
     missing=[p for p in task['allowed_files'] if not policy.path(p).is_file() or policy.path(p).stat().st_size<100]
     if missing: return quarantine(role,state,'Required result was not produced',missing)
+    validate_outputs(policy, task)
+    if not changes(cwd, baseline):
+        return quarantine(role,state,'Task produced no changes; no new development result to accept')
     check_env={**env,'ANCAP_CHECK_EXECUTOR':'supervisor'}
     state.update(state='checking',updated_at=now(),agent_exit_code=code);save(role+'-process',state)
     result=subprocess.run([str(PYTHON),str(ROOT/'verify_worker.py'),role,cycle],cwd=cwd,env=check_env,

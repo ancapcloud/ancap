@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -10,6 +12,27 @@ import coordinator_report as report
 from scoped_files import FilePolicy, install_guard
 
 class CoordinatorTests(unittest.TestCase):
+    def test_ticket_acceptance_rejects_removed_tests_and_file_side_effects(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'test_rpc.py'
+            policy=FilePolicy(tmp,[],['test_rpc.py'])
+            task=dict(allowed_files=['test_rpc.py'],acceptance={
+                'test_rpc.py':dict(required=['def test_existing'],forbidden=['open('])})
+            for content in ['def test_replacement(): pass', 'def test_existing(): open("extra", "w")']:
+                path.write_text(content,encoding='utf-8')
+                with self.assertRaises(ValueError):runtime.validate_outputs(policy,task)
+            path.write_text('def test_existing(): pass',encoding='utf-8')
+            runtime.validate_outputs(policy,task)
+
+    def test_report_cli_works_with_windows_legacy_encoding(self):
+        result = subprocess.run(
+            [sys.executable, str(Path(report.__file__))],
+            env={**os.environ, 'PYTHONIOENCODING': 'cp1252'},
+            capture_output=True, timeout=15,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('Координатор:', result.stdout.decode('utf-8'))
+
     def test_completed_queue_has_no_freeform_fallback(self):
         with tempfile.TemporaryDirectory() as tmp,patch.object(runtime,'ROOT',Path(tmp)):
             queue=Path(tmp)/'queue';queue.mkdir()

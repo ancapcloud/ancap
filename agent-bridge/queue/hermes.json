@@ -1,8 +1,29 @@
 {
   "enabled": true,
-  "task_id": "runtime-recovery-20261104-backend-v3",
-  "sources": ["app/services/acp_rpc.py", "tests/test_acp_rpc_headers.py"],
-  "allowed_files": ["docs/agent-runtime-check.md"],
-  "instructions": "Create docs/agent-runtime-check.md using the write_file tool. Write a short maintenance note (100-200 words) describing the ACP RPC header function and existing three tests: User-Agent/Content-Type, whitespace trimming, and absent blank token. Mention the source paths but no token values. State that tests are performed separately by the supervisor; do not invent test results. Do not edit Python, migrations, schemas, frontend, or any other file. Finish after writing this single file.",
-  "commit_message": "docs(backend): record verified agent runtime recovery"
+  "task_id": "rpc-missing-token-20261105-v2",
+  "sources": [
+    "app/services/acp_rpc.py",
+    "tests/test_acp_rpc_headers.py"
+  ],
+  "allowed_files": [
+    "tests/test_acp_rpc_headers.py"
+  ],
+  "instructions": "Use the patch tool to append ONLY the following new function to tests/test_acp_rpc_headers.py. Preserve EVERY existing line and all three existing tests unchanged. Do not remove the unused fixture in this task. Do not import os, touch os.environ directly, use open(), create files, or edit production code. The monkeypatch fixture is already available from pytest. Exact function to append:\n\ndef test_acp_rpc_headers_missing_token(monkeypatch):\n    monkeypatch.delenv(\"ACP_RPC_TOKEN\", raising=False)\n    headers = acp_rpc_headers()\n    assert \"x-acp-rpc-token\" not in headers\n    assert headers[\"Content-Type\"] == \"application/json\"\n    assert headers[\"User-Agent\"] == ACP_RPC_USER_AGENT\n\nStop immediately after the successful patch tool call. The supervisor runs pytest separately.",
+  "commit_message": "test(rpc): verify headers when token is not configured",
+  "acceptance": {
+    "tests/test_acp_rpc_headers.py": {
+      "required": [
+        "def test_acp_rpc_headers_include_user_agent",
+        "def test_acp_rpc_headers_strip_token_with_whitespace",
+        "def test_acp_rpc_headers_absent_when_token_is_whitespace",
+        "def test_acp_rpc_headers_missing_token",
+        "monkeypatch.delenv"
+      ],
+      "forbidden": [
+        "open(",
+        "import os",
+        "os.environ["
+      ]
+    }
+  }
 }

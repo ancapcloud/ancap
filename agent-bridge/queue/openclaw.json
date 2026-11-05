@@ -1,8 +1,26 @@
 {
   "enabled": true,
-  "task_id": "runtime-recovery-20261104-front-v3",
-  "sources": ["frontend-app/src/components/ServiceReviewsPanel.tsx"],
-  "allowed_files": ["frontend-app/docs/agent-runtime-check.md"],
-  "instructions": "Create docs/agent-runtime-check.md in your frontend workspace using the write tool. Write a short maintenance note (100-200 words) describing the onAiReview handler in the supplied ServiceReviewsPanel source: operator-only 403 message, fallback errors, and busy-state cleanup. Mention the exact source path. State that project tests are performed separately by the supervisor; do not invent test results. Do not edit source code or any other file. Finish after writing this single file.",
-  "commit_message": "docs(frontend): record verified agent runtime recovery"
+  "task_id": "flows-demo-ui-20261105-v1",
+  "sources": [
+    "frontend-app/src/app/flows/page.tsx"
+  ],
+  "allowed_files": [
+    "frontend-app/src/app/flows/page.tsx"
+  ],
+  "instructions": "Edit src/app/flows/page.tsx now. This page exposes operator-only demo runners to ordinary users. No reliable operator flag is available. Make this page a read-only scenario preview: remove the flows API import, FlowId type, running/result/error state and the entire run function. Replace all four Run buttons with noninteractive text 'Operator-only demo'. Replace the introductory subtitle with clear English text explaining these are operator-only demo scenarios and execution is unavailable here. Remove obsolete Error and Result panels. Preserve login redirect, Navigation, scenario descriptions and quickLinks. Remove unused imports. Do not invent a role flag or call any API. Write the complete valid TSX file using your file tool. No other file may change.",
+  "commit_message": "fix(flows): show operator demos without public execution controls",
+  "acceptance": {
+    "frontend-app/src/app/flows/page.tsx": {
+      "required": [
+        "Operator-only demo",
+        "quickLinks.map",
+        "<Navigation"
+      ],
+      "forbidden": [
+        "flows.run(",
+        "onClick=",
+        "async function run("
+      ]
+    }
+  }
 }
