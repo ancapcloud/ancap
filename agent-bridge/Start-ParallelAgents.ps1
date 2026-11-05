@@ -27,5 +27,9 @@ catch {
     }
     if (-not $taskReady) { throw 'Ollama did not become ready.' }
 }
-& $taskPython "$taskRoot\coordinator.py"
-exit $LASTEXITCODE
+while (-not (Test-Path "$taskRoot\runtime\STOP")) {
+    & $taskPython "$taskRoot\coordinator.py"
+    if ($LASTEXITCODE -eq 0) { exit 0 }
+    # Recover an unexpected coordinator crash without starting duplicate workers.
+    Start-Sleep -Seconds 10
+}

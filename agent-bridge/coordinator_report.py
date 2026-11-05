@@ -36,7 +36,7 @@ def render_report():
     supervisor=load('supervisor')
     active=supervisor.get('enabled') is True and fresh(supervisor) and alive(supervisor.get('pid'))
     lines=['ANCAP · OpenClaw + Hermes · '+stamp(),
-           'Координатор: работает; только явные ограниченные задания.' if active else 'Координатор: остановлен или heartbeat устарел.']
+           ('Координатор: работает; непрерывная разработка.' if supervisor.get('scheduler')=='continuous-scoped-v4' else 'Координатор: работает; только явные ограниченные задания.') if active else 'Координатор: остановлен или heartbeat устарел.']
     if (ROOT/'runtime/STOP').exists():lines.append('Общий STOP: новые задания остановлены оператором.')
     for role,title in [('openclaw','OpenClaw · frontend'),('hermes','Hermes · backend')]:
         state=load(role+'-process');phase=state.get('state')
@@ -44,8 +44,13 @@ def render_report():
         if active and phase=='running' and fresh(state) and alive(state.get('pid')):
             lines.append(f'Выполняет задание {state.get("task_id", "?")}; PID {state["pid"]}. Результат ещё не принят.')
         elif active and phase=='idle' and fresh(state):
-            lines.append('Готов; активной разработки нет: очередь заданий исчерпана.')
-            lines.append('Следующее задание: agent-bridge/queue/'+role+'.json с новым task_id.')
+            if supervisor.get('scheduler')=='continuous-scoped-v4':
+                lines.append('Готов; поиск следующей полезной задачи продолжается автоматически.')
+            else:
+                lines.append('Готов; активной разработки нет: очередь заданий исчерпана.')
+                lines.append('Следующее задание: agent-bridge/queue/'+role+'.json с новым task_id.')
+        elif active and phase in ('planning','reviewing','recovering') and fresh(state):
+            lines.append({'planning':'Автоматически планирует следующую правку кода.', 'reviewing':'Проверяет правку перед тестами.', 'recovering':'Сохраняет неудачную попытку и переходит к следующей задаче.'}[phase])
         elif active and phase in ('starting','checking'):lines.append('Подготовка/независимая проверка задания; это ещё не завершённый результат.')
         elif phase=='blocked':lines.append('Приостановлен только этот агент: '+state.get('reason','требуется разбор'))
         elif phase=='completed':lines.append('Последнее задание завершено и проверено.')

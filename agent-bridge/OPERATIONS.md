@@ -1,3 +1,13 @@
+Acceptance 2026-11-05: frontend continuous cycle committed 37494589 and automatically planned/started the next actual task without a new manual ticket. Hermes first draft failed tests, was preserved as stash 693c5a375c24, and a scoped repair is active. 19 Python coordination/continuity regressions passed. Native OpenClaw before_tool_call scope plugin passed delegation/denial checks; work-profile configuration validated. Windows ANCAPParallelAgents task is Running; reboot not performed.
+
+# Continuous development enabled — 2026-11-05
+
+Active contract v5. `continuous.json` enabled=true; after manual tickets, the coordinator automatically plans scoped code tasks and continues after each accepted commit. No finite queue exhaustion. One independent role loop per agent; local model inference is shared.
+
+To pause new cycles create `runtime/STOP`; an already executing bounded task may finish. To resume remove that operator marker and start scheduled task `ANCAPParallelAgents` or Start-ParallelAgents.ps1. For task progress use coordinator_report.py. Logs and journals in runtime/; actual acceptance in status/*-last-result.json. Do not interpret planning, review or recovery as a completed code result.
+
+Normal in-scope failed attempts receive one diagnostic-driven repair with a verified file backup; a second failure is preserved in a named stash, recorded, then another task selected. Unexpected paths/HEAD changes remain quarantined for review. Preserve user edits. No push/merge/deploy. Logon task registration is configured; reboot is not tested.
+
 Verified 2026-11-05: OpenClaw completed flows preview commit d9f667935e55 (Vitest + TypeScript); Hermes completed missing-token regression commit 9dd881eacc47 (4 pytest tests, no DB). First Hermes draft was rejected and preserved in runtime/recovery-20261105; no out-of-role changes accepted. Coordinator now checks ticket required/forbidden content before tests and rejects unchanged artifacts as new development. Nine coordinator regressions passed. Both finite tickets are complete; no autonomous roadmap planner or unlimited development loop is configured.
 
 # 2026-11-05: queue exhaustion

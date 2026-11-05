@@ -10,6 +10,7 @@ import sys
 import time
 import uuid
 from scoped_files import FilePolicy
+import continuous
 
 ROOT = Path(__file__).resolve().parent
 WORK = Path.home() / 'Desktop/ANCAP-agents'
@@ -83,14 +84,27 @@ def validate_outputs(policy, task):
 def execute(role, task):
     cwd = WORK / ('wt-' + role)
     baseline = git(cwd, 'rev-parse', 'HEAD')
+    if task.get('repair_attempt') and task.get('baseline')!=baseline:
+        raise ValueError('HEAD changed before repair; preserving external changes')
+    task['baseline'] = baseline
+    if task.get('continuous'):
+        (ROOT/'runtime'/f'{role}-current-task.json').write_text(json.dumps(task,indent=2),encoding='utf-8')
     cycle = uuid.uuid4().hex
     state = dict(agent=role, cycle_id=cycle, task_id=task['task_id'], state='starting',
                  started_at=now(), updated_at=now(), workdir=str(cwd), branch=git(cwd,'branch','--show-current'))
     save(role + '-process', state)
+    if task.get('repair_attempt') and load(role+'-repair').get('task_id')==task['task_id']:
+        (ROOT/'status'/(role+'-repair.json')).unlink()
     dirty = changes(cwd)
-    if dirty: return quarantine(role, state, 'Existing changes require review before a new task', dirty)
+    repair_owned=(task.get('continuous') and task.get('repair_attempt')==1 and
+                  not (set(dirty)-set(task['allowed_files'])))
+    if dirty and not repair_owned: return quarantine(role, state, 'Existing changes require review before a new task', dirty)
     policy = FilePolicy(cwd, task.get('sources', []), task['allowed_files'])
     context = '\n\n'.join('FILE: '+p+'\n'+policy.path(p).read_text(encoding='utf-8')[:12000] for p in task.get('sources', []))
+    peer = 'hermes' if role == 'openclaw' else 'openclaw'
+    context += '\nOTHER AGENT STATUS (coordination only):\n'+json.dumps(load(peer+'-process'),ensure_ascii=False)
+    inbox=ROOT/'inbox'/('to-'+role+'.md')
+    if inbox.exists():context+='\nINBOX (awareness only; execute only the assigned ticket):\n'+inbox.read_text(encoding='utf-8')[-2500:]
     front = cwd / 'frontend-app'
     outputs = [str(Path(p).relative_to('frontend-app')) for p in task['allowed_files']] if role == 'openclaw' else task['allowed_files']
     prompt = ('Execute this single bounded task using file tools now. Do not answer with a future plan. '
@@ -98,6 +112,9 @@ def execute(role, task):
               'The supervisor independently runs project checks and commits the result. '
               'Do not read inboxes or choose another task. Write ONLY: '+', '.join(outputs)+'.\n'
               +task['instructions']+'\nThe source context is already loaded below; no path discovery is needed.\n'+context)
+    if role=='openclaw':
+        prompt=prompt.replace('frontend-app/','')
+        prompt='Your file-tool root is the frontend directory itself. Use paths starting src/, never prepend frontend-app/.\n'+prompt
     env = {**os.environ, 'PYTHONIOENCODING':'utf-8', 'PYTHONUNBUFFERED':'1', 'OMP_NUM_THREADS':'4',
            'HERMES_HOME':str(Path.home()/'AppData/Local/hermes'), 'HERMES_GIT_BASH_PATH':'C:/Program Files/Git/bin/bash.exe',
            'TERMINAL_CWD':str(cwd), 'ANCAP_FILE_POLICY':json.dumps(dict(cwd=str(cwd),sources=task.get('sources',[]),outputs=task['allowed_files']))}
@@ -131,14 +148,22 @@ def execute(role, task):
     missing=[p for p in task['allowed_files'] if not policy.path(p).is_file() or policy.path(p).stat().st_size<100]
     if missing: return quarantine(role,state,'Required result was not produced',missing)
     validate_outputs(policy, task)
+    if task.get('continuous'):
+        continuous.validate(sys.modules[__name__], role, task, baseline)
     if not changes(cwd, baseline):
         return quarantine(role,state,'Task produced no changes; no new development result to accept')
+    if task.get('continuous'):
+        continuous.review(sys.modules[__name__],role,task,baseline)
     check_env={**env,'ANCAP_CHECK_EXECUTOR':'supervisor'}
     state.update(state='checking',updated_at=now(),agent_exit_code=code);save(role+'-process',state)
-    result=subprocess.run([str(PYTHON),str(ROOT/'verify_worker.py'),role,cycle],cwd=cwd,env=check_env,
-                          capture_output=True,timeout=540,creationflags=FLAGS)
-    receipt=load(role+'-evidence')
-    if result.returncode or receipt.get('cycle_id')!=cycle or receipt.get('test_passed') is not True:
+    if task.get('continuous'):
+        receipt=continuous.check(sys.modules[__name__],role,task,cycle)
+        check_code=receipt['exit_code']
+    else:
+        result=subprocess.run([str(PYTHON),str(ROOT/'verify_worker.py'),role,cycle],cwd=cwd,env=check_env,
+                              capture_output=True,timeout=540,creationflags=FLAGS)
+        receipt=load(role+'-evidence');check_code=result.returncode
+    if check_code or receipt.get('cycle_id')!=cycle or receipt.get('test_passed') is not True:
         return quarantine(role,state,'Independent project check failed; changes preserved')
     dirty=changes(cwd)
     if set(dirty)-set(task['allowed_files']): return quarantine(role,state,'Changes appeared during verification',dirty)
@@ -147,26 +172,41 @@ def execute(role, task):
         subprocess.run(['git','commit','-m',task['commit_message']],cwd=cwd,check=True,creationflags=FLAGS,capture_output=True)
     state.update(state='completed',updated_at=now(),finished_at=now(),verified=True,exit_code=0,commit=git(cwd,'rev-parse','HEAD'))
     save(role+'-process',state);save(role+'-last-result',dict(state=state,receipt=receipt))
-    save(role+'-queue-result',state)
+    if not task.get('continuous'):save(role+'-queue-result',state)
     return True
 
 def loop(role, once=False):
+    if not once:
+        try:continuous.resume_interrupted(sys.modules[__name__],role)
+        except Exception as exc:quarantine(role,dict(agent=role),str(exc)[:300])
     while not (ROOT/'runtime/STOP').exists():
         if load(role+'-quarantine'):
             if once: return False
             time.sleep(5);continue
+        task=None
         try:
             task=task_for(role)
+            if task is None and not once:
+                task=continuous.next_task(sys.modules[__name__],role)
+            if (ROOT/'runtime/STOP').exists():break
             if task:
                 ok=execute(role,task)
+                if task.get('continuous'):continuous.finish(sys.modules[__name__],role,task,ok)
                 if once:return ok
             else:
                 save(role+'-process',dict(agent=role,state='idle',updated_at=now(),reason='Ready; no new explicit queued task'))
                 if once:return True
         except Exception as exc:
-            quarantine(role,dict(agent=role,state='error'),str(exc)[:300])
+            if task is None and continuous.config(sys.modules[__name__]).get('enabled'):
+                save(role+'-process',dict(agent=role,state='recovering',updated_at=now(),reason='Planning retry: '+str(exc)[:250]))
+            else:
+                quarantine(role,{**load(role+'-process'), 'agent':role},str(exc)[:300])
+            if task and task.get('continuous'):
+                try:continuous.finish(sys.modules[__name__],role,task,False)
+                except Exception as recovery_error:
+                    quarantine(role,dict(agent=role),str(recovery_error)[:300])
             if once:return False
-        time.sleep(5)
+        time.sleep(max(5,continuous.config(sys.modules[__name__]).get('cooldown_seconds',30)) if continuous.config(sys.modules[__name__]).get('enabled') else 5)
     return True
 
 def main():
@@ -177,7 +217,7 @@ def main():
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             futures=[pool.submit(loop,role,'--once' in sys.argv) for role in ('openclaw','hermes')]
             while not all(f.done() for f in futures):
-                save('supervisor',dict(pid=os.getpid(),state='running',enabled=True,updated_at=now(),scheduler='explicit-scoped-queue-v3'))
+                save('supervisor',dict(pid=os.getpid(),state='running',enabled=True,updated_at=now(),scheduler='continuous-scoped-v4'))
                 time.sleep(5)
             return int(not all(f.result() for f in futures))
     finally:
