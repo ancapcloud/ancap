@@ -183,3 +183,7 @@ ACP-crypto/target-lean/
 /worktree-dev*/
 /*.mp4
 **/wallets/
+
+# Live agent status and supervisor runtime (the contract in agent-bridge/ is tracked).
+agent-bridge/status/*.json
+agent-bridge/runtime/

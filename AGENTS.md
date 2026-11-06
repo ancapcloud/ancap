@@ -15,6 +15,15 @@ Key identities:
 - `app/` = FastAPI backend
 - `frontend-app/` = Next.js frontend
 
+## Parallel agents (2026-11-04)
+
+OpenClaw and Hermes Agent work in this repo at the same time. The contract is `agent-bridge/CONTRACT.md`.
+
+- OpenClaw owns the site and how it looks for people and AI agents: `frontend-app/` plus public agent-facing site files.
+- Hermes Agent owns the rest of ANCAP: API, data, chain, mobile, tests, and non-UI docs.
+- Each agent reads the other's `agent-bridge/status/*.json` and inbox before editing, and does not change the other agent's files.
+- OpenClaw sends one combined Telegram report every 30 minutes. Hermes does not send that report.
+
 ## Key Decisions (do not re-evaluate — resolved)
 
 - **Pydantic schemas**: Always define request/response models in `app/schemas/*.py`, never locally inside router files. FastAPI evaluates Pydantic types at import time; locally-defined models cause `TypeError: Annotated[...] is not fully defined` at startup.
@@ -31,7 +40,7 @@ Key identities:
 - **Pycache stale bytecode**: After updating Python code, sometimes old error messages persist. Fix: `find . -path "*/__pycache__/*.pyc" -delete`.
 - **FastAPI route verification**: To check if a route exists without starting the server: `python -c "from app.main import app; print([r.path for r in app.routes if 'keyword' in r.path])"`.
 - **`/internal/frontend-build`**: This is a Next.js route in `frontend-app/src/app/internal/frontend-build/route.ts` — NOT a FastAPI route. It reads `.next/BUILD_ID` or `NEXT_PUBLIC_APP_BUILD_ID` env var.
-- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable), 057 (org NFC identity), 058 (securities + watch fleet + orbital edge), 059 (AETERNA DNA vault + intents + partners), 069 (sACP stablecoin ops + reserve snapshots), 070 (lunar land), 071 (mail IMAP/SMTP provider accounts), 072 (passport education docs ChaCha20-Poly1305), 073 (DNA/RNA bank AES-256-GCM HKDF-SHA384), 074 (perimeter cleanup Abrams Suite-B vault), 075 (literary auction + reviews.rating), 076 (Nexus social_posts people+robots), 077 (auction-deal X-Wing draft-10 PQC envelopes), 078 (FLORA flower auction), 079 (dark matter auction).
+- **Alembic migration run**: After pulling on any deploy target, always run `alembic upgrade head` before starting services. Recent migrations: 051 (mobile ACP indexer), 052 (bridge reserve snapshots), 053 (api_keys org_id), 054 (api_keys agent_id nullable), 057 (org NFC identity), 058 (securities + watch fleet + orbital edge), 059 (AETERNA DNA vault + intents + partners), 069 (sACP stablecoin ops + reserve snapshots), 070 (lunar land), 071 (mail IMAP/SMTP provider accounts), 072 (passport education docs ChaCha20-Poly1305), 073 (DNA/RNA bank AES-256-GCM HKDF-SHA384), 074 (perimeter cleanup Abrams Suite-B vault), 075 (literary auction + reviews.rating), 076 (Nexus social_posts people+robots), 077 (auction-deal X-Wing draft-10 PQC envelopes), 078 (FLORA flower auction), 079 (dark matter auction), 106 (ROP-04 renewal events).
 
 ## Preferences
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
-import { flows } from "@/lib/api";
+import { ApiError, flows } from "@/lib/api";
 
 type FlowId = "flow1" | "flow2" | "flow3" | "simulation";
 
@@ -44,8 +44,14 @@ export default function FlowsPage() {
           : {};
       const r = await flows.run(flowId, payload, Date.now() % 1_000_000);
       setResult(r);
-    } catch (e: any) {
-      setError(e?.message || String(e));
+    } catch (e: unknown) {
+      if (e instanceof ApiError && e.status === 403) {
+        setError(t("flows.forbidden"));
+      } else if (e instanceof ApiError && e.status === 404) {
+        setError(t("flows.disabledInProduction"));
+      } else {
+        setError(e instanceof Error ? e.message : String(e));
+      }
     } finally {
       setRunning(null);
     }
@@ -61,9 +67,17 @@ export default function FlowsPage() {
           <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "12px", color: "var(--text)" }}>
             {t("nav.flows") || "Flows"}
           </h1>
-          <p style={{ color: "var(--text-muted)", marginBottom: "28px" }}>
-            {t("flows.subtitle") || "Run end-to-end scenarios to generate orders, access grants, runs, reputation and risk signals."}
+          <p style={{ color: "var(--text-muted)", marginBottom: "16px" }}>
+            {t("flows.subtitle")}
           </p>
+          <div
+            role="note"
+            className="card"
+            data-testid="flows-operator-notice"
+            style={{ marginBottom: "28px", borderColor: "rgba(245, 158, 11, 0.45)", color: "var(--text-muted)", fontSize: "0.9rem" }}
+          >
+            {t("flows.operatorNotice")}
+          </div>
 
           <div className="responsive-grid responsive-grid-3" style={{ marginBottom: "28px" }}>
             <div className="card">

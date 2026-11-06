@@ -1,3 +1,17 @@
+## 2026-11-06 — Release consolidation of local agent work
+
+- Integrated the local `fix/p0-release-unblock` work with master. Local duplicates
+  of ROP-03/05 (`093_quality_fixtures`, `ce103b55b383`, `rop06`, a second
+  `PacketTemplate` model) were dropped; master's deployed chain stays.
+- Reverted unsafe agent edits: `require_platform_admin` test bypass, unguarded
+  onboarding template routes, broken `session.init_db`, `Contract.proposed_by_agent_id`
+  without a migration, OpenRouter fallback default-on (stays operator opt-in).
+- ROP-04: renewal events API rebuilt (admin-only, Numeric(36,18) amounts,
+  guarded lifecycle, cohort endpoint), migration `106_renewal_events_rop04`.
+  No real renewal data is recorded; renewal rates are not claimed.
+- ACP RPC keeps explicit `{}` params; site explains operator-only AI reviews
+  and `/flows` scenarios in EN/RU/UK/DE/zh-Hant.
+
 ## Status corrections — 2026-11-04 (read first)
 
 This file is a work log, not the roadmap. Later corrections override earlier entries:

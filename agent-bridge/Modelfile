@@ -1,0 +1,4 @@
+FROM qwen3.5:9b-q4_K_M
+PARAMETER num_ctx 65536
+PARAMETER num_thread 6
+PARAMETER num_batch 256

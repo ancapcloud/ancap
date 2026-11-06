@@ -1,0 +1,29 @@
+{
+  "enabled": true,
+  "model": "ancap-qwen:9b",
+  "cooldown_seconds": 30,
+  "seeds": {
+    "openclaw": {
+      "unit": "seed-review-labels-v1",
+      "title": "Associate review form labels with inputs",
+      "sources": ["frontend-app/src/components/ServiceReviewsPanel.tsx"],
+      "allowed_files": ["frontend-app/src/components/ServiceReviewsPanel.tsx"],
+      "production_files": ["frontend-app/src/components/ServiceReviewsPanel.tsx"],
+      "tests": [],
+      "instructions": "Edit src/components/ServiceReviewsPanel.tsx. For accessible unique form labels, import useId from react and call it once unconditionally near the other hooks: const reviewFormId = useId();. Add htmlFor={reviewFormId + '-rating'} to the Rating label and id={reviewFormId + '-rating'} to its select. Add htmlFor={reviewFormId + '-comment'} to the Comment label and id={reviewFormId + '-comment'} to its input. Do not change any behavior, text, handlers or API calls. Multiple panels must have different IDs; do not use hardcoded global IDs. Use the edit tool and stop after success.",
+      "acceptance": {"frontend-app/src/components/ServiceReviewsPanel.tsx": {"required": ["useId", "htmlFor={reviewFormId", "id={reviewFormId"], "forbidden": []}},
+      "commit_message": "fix(reviews): associate form labels with unique control ids"
+    },
+    "hermes": {
+      "unit": "seed-rpc-empty-params-v1",
+      "title": "Preserve explicitly supplied empty RPC object parameters",
+      "sources": ["app/services/acp_rpc.py", "tests/test_acp_rpc_headers.py"],
+      "allowed_files": ["app/services/acp_rpc.py", "tests/test_acp_rpc_headers.py"],
+      "production_files": ["app/services/acp_rpc.py"],
+      "tests": ["tests/test_acp_rpc_headers.py"],
+      "instructions": "Fix acp_rpc_call in app/services/acp_rpc.py: currently params or [] incorrectly converts an explicitly supplied empty dict to a list. Change only that body field to params if params is not None else []. Preserve all other behavior. Append a standalone regression test to tests/test_acp_rpc_headers.py, preserving EVERY existing test unchanged. Use monkeypatch plus asyncio.run; mock get_settings with a simple object whose acp_rpc_url is http://unit.invalid; mock httpx.AsyncClient with an async context manager and async post recording json, returning an object whose json method returns {'result': 'ok'}. No real network/DB. Call acp_rpc_call with {}, [], and None and assert recorded params are {}, [], [] respectively and calls return ok. Import only asyncio and the acp_rpc module as needed; no os, file operations, subprocess or network calls. Finish immediately after editing both files.",
+      "acceptance": {"app/services/acp_rpc.py": {"required": ["params if params is not None else []"], "forbidden": []}},
+      "commit_message": "fix(rpc): preserve empty object parameters in JSON RPC calls"
+    }
+  }
+}

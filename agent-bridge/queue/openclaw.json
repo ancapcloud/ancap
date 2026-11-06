@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "task_id": "flows-demo-ui-20261105-v1",
+  "sources": [
+    "frontend-app/src/app/flows/page.tsx"
+  ],
+  "allowed_files": [
+    "frontend-app/src/app/flows/page.tsx"
+  ],
+  "instructions": "Edit src/app/flows/page.tsx now. This page exposes operator-only demo runners to ordinary users. No reliable operator flag is available. Make this page a read-only scenario preview: remove the flows API import, FlowId type, running/result/error state and the entire run function. Replace all four Run buttons with noninteractive text 'Operator-only demo'. Replace the introductory subtitle with clear English text explaining these are operator-only demo scenarios and execution is unavailable here. Remove obsolete Error and Result panels. Preserve login redirect, Navigation, scenario descriptions and quickLinks. Remove unused imports. Do not invent a role flag or call any API. Write the complete valid TSX file using your file tool. No other file may change.",
+  "commit_message": "fix(flows): show operator demos without public execution controls",
+  "acceptance": {
+    "frontend-app/src/app/flows/page.tsx": {
+      "required": [
+        "Operator-only demo",
+        "quickLinks.map",
+        "<Navigation"
+      ],
+      "forbidden": [
+        "flows.run(",
+        "onClick=",
+        "async function run("
+      ]
+    }
+  }
+}

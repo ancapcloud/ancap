@@ -71,6 +71,10 @@ pilot targets, not measured results.
 
 Cost-evidence fields and reconciliation are present; COST-03 stays closed.
 
+Renewal tracking API is present (2026-11-06): admin-only `/v1/renewal-events`
+with guarded status lifecycle and `/v1/renewal-events/cohort` measurement,
+migration `106_renewal_events_rop04`. No real renewal data is recorded yet.
+
 **Still open**: provider/document reconciliation completeness, unknown-expense
 recording and due-renewal cohort measurement. Operator/commercial work; do not
 report renewals or revenue without evidence.
