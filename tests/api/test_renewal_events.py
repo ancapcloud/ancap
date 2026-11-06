@@ -137,3 +137,29 @@ def test_renewal_validation(client, monkeypatch):
         params={"due_from": "2027-01-01T00:00:00Z", "due_to": "2026-01-01T00:00:00Z"},
         headers=headers,
     ).status_code == 422
+
+
+def test_renewal_duplicate_without_subscription_and_full_precision(client, monkeypatch):
+    headers = _admin_headers(client, monkeypatch)
+    project = f"rop04-{uuid4().hex[:8]}"
+    amount = "12345678901.123456789012345678"
+    body = _payload(project, subscription_id=None, amount_due=amount)
+
+    first = client.post("/v1/renewal-events", json=body, headers=headers)
+    assert first.status_code == 201, first.text
+    assert first.json()["amount_due"] == amount
+    # NULL subscription_id must not let retries inflate the cohort.
+    assert client.post("/v1/renewal-events", json=body, headers=headers).status_code == 409
+
+    client.post(
+        "/v1/renewal-events",
+        json=_payload(project, client_id="client-z", subscription_id=None, amount_due=amount),
+        headers=headers,
+    )
+    cohort = client.get(
+        "/v1/renewal-events/cohort",
+        params={"project_id": project, "due_from": "2026-12-01T00:00:00Z", "due_to": "2026-12-02T00:00:00Z"},
+        headers=headers,
+    ).json()
+    assert cohort["total"] == 2
+    assert cohort["totals"][0]["due"] == "24691357802.246913578024691356"

@@ -44,7 +44,10 @@ def upgrade():
             name="ck_renewal_type",
         ),
         sa.CheckConstraint("status <> 'paid' OR renewed_at IS NOT NULL", name="ck_renewal_paid_at"),
-        sa.UniqueConstraint("project_id", "client_id", "subscription_id", "due_at", name="uq_renewal_event_due"),
+        sa.UniqueConstraint(
+            "project_id", "client_id", "subscription_id", "due_at",
+            name="uq_renewal_event_due", postgresql_nulls_not_distinct=True,
+        ),
     )
     op.create_index("ix_renewal_events_project_client", "renewal_events", ["project_id", "client_id"])
     op.create_index("ix_renewal_events_due_status", "renewal_events", ["due_at", "status"])

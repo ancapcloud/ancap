@@ -4004,5 +4004,8 @@ class RenewalEvent(Base):
         CheckConstraint("status <> 'paid' OR renewed_at IS NOT NULL", name="ck_renewal_paid_at"),
         Index("ix_renewal_events_project_client", "project_id", "client_id"),
         Index("ix_renewal_events_due_status", "due_at", "status"),
-        UniqueConstraint("project_id", "client_id", "subscription_id", "due_at", name="uq_renewal_event_due"),
+        UniqueConstraint(
+            "project_id", "client_id", "subscription_id", "due_at",
+            name="uq_renewal_event_due", postgresql_nulls_not_distinct=True,
+        ),
     )

@@ -79,33 +79,3 @@ def test_onboarding_template_constraints():
     assert "credentials" in content.lower()
     assert "identifiers" in content.lower()
     assert "personal data" in content.lower()
-
-
-if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    
-    # Run all tests
-    from tests.unit.test_onboarding_template import (
-        test_onboarding_template_exists,
-        test_onboarding_template_no_client_secrets,
-        test_onboarding_template_structure,
-        test_onboarding_template_json_example,
-        test_onboarding_template_constraints,
-    )
-    
-    tests = [
-        test_onboarding_template_exists,
-        test_onboarding_template_no_client_secrets,
-        test_onboarding_template_structure,
-        test_onboarding_template_json_example,
-        test_onboarding_template_constraints,
-    ]
-    
-    for test in tests:
-        try:
-            test()
-            print(f"✓ {test.__name__}")
-        except AssertionError as e:
-            print(f"✗ {test.__name__}: {e}")
-            raise

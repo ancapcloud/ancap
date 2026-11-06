@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
-from decimal import ROUND_HALF_EVEN, Decimal
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from uuid import uuid4
 
 from sqlalchemy import func, select
@@ -149,9 +149,12 @@ async def update_status(
 def format_amount(value: Decimal | None) -> str:
     if value is None:
         return "0"
-    normalized = Decimal(value).normalize()
-    # normalize() may produce exponent form (1E+2); render as plain digits.
-    return format(normalized, "f")
+    # Numeric(36,18) needs up to 36 significant digits; the default context
+    # (28) would round. Strip trailing zeros without changing the value.
+    text = format(Decimal(value), "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text or "0"
 
 
 async def cohort_summary(
@@ -177,14 +180,21 @@ async def cohort_summary(
         )
     ).all()
 
+    return _summarize(rows, project_id=project_id, due_from=due_from, due_to=due_to)
+
+
+def _summarize(rows, *, project_id, due_from, due_to) -> dict:
     counts = {"pending": 0, "paid": 0, "failed": 0, "cancelled": 0}
     due_by_currency: dict[str, Decimal] = defaultdict(Decimal)
     paid_by_currency: dict[str, Decimal] = defaultdict(Decimal)
-    for status, currency, count, amount in rows:
-        counts[status] = counts.get(status, 0) + int(count)
-        due_by_currency[currency] += Decimal(amount)
-        if status == "paid":
-            paid_by_currency[currency] += Decimal(amount)
+    with localcontext() as ctx:
+        # Sums of Numeric(36,18) values must not be rounded by the 28-digit default.
+        ctx.prec = 80
+        for status, currency, count, amount in rows:
+            counts[status] = counts.get(status, 0) + int(count)
+            due_by_currency[currency] += Decimal(amount)
+            if status == "paid":
+                paid_by_currency[currency] += Decimal(amount)
 
     resolved = counts["paid"] + counts["failed"] + counts["cancelled"]
     rate = None
