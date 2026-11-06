@@ -9,7 +9,7 @@ from decimal import Decimal
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import select, func
 
-from app.api.deps import DbSession, get_current_user_id
+from app.api.deps import Caller, CallerIdentity, DbSession, caller_controls_agent, is_platform_admin_user
 from app.db.models import (
     Agent,
     AgentLink,
@@ -68,8 +68,16 @@ async def _get_agent_for_user(session: DbSession, user_id: str | None) -> Agent 
 async def create_contract(
     body: ContractCreateRequest,
     session: DbSession,
-    user_id: str | None = Depends(get_current_user_id),
+    caller: Caller,
 ):
+    # Caller must control the employer or the worker agent (no contracts between strangers).
+    if not (
+        await caller_controls_agent(session, caller, body.employer_agent_id)
+        or await caller_controls_agent(session, caller, body.worker_agent_id)
+        or await _is_admin(session, caller)
+    ):
+        raise HTTPException(status_code=403, detail="You must control the employer or worker agent to create a contract")
+    user_id = caller.user_id
     # Self-dealing guard via AgentLink (1-hop) and direct equality
     employer_id = UUID(body.employer_agent_id)
     worker_id = UUID(body.worker_agent_id)
@@ -111,6 +119,28 @@ async def create_contract(
     return _to_public(contract)
 
 
+async def _is_admin(session, caller: CallerIdentity) -> bool:
+    return bool(caller.user_id) and await is_platform_admin_user(session, caller.user_id)
+
+
+async def _require_party(
+    session,
+    contract: Contract,
+    caller: CallerIdentity,
+    *,
+    employer: bool = True,
+    worker: bool = True,
+) -> None:
+    """Object-level authorization: caller must control an allowed party agent (or be a platform admin)."""
+    if employer and await caller_controls_agent(session, caller, contract.employer_agent_id):
+        return
+    if worker and await caller_controls_agent(session, caller, contract.worker_agent_id):
+        return
+    if await _is_admin(session, caller):
+        return
+    raise HTTPException(status_code=403, detail="Not a permitted party of this contract")
+
+
 async def _get_contract(session: DbSession, contract_id: UUID) -> Contract:
     c = await session.get(Contract, contract_id)
     if not c:
@@ -119,8 +149,9 @@ async def _get_contract(session: DbSession, contract_id: UUID) -> Contract:
 
 
 @router.post("/{contract_id}/propose", response_model=ContractPublic)
-async def propose_contract(contract_id: UUID, session: DbSession):
+async def propose_contract(contract_id: UUID, session: DbSession, caller: Caller):
     contract = await _get_contract(session, contract_id)
+    await _require_party(session, contract, caller, employer=True, worker=False)
     if contract.status != ContractStatusEnum.draft:
         raise HTTPException(status_code=400, detail="Only draft contracts can be proposed")
     contract.status = ContractStatusEnum.proposed
@@ -133,8 +164,12 @@ async def propose_contract(contract_id: UUID, session: DbSession):
 async def accept_contract(
     contract_id: UUID,
     session: DbSession,
+    caller: Caller,
 ):
     contract = await _get_contract(session, contract_id)
+    # Either party may accept: escrow only moves employer funds into the contract escrow;
+    # release to the worker requires the employer (complete) and the employer can cancel to refund.
+    await _require_party(session, contract, caller)
     if contract.status != ContractStatusEnum.proposed:
         raise HTTPException(status_code=400, detail="Only proposed contracts can be accepted")
 
@@ -186,8 +221,9 @@ async def accept_contract(
 
 
 @router.post("/{contract_id}/cancel", response_model=ContractPublic)
-async def cancel_contract(contract_id: UUID, session: DbSession):
+async def cancel_contract(contract_id: UUID, session: DbSession, caller: Caller):
     contract = await _get_contract(session, contract_id)
+    await _require_party(session, contract, caller)
     if contract.status not in (ContractStatusEnum.draft, ContractStatusEnum.proposed, ContractStatusEnum.active, ContractStatusEnum.paused):
         raise HTTPException(status_code=400, detail="Only draft, proposed, active or paused contracts can be cancelled")
 
@@ -247,8 +283,9 @@ async def cancel_contract(contract_id: UUID, session: DbSession):
 
 
 @router.post("/{contract_id}/complete", response_model=ContractPublic)
-async def complete_contract(contract_id: UUID, session: DbSession):
+async def complete_contract(contract_id: UUID, session: DbSession, caller: Caller):
     contract = await _get_contract(session, contract_id)
+    await _require_party(session, contract, caller, employer=True, worker=False)
     if contract.status != ContractStatusEnum.active:
         raise HTTPException(status_code=400, detail="Only active contracts can be completed")
 
@@ -326,8 +363,9 @@ async def complete_contract(contract_id: UUID, session: DbSession):
 
 
 @router.post("/{contract_id}/dispute", response_model=ContractPublic)
-async def dispute_contract(contract_id: UUID, session: DbSession):
+async def dispute_contract(contract_id: UUID, session: DbSession, caller: Caller):
     contract = await _get_contract(session, contract_id)
+    await _require_party(session, contract, caller)
     if contract.status not in (ContractStatusEnum.active, ContractStatusEnum.completed):
         raise HTTPException(status_code=400, detail="Only active or completed contracts can be disputed")
     contract.status = ContractStatusEnum.disputed
