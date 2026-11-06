@@ -1,6 +1,12 @@
 {
   "task_id": "acp-rpc-token-header-tests-v1",
-  "allowed_files": ["tests/test_acp_rpc_headers.py"],
-  "sources": ["app/services/acp_rpc.py", "tests/test_acp_rpc_headers.py"],
-  "instructions": "Add TWO small regression tests to tests/test_acp_rpc_headers.py. Use pytest's monkeypatch fixture: one test sets ACP_RPC_TOKEN to '  unit-test-token  ' and asserts headers['x-acp-rpc-token'] == 'unit-test-token'; the other sets ACP_RPC_TOKEN to whitespace and asserts that x-acp-rpc-token is absent. Keep the existing user-agent/content-type test. Do not change production code. No DB is needed. All needed source is below; do NOT search other paths or read roadmaps. Use edit/write tools NOW, run the verification command below, then git add tests/test_acp_rpc_headers.py and commit with message test(rpc): cover optional ACP token headers. Finish with the actual test result and commit. If these cases are already covered, run verification and report no change."
+  "commit_message": "test(rpc): cover optional ACP token headers",
+  "allowed_files": [
+    "tests/test_acp_rpc_headers.py"
+  ],
+  "sources": [
+    "app/services/acp_rpc.py",
+    "tests/test_acp_rpc_headers.py"
+  ],
+  "instructions": "Add TWO small regression tests to tests/test_acp_rpc_headers.py. Use pytest's monkeypatch fixture: one test sets ACP_RPC_TOKEN to '  unit-test-token  ' and asserts headers['x-acp-rpc-token'] == 'unit-test-token'; the other sets ACP_RPC_TOKEN to whitespace and asserts that x-acp-rpc-token is absent. Keep the existing user-agent/content-type test. Do not change production code. No DB is needed. All needed source is below; do NOT search other paths or read roadmaps. Use edit/write tools NOW, run the verification command below, then git add tests/test_acp_rpc_headers.py and commit with message test(rpc): cover optional ACP token headers. Finish with the actual test result and commit. If these cases are already covered, run verification and report no change. The supervisor independently runs the exact project checks after you finish and commits only your allowed files if they pass. Your priority is to make the correct edit with tools, not explain a future plan. If your partial edit already exists, repair any supplied independent-check errors before finishing."
 }

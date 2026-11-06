@@ -70,6 +70,18 @@ def source_context(name, task):
         parts.append(f'FILE: {relative}\n' + path.read_text(encoding='utf-8')[:limit])
     return '\n\n'.join(parts)
 
+def controlled_check(name, cycle, cwd, env):
+    check_env = {**env, 'ANCAP_CHECK_EXECUTOR': 'supervisor'}
+    subprocess.run([str(PYTHON), str(ROOT / 'verify_worker.py'), name, cycle], cwd=cwd,
+                   env=check_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                   timeout=540, creationflags=FLAGS)
+    receipt = read_state(name + '-evidence')
+    log = Path(receipt.get('output_log', ''))
+    feedback = ''
+    if receipt.get('cycle_id') == cycle and log.is_file() and log.resolve().is_relative_to((ROOT / 'runtime').resolve()):
+        feedback = log.read_text(encoding='utf-8', errors='replace')[-5000:]
+    return receipt, feedback
+
 def build_prompt(name, cycle, acceptance):
     command = f'{PYTHON.as_posix()} {(ROOT / "verify_worker.py").as_posix()} {name} {cycle}'
     assigned = {} if acceptance else selected_task(name)
@@ -113,6 +125,7 @@ def run_agent(name, acceptance=False):
                  mode='acceptance' if acceptance else 'development', workdir=str(cwd),
                  branch=git(cwd, 'branch', '--show-current'), baseline=baseline)
     state['task_id'] = assigned.get('task_id', '')
+    write_state(name + '-process', state)
     env = os.environ.copy()
     env.update(PYTHONIOENCODING='utf-8', PYTHONUNBUFFERED='1', OMP_NUM_THREADS='4', MKL_NUM_THREADS='4',
                OPENBLAS_NUM_THREADS='4', CMAKE_BUILD_PARALLEL_LEVEL='4', CARGO_BUILD_JOBS='4',
@@ -121,6 +134,12 @@ def run_agent(name, acceptance=False):
     # Pin the installed Git Bash for Hermes' native local terminal backend.
     env['HERMES_GIT_BASH_PATH'] = 'C:/Program Files/Git/bin/bash.exe'
     prompt = build_prompt(name, cycle, acceptance)
+    if assigned:
+        dirty = git(cwd, 'diff', '--name-only', 'HEAD').splitlines()
+        if dirty and set(dirty).issubset(set(assigned.get('allowed_files', []))):
+            prior_receipt, failure = controlled_check(name, cycle, cwd, env)
+            if not valid_evidence(prior_receipt, name, cycle):
+                prompt += '\nINDEPENDENT CHECK OF YOUR EXISTING PARTIAL CHANGE FAILED. Repair these exact errors, then finish the assigned task:\n' + failure
     if name == 'openclaw':
         cmd = [str(NODE), str(CLAW), '--profile', 'ancap', 'agent', '--local', '--agent', 'ancap-site',
                '--session-id', 'ancap-site-' + cycle, '--message', prompt, '--timeout', '1500', '--json']
@@ -143,9 +162,28 @@ def run_agent(name, acceptance=False):
                 write_state(name + '-process', state)
                 time.sleep(5)
             code = p.poll()
+            state['agent_exit_code'] = code
             if code is None:
                 subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True, creationflags=FLAGS)
                 code = 124
+            feedback = ''
+            if assigned and code not in (124, 125):
+                touched = git(cwd, 'diff', '--name-only', baseline).splitlines()
+                touched += git(cwd, 'ls-files', '--others', '--exclude-standard').splitlines()
+                if touched and set(touched).issubset(set(assigned.get('allowed_files', []))):
+                    receipt, feedback = controlled_check(name, cycle, cwd, env)
+                    if valid_evidence(receipt, name, cycle):
+                        dirty = git(cwd, 'diff', '--name-only', 'HEAD').splitlines()
+                        if dirty:
+                            subprocess.run(['git', 'add', '--', *dirty], cwd=cwd, check=True, creationflags=FLAGS)
+                            subprocess.run(['git', 'commit', '-m', assigned.get('commit_message', 'fix(agents): complete verified scoped task')],
+                                           cwd=cwd, check=True, creationflags=FLAGS)
+                            state['commit_executor'] = 'supervisor'
+                        code = 0
+                    elif feedback and code == 1:
+                        # Preserve the raw agent exit code above; a failed check may
+                        # still be repairable in the same scoped conversation.
+                        code = 0
             if code or valid_evidence(read_state(name + '-evidence'), name, cycle) or attempt == 2 or deadline - time.monotonic() < 60:
                 break
             # A final promise is not task completion. Continue the same conversation,
@@ -155,6 +193,11 @@ def run_agent(name, acceptance=False):
                         'then inspect the relevant source and perform the scoped task already assigned. '
                         'Do not respond with plans. Before finishing, run this exact verification command: '
                         f'{PYTHON.as_posix()} {(ROOT / "verify_worker.py").as_posix()} {name} {cycle}')
+            if feedback:
+                followup = ('Your scoped change FAILED the independent project check. Fix only the errors below in your assigned files. '
+                            'Do not search other directories or change dependencies. Then rerun the exact verification command and commit the fixed files.\n'
+                            + feedback + '\nVerification command: '
+                            + f'{PYTHON.as_posix()} {(ROOT / "verify_worker.py").as_posix()} {name} {cycle}')
             if name == 'hermes':
                 with (logs / (name + '.log')).open('rb') as source:
                     source.seek(offset)

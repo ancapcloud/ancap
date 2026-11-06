@@ -41,6 +41,7 @@ def main():
     logfile = folder / f'{name}-tests-{cycle}.log'
     logfile.write_text(output, encoding='utf-8')
     receipt = dict(agent=name, cycle_id=cycle, updated_at=datetime.now(timezone.utc).isoformat(),
+                   executor=os.environ.get('ANCAP_CHECK_EXECUTOR', 'agent'),
                    workdir=str(cwd), command='; '.join(subprocess.list2cmdline(command) for command in commands),
                    exit_code=exit_code, test_passed=exit_code == 0, output_log=str(logfile))
     dest = ROOT / 'status' / (name + '-evidence.json')

@@ -67,6 +67,8 @@ def render_report(current=None):
             lines.append(f'Работает: PID {state["pid"]}, {mode}, ветка {state.get("branch", "?")}.')
             if state.get('task_id'):
                 lines.append('Текущая задача: ' + state['task_id'] + f'; прошло {state.get("elapsed_seconds", 0) // 60} мин. Результат ещё не подтверждён.')
+        elif active and state.get('state') == 'starting':
+            lines.append('Подготовка исходников и независимая проверка перед запуском задачи.')
         elif active and state.get('state') == 'exited':
             lines.append('Между циклами; следующий запуск выполняется независимо от другого агента.')
         else:
@@ -86,6 +88,8 @@ def render_report(current=None):
             if not is_current:
                 lines.append('Последний подтверждённый цикл: ' + result_state.get('finished_at', '?'))
             lines.append('Проверено: ' + ('frontend racpDisplay (Vitest)' if name == 'openclaw' else 'backend ACP RPC headers (pytest, без БД)') + ' — PASS.')
+            if receipt.get('executor') == 'supervisor':
+                lines.append('Проверки выполнены независимым контроллером после правок агента.')
             if result_state.get('commit'):
                 lines.append('Коммит этого цикла: ' + result_state['commit'][:12])
             else:

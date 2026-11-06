@@ -1,6 +1,7 @@
 import datetime as dt
 import unittest
 import tempfile
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -114,6 +115,54 @@ class SupervisionTests(unittest.TestCase):
         self.assertNotIn('agent-bridge\\C:', prompt)
         self.assertNotIn('agent-bridge/C:', prompt)
         self.assertNotIn('YOUR INBOX', prompt)
+
+    def test_failed_independent_check_resumes_and_commits_only_after_pass(self):
+        commands, commits, checks = [], [], []
+        cycle = 'c' * 32
+        class Child:
+            pid = 123
+            def poll(self):
+                return 0
+        def spawn(cmd, **kwargs):
+            commands.append(cmd)
+            kwargs['stdout'].write('Session: repair_session\n'); kwargs['stdout'].flush()
+            return Child()
+        def git(cwd, *args):
+            if args[0] == 'rev-parse':
+                return ('n' if commits else 'h') * 40
+            if args[0] == 'branch':
+                return 'codex/hermes-parallel'
+            if args[0] == 'diff':
+                return 'tests/t.py' if commands else ''
+            return ''
+        def check(name, token, cwd, env):
+            passed = len(commands) == 2
+            checks.append(passed)
+            self.assertFalse(commits)
+            receipt = dict(agent=name, cycle_id=token, command='pytest', executor='supervisor',
+                           exit_code=0 if passed else 1, test_passed=passed)
+            workers.write_state(name + '-evidence', receipt)
+            return receipt, '' if passed else 'NameError: pytest is not defined'
+        def run(cmd, **kwargs):
+            if cmd[:2] == ['git', 'add']:
+                self.assertEqual(cmd[3:], ['tests/t.py'])
+            elif cmd[:2] == ['git', 'commit']:
+                commits.append(cmd)
+            return SimpleNamespace(returncode=0)
+        with tempfile.TemporaryDirectory() as folder, patch.object(workers, 'ROOT', Path(folder)), \
+             patch.object(workers, 'git', side_effect=git), \
+             patch.object(workers, 'build_prompt', return_value='Make scoped change'), \
+             patch.object(workers, 'controlled_check', side_effect=check), \
+             patch.object(workers.uuid, 'uuid4', return_value=SimpleNamespace(hex=cycle)), \
+             patch.object(workers.subprocess, 'Popen', side_effect=spawn), \
+             patch.object(workers.subprocess, 'run', side_effect=run):
+            tasks = Path(folder) / 'tasks'; tasks.mkdir()
+            (tasks / 'hermes.json').write_text(json.dumps(dict(task_id='repair', allowed_files=['tests/t.py'])), encoding='utf-8')
+            self.assertEqual(workers.run_agent('hermes'), 0)
+            self.assertTrue(workers.read_state('hermes-task-result')['completed'])
+        self.assertEqual(checks, [False, True])
+        self.assertEqual(len(commits), 1)
+        self.assertIn('NameError', commands[1][-1])
 
 if __name__ == '__main__':
     unittest.main()

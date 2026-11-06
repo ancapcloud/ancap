@@ -15,6 +15,15 @@ Key identities:
 - `app/` = FastAPI backend
 - `frontend-app/` = Next.js frontend
 
+## Parallel agents (2026-11-04)
+
+OpenClaw and Hermes Agent work in this repo at the same time. The contract is `agent-bridge/CONTRACT.md`.
+
+- OpenClaw owns the site and how it looks for people and AI agents: `frontend-app/` plus public agent-facing site files.
+- Hermes Agent owns the rest of ANCAP: API, data, chain, mobile, tests, and non-UI docs.
+- Each agent reads the other's `agent-bridge/status/*.json` and inbox before editing, and does not change the other agent's files.
+- OpenClaw sends one combined Telegram report every 30 minutes. Hermes does not send that report.
+
 ## Key Decisions (do not re-evaluate — resolved)
 
 - **Pydantic schemas**: Always define request/response models in `app/schemas/*.py`, never locally inside router files. FastAPI evaluates Pydantic types at import time; locally-defined models cause `TypeError: Annotated[...] is not fully defined` at startup.
