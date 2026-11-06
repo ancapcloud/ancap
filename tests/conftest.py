@@ -15,10 +15,6 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 from starlette.testclient import TestClient
 
-# Set TEST_PLATFORM_ADMIN_ENABLED=1 for all tests to bypass admin checks
-if "TEST_PLATFORM_ADMIN_ENABLED" not in os.environ:
-    os.environ["TEST_PLATFORM_ADMIN_ENABLED"] = "1"
-
 # Set before importing app (engine reads from env). Force async URL for app.
 _default_test_db_url = (
     "postgresql+asyncpg://"
@@ -369,30 +365,6 @@ def client_unauth(client):
     bare = _BareClient(app=app, base_url="http://test")
     yield bare
     bare.close()
-
-
-@pytest.fixture(scope="session")
-def admin_client(client):
-    """Admin client for tests requiring platform admin privileges.
-
-    Uses the same default user token from ``client`` fixture. In production,
-    this would use a dedicated admin account from PLATFORM_ADMIN_USER_IDS.
-    For testing, we assume the default test user has admin privileges or
-    the route doesn't require strict admin checks.
-    """
-    # Reuse the client's default token (which may be an admin in test env)
-    yield client
-
-
-@pytest.fixture(scope="session")
-def regular_client(client):
-    """Regular (non-admin) client for tests checking auth restrictions.
-
-    Uses the same default user token from ``client`` fixture. This simulates
-    a normal user who should be blocked from admin-only routes.
-    """
-    # Reuse the client's default token (which is a regular user in test env)
-    yield client
 
 
 @pytest.fixture

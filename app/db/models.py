@@ -3883,37 +3883,6 @@ class UnknownExpenseRecord(Base):
     )
 
 
-class PacketTemplate(Base):
-    """ROP-06: Packet template for structured packet creation."""
-    __tablename__ = "packet_templates"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    name = Column(String(255), nullable=False)
-    slug = Column(String(120), nullable=False, unique=True)
-    description = Column(Text, nullable=True)
-    version = Column(Integer, nullable=False, server_default="1")
-    source_categories = Column(JSONB, nullable=False, default=list)
-    max_sources_per_packet = Column(Integer, nullable=False, default=10)
-    max_snapshots_per_source = Column(Integer, nullable=False, default=20)
-    max_claims_per_source = Column(Integer, nullable=False, default=50)
-    check_cooldown_seconds = Column(Integer, nullable=False, default=60)
-    retention_days = Column(Integer, nullable=False, default=30)
-    packet_structure = Column(JSONB, nullable=False, default=dict)
-    languages = Column(String(10), nullable=False, server_default="en")  # en, ru, uk, de, zh-Hant
-    status = Column(String(24), nullable=False, server_default="draft", index=True)  # draft, active, archived
-    is_active = Column(Boolean, nullable=False, server_default="False")
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
-
-    __table_args__ = (
-        UniqueConstraint("slug", name="uq_packet_template_slug"),
-        Index("ix_packet_templates_owner", "owner_user_id"),
-        Index("ix_packet_templates_status", "status"),
-        Index("ix_packet_templates_created", "created_at"),
-    )
-
-
 class OnboardingTemplate(Base):
     """ROP-05: Onboarding template for workflow runs."""
     __tablename__ = "onboarding_templates"

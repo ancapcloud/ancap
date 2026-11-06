@@ -348,7 +348,6 @@ ALL_ROUTERS = [
     workflow_ops.router,
     research_ops.router,
     quality_fixtures.router,
-    packet_templates.router,
     paid_api.router,
     leaderboards.router,
     growth_dashboard.router,

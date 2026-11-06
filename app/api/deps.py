@@ -207,14 +207,9 @@ async def require_platform_admin(
     """Require a platform operator account for admin-only actions.
 
     Production must configure PLATFORM_ADMIN_USER_IDS and/or PLATFORM_ADMIN_EMAILS.
-    If both allowlists are empty, fail closed. In test mode (TEST_PLATFORM_ADMIN_ENABLED=1),
-    bypass the check to allow unauthenticated or regular user tests.
+    If both allowlists are empty, fail closed.
     """
     settings = get_settings()
-    # Test mode: bypass admin checks
-    if settings.test_platform_admin_enabled:
-        return user_id
-    
     allowed_ids = set(settings.platform_admin_user_ids_allowlist)
     allowed_emails = set(settings.platform_admin_emails_allowlist)
     if not allowed_ids and not allowed_emails:

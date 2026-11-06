@@ -1,47 +1,32 @@
 [
   {
     "fixture_type": "contradiction",
-    "language": "zh-Hant",
-    "sample_id": "zh-contradict-001",
-    "expected_result": null,
+    "language": "en",
+    "sample_id": "cd-001",
+    "expected_result": "detected_contradiction",
     "actual_result": null,
-    "confidence_score": null,
-    "is_available": true
+    "confidence_score": 0.89,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
   },
   {
     "fixture_type": "contradiction",
     "language": "en",
-    "sample_id": "en-contradict-001",
-    "expected_result": null,
+    "sample_id": "cd-002",
+    "expected_result": "detected_contradiction",
     "actual_result": null,
-    "confidence_score": null,
-    "is_available": true
+    "confidence_score": 0.87,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
   },
   {
     "fixture_type": "contradiction",
-    "language": "ru",
-    "sample_id": "ru-contradict-001",
-    "expected_result": null,
+    "language": "zh-Hant",
+    "sample_id": "cd-003",
+    "expected_result": "detected_contradiction",
     "actual_result": null,
-    "confidence_score": null,
-    "is_available": true
-  },
-  {
-    "fixture_type": "contradiction",
-    "language": "de",
-    "sample_id": "de-contradict-001",
-    "expected_result": null,
-    "actual_result": null,
-    "confidence_score": null,
-    "is_available": true
-  },
-  {
-    "fixture_type": "contradiction",
-    "language": "fr",
-    "sample_id": "fr-contradict-001",
-    "expected_result": null,
-    "actual_result": null,
-    "confidence_score": null,
-    "is_available": true
+    "confidence_score": 0.82,
+    "is_available": true,
+    "expires_at": "2026-12-31T23:59:59Z"
   }
 ]
