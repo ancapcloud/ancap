@@ -1,3 +1,17 @@
+## 2026-11-06 — Release consolidation of local agent work
+
+- Integrated the local `fix/p0-release-unblock` work with master. Local duplicates
+  of ROP-03/05 (`093_quality_fixtures`, `ce103b55b383`, `rop06`, a second
+  `PacketTemplate` model) were dropped; master's deployed chain stays.
+- Reverted unsafe agent edits: `require_platform_admin` test bypass, unguarded
+  onboarding template routes, broken `session.init_db`, `Contract.proposed_by_agent_id`
+  without a migration, OpenRouter fallback default-on (stays operator opt-in).
+- ROP-04: renewal events API rebuilt (admin-only, Numeric(36,18) amounts,
+  guarded lifecycle, cohort endpoint), migration `106_renewal_events_rop04`.
+  No real renewal data is recorded; renewal rates are not claimed.
+- ACP RPC keeps explicit `{}` params; site explains operator-only AI reviews
+  and `/flows` scenarios in EN/RU/UK/DE/zh-Hant.
+
 ## Status corrections — 2026-11-04 (read first)
 
 This file is a work log, not the roadmap. Later corrections override earlier entries:
@@ -47,21 +61,6 @@ econcile_run_costs() function.
 - **Status**: ROP-03 fully completed (parts 1+2). Ready for ROP-04 economics/renewal.
 - **Next**: Proceed to ROP-04 — actual economics and renewal: complete provider/document reconciliation and external-payment events.
 
-> **2026-11-03 — ROP-03 tests: source schedules admin API tests completed (skipped)**
-
-- **Task**: Add test suite for source schedules admin API endpoints.
-- **Implementation**: Created `tests/api/test_source_schedules.py` with 5 test functions covering auth (401/403/404), CRUD operations (create, get by id, list, delete) and default schedule initialization. Tests use pytest fixtures for database and client setup. Code structure verified; tests skipped due to PostgreSQL not running.
-- **Commit**: `bdbc7047` — "test(rop-03): add source schedules admin API tests"
-- **Status**: ROP-03 fully completed (model, service, router, schemas, migration, tests). Tests skipped due to DB unavailability. Ready for next Research Operations subtask or active P0 continuation.
-- **Next**: Proceed to ROP-04 economics/renewal or other active priorities.
-
-> **2026-11-03 — ROP-03 part 2: source schedules default initialization in lifespan hook**
-
-- **Task**: Add default `source_schedules` initialization on application startup via lifespan hook.
-- **Implementation**: Edited `app/main.py` to import and call `save_default_schedules()` within the `@app.lifespan()` context manager. This ensures bounded source collection schedules are created automatically when the application starts, if not already present in the database.
-- **Git Status**: Change staged and committed with hash `d6891216` — "feat(rop-03): add source schedules default initialization in lifespan hook".
-- **Status**: ROP-03 part 2 completed. Default schedule initialization now runs on startup. Ready for next task or cycle conclusion.
-
 > **2026-10-31 — COST-03 completion: admin GET /cost-evidence/{id} endpoint**
 
 - **Task**: Complete COST-03 by implementing admin-only cost evidence retrieval with allocations.
@@ -78,19 +77,6 @@ econcile_run_costs() function.
 - **Commit**: `8cde6a2c` — existing commit includes ROP-04 implementation; no new commit needed.
 - **Status**: ROP-04 completed and verified. Ready for next Research Operations subtask or active P0 continuation.
 - **Next**: Proceed to ROP-05 onboarding templates verification.
-
-> **2026-11-03 — COST-06 completion: provider/document reconciliation tests passed**
-
-- **Task**: Complete COST-06 by verifying provider/document reconciliation and external-payment events.
-- **Implementation**: 
-  - Model `WorkflowCostEvidence` already contains ROP-04 fields: `provider_id`, `document_type`, `external_payment_event`, `delivery_event`.
-  - Service layer `app/services/workflow_costs.py` contains `reconcile_run_costs()` function.
-  - Router in `app/api/routers/workflow_cost_evidence.py` has POST `/cost-evidence/{id}/reconcile` endpoint with `reconciliation_status` and `delivery_event` parameters.
-  - Pydantic schemas in `app/schemas/workflow_costs.py` include `CostEvidenceReceipt` with `reconciliation_status`, `delivery_status` fields.
-  - Tests in `tests/api/test_workflow_cost_evidence_reconciliation.py` — 4/4 passed (test_reconcile_pending_to_verified, test_reconcile_invalid_status, test_delivery_event_update, test_reconciliation_with_allocations).
-  - Verification: Reconciliation status transitions (None → pending → verified), invalid status rejection, delivery event boolean updates confirmed.
-- **Status**: COST-06 fully completed and tested. All ROP-04/COST-03/04/05/06 requirements met.
-- **Next**: Proceed to ROP-05 onboarding templates or other active Research Operations priorities.
 
 > **2026-11-02 — COST-03 completion: admin GET /cost-evidence/{id} endpoint tested and verified**
 
@@ -123,31 +109,16 @@ econcile_run_costs() function.
 - **Verification**: Mock tests `tests/api/test_onboarding_templates_mock.py` — 10/10 passed. Verified: router exists and registered, schemas have correct fields, service functions callable, model definition correct, migration exists, lifespan hook present, template_type validation works, config_json defaults to empty dict.
 - **Commit**: `ba87feb0` — "feat(onboarding): add onboarding templates system with default templates and admin API" (includes test file creation).
 - **Status**: ROP-05 implementation complete and verified. Ready for next Research Operations subtask or active P0 continuation.
+- **Next**: Proceed to ROP-06 templates documentation and validation or other active Research Operations priorities.
 
-> **2026-11-03 — ROP-05 completion: packet templates implementation verified and committed**
+> **2026-11-01 — ROP-06 completion: templates documentation and validation completed**
 
-- **Task**: Implement ROP-05 by creating packet templates system with migration, model, service, router, schemas and tests.
-- **Implementation**: 
-  - Created `app/db/models.py` model `PacketTemplate` with fields: id, name, description, template_type, config_json, created_by_user_id, created_at, updated_at.
-  - Created migration `alembic/versions/rop06_add_packet_template_table.py` for table creation.
-  - Created `app/schemas/packet_templates.py` with Pydantic schemas: PacketTemplateCreate (name, slug, description, source_categories, max_sources_per_packet, max_snapshots_per_source, max_claims_per_source, check_cooldown_seconds, retention_days, packet_structure, languages, status), PacketTemplateUpdate, PacketTemplateResponse, PacketTemplateListResponse.
-  - Created `app/services/packet_templates.py` with service functions: create_template, get_template, list_templates, delete_template, save_default_templates, get_template_by_name_and_type.
-  - Created `app/api/routers/packet_templates.py` with admin-only endpoints: POST /v1/packet-templates/{id} (create), GET /{id}, GET / (list), DELETE /{id}.
-  - Registered router in `app/main.py` (imported, added to ALL_ROUTERS list).
-  - Added lifespan hook in `app/main.py` to call `save_default_templates(db)` on startup.
-  - Created tests: `tests/api/test_packet_templates.py`, `tests/api/test_research_ops_ci.py`, `tests/api/test_research_ops_deployment.py`.
-- **Commit**: `1eca48dd` — "feat(rop-05): add packet templates admin API and migration" (includes model, service, router, schemas, migration, tests).
-- **Status**: ROP-05 fully implemented and committed. Ready for next Research Operations subtask or active P0 continuation.
-- **Next**: Proceed to ROP-06 onboarding templates documentation or other active priorities.
-
-> **2026-11-03 — ROP-05 completion: onboarding templates documentation and validation completed**
-
-- **Task**: Complete ROP-05 by creating reusable documentation template for onboarding templates.
-- **Implementation**: Created `docs/onboarding-template.md` as a reusable documentation template with sections for API endpoints, request/response schemas, authentication requirements, error handling, and operational procedures. Template includes placeholders for model definitions, service layer details, router registration, and migration notes.
-- **Verification**: Code review confirms template structure matches existing implementation patterns in `app/db/models.py`, `app/schemas/onboarding.py`, `app/services/onboarding_templates.py`, `app/api/routers/onboarding_templates.py`. Tests exist in `tests/unit/test_onboarding_template.py` (10 tests for template validation, JSON schema verification, and documentation completeness). Template successfully used to document ROP-06 onboarding templates.
-- **Commit**: `19d40f10` — "feat(docs): add reusable onboarding templates documentation template"
-- **Status**: ROP-05 completed and documented. Ready for next Research Operations subtask or active P0 continuation.
-- **Next**: Proceed to ROP-06 or other active P0 priorities (Research Operations, COST, etc.).
+- **Task**: Complete ROP-06 by documenting onboarding templates specification and validating implementation.
+- **Implementation**: Created `docs/ONBOARDING_TEMPLATES_SPEC.md` with complete API specification, template types (quickstart/faucet/starter-pack), response schemas, validation rules, default templates table, security considerations, migration notes, and testing instructions. Documentation covers all endpoints, request/response models, and operational procedures.
+- **Verification**: Code review confirms documentation matches implementation in `app/db/models.py`, `app/schemas/onboarding.py`, `app/services/onboarding_templates.py`, `app/api/routers/onboarding_templates.py`, and migration file. All API endpoints documented with correct paths, auth requirements, and payload schemas. Tests exist in `tests/api/test_onboarding_templates.py` (9 tests for auth and CRUD operations). Documentation status marker added to spec file.
+- **Commit**: `3bb9d2fa` — existing commit includes ROP-06 documentation; no new commit needed.
+- **Status**: ROP-06 completed and documented. Ready for next Research Operations subtask or active P0 continuation.
+- **Next**: Proceed to ROP-07 or other active P0 priorities (Research Operations, COST, etc.).
 
 > **2026-11-02 — ROP-01 completion: CI acceptance tests and live-source verification**
 
@@ -329,14 +300,3 @@ No new tasks assigned. Next launch should review roadmap for next unchecked item
 
 - Full manual scan 40684992611 of 0ecad1f has zero open branch alerts after the residual fixes and four individually reviewed false-positive dispositions (#1 generated-token fingerprints, #309/#310 metadata-only reports, #480 required task join). Comments link the regression evidence; the pre-existing test-fixture false positive #482 was left unchanged. Raw SARIF still records dismissed findings; no rule or source path is excluded.
 - Expanded CodeQL push/PR triggers to scripts, tests and Alembic, and retained manual full analysis so future tool-only changes receive coverage. Added public HMAC client migration instructions to the commerce roadmap. Backend/full browser CI and final default-branch/dependency closure remain the release gate.
-
-
-> **2026-11-04 — Cleanup: duplicate import in app/main.py and orphaned migration removed**
-
-- **Task**: Fix duplicate import of renewal_events in app/main.py and remove duplicate/orphaned migration file rop04_add_renewal_events_table.py.
-- **Implementation**: 
-  - Removed duplicate `from app.schemas.renewal_events import RenewalEvent` import from app/main.py (kept only one import).
-  - Deleted orphaned/duplicate migration file `alembic/versions/rop04_add_renewal_events_table.py` (duplicate of existing `099_renewal_events_rop04.py`).
-- **Git Status**: Changes staged and ready for commit.
-- **Status**: Cleanup completed. Ready to commit fixes atomically with any other pending changes.
-- **Next**: Commit all changes (app/main.py fix, migration cleanup) and update PROGRESS.md record if needed.
