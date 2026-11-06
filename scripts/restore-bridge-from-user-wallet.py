@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import subprocess
 import sys
 import time
 
@@ -23,16 +22,21 @@ BRIDGE_RESERVE = "acp1qrz3ksr8gpv4ah208t5qvzxx0f4vc7a7ws7uqluz"
 CUSTODIAL_HOT = "acp1qzfdkqxfgyw9ysk99qsd79yxdfe338yd85vrqnp9"
 RPC = "http://acp-node:8545/rpc"
 RESTORE_ACP = os.environ.get("RESTORE_ACP", "800999.999999")
-WALLETD = os.environ.get("ACP_WALLETD_PATH", "walletd")
 
 
 def walletd(args: list[str], *, keystore_json: str | None = None) -> dict:
-    r = subprocess.run([WALLETD, *args], input=keystore_json, capture_output=True, text=True, timeout=180)
-    out = (r.stdout or "").strip()
-    payload = json.loads(out) if out else {}
-    if r.returncode != 0 or not payload.get("ok"):
-        raise RuntimeError(payload.get("error") or r.stderr or "walletd failed")
-    return payload["result"]
+    from app.services.walletd_process import run_walletd
+
+    private_args = list(args)
+    if keystore_json is not None:
+        for index in range(len(private_args) - 1):
+            if private_args[index:index + 2] == ["--keystore-file", "/dev/stdin"]:
+                private_args[index:index + 2] = ["--keystore-json", keystore_json]
+                break
+        else:
+            raise ValueError("A private keystore input target is required")
+    return run_walletd(private_args, timeout_s=180)
+
 
 
 async def main() -> int:

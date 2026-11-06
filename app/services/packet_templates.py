@@ -1,106 +1,148 @@
-"""Service layer for packet templates (ROP-06)."""
+"""Service layer for ROP-05 packet templates."""
+
+from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID
-from typing import List, Optional, Dict, Any
+from typing import Any
+from uuid import UUID, uuid4
 
-from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.db.models import PacketTemplate
 
 
-class PacketTemplatesService:
-    """Service for managing packet templates."""
+class DuplicateTemplateSlug(ValueError):
+    """A reusable packet template already owns this slug."""
 
-    @staticmethod
-    async def create_template(
-        db: Session,
-        owner_user_id: Optional[UUID],
-        name: str,
-        slug: str,
-        description: Optional[str] = None,
-        source_categories: Optional[List[str]] = None,
-        max_sources_per_packet: int = 10,
-        max_snapshots_per_source: int = 20,
-        max_claims_per_source: int = 50,
-        check_cooldown_seconds: int = 60,
-        retention_days: int = 30,
-        packet_structure: Optional[Dict[str, Any]] = None,
-        languages: str = "en",
-        status: str = "draft",
-    ) -> PacketTemplate:
-        """Create a new packet template."""
-        if source_categories is None:
-            source_categories = []
-        if packet_structure is None:
-            packet_structure = {}
 
-        template = PacketTemplate(
-            owner_user_id=owner_user_id,
-            name=name,
-            slug=slug,
-            description=description,
-            source_categories=source_categories,
-            max_sources_per_packet=max_sources_per_packet,
-            max_snapshots_per_source=max_snapshots_per_source,
-            max_claims_per_source=max_claims_per_source,
-            check_cooldown_seconds=check_cooldown_seconds,
-            retention_days=retention_days,
-            packet_structure=packet_structure,
-            languages=languages,
-            status=status,
-        )
+async def create_template(
+    session: AsyncSession,
+    *,
+    name: str,
+    slug: str,
+    description: str | None = None,
+    source_categories: list[str] | None = None,
+    max_sources_per_packet: int = 10,
+    max_snapshots_per_source: int = 20,
+    max_claims_per_source: int = 50,
+    check_cooldown_seconds: int = 60,
+    retention_days: int = 30,
+    packet_structure: dict[str, Any] | None = None,
+    languages: str = "en",
+    status: str = "draft",
+    owner_user_id: UUID | None = None,
+) -> PacketTemplate:
+    now = datetime.now(timezone.utc)
+    template = PacketTemplate(
+        id=uuid4(),
+        owner_user_id=owner_user_id,
+        name=name,
+        slug=slug,
+        description=description,
+        source_categories=list(source_categories or []),
+        max_sources_per_packet=max_sources_per_packet,
+        max_snapshots_per_source=max_snapshots_per_source,
+        max_claims_per_source=max_claims_per_source,
+        check_cooldown_seconds=check_cooldown_seconds,
+        retention_days=retention_days,
+        packet_structure=dict(packet_structure or {}),
+        languages=languages,
+        status=status,
+        is_active=status == "active",
+        created_at=now,
+        updated_at=now,
+    )
+    try:
+        async with session.begin_nested():
+            session.add(template)
+            await session.flush()
+    except IntegrityError:
+        existing = await session.scalar(select(PacketTemplate.id).where(PacketTemplate.slug == slug))
+        if existing is not None:
+            raise DuplicateTemplateSlug("Template slug already exists") from None
+        raise
+    return template
 
-        db.add(template)
-        await db.flush()
-        return template
 
-    @staticmethod
-    async def get_template(db: Session, template_id: UUID) -> Optional[PacketTemplate]:
-        """Get a packet template by ID."""
-        stmt = select(PacketTemplate).where(PacketTemplate.id == template_id)
-        result = await db.execute(stmt)
-        return result.scalar_one_or_none()
+async def get_template(session: AsyncSession, template_id: UUID) -> PacketTemplate | None:
+    result = await session.execute(select(PacketTemplate).where(PacketTemplate.id == template_id))
+    return result.scalar_one_or_none()
 
-    @staticmethod
-    async def list_templates(
-        db: Session,
-        owner_user_id: Optional[UUID] = None,
-        status: Optional[str] = None,
-        limit: int = 100,
-        offset: int = 0,
-    ) -> tuple[List[PacketTemplate], int]:
-        """List packet templates with optional filtering."""
-        stmt = select(PacketTemplate)
-        if owner_user_id is not None:
-            stmt = stmt.where(PacketTemplate.owner_user_id == owner_user_id)
-        if status is not None:
-            stmt = stmt.where(PacketTemplate.status == status)
 
-        stmt = stmt.order_by(PacketTemplate.created_at.desc())
-        stmt = stmt.offset(offset).limit(limit)
+async def list_templates(
+    session: AsyncSession,
+    *,
+    status: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> tuple[list[PacketTemplate], int]:
+    query = select(PacketTemplate)
+    count_query = select(func.count()).select_from(PacketTemplate)
+    if status is not None:
+        query = query.where(PacketTemplate.status == status)
+        count_query = count_query.where(PacketTemplate.status == status)
+    result = await session.execute(
+        query.order_by(PacketTemplate.created_at.desc()).offset(offset).limit(limit)
+    )
+    templates = list(result.scalars().all())
+    total = int((await session.execute(count_query)).scalar_one())
+    return templates, total
 
-        result = await db.execute(stmt)
-        templates = result.scalars().all()
 
-        total_stmt = select(func.count()).select_from(PacketTemplate)
-        if owner_user_id is not None:
-            total_stmt = total_stmt.where(PacketTemplate.owner_user_id == owner_user_id)
-        if status is not None:
-            total_stmt = total_stmt.where(PacketTemplate.status == status)
-
-        total_result = await db.execute(total_stmt)
-        total = total_result.scalar()
-
-        return templates, total
-
-    @staticmethod
-    async def delete_template(db: Session, template_id: UUID) -> bool:
-        """Delete a packet template."""
-        template = await db.get(PacketTemplate, template_id)
-        if template:
-            db.delete(template)
-            await db.flush()
-            return True
+async def delete_template(session: AsyncSession, template_id: UUID) -> bool:
+    template = await get_template(session, template_id)
+    if not template:
         return False
+    await session.delete(template)
+    await session.flush()
+    return True
+
+
+async def save_default_templates(session: AsyncSession) -> int:
+    """Insert reusable category/structure defaults; never client documents."""
+    defaults = [
+        {
+            "name": "Crypto News Aggregator",
+            "slug": "crypto-news-aggregator",
+            "description": "Reusable categories/structure for crypto news packets.",
+            "source_categories": ["news", "social", "official"],
+            "packet_structure": {
+                "title": {"type": "string", "required": True},
+                "summary": {"type": "string", "required": False},
+                "sources": {"type": "array", "required": True},
+            },
+            "status": "active",
+        },
+        {
+            "name": "General Research Packet",
+            "slug": "general-research-packet",
+            "description": "Reusable categories/structure for general research packets.",
+            "source_categories": ["news", "social", "official", "academic"],
+            "packet_structure": {
+                "title": {"type": "string", "required": True},
+                "summary": {"type": "string", "required": False},
+                "sources": {"type": "array", "required": True},
+            },
+            "status": "active",
+        },
+    ]
+    inserted = 0
+    for data in defaults:
+        existing = await session.execute(
+            select(PacketTemplate).where(PacketTemplate.slug == data["slug"])
+        )
+        if existing.scalar_one_or_none() is not None:
+            continue
+        await create_template(
+            session,
+            name=data["name"],
+            slug=data["slug"],
+            description=data["description"],
+            source_categories=data["source_categories"],
+            packet_structure=data["packet_structure"],
+            status=data["status"],
+        )
+        inserted += 1
+    return inserted

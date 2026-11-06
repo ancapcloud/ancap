@@ -48,12 +48,13 @@ def _balance(client, token: str, owner_type: str, owner_id: str, currency: str =
     return Decimal("0")
 
 
-def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str):
-    strat = client.post("/v1/strategies", json={"name": unique_name("ms_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": owner_agent_id})
+def _create_strategy_and_pool(client, owner_agent_id: str, base_vertical_id: str, token: str | None = None):
+    auth = {"Authorization": f"Bearer {token}"} if token else {}
+    strat = client.post("/v1/strategies", json={"name": unique_name("ms_strategy"), "vertical_id": base_vertical_id, "owner_agent_id": owner_agent_id}, headers=auth)
     assert strat.status_code == 201, strat.text
     sid = strat.json()["id"]
     workflow = {"vertical_id": base_vertical_id, "version": "1.0", "steps": [{"id": "s1", "action": "const", "args": {"value": 1}}]}
-    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow})
+    ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow}, headers=auth)
     assert ver.status_code == 201, ver.text
     vid = ver.json()["id"]
     pool = client.post("/v1/pools", json={"name": unique_name("ms_pool"), "risk_profile": "experimental"})
@@ -176,7 +177,7 @@ def test_per_run_milestone_budget_cap(client, base_vertical_id):
         json={"status": "active"},
     )
 
-    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id)
+    vid, pool_id = _create_strategy_and_pool(client, worker, base_vertical_id, token)
     before = _balance(client, token, "agent", worker)
 
     r1 = client.post(

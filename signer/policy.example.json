@@ -1,0 +1,14 @@
+{
+  "key_id": "custodial-hot",
+  "chain": "acp-native",
+  "chain_id": 1001,
+  "source_address": "REPLACE_WITH_VERIFIED_EXISTING_SOURCE_ADDRESS",
+  "rpc_url": "http://127.0.0.1:8545/rpc",
+  "keystore_file": "/var/lib/ancap-signer/keys/custodial-hot.keystore.json",
+  "approval_public_key": "REPLACE_WITH_INDEPENDENT_OPERATOR_ED25519_PUBLIC_KEY_BASE64",
+  "automatic": false,
+  "destinations": [],
+  "max_units_per_transaction": "0",
+  "max_units_per_day": "0",
+  "max_fee_units": "0"
+}

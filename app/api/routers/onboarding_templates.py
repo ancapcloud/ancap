@@ -2,7 +2,6 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DbSession, require_platform_admin
 from app.services.onboarding_templates import (

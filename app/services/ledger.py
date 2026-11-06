@@ -2,7 +2,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, func, case
+from sqlalchemy import case, func, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +33,18 @@ async def get_or_create_account(
         session.add(acc)
         await session.flush()
     return acc
+
+
+async def lock_account_for_spend(session: AsyncSession, account_id: UUID | str) -> None:
+    """Serialize balance-check-then-debit for one account until the transaction ends.
+
+    Every path that checks a balance and then debits it must take this lock
+    first, otherwise two concurrent debits can both see the same balance.
+    """
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(hashtext(:k))"),
+        {"k": f"ledger_spend:{account_id}"},
+    )
 
 
 async def append_event(

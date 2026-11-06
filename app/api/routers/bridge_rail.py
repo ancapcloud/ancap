@@ -1,6 +1,8 @@
 """wACP / BSC custodial clearing rail HTTP surface (docs/bridge-spec-v1.md)."""
 from __future__ import annotations
 
+import hmac
+
 import logging
 import re
 from datetime import datetime, timezone
@@ -185,7 +187,7 @@ def _serialize_operation(op: BridgeOperation) -> BridgeOperationPublic:
 
 def _require_bridge_operator_secret(settings_secret: str | None, provided_secret: str | None) -> None:
     secret = (settings_secret or "").strip()
-    if not secret or (provided_secret or "").strip() != secret:
+    if not secret or not hmac.compare_digest((provided_secret or "").strip().encode(), secret.encode()):
         raise HTTPException(status_code=403, detail="Invalid bridge operator secret")
 
 

@@ -95,8 +95,9 @@ Local verification on a dedicated disposable PostgreSQL 16 database:
 tests/unit/test_workflow_costs.py tests/unit/test_workflow_value_estimates.py -q`
 — **44 passed**, including private access, conflicting/concurrent writes,
 precision, invalid-batch rejection, split allocations, run deletion and prior
-assessment regressions. Alembic `092 -> 091 -> 092` succeeded. These are local
-checks; CI, deployment and real provider-document reconciliation are pending.
+assessment regressions. Alembic `092 -> 091 -> 092` succeeded. CI and deployment
+succeeded on a9395368 (Backend CI Actions 41645358246, Deploy Actions 41645358135).
+Real provider-document reconciliation remains open.
 
 | Priority | Work | Owner | Acceptance / dependency | State |
 | --- | --- | --- | --- | --- |
@@ -134,3 +135,5 @@ Data room: company/bank/ownership; IP/license/contractor rights; fixed release/d
 Stop/pivot when no recurring budgeted task appears, useful pilots do not renew, manual work erases contribution, every customer needs custom code, token payment obstructs a lawful purchase path, GMV fails to create platform income or customer concentration masks demand. Do not react by funding more unrelated verticals. No new token incentives, artificial turnover, universal agent ecosystem or foundation-model project is part of this queue.
 
 - [x] Workflow catalog discovery (2026-11-03, local): exact topic filter and shareable area/search/topic selections on /ai/workflows. Verified with Chromium. References: [Gumroad Discover](https://gumroad.com/help/article/79-gumroad-discover), [n8n templates](https://n8n.io/workflows/). Sales impact unmeasured.
+
+- Robinhood Chain listing workflow: one captured listing-pack run includes a verified private draft, downloadable exchange packet, operator review and mainnet catalog publication. Testnet review is isolated. Configure ROBINHOOD_MAINNET_RPC_URL and ROBINHOOD_TESTNET_RPC_URL for production. Operator queue: /admin/robinhood-listings.

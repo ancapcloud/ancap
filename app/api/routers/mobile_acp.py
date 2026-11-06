@@ -4,6 +4,8 @@ See docs/mobile/API_MOBILE.md and docs/mobile/ROADMAP.md.
 """
 from __future__ import annotations
 
+import hmac
+
 import hashlib
 import logging
 import re
@@ -582,7 +584,7 @@ def _session_token_matches(execution_id: str, supplied: str | None) -> bool:
     expected = _get_session_token(execution_id)
     if not expected or not supplied:
         return False
-    return supplied.strip() == expected
+    return hmac.compare_digest(supplied.strip().encode(), expected.encode())
 
 
 def _can_access_execution(execution_id: str, user_id: str | None, session_token: str | None) -> bool:

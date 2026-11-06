@@ -62,12 +62,15 @@ def test_wallet_restore_uses_stdin_not_argv_or_plaintext_files(monkeypatch):
     def run(command, **kwargs):
         observed.append((command, kwargs))
         return SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {'address': 'fixture'}}))
-    monkeypatch.setattr(module.subprocess, 'run', run)
+    from app.services import walletd_process
+    monkeypatch.setattr(walletd_process, 'walletd_command', lambda: ['trusted-walletd'])
+    monkeypatch.setattr(walletd_process.subprocess, 'run', run)
     result = module.walletd(['address', '--keystore-file', '/dev/stdin'], keystore_json='fixture-private-key')
     assert result == {'address': 'fixture'}
     command, kwargs = observed[0]
     assert 'fixture-private-key' not in command
-    assert kwargs['input'] == 'fixture-private-key'
+    assert json.loads(kwargs['input']) == ['address', '--keystore-json', 'fixture-private-key']
+    assert command == ['trusted-walletd', '--request-stdin']
     source = Path(module.__file__).read_text(encoding='utf-8')
     assert 'f.write(keystore_json)' not in source
     assert 'HOT_KS_PATH' not in source

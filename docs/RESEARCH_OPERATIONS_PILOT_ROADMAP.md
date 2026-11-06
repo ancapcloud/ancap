@@ -142,8 +142,11 @@ records. No new migration beyond 093 is needed for packet JSON in Studio.
 
 ### ROP-05 — repeatable onboarding and validated integrations
 
-- [ ] Copy only reusable settings, source categories and packet templates,
+- [x] Copy only reusable settings, source categories and packet templates,
   never previous client documents, credentials, identifiers or personal data.
+  Onboarding templates are on `master`; packet templates admin API + migration
+  `103_packet_templates_rop05` provide reusable categories/structure only
+  (behavior integrated from Theodore work formerly mislabeled ROP-06).
 - [ ] Validate a proposed 30% reduction in comparable onboarding effort before
   expanding template tooling. Add integrations only for observed paid processes.
 

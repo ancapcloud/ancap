@@ -2,7 +2,7 @@ from app.services.recoverable_errors import report_optional_failure
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.api.deps import DbSession, require_auth
 from app.config import get_settings
@@ -134,7 +134,7 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
     await _enforce_auth_rate_limit(
         request,
         scope="auth_login",
-        subject=body.email,
+        subject=body.email.lower(),
         limit=8,
         window_seconds=300,
     )
@@ -142,6 +142,13 @@ async def login(body: AuthLoginRequest, request: Request, response: Response, se
     q = select(User).where(User.email == body.email)
     r = await session.execute(q)
     user = r.scalar_one_or_none()
+    if user is None:
+        # New accounts are stored lower-cased; accept any casing when it maps
+        # to exactly one account (legacy case-variant duplicates stay exact-only).
+        candidates = (
+            await session.execute(select(User).where(func.lower(User.email) == body.email.lower()).limit(2))
+        ).scalars().all()
+        user = candidates[0] if len(candidates) == 1 else None
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
@@ -287,17 +294,21 @@ async def create_user(body: UserCreateRequest, request: Request, response: Respo
     await _enforce_auth_rate_limit(
         request,
         scope="auth_register",
-        subject=body.email,
+        subject=body.email.lower(),
         limit=6,
         window_seconds=3600,
     )
     await verify_turnstile(request, body.turnstile_token, "register")
-    q = select(User).where(User.email == body.email)
+    # Store new accounts with a lower-cased address and refuse case-only
+    # variants of an existing account (e.g. "ADMIN@x.com" vs "admin@x.com"),
+    # which would otherwise be separate users sharing one mailbox.
+    normalized_email = body.email.strip().lower()
+    q = select(User.id).where(func.lower(User.email) == normalized_email).limit(1)
     r = await session.execute(q)
     if r.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     user = User(
-        email=body.email,
+        email=normalized_email,
         password_hash=hash_password(body.password),
         display_name=body.display_name,
     )
@@ -347,7 +358,7 @@ async def password_forgot(body: PasswordForgotRequest, request: Request, session
     await _enforce_auth_rate_limit(
         request,
         scope="auth_password_forgot",
-        subject=body.email,
+        subject=body.email.lower(),
         limit=5,
         window_seconds=900,
     )

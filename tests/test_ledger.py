@@ -2,7 +2,8 @@
 import uuid
 
 
-from tests.conftest import unique_email, unique_name
+from tests.conftest import approve_vertical_as_admin, unique_email, unique_name
+
 
 
 def test_deposit_and_balance(client):
@@ -85,7 +86,7 @@ def test_allocate_blocks_unowned_pool_for_authenticated_user(client):
         },
     )
     vid = vert.json()["id"]
-    client.post(f"/v1/verticals/{vid}/review", json={"decision": "approve"})
+    approve_vertical_as_admin(client, vid)
     strat = client.post(
         "/v1/strategies",
         json={
@@ -170,7 +171,7 @@ def test_allocate_requires_matching_pool_owner(client):
         },
     )
     vid = vert.json()["id"]
-    client.post(f"/v1/verticals/{vid}/review", json={"decision": "approve"})
+    approve_vertical_as_admin(client, vid)
     strat = client.post(
         "/v1/strategies",
         json={
@@ -210,7 +211,7 @@ def test_allocate_pool_not_found(client):
         },
     )
     vid = vert.json()["id"]
-    client.post(f"/v1/verticals/{vid}/review", json={"decision": "approve"})
+    approve_vertical_as_admin(client, vid)
     strat = client.post(
         "/v1/strategies",
         json={"name": unique_name("snf"), "vertical_id": vid, "owner_agent_id": agent.json()["id"]},

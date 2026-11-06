@@ -1,159 +1,133 @@
-"""ROP-05: Onboarding templates service."""
-from typing import Optional, List
+"""ROP-05: Onboarding templates service for reuse."""
+from uuid import UUID
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.models import OnboardingTemplate
 
-# Default templates for ROP-05
-DEFAULT_TEMPLATES = [
-    {
-        "name": "Crypto Client Onboarding",
-        "description": "Template for crypto-focused clients with news and social sources",
-        "template_type": "crypto",
-        "source_categories": ["news", "social", "official"],
-        "packet_template": {
-            "sections": ["market_summary", "price_alerts", "social_sentiment"],
-            "frequency_hours": 6,
-            "max_sources": 10
-        },
-        "config_json": {
-            "model_params": {"temperature": 0.7, "max_tokens": 500},
-            "prompts": {
-                "market_summary": "Summarize crypto market movements...",
-                "price_alerts": "Alert on significant price changes..."
-            }
-        },
-        "validation_config": {
-            "min_sources": 3,
-            "max_age_hours": 24,
-            "confidence_threshold": 0.7
-        }
-    },
-    {
-        "name": "Social Media Monitoring",
-        "description": "Template for social media sentiment analysis",
-        "template_type": "social",
-        "source_categories": ["twitter", "telegram", "reddit"],
-        "packet_template": {
-            "sections": ["trending_topics", "sentiment_analysis", "viral_content"],
-            "frequency_hours": 3,
-            "max_sources": 20
-        },
-        "config_json": {
-            "model_params": {"temperature": 0.8, "max_tokens": 400},
-            "prompts": {
-                "sentiment_analysis": "Analyze sentiment of social posts..."
-            }
-        },
-        "validation_config": {
-            "min_sources": 5,
-            "max_age_hours": 12,
-            "confidence_threshold": 0.6
-        }
-    },
-    {
-        "name": "News Aggregation",
-        "description": "Template for news aggregation and verification",
-        "template_type": "news",
-        "source_categories": ["official", "news", "press"],
-        "packet_template": {
-            "sections": ["breaking_news", "verified_stories", "editorial_summary"],
-            "frequency_hours": 1,
-            "max_sources": 15
-        },
-        "config_json": {
-            "model_params": {"temperature": 0.3, "max_tokens": 600},
-            "prompts": {
-                "breaking_news": "Identify and summarize breaking news..."
-            }
-        },
-        "validation_config": {
-            "min_sources": 2,
-            "max_age_hours": 48,
-            "confidence_threshold": 0.8
-        }
-    }
-]
 
-
-async def get_template_by_id(db: AsyncSession, template_id: str) -> Optional[OnboardingTemplate]:
-    """Get onboarding template by ID."""
-    return await db.get(OnboardingTemplate, template_id)
-
-
-async def list_templates(db: AsyncSession, owner_user_id: Optional[str] = None, is_active: bool = True, limit: int = 100) -> List[OnboardingTemplate]:
-    """List onboarding templates with optional filtering."""
-    query = db.query(OnboardingTemplate)
-    
-    if owner_user_id:
-        query = query.filter(OnboardingTemplate.created_by_user_id == owner_user_id)
-    if is_active:
-        query = query.filter(OnboardingTemplate.is_active == True)
-    
-    results = await query.order_by(OnboardingTemplate.created_at.desc()).limit(limit).all()
-    return results
-
-
-async def create_template(db: AsyncSession, name: str, description: Optional[str] = None, 
-                          template_type: str = "general", config_json: Optional[dict] = None,
-                          source_categories: Optional[list] = None, packet_template: Optional[dict] = None,
-                          validation_config: Optional[dict] = None) -> OnboardingTemplate:
+async def create_template(
+    session: AsyncSession,
+    *,
+    name: str,
+    description: str | None = None,
+    template_type: str,
+    config_json: dict,
+    created_by_user_id: UUID | None = None,
+) -> OnboardingTemplate:
     """Create a new onboarding template."""
     template = OnboardingTemplate(
         name=name,
         description=description,
         template_type=template_type,
         config_json=config_json,
-        source_categories=source_categories,
-        packet_template=packet_template,
-        validation_config=validation_config,
-        created_by_user_id=None  # Admin creates templates
+        created_by_user_id=created_by_user_id,
     )
-    db.add(template)
-    await db.commit()
+    session.add(template)
+    await session.flush()
     return template
 
 
-async def update_template(db: AsyncSession, template_id: str, **kwargs) -> Optional[OnboardingTemplate]:
-    """Update an existing onboarding template."""
-    template = await get_template_by_id(db, template_id)
-    if not template:
-        return None
-    
-    for key, value in kwargs.items():
-        if hasattr(template, key):
-            setattr(template, key, value)
-    
-    await db.commit()
-    return template
+async def get_template(session: AsyncSession, *, template_id: UUID) -> OnboardingTemplate | None:
+    """Get template by ID."""
+    result = await session.execute(select(OnboardingTemplate).where(OnboardingTemplate.id == template_id))
+    return result.scalar_one_or_none()
 
 
-async def delete_template(db: AsyncSession, template_id: str) -> bool:
-    """Delete an onboarding template."""
-    template = await get_template_by_id(db, template_id)
+async def list_templates(
+    session: AsyncSession,
+    *,
+    template_type: str | None = None,
+    created_by_user_id: UUID | None = None,
+    limit: int = 100,
+) -> list[OnboardingTemplate]:
+    """List templates with optional filters."""
+    query = select(OnboardingTemplate)
+    if template_type:
+        query = query.where(OnboardingTemplate.template_type == template_type)
+    if created_by_user_id:
+        query = query.where(OnboardingTemplate.created_by_user_id == created_by_user_id)
+    
+    result = await session.execute(query.order_by(OnboardingTemplate.created_at.desc()).limit(limit))
+    return result.scalars().all()
+
+
+async def delete_template(session: AsyncSession, *, template_id: UUID) -> bool:
+    """Delete a template."""
+    template = await get_template(session, template_id=template_id)
     if not template:
         return False
-    
-    await db.delete(template)
-    await db.commit()
+    await session.delete(template)
+    await session.commit()
     return True
 
 
-async def import_default_templates(db: AsyncSession) -> List[OnboardingTemplate]:
-    """Import default templates for ROP-05."""
-    existing_names = {str(t.name) for t in await list_templates(db, is_active=True)}
+async def save_default_templates(session: AsyncSession) -> None:
+    """Save default onboarding templates for reuse."""
+    from app.db.models import OnboardingTemplate
     
-    for template_data in DEFAULT_TEMPLATES:
-        if template_data["name"] not in existing_names:
-            template = OnboardingTemplate(
-                name=template_data["name"],
-                description=template_data["description"],
-                template_type=template_data["template_type"],
-                config_json=template_data.get("config_json"),
-                source_categories=template_data.get("source_categories"),
-                packet_template=template_data.get("packet_template"),
-                validation_config=template_data.get("validation_config")
-            )
-            db.add(template)
+    default_templates = [
+        {
+            "name": "Quickstart Run",
+            "description": "Default quickstart workflow run template",
+            "template_type": "quickstart",
+            "config_json": {
+                "owner_agent_id_field": True,
+                "auto_create_run": True,
+                "redirect_to_run_page": True,
+            },
+        },
+        {
+            "name": "ACP Faucet Claim",
+            "description": "Default ACP faucet claim template",
+            "template_type": "faucet",
+            "config_json": {
+                "currency": "ACP",
+                "default_amount": 10,
+                "agent_id_field": True,
+            },
+        },
+        {
+            "name": "Starter Pack Assignment",
+            "description": "Default starter pack assignment template",
+            "template_type": "starter-pack",
+            "config_json": {
+                "default_code": "default",
+                "agent_id_field": True,
+            },
+        },
+    ]
     
-    await db.commit()
-    return await list_templates(db, is_active=True)
+    for tmpl_data in default_templates:
+        # Check if template with same name and type already exists
+        existing = await get_template_by_name_and_type(session, name=tmpl_data["name"], template_type=tmpl_data["template_type"])
+        if existing:
+            continue  # Skip if already exists
+        
+        template = OnboardingTemplate(
+            name=tmpl_data["name"],
+            description=tmpl_data["description"],
+            template_type=tmpl_data["template_type"],
+            config_json=tmpl_data["config_json"],
+            created_by_user_id=None,  # Admin-created
+        )
+        session.add(template)
+    
+    await session.flush()
+
+
+async def get_template_by_name_and_type(session: AsyncSession, *, name: str, template_type: str) -> OnboardingTemplate | None:
+    """Get template by name and type.
+
+    Existing databases may contain duplicates from earlier test/manual runs;
+    startup seeding must tolerate them instead of raising MultipleResultsFound.
+    """
+    from app.db.models import OnboardingTemplate
+    result = await session.execute(
+        select(OnboardingTemplate)
+        .where(OnboardingTemplate.name == name)
+        .where(OnboardingTemplate.template_type == template_type)
+        .limit(1)
+    )
+    return result.scalar_one_or_none()

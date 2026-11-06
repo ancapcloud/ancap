@@ -487,3 +487,40 @@ def reset_test_runtime_state(request):
     clear_rate_limit_state()
     yield
     clear_rate_limit_state()
+
+
+@pytest.fixture
+def platform_admin(client, monkeypatch):
+    """Make the session's default user a platform admin for this test only.
+
+    Moderation/risk routes (vertical review, risk kill/limits, dispute verdicts,
+    AI reviews) are admin-only since the 2026-11-04 security audit.
+    """
+    from app.services.auth import decode_token
+
+    user_id = decode_token(client.default_token or "")
+    assert user_id, "default test user has no token"
+    monkeypatch.setenv("PLATFORM_ADMIN_USER_IDS", user_id)
+    get_settings.cache_clear()
+    yield user_id
+    get_settings.cache_clear()
+
+
+def approve_vertical_as_admin(client, vertical_id: str):
+    """Approve a vertical with temporary platform-admin rights for the default user.
+
+    Use where a test must otherwise run as a normal (non-admin) user.
+    """
+    from app.services.auth import decode_token
+
+    previous = os.environ.get("PLATFORM_ADMIN_USER_IDS")
+    os.environ["PLATFORM_ADMIN_USER_IDS"] = decode_token(client.default_token or "") or ""
+    get_settings.cache_clear()
+    try:
+        return client.post(f"/v1/verticals/{vertical_id}/review", json={"decision": "approve"})
+    finally:
+        if previous is None:
+            os.environ.pop("PLATFORM_ADMIN_USER_IDS", None)
+        else:
+            os.environ["PLATFORM_ADMIN_USER_IDS"] = previous
+        get_settings.cache_clear()

@@ -214,6 +214,7 @@ def test_per_run_contract_payout_uses_succeeded_runs(client, base_vertical_id):
       "vertical_id": base_vertical_id,
       "owner_agent_id": worker,
     },
+    headers={"Authorization": f"Bearer {token}"},
   )
   assert strat.status_code == 201, strat.text
   sid = strat.json()["id"]
@@ -224,7 +225,11 @@ def test_per_run_contract_payout_uses_succeeded_runs(client, base_vertical_id):
       {"id": "s1", "action": "const", "args": {"value": 1}, "save_as": "x"},
     ],
   }
-  ver = client.post(f"/v1/strategies/{sid}/versions", json={"semver": "1.0.0", "workflow": workflow})
+  ver = client.post(
+    f"/v1/strategies/{sid}/versions",
+    json={"semver": "1.0.0", "workflow": workflow},
+    headers={"Authorization": f"Bearer {token}"},
+  )
   assert ver.status_code == 201, ver.text
   vid = ver.json()["id"]
 

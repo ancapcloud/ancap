@@ -1,16 +1,63 @@
-2026-11-05 [x] user-authorized continuous OpenClaw/Hermes development enabled: automatic scoped planning from tracked code and current roadmap, task-specific checks, local commits, preserved failed attempts, independent loops and Windows logon task. Verified frontend commit 37494589 and automatic next-task execution; Hermes diagnostic repair is active. Nineteen coordinator/continuity regressions and native OpenClaw scope checks passed; scheduled logon task is running. Contract v5 supersedes finite-queue-only mode.
+## Developer social-engineering protection — 2026-11-04
 
-2026-11-05 [x] actual agent development accepted: flows demo UI d9f66793 (Vitest/tsc) and missing-token test 9dd881ea (4 pytest). Ticket constraints run before tests; no-change cycles are rejected. Finite queues are completed; ongoing autonomous roadmap planning is not configured.
+[~] Defense-in-depth implementation: private-stdin walletd transport, scrubbed
+child environment, static helper errors, absolute production executable path,
+credential-free CI checkout and a bounded no-network external-code runner.
+Native parser and real Docker/stdlib isolation probes passed locally.
+Theodore/OpenClaw tools were changed from full/off to per-session Docker,
+no host workspace/network/elevated access; installed-schema validation passed.
+A restricted ACP-only signer worker provides expiring independent approvals,
+atomic durable daily caps and replay/uncertain-outcome handling. It is not
+connected to production: the operator confirmed that a separate signer host and
+clean operator device still need preparation. Raw production keys were not moved.
+The legacy API secret mount and non-ACP adapters remain explicit cutover gates.
+Implementation, validation and remaining host gates:
+`docs/DEVELOPER_SOCIAL_ENGINEERING_DEFENSE.md`. CI/release acceptance pending.
 
-2026-11-05 agent queue correction: the supervisor and Gateway were healthy, but both recovery-only queues were exhausted. Queued actual frontend flows-demo UI and backend RPC header-isolation tasks; fixed UTF-8 console reporting and made idle reports explicitly say no active development. Completion evidence is recorded in agent-bridge/status/*-last-result.json; do not confuse running PID with accepted results.
+## GitHub Actions documentation regression — 2026-11-03
 
-2026-11-04 [x] local agent runtime recovery: preserved both WIP trees, removed freeform inbox fallback, enforced task file scopes before writes, isolated role failures, and verified two new scoped tasks/commits. Active runtime: agent-bridge/coordinator.py; CONTRACT.md v4. Empty queue means ready, not failed. Reboot autostart remains unverified.
+[x] Push CI for c8bd9142 exposed two documentation-wrapper tests that contacted
+live GitHub despite RUN_ANCAP_DOCS_LIVE_VERIFY=0. A cross-repository branch
+protection request failed under the Actions token, blocking Backend CI and the
+release gate. Both ordinary wrapper CLI tests now use a deterministic child helper;
+exit code 2 on drift, artifact persistence and alias controls remain tested.
+Explicitly opted-in live tests are retained. PR #147 merged as eef562a0.
+Push CI then exposed one remaining UTF-8 output test calling live Discussions.
+It now checks the real UTF-8 writer/stdout directly with multilingual text.
+All valid live CLI invocations in these two test modules were audited.
+PR #148 merged as a9395368. CI and deployment for a9395368 succeeded:
 
-2026-11-04 agent execution repair: double-prefixed prompt paths fixed; exact-source scoped tickets, real commit completion and frontend type verification added. Background process presence alone is not task acceptance. See `agent-bridge/OPERATIONS.md`.
+- Backend CI Actions 41645358246 — success
+- Deploy ancap.cloud Actions 41645358135 — success
+- Docs CI 41645358235 — success
+- CodeQL 41645358248 — success
+- Secret Hygiene 41645358179 — success
 
-2026-11-04 agent runtime correction: independent worker loops, heartbeat/PID reporting and cycle-bound real-test receipts replace legacy cron-based readiness. Acceptance evidence is required before claiming a working agent; see `agent-bridge/OPERATIONS.md`.
+Commercial/user acceptance (interviews, paid pilots, renewals) remains open.
 
-2026-11-04 local agent coordination: isolated OpenClaw/Hermes worktrees and roles, shared Ollama model, supervisor and scoped-change checks configured. Runtime acceptance tracked in `agent-bridge/OPERATIONS.md`; no production deployment or automatic branch integration.
+
+## GitHub PR and security cleanup — 2026-11-03
+
+[x] Fixes merged through PR #146 (c8bd9142), including PRs #142–145: source/packet deletion outside assertions,
+receipt ROP allowlist across all supported fields, and packet slug conflicts
+returned as HTTP 409 with a savepoint rollback. Local targeted checks passed
+(2 source API, 4 queue guard, 12 packet/onboarding checks). PR #142 already had
+green CI. All four PR heads (#142–145) reached master through #146.
+
+[x] Security cleanup merged into master: fixture loading is restricted to JSON files under the
+repository `scripts/` directory, including resolved symlink containment.
+Supply a filename such as `quality_fixtures_initial.json` or an absolute path
+inside that directory; arbitrary server paths are rejected. Unused imports and
+onboarding test checks are corrected. Local checks: 28 passed, one symlink test
+skipped because Windows does not grant symlink creation. Linux CI must cover it.
+Packet/listing Alembic heads are merged at revision 104 and upgrade head
+passed on disposable PostgreSQL. Duplicate packet index metadata and the
+receipt --forbid-task bypass are corrected. Alembic metadata and API-key
+rate-limit fingerprints were triaged as documented
+false positives. Combined integration checks: 53 passed, 1 Windows symlink-permission skip.
+Master CodeQL passed with zero open alerts after merging #146. Production
+activation was blocked by an unrelated documentation test calling live GitHub
+without explicit opt-in; deployment is not claimed complete.
 
 2026-11-01 LLM provider continuity: the live Teneta credential returns HTTP 401.
 An explicit operator opt-in adds Claude Sonnet reserve execution through the
@@ -1720,9 +1767,3 @@ Before ending every session:
 
 
 
-
-
-2026-11-02 GitGuardian incident #39433693: private Cursor MCP configuration
-removed from tracking and ignored; secret-free MCP example added. Operator
-reports key reissued; revocation, production replacement and access-log review
-remain unverified. Historical commit 4405779a still contains the exposed key.

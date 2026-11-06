@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.common import Money
 from app.schemas.strategies import FeeModel
@@ -61,6 +61,9 @@ class MarketplaceListingPublic(BaseModel):
     rating_count: int
     is_featured: bool
     is_trending: bool
+    # Paid placement. Clients must label these "Sponsored"/"Реклама" (EU DSA Art. 26).
+    is_sponsored: bool = False
+    sponsored_until: datetime | None = None
     created_at: datetime
 
 
@@ -70,3 +73,31 @@ class MarketplaceListingsResponse(BaseModel):
     limit: int
     offset: int
     available_categories: list[str]
+
+
+class ListingPromotionPricingPublic(BaseModel):
+    enabled: bool
+    daily_fee: Money
+    max_days: int
+    slots_per_category: int
+    disclosure: str = "Promoted listings are shown first and always labelled as sponsored."
+
+
+class ListingPromotionCreateRequest(BaseModel):
+    days: int = Field(..., ge=1, le=365)
+
+
+class ListingPromotionPublic(BaseModel):
+    id: str
+    listing_id: str
+    days: int
+    starts_at: datetime
+    ends_at: datetime
+    amount: Money
+    ledger_event_id: str | None = None
+    created_at: datetime
+
+
+class ListingPromotionsResponse(BaseModel):
+    items: list[ListingPromotionPublic]
+    active_until: datetime | None = None

@@ -2,6 +2,11 @@
 from tests.conftest import unique_name
 
 
+import pytest
+
+# Moderation routes used by these tests are platform-admin only.
+pytestmark = pytest.mark.usefixtures("platform_admin")
+
 def _create_seller_and_buyer(client) -> tuple[str, str]:
   seller = client.post(
     "/v1/agents",

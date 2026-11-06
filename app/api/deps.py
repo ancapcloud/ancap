@@ -1,4 +1,5 @@
 """Shared dependencies."""
+from dataclasses import dataclass
 from typing import Annotated
 from uuid import UUID
 
@@ -99,6 +100,72 @@ def require_agent_id(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid agent")
 
 
+@dataclass(frozen=True, slots=True)
+class CallerIdentity:
+    """Who is calling: a signed-in user, an agent API key, or both."""
+
+    user_id: str | None
+    agent_id: UUID | None
+
+
+async def get_caller_identity(
+    session: Annotated[AsyncSession, Depends(get_db)],
+    user_id: Annotated[str | None, Depends(get_current_user_id)],
+    x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
+) -> CallerIdentity:
+    agent_id: UUID | None = None
+    if x_api_key:
+        record = await resolve_key_record(session, x_api_key)
+        if record is not None and record.agent_id is not None:
+            agent_id = record.agent_id
+    return CallerIdentity(user_id=user_id, agent_id=agent_id)
+
+
+async def require_caller(
+    identity: Annotated[CallerIdentity, Depends(get_caller_identity)],
+) -> CallerIdentity:
+    """Require a user session or an agent API key for state-changing legacy routes."""
+    if identity.user_id is None and identity.agent_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    return identity
+
+
+async def caller_controls_agent(session: AsyncSession, caller: CallerIdentity, agent_id: UUID | str | None) -> bool:
+    """True when the caller is the agent's API key or the user who owns the agent."""
+    if agent_id is None:
+        return False
+    try:
+        agent_key = str(UUID(str(agent_id)))
+    except ValueError:
+        return False
+    if caller.agent_id is not None and str(caller.agent_id) == agent_key:
+        return True
+    if caller.user_id is None:
+        return False
+    from sqlalchemy import select
+
+    from app.db.models import Agent
+
+    row = await session.execute(
+        select(Agent.id).where(Agent.id == agent_key, Agent.owner_user_id == caller.user_id).limit(1)
+    )
+    return row.scalar_one_or_none() is not None
+
+
+async def require_agent_control(session: AsyncSession, caller: CallerIdentity, agent_id: UUID | str | None) -> None:
+    if not await caller_controls_agent(session, caller, agent_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Caller does not control this agent",
+        )
+
+
+Caller = Annotated[CallerIdentity, Depends(require_caller)]
+
+
 async def is_platform_admin_user(session: AsyncSession, user_id: str) -> bool:
     """True if user_id is on the UUID allowlist or their email is on the email allowlist."""
     settings = get_settings()
@@ -116,7 +183,21 @@ async def is_platform_admin_user(session: AsyncSession, user_id: str) -> bool:
 
     row = await session.execute(select(User.email).where(User.id == user_id))
     email = row.scalar_one_or_none()
-    return bool(email and email.strip().lower() in allowed_emails)
+    if not email:
+        return False
+    # Emails are not verified at signup, and the local part keeps its case, so a
+    # case-folded comparison would let "ADMIN@example.com" inherit the admin
+    # allowlist entry "admin@example.com". Require the stored address to match
+    # exactly, and refuse admin when case-variant duplicate accounts exist.
+    stored = email.strip()
+    if stored not in allowed_emails:
+        return False
+    from sqlalchemy import func
+
+    dupes = await session.execute(
+        select(func.count(User.id)).where(func.lower(User.email) == stored.lower())
+    )
+    return int(dupes.scalar_one() or 0) == 1
 
 
 async def require_platform_admin(

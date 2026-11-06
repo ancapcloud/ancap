@@ -66,6 +66,7 @@ from app.api.routers import (
     notifications,
     tasks,
     workflow_store,
+    robinhood_listing,
     workflow_ops,
     renewal_events,
     research_ops,
@@ -214,22 +215,14 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Failed to initialize onboarding default templates")
     try:
-        from app.services.packet_templates_init import save_default_templates as save_packet_templates
+        from app.services.packet_templates import save_default_templates as save_packet_templates
+
         async with SessionLocal() as db:
-            count = save_packet_templates(db)
+            count = await save_packet_templates(db)
             await db.commit()
-        if count > 0:
-            logger.info(f"Packet templates initialized: {count} inserted")
+        logger.info("Packet templates initialized: %s inserted", count)
     except Exception:
         logger.exception("Failed to initialize packet templates")
-    try:
-        from app.services.source_schedules import save_default_schedules
-        async with SessionLocal() as db:
-            save_default_schedules(db)
-            await db.commit()
-        logger.info("Source schedules default data initialized")
-    except Exception:
-        logger.exception("Failed to initialize source schedules default data")
     try:
         yield {}
     finally:
@@ -351,6 +344,7 @@ ALL_ROUTERS = [
     notifications.router,
     tasks.router,
     workflow_store.router,
+    robinhood_listing.router,
     workflow_ops.router,
     research_ops.router,
     quality_fixtures.router,
@@ -372,6 +366,7 @@ ALL_ROUTERS = [
     funds.router,
     onboarding.router,
     onboarding_templates.router,
+    packet_templates.router,
     stakes_router.router,
     chain.router,
     wallet_acp.router,

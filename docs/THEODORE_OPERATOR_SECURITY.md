@@ -2,6 +2,13 @@
 
 # Theodore operator security
 
+2026-11-04 update: see [developer social-engineering defense](DEVELOPER_SOCIAL_ENGINEERING_DEFENSE.md).
+Development tools must run in per-session sandboxes with no host workspace,
+network, signing/deploy secrets or elevated escape. A host process denying a
+few environment variable names is not a filesystem or signing security boundary.
+The older promo-script requirements below do not authorize running interview
+assignments or enabling full host tools. The independent signer host is pending.
+
 Updated: 2026-09-28
 
 ## What Theodore is

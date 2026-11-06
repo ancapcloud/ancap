@@ -1,184 +1,105 @@
-"""Tests for packet templates API (ROP-06)."""
+"""ROP-05 packet template admin API tests (behavior from Theodore 8a42905f/b1440775, cleaned)."""
 
-import pytest
 from uuid import uuid4
-from decimal import Decimal
-import asyncio
 
-from app.db.session import init_db, SessionLocal
-from app.db.models import PacketTemplate
-from app.main import app
+from app.config import get_settings
 
 
-@pytest.fixture(scope="function")
-async def db_session():
-    """Create test database session for each test."""
-    from sqlalchemy import create_engine, text
-    from sqlalchemy.orm import sessionmaker
-    
-    # Use SQLite for tests (in-memory per test)
-    test_db_url = "sqlite:///./test_packets.db"
-    engine = create_engine(test_db_url, echo=False, connect_args={"check_same_thread": False})
-    
-    # Create tables
-    from app.db.models import Base
-    Base.metadata.create_all(bind=engine)
-    
-    SessionLocalTest = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-    session = SessionLocalTest()
-    
-    # Initialize with base migration
-    await asyncio.to_thread(
-        lambda: session.execute(text("INSERT INTO alembic_version (version) VALUES ('base')"))
+def _admin_headers(client, monkeypatch):
+    registered = client.post(
+        "/v1/auth/users",
+        headers={"Authorization": ""},
+        json={
+            "email": f"packet_{uuid4().hex}@test.com",
+            "password": "password123",
+            "display_name": "Packet admin",
+        },
     )
-    await session.commit()
-    
-    yield session
-    
-    # Cleanup
-    await session.close()
-    engine.dispose()
-
-
-@pytest.mark.anyio
-async def test_create_packet_template(db_session):
-    """Test creating a packet template."""
-    from app.services.packet_templates import PacketTemplatesService
-    
-    service = PacketTemplatesService()
-    template = await service.create_template(
-        db=db_session,
-        owner_user_id=None,
-        name="Test Template",
-        slug="test-template",
-        description="A test packet template",
-        source_categories=["crypto", "news"],
-        max_sources_per_packet=10,
-        max_snapshots_per_source=20,
-        max_claims_per_source=50,
-        check_cooldown_seconds=60,
-        retention_days=30,
-        packet_structure={},
-        languages="en",
-        status="draft",
+    assert registered.status_code in (200, 201), registered.text
+    headers = {"Authorization": f"Bearer {registered.json()['access_token']}"}
+    user = client.get("/v1/users/me", headers=headers).json()["id"]
+    monkeypatch.setattr(
+        type(get_settings()),
+        "platform_admin_user_ids_allowlist",
+        property(lambda self: (user,)),
     )
-    
-    assert template is not None
-    assert template.name == "Test Template"
-    assert template.slug == "test-template"
-    assert template.status == "draft"
+    return headers
 
 
-@pytest.mark.anyio
-async def test_get_packet_template(db_session):
-    """Test getting a packet template by ID."""
-    from app.services.packet_templates import PacketTemplatesService
-    
-    service = PacketTemplatesService()
-    
-    # Create first
-    template1 = await service.create_template(
-        db=db_session,
-        owner_user_id=None,
-        name="Get Test",
-        slug="get-test",
-        status="draft",
-    )
-    
-    # Get it back
-    retrieved = await service.get_template(db=db_session, template_id=template1.id)
-    assert retrieved is not None
-    assert retrieved.name == "Get Test"
+def test_packet_template_routes_are_canonical_and_unique():
+    from app.main import app
+
+    paths = [
+        getattr(route, "path", "")
+        for route in app.routes
+        if "packet-template" in getattr(route, "path", "")
+    ]
+    assert paths, "packet-templates router must be mounted"
+    assert not any(path.startswith("/v1/v1/") for path in paths)
+    get_paths = [
+        getattr(route, "path", "")
+        for route in app.routes
+        if getattr(route, "path", "").endswith("/packet-templates/{template_id}")
+        and "GET" in getattr(route, "methods", set())
+    ]
+    assert len(get_paths) == 1
 
 
-@pytest.mark.anyio
-async def test_list_packet_templates(db_session):
-    """Test listing packet templates."""
-    from app.services.packet_templates import PacketTemplatesService
-    
-    service = PacketTemplatesService()
-    
-    # Create some templates
-    for i in range(3):
-        await service.create_template(
-            db=db_session,
-            owner_user_id=None,
-            name=f"List Test {i}",
-            slug=f"list-test-{i}",
-            status="draft",
-        )
-    
-    # List them
-    templates, total = await service.list_templates(db=db_session)
-    assert len(templates) == 3
-    assert total == 3
-
-
-@pytest.mark.anyio
-async def test_delete_packet_template(db_session):
-    """Test deleting a packet template."""
-    from app.services.packet_templates import PacketTemplatesService
-    
-    service = PacketTemplatesService()
-    
-    # Create and delete
-    template = await service.create_template(
-        db=db_session,
-        owner_user_id=None,
-        name="Delete Test",
-        slug="delete-test",
-        status="draft",
-    )
-    
-    result = await service.delete_template(db=db_session, template_id=template.id)
-    assert result is True
-    
-    # Verify deleted
-    retrieved = await service.get_template(db=db_session, template_id=template.id)
-    assert retrieved is None
-
-
-@pytest.mark.anyio
-async def test_packet_template_auth_401(client):
-    """Test that unauthenticated requests to packet templates return 401."""
-    response = client.post("/v1/packet-templates/", json={
-        "name": "Auth Test",
-        "slug": "auth-test",
-    })
-    assert response.status_code == 401
-
-
-@pytest.mark.anyio
-async def test_packet_template_404(client):
-    """Test that non-existent template returns 404."""
-    fake_id = uuid4()
-    response = client.get(f"/v1/packet-templates/{fake_id}")
-    assert response.status_code == 404
-
-
-@pytest.mark.anyio
-async def test_packet_template_update(client, db_session):
-    """Test updating a packet template."""
-    from app.services.packet_templates import PacketTemplatesService
-    
-    service = PacketTemplatesService()
-    
-    # Create template
-    template = await service.create_template(
-        db=db_session,
-        owner_user_id=None,
-        name="Update Test",
-        slug="update-test",
-        status="draft",
-    )
-    
-    # Update via router (simulated)
-    response = client.patch(f"/v1/packet-templates/{template.id}", json={
-        "name": "Updated Name",
+def test_packet_templates_admin_crud_and_auth(client, monkeypatch):
+    headers = _admin_headers(client, monkeypatch)
+    payload = {
+        "name": "Pilot Packet",
+        "slug": f"pilot-packet-{uuid4().hex[:8]}",
+        "description": "Reusable categories only",
+        "source_categories": ["news", "official"],
+        "max_sources_per_packet": 10,
+        "max_snapshots_per_source": 20,
+        "max_claims_per_source": 50,
+        "check_cooldown_seconds": 60,
+        "retention_days": 30,
+        "packet_structure": {"title": {"type": "string", "required": True}},
+        "languages": "en",
         "status": "active",
-    })
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "Updated Name"
-    assert data["status"] == "active"
+    }
+
+    assert client.post("/v1/packet-templates", json=payload, headers={"Authorization": ""}).status_code == 401
+    assert client.post("/v1/packet-templates", json=payload).status_code == 403
+
+    created = client.post("/v1/packet-templates", json=payload, headers=headers)
+    assert created.status_code == 201, created.text
+    assert created.headers["cache-control"] == "private, no-store"
+    body = created.json()
+    template_id = body["id"]
+    assert body["slug"] == payload["slug"]
+    assert body["source_categories"] == ["news", "official"]
+    assert body["is_active"] is True
+
+    duplicate = client.post("/v1/packet-templates", json=payload, headers=headers)
+    assert duplicate.status_code == 409, duplicate.text
+    assert duplicate.headers["cache-control"] == "private, no-store"
+    retry_payload = {**payload, "slug": f"retry-{uuid4().hex[:8]}"}
+    retry = client.post("/v1/packet-templates", json=retry_payload, headers=headers)
+    assert retry.status_code == 201, retry.text
+
+    listed = client.get("/v1/packet-templates?status=active", headers=headers)
+    assert listed.status_code == 200, listed.text
+    assert listed.json()["total"] >= 1
+    assert any(item["id"] == template_id for item in listed.json()["templates"])
+
+    fetched = client.get(f"/v1/packet-templates/{template_id}", headers=headers)
+    assert fetched.status_code == 200, fetched.text
+    assert fetched.headers["cache-control"] == "private, no-store"
+    assert fetched.json()["name"] == "Pilot Packet"
+
+    assert client.get(f"/v1/packet-templates/{uuid4()}", headers=headers).status_code == 404
+    deleted = client.delete(f"/v1/packet-templates/{template_id}", headers=headers)
+    assert deleted.status_code == 204
+    assert client.get(f"/v1/packet-templates/{template_id}", headers=headers).status_code == 404
+
+
+def test_packet_template_metadata_has_unique_index_names():
+    from app.db.models import PacketTemplate
+
+    names = [index.name for index in PacketTemplate.__table__.indexes]
+    assert len(names) == len(set(names))
+    assert names.count("ix_packet_templates_status") == 1

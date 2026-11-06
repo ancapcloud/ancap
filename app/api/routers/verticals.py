@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.schemas import (
     VerticalProposeRequest,
@@ -10,7 +10,7 @@ from app.schemas import (
     VerticalStatus,
     Pagination,
 )
-from app.api.deps import DbSession
+from app.api.deps import Caller, DbSession, require_platform_admin
 from app.db.models import Vertical, VerticalSpec, VerticalStatusEnum
 from sqlalchemy import select
 
@@ -49,7 +49,7 @@ async def list_verticals(
 
 
 @router.post("/propose", response_model=VerticalPublic, status_code=201)
-async def propose_vertical(body: VerticalProposeRequest, session: DbSession):
+async def propose_vertical(body: VerticalProposeRequest, session: DbSession, _caller: Caller):
     vertical = Vertical(
         name=body.name,
         status=VerticalStatusEnum.proposed,
@@ -92,7 +92,12 @@ async def get_vertical(vertical_id: UUID, session: DbSession):
 
 
 @router.post("/{vertical_id}/review", response_model=VerticalPublic)
-async def review_vertical(vertical_id: UUID, body: VerticalReviewRequest, session: DbSession):
+async def review_vertical(
+    vertical_id: UUID,
+    body: VerticalReviewRequest,
+    session: DbSession,
+    _admin: str = Depends(require_platform_admin),
+):
     q = select(Vertical).where(Vertical.id == vertical_id)
     r = await session.execute(q)
     vertical = r.scalar_one_or_none()

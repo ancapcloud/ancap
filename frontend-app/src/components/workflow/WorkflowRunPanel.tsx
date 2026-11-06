@@ -346,6 +346,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   const [referralEarningsForm, setReferralEarningsForm] = useState<ReferralEarningsForm>(DEFAULT_REFERRAL_EARNINGS_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [robinhoodListing, setRobinhoodListing] = useState(false);
   const [createdRun, setCreatedRun] = useState<WorkflowRun | null>(null);
   const [history, setHistory] = useState<WorkflowRun[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -468,7 +469,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
       });
       setCreatedRun(created);
       setHistory((prev) => [created, ...prev].slice(0, 10));
-      router.push(`/ai/runs/${created.id}`);
+      router.push(`/ai/runs/${created.id}${robinhoodListing ? "#robinhood-listing" : ""}`);
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -479,6 +480,7 @@ export function WorkflowRunPanel({ workflow }: { workflow: WorkflowTemplate }) {
   return (
     <div className="mt-6 space-y-4">
       <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+        {workflow.slug === "exchange-listing-submission-pack" && <label className="block"><input type="checkbox" checked={robinhoodListing} onChange={e=>setRobinhoodListing(e.target.checked)} /> Добавить заявку Robinhood Chain к запуску</label>}
         <div className="text-sm font-semibold text-white/90">{t("workflowRunPanel.createRun")}</div>
         <div className="mt-3 grid gap-3 md:grid-cols-4">
           {[

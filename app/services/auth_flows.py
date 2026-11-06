@@ -82,7 +82,15 @@ async def consume_password_reset_token(session: AsyncSession, token: str) -> Pas
 
 async def find_user_by_email(session: AsyncSession, email: str) -> User | None:
     result = await session.execute(select(User).where(User.email == email))
-    return result.scalar_one_or_none()
+    user = result.scalar_one_or_none()
+    if user is not None:
+        return user
+    from sqlalchemy import func
+
+    candidates = (
+        await session.execute(select(User).where(func.lower(User.email) == email.lower()).limit(2))
+    ).scalars().all()
+    return candidates[0] if len(candidates) == 1 else None
 
 
 async def send_password_reset_email(request: Request, user: User, raw_token: str) -> bool:

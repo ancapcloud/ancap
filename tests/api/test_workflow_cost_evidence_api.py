@@ -108,6 +108,7 @@ def test_get_cost_evidence_by_id(client, monkeypatch):
     # Verify the response contains all expected fields
     data = retrieved.json()
     assert data["id"] == evidence_id
+    assert data["verification_basis"] == "operator_attested"
     assert data["source"] == body["source"]
     assert data["document_id"] == body["document_id"]
     assert data["line_id"] == body["line_id"]
@@ -116,13 +117,15 @@ def test_get_cost_evidence_by_id(client, monkeypatch):
     assert data["currency"] == body["currency"]
     assert Decimal(str(data["amount"])) == Decimal(body["amount"])
     assert data["review_note"] == body["review_note"]
-    
-    # Verify allocations are included
+
+    # Verify allocations are included with exact amounts
     assert "allocations" in data
     assert len(data["allocations"]) == 1
     assert data["allocations"][0]["workflow_run_id"] == run_id
-    assert Decimal(str(data["allocations"][0]["allocated_amount"])) == Decimal(body["allocations"][0]["allocated_amount"])
-    
+    assert Decimal(str(data["allocations"][0]["allocated_amount"])) == Decimal(
+        body["allocations"][0]["allocated_amount"]
+    )
+
     # Verify cache-control header
     assert retrieved.headers["cache-control"] == "private, no-store"
     

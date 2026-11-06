@@ -499,6 +499,33 @@ class Listing(Base):
     strategy = relationship("Strategy", back_populates="listings")
 
 
+class ListingPromotion(Base):
+    """Paid, time-boxed "Sponsored" placement of a marketplace listing.
+
+    Each row is one purchase; consecutive purchases extend the window. The
+    charge is a ledger ``fee`` event from the owner agent to the platform.
+    """
+
+    __tablename__ = "listing_promotions"
+    __table_args__ = (
+        Index("ix_listing_promotions_listing_ends", "listing_id", "ends_at"),
+        Index("ix_listing_promotions_vertical_ends", "vertical_id", "ends_at"),
+    )
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    listing_id = Column(UUID(as_uuid=False), ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
+    vertical_id = Column(UUID(as_uuid=False), ForeignKey("verticals.id", ondelete="SET NULL"), nullable=True)
+    owner_agent_id = Column(UUID(as_uuid=False), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True)
+    purchased_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    days = Column(Integer, nullable=False)
+    starts_at = Column(DateTime(timezone=True), nullable=False)
+    ends_at = Column(DateTime(timezone=True), nullable=False)
+    amount_value = Column(Numeric(36, 18), nullable=False)
+    amount_currency = Column(String(16), nullable=False)
+    ledger_event_id = Column(UUID(as_uuid=False), ForeignKey("ledger_events.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+
 # --- Orders / Access ---
 class Order(Base):
     __tablename__ = "orders"
@@ -3906,6 +3933,37 @@ class OnboardingTemplate(Base):
     )
 
 
+class PacketTemplate(Base):
+    """ROP-05: reusable packet categories/structure (not onboarding templates)."""
+    __tablename__ = "packet_templates"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(120), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    version = Column(Integer, nullable=False, server_default="1")
+    source_categories = Column(JSONB, nullable=False, default=list)
+    max_sources_per_packet = Column(Integer, nullable=False, default=10)
+    max_snapshots_per_source = Column(Integer, nullable=False, default=20)
+    max_claims_per_source = Column(Integer, nullable=False, default=50)
+    check_cooldown_seconds = Column(Integer, nullable=False, default=60)
+    retention_days = Column(Integer, nullable=False, default=30)
+    packet_structure = Column(JSONB, nullable=False, default=dict)
+    languages = Column(String(10), nullable=False, server_default="en")
+    status = Column(String(24), nullable=False, server_default="draft")
+    is_active = Column(Boolean, nullable=False, server_default="false")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+
+    __table_args__ = (
+        UniqueConstraint("slug", name="uq_packet_template_slug"),
+        Index("ix_packet_templates_owner", "owner_user_id"),
+        Index("ix_packet_templates_status", "status"),
+        Index("ix_packet_templates_created", "created_at"),
+    )
+
+
 class SourceSchedule(Base):
     """ROP-03: Bounded source collection schedule for Research Operations."""
     __tablename__ = "source_schedules"
@@ -3928,6 +3986,20 @@ class SourceSchedule(Base):
         Index("ix_source_schedules_project_type", "project_id", "source_type"),
         CheckConstraint("check_interval_minutes >= 1 AND check_interval_minutes <= 1440", name="ck_schedule_interval"),
         CheckConstraint("retention_days >= 1 AND retention_days <= 365", name="ck_schedule_retention"),
+    )
+
+class RobinhoodListing(Base):
+    __tablename__ = "robinhood_listings"
+    run_id = Column(UUID(as_uuid=False), ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
+    chain_id = Column(Integer, nullable=False)
+    address = Column(String(42), nullable=False)
+    status = Column(String(20), nullable=False)
+    version = Column(Integer, nullable=False)
+    packet = Column(JSONB, nullable=False)
+    contact = Column(String(320), nullable=False)
+    comment = Column(Text)
+    __table_args__ = (
+        Index("uq_robinhood_published", "chain_id", "address", unique=True, postgresql_where=text("status = 'approved'")),
     )
 
 

@@ -1,41 +1,123 @@
-# ANCAP Theodore Queue — 2026-10-28
+# ANCAP Theodore Queue — 2026-11-03
 
-## [ ] COST-03 — просмотр первичной записи затрат
+## [x] COST-03 — просмотр первичной записи затрат
 
-Очередь подчиняется актуальному началу MASTER_ROADMAP.md и
-docs/WORKFLOW_VALUE_ROADMAP.md. Копии роадмапов в Theodore/ и workspace устарели.
-ae166b4 и 539c982 уже реализовали расчёт, миграцию 092, запись cost-evidence и
-итоги по запуску. Не повторяй их и не закрывай весь P0 по себестоимости.
+Verified on branch work for integration into `master`.
 
-Следующий небольшой результат: admin-only
-GET /v1/workflow-store/admin/cost-evidence/{evidence_id} для сверки сохранённого
-источника, document_sha256, времени, автора, review_note и распределений.
-Pydantic-модель — в schemas, чтение — в services, обработчик — в workflow_value.
-Cache-Control: private, no-store; гость 401, обычный пользователь 403,
-неизвестный ID 404; verification_basis=operator_attested.
-Не загружай документ по сети, не меняй баланс и не добавляй PATCH/DELETE.
+Canonical admin-only
+`GET /v1/workflow-store/admin/cost-evidence/{evidence_id}` lives in
+`app/api/routers/workflow_value.py` and calls `app.services.workflow_costs.get_cost_evidence`.
+Response includes source, document_sha256, review_note, allocations with exact amounts,
+`verification_basis=operator_attested`, and `Cache-Control: private, no-store`.
+Guest 401, ordinary user 403, unknown id 404. GET does not mutate rows and does not
+fetch documents over the network. The non-canonical alias
+`GET /v1/workflow-store/cost-evidence/{evidence_id}` was removed so only one GET remains.
 
-Проверка: tests/api/test_workflow_cost_evidence_api.py, включая доступы,
-точность сумм и отсутствие мутаций при GET. Только отдельная одноразовая
-PostgreSQL с явным TEST_DATABASE_URL: fixtures могут удалить schema.
-Недоступная БД/skip — не успешная проверка; задача остаётся partial.
+Do not reopen COST-03. Reconcile/attribute mutations stay under
+`/v1/workflow-store/admin/cost-evidence/{id}/…` (COST-04 / COST-05).
 
-После проверки — локальный коммит собственных файлов, запись PROGRESS.md и
-обновление именно этого подпункта. Далее перечитай активный P0 и выбери один
-следующий небольшой пробел в происхождении затрат/платежей или сверке.
-Не создавай новый отчёт вместо реализации; не начинай другую большую систему.
+## [x] PR-146 — integration of PRs #142–145
 
-## После текущего COST-03 — Research Operations
+PR #146 (c8bd9142) integrated PRs #142–145 into master. Follow-up PRs #147 and
+#148 resolved documentation-wrapper tests that contacted live GitHub. Release
+commit is a9395368 (Merge PR #148). CI and deployment for a9395368 succeeded:
 
-После текущего COST-03 продолжай актуальный Research Operations P0 по
-docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md. ROP-01 (источники, версии, связи
-утверждений и черновик) уже реализован в отдельной исследовательской ветке:
-перед работой проверь наличие интеграции в Git, не повторяй его реализацию.
-ROP-02 тоже реализован в этой ветке: точные версии, приёмка Studio и защита
-существующей очереди отправки. Перед работой проверь интеграцию обоих коммитов.
-Следующий этап ROP-03 — ограниченный сбор и fixtures качества; расписания
-включать после подтверждения потребности платным пилотом. Делить на небольшие проверяемые шаги; не подключать
-автоматическую отправку, платные вызовы или кошелёк ради демонстрации.
+- Backend CI Actions 41645358246 — success
+- Deploy ancap.cloud Actions 41645358135 — success
+- Docs CI 41645358235 — success
+- CodeQL 41645358248 — success
+- Secret Hygiene 41645358179 — success
+
+Alembic single head is `104_merge_packet_listing` (file
+`104_merge_packet_listing_heads.py`). The deploy log proves the production
+upgrade `102_cost_evidence_attribution -> 103_packet_templates_rop05`, then
+`103_packet_templates_rop05 + 103_robinhood_listing -> 104_merge_packet_listing`.
+This integration is **done**.
+
+## [ ] ROP-01 — sources, evidence links and draft packet
+
+Implemented and integrated in a9395368; Backend CI 41645358246 ran the full
+`tests/` tree (1384 passed, 47 skipped). Acceptance evidence, including the
+test inventory and the deployed migration proof, is recorded in
+`docs/ROP01_ACCEPTANCE_2026-11-04.md`.
+
+**Still open** (do not mark done):
+- UI acceptance on the deployed build — only local Chromium evidence exists;
+  Frontend CI did not run on a9395368 (`frontend-ci.yml` is path-filtered).
+- Live customer-source acceptance (permission basis, accuracy, materiality).
+- Paid delivery / external payment.
+
+## [ ] ROP-02 — one version-bound reviewed client release
+
+Implemented and integrated in a9395368; the 10 tests in
+`tests/api/test_research_packets_api.py` cover exact versions, conflicts,
+stale evidence before and after outbox claim, revoked roles, replay and
+text-shortening rejection.
+
+**Still open**: explicitly authorized live delivery acceptance against
+production. No webhook was sent and no packet was delivered.
+
+## [ ] ROP-03 — bounded recurring collection and quality
+
+Canonical mount and async/admin CRUD fixed in PR #143, integrated via #146
+(a9395368). Source quotas `097_source_quotas_rop03_quota_limits` and schedules
+`099_source_schedules_rop03_bounded_collection` are in the single-head chain.
+
+**Still open**: bounded recurring-collection acceptance with a paid pilot and
+the proposed useful-alert / claim-link / accepted-packet thresholds. These are
+pilot targets, not measured results.
+
+## [ ] ROP-04 — actual economics and renewal
+
+Cost-evidence fields and reconciliation are present; COST-03 stays closed.
+
+**Still open**: provider/document reconciliation completeness, unknown-expense
+recording and due-renewal cohort measurement. Operator/commercial work; do not
+report renewals or revenue without evidence.
+
+## [ ] ROP-05 — repeatable onboarding and packet templates
+
+Onboarding templates and packet templates are integrated in a9395368, including
+`103_packet_templates_rop05` and the `104_merge_packet_listing` merge.
+
+**Still open**: the proposed 30% onboarding-effort reduction has not been
+measured.
+
+There is **no ROP-06** in the pilot roadmap. Onboarding docs labeled ROP-06 are a
+Theodore mis-ID of ROP-05 work. Packet templates belong under ROP-05, not a new ID.
+
+## Next step — Theodore, one bounded task (ROP-01 coverage guard)
+
+**ID / criterion**: ROP-01, open box "CI and deployed migration/UI/live-source
+acceptance". The migration half is now evidenced; this task prevents silent
+loss of that evidence.
+
+**Expected behaviour**: a new offline unit test proves the ROP table migrations
+are still in the single-head chain, so a duplicated, renamed or dropped
+revision fails CI instead of only failing at deploy time. The duplicate
+`093_*` revision created on the stale `fix/p0-release-unblock` branch is the
+realistic failure mode.
+
+**Allowed files**: add `tests/unit/test_research_release_contract.py` only.
+Do not touch `app/`, migrations, workflows or `docs/RESEARCH_OPERATIONS_PILOT_ROADMAP.md`.
+
+**Implementation**: use `alembic.config.Config` + `ScriptDirectory` like
+`tests/unit/test_alembic_single_head.py`; assert exactly one head and that
+`iterate_revisions(head, "base")` contains at least
+`093_research_operations`, `097_source_quotas_rop03_quota_limits`,
+`099_source_schedules_rop03_bounded_collection` and
+`103_packet_templates_rop05`.
+
+**Verification**: `pytest tests/unit/test_research_release_contract.py
+tests/unit/test_alembic_single_head.py -q` (no DB, no network). Report skips.
+Negative check: point one assertion at a non-existent revision id in a scratch
+copy and confirm the test fails; do not commit that.
+
+**Done when**: test is committed, green locally and in unit CI, and no other
+file changed. Do not claim ROP-01 UI/live-source acceptance.
+
+Do not re-implement COST-03 or invent ROP-06/07.
+Smart Pay OCR remains archived below.
 
 ## Архив OCR — отложено за активными P0
 
