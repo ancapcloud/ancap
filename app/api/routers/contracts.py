@@ -6,7 +6,7 @@ from uuid import UUID
 
 from decimal import Decimal
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select, func
 
 from app.api.deps import Caller, CallerIdentity, DbSession, caller_controls_agent, is_platform_admin_user
