@@ -3973,26 +3973,36 @@ class RobinhoodListing(Base):
 
 
 class RenewalEvent(Base):
-    """ROP-04: Renewal event for subscription/license renewals."""
+    """ROP-04: one due renewal of a pilot client's subscription or license.
+
+    Money is stored as exact decimals (never float). Status lifecycle:
+    pending -> paid | failed | cancelled; failed -> paid | cancelled.
+    """
+
     __tablename__ = "renewal_events"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    project_id = Column(String(255), nullable=False, index=True)
-    client_id = Column(String(255), nullable=False, index=True)  # e.g., "client_123"
-    subscription_id = Column(String(255), nullable=True, index=True)  # optional internal subscription ID
-    renewal_type = Column(String(50), nullable=False)  # e.g., "annual", "monthly", "license"
-    due_date = Column(DateTime(timezone=True), nullable=False)
-    actual_renewal_date = Column(DateTime(timezone=True), nullable=True)
-    amount_due = Column(Numeric(12, 2), nullable=False)
-    currency = Column(String(3), nullable=False, default="USD")
-    status = Column(String(50), nullable=False, server_default="pending")  # pending, paid, failed, cancelled
-    payment_intent_id = Column(String(255), nullable=True)  # reference to PaymentIntent if paid
-    event_metadata = Column(JSONB, nullable=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP"), onupdate=text("CURRENT_TIMESTAMP"))
+    id = Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String(255), nullable=False)
+    client_id = Column(String(255), nullable=False)
+    subscription_id = Column(String(255), nullable=True)
+    renewal_type = Column(String(20), nullable=False)
+    due_at = Column(DateTime(timezone=True), nullable=False)
+    renewed_at = Column(DateTime(timezone=True), nullable=True)
+    amount_due = Column(Numeric(36, 18), nullable=False)
+    currency = Column(String(10), nullable=False)
+    status = Column(String(20), nullable=False, server_default="pending")
+    payment_reference = Column(String(255), nullable=True)
+    note = Column(Text, nullable=True)
+    recorded_by_user_id = Column(UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
-        Index("ix_renewal_events_project_client", "project_id", "client_id"),
-        Index("ix_renewal_events_due_date", "due_date"),
+        CheckConstraint("amount_due >= 0 AND amount_due != 'NaN'::numeric", name="ck_renewal_amount"),
         CheckConstraint("status IN ('pending', 'paid', 'failed', 'cancelled')", name="ck_renewal_status"),
+        CheckConstraint("renewal_type IN ('monthly', 'quarterly', 'annual', 'license', 'one_off')", name="ck_renewal_type"),
+        CheckConstraint("status <> 'paid' OR renewed_at IS NOT NULL", name="ck_renewal_paid_at"),
+        Index("ix_renewal_events_project_client", "project_id", "client_id"),
+        Index("ix_renewal_events_due_status", "due_at", "status"),
+        UniqueConstraint("project_id", "client_id", "subscription_id", "due_at", name="uq_renewal_event_due"),
     )

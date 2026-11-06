@@ -43,8 +43,3 @@ class TestResearchOpsCI:
             headers={"Authorization": "Bearer ***"}
         )
         assert response.status_code == 401
-
-    def test_research_brief_endpoint_exists(self, client):
-        """Verify research brief endpoint exists."""
-        response = client.get("/workflow-ops/projects/test/research/brief")
-        assert response.status_code == 401

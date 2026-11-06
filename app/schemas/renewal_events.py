@@ -1,111 +1,103 @@
-"""Pydantic schemas for ROP-04 renewal events."""
+"""Schemas for ROP-04 renewal events (admin-only economics evidence)."""
+
+from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Any
-from uuid import UUID
+from decimal import Decimal
+from typing import Literal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+RenewalStatus = Literal["pending", "paid", "failed", "cancelled"]
+RenewalType = Literal["monthly", "quarterly", "annual", "license", "one_off"]
+
+# Exact decimal; serialized as a string so no client sees a float rounding.
+_MAX_AMOUNT = Decimal("1000000000000000000")
 
 
 class RenewalEventCreate(BaseModel):
-    """Request schema for creating a renewal event."""
-    project_id: str = Field(..., description="Project identifier")
-    client_id: str = Field(..., description="Client identifier")
-    subscription_id: Optional[str] = Field(None, description="Optional internal subscription ID")
-    renewal_type: str = Field(default="monthly", description="e.g., 'annual', 'monthly', 'license'")
-    due_date: Optional[datetime] = Field(None, description="Due date for renewal")
-    amount_due: Optional[float] = Field(None, description="Amount due for renewal")
-    currency: str = Field(default="USD", description="Currency code (ISO 4217)")
-    status: str = Field(default="pending", description="Status: pending, paid, failed, cancelled")
-    payment_intent_id: Optional[str] = Field(None, description="Stripe/PaymentIntent ID if paid")
-    event_metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    model_config = ConfigDict(extra="forbid")
 
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={
-            "title": "RenewalEventCreate",
-            "description": "Create a renewal event for subscription/license renewals (ROP-04)"
-        }
-    )
+    project_id: str = Field(..., min_length=1, max_length=255)
+    client_id: str = Field(..., min_length=1, max_length=255)
+    subscription_id: str | None = Field(None, max_length=255)
+    renewal_type: RenewalType = "monthly"
+    due_at: datetime
+    amount_due: Decimal = Field(..., ge=0, le=_MAX_AMOUNT, max_digits=36, decimal_places=18)
+    currency: str = Field("EUR", min_length=2, max_length=10, pattern=r"^[A-Za-z][A-Za-z0-9]{1,9}$")
+    note: str | None = Field(None, max_length=2000)
+
+    @field_validator("currency")
+    @classmethod
+    def _upper_currency(cls, value: str) -> str:
+        return value.upper()
+
+    @field_validator("due_at")
+    @classmethod
+    def _tz_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            raise ValueError("due_at must include a timezone")
+        return value
 
 
-class RenewalEventUpdate(BaseModel):
-    """Request schema for updating a renewal event."""
-    actual_renewal_date: Optional[datetime] = Field(None, description="Actual renewal date when paid")
-    status: Optional[str] = Field(None, description="New status: pending, paid, failed, cancelled")
-    payment_intent_id: Optional[str] = Field(None, description="PaymentIntent ID if paid")
-    event_metadata: Optional[dict[str, Any]] = Field(None, description="Updated metadata")
+class RenewalEventStatusUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={
-            "title": "RenewalEventUpdate",
-            "description": "Update fields of a renewal event"
-        }
-    )
+    status: Literal["paid", "failed", "cancelled"]
+    renewed_at: datetime | None = None
+    payment_reference: str | None = Field(None, max_length=255)
+    note: str | None = Field(None, max_length=2000)
+
+    @field_validator("renewed_at")
+    @classmethod
+    def _tz_aware(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("renewed_at must include a timezone")
+        return value
 
 
 class RenewalEventResponse(BaseModel):
-    """Response schema for a renewal event."""
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: UUID
+    id: str
     project_id: str
     client_id: str
-    subscription_id: Optional[str]
+    subscription_id: str | None
     renewal_type: str
-    due_date: datetime
-    actual_renewal_date: Optional[datetime]
-    amount_due: float
+    due_at: datetime
+    renewed_at: datetime | None
+    amount_due: str
     currency: str
     status: str
-    payment_intent_id: Optional[str]
-    event_metadata: dict[str, Any]
+    payment_reference: str | None
+    note: str | None
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "title": "RenewalEventResponse",
-            "description": "Full renewal event record with ROP-04 fields"
-        }
-    )
-
 
 class RenewalEventListResponse(BaseModel):
-    """Response schema for listing renewal events."""
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    items: list[RenewalEventResponse]
+    events: list[RenewalEventResponse]
     total: int
     limit: int
     offset: int
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "title": "RenewalEventListResponse",
-            "description": "Paginated list of renewal events"
-        }
-    )
 
-
-class RenewalEventReceipt(BaseModel):
-    """Receipt schema for renewal event processing."""
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    event_id: UUID
-    project_id: str
-    client_id: str
-    status: str
-    reconciliation_status: Optional[str] = Field(None, description="Reconciliation status from COST-06")
-    delivery_status: Optional[str] = Field(None, description="Delivery status for external payment")
-    amount_due: float
+class RenewalCurrencyTotals(BaseModel):
     currency: str
-    processed_at: datetime
+    due: str
+    paid: str
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "title": "RenewalEventReceipt",
-            "description": "Receipt for renewal event with reconciliation and delivery status"
-        }
+
+class RenewalCohortSummary(BaseModel):
+    """Measured due-renewal cohort. Rates are null until something resolved."""
+
+    project_id: str | None
+    due_from: datetime
+    due_to: datetime
+    total: int
+    pending: int
+    paid: int
+    failed: int
+    cancelled: int
+    renewal_rate: str | None = Field(
+        None, description="paid / (paid + failed + cancelled), 4 decimal places; null when nothing resolved"
     )
+    totals: list[RenewalCurrencyTotals]
