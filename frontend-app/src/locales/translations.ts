@@ -419,7 +419,10 @@ export const translations: Record<Language, TranslationTree> = {
       suffix: "- AI-native capital allocation platform. Roadmap and vision are available in the repository."
     },
     flows: {
-      subtitle: "Run end-to-end scenarios to generate orders, access grants, runs, reputation, and risk signals."
+      subtitle: "Run end-to-end scenarios to generate orders, access grants, runs, reputation, and risk signals.",
+      operatorNotice: "Operator-only demo tool. Scenario flows seed test data into the ledger, so they run only for platform operators and are disabled in production.",
+      forbidden: "Only platform operators can run scenario flows.",
+      disabledInProduction: "Scenario flows are disabled in production. Use a staging or local environment."
     },
     dashboard: {
       title: "Dashboard",
@@ -976,7 +979,10 @@ export const translations: Record<Language, TranslationTree> = {
       suffix: "- AI-нативная платформа распределения капитала. Дорожная карта и видение доступны в репозитории."
     },
     flows: {
-      subtitle: "Запускайте end-to-end сценарии для генерации заявок, прав доступа, запусков, а также сигналов репутации и риска."
+      subtitle: "Запускайте end-to-end сценарии для генерации заявок, прав доступа, запусков, а также сигналов репутации и риска.",
+      operatorNotice: "Демо-инструмент только для операторов. Сценарии записывают тестовые данные в ledger, поэтому доступны только операторам платформы и выключены в production.",
+      forbidden: "Запускать сценарии могут только операторы платформы.",
+      disabledInProduction: "Сценарии выключены в production. Используйте staging или локальное окружение."
     },
     dashboard: {
       title: "Панель управления",
@@ -1533,7 +1539,10 @@ export const translations: Record<Language, TranslationTree> = {
       suffix: "- AI-нативна платформа розподілу капіталу. Дорожня карта й бачення доступні в репозиторії."
     },
     flows: {
-      subtitle: "Запускайте end-to-end сценарії для генерації заявок, прав доступу, запусків, а також сигналів репутації та ризику."
+      subtitle: "Запускайте end-to-end сценарії для генерації заявок, прав доступу, запусків, а також сигналів репутації та ризику.",
+      operatorNotice: "Демо-інструмент лише для операторів. Сценарії записують тестові дані в ledger, тому доступні лише операторам платформи й вимкнені в production.",
+      forbidden: "Запускати сценарії можуть лише оператори платформи.",
+      disabledInProduction: "Сценарії вимкнені в production. Використовуйте staging або локальне середовище."
     },
     dashboard: {
       title: "Панель керування",
@@ -2090,7 +2099,10 @@ export const translations: Record<Language, TranslationTree> = {
       suffix: "- AI-native Plattform für Kapitalallokation. Roadmap und Vision sind im Repository verfügbar."
     },
     flows: {
-      subtitle: "Starte End-to-end-Szenarien, um Orders, Access Grants, Runs, Reputation und Risikosignale zu erzeugen."
+      subtitle: "Starte End-to-end-Szenarien, um Orders, Access Grants, Runs, Reputation und Risikosignale zu erzeugen.",
+      operatorNotice: "Demo-Werkzeug nur für Operatoren. Szenarien schreiben Testdaten in das Ledger und laufen daher nur für Plattform-Operatoren; in Produktion sind sie deaktiviert.",
+      forbidden: "Nur Plattform-Operatoren können Szenarien starten.",
+      disabledInProduction: "Szenarien sind in Produktion deaktiviert. Nutze Staging oder eine lokale Umgebung."
     },
     dashboard: {
       title: "Übersicht",
@@ -2647,7 +2659,10 @@ export const translations: Record<Language, TranslationTree> = {
       suffix: "- AI 原生資本配置平台。路線圖與願景可在倉庫中取得。"
     },
     flows: {
-      subtitle: "執行端到端情境，產生訂單、存取授權、執行、信譽與風險訊號。"
+      subtitle: "執行端到端情境，產生訂單、存取授權、執行、信譽與風險訊號。",
+      operatorNotice: "僅限營運人員的示範工具。情境流程會將測試資料寫入帳本，因此僅限平台營運人員使用，並在正式環境中停用。",
+      forbidden: "僅平台營運人員可以執行情境流程。",
+      disabledInProduction: "情境流程在正式環境中已停用。請使用測試或本機環境。"
     },
     dashboard: {
       title: "儀表板",

@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { serviceReviews } from "@/lib/api";
+import { FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { ApiError, serviceReviews } from "@/lib/api";
 
 type ReviewItem = {
   id: string;
@@ -19,6 +19,7 @@ type Props = {
 };
 
 export function ServiceReviewsPanel({ targetType, targetId, label, reviewerUserId }: Props) {
+  const reviewFormId = useId();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -86,7 +87,11 @@ export function ServiceReviewsPanel({ targetType, targetId, label, reviewerUserI
       setInfo("AI review attached");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "AI review failed");
+      if (err instanceof ApiError && err.status === 403) {
+        setError("AI reviews are available to platform operators only.");
+      } else {
+        setError(err instanceof Error ? err.message : "AI review failed");
+      }
     } finally {
       setBusy(false);
     }
@@ -98,9 +103,10 @@ export function ServiceReviewsPanel({ targetType, targetId, label, reviewerUserI
       <p className="mt-1 text-sm text-slate-500">User and AI notes for this service / partner / lot.</p>
 
       <form onSubmit={onUserReview} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <label className="text-sm text-slate-400">
+        <label htmlFor={reviewFormId + "-rating"} className="text-sm text-slate-400">
           Rating
           <select
+            id={reviewFormId + "-rating"}
             className="mt-1 block border border-white/15 bg-black/40 px-3 py-2 text-white"
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
@@ -112,9 +118,10 @@ export function ServiceReviewsPanel({ targetType, targetId, label, reviewerUserI
             ))}
           </select>
         </label>
-        <label className="flex-1 text-sm text-slate-400">
+        <label htmlFor={reviewFormId + "-comment"} className="flex-1 text-sm text-slate-400">
           Comment
           <input
+            id={reviewFormId + "-comment"}
             className="mt-1 block w-full border border-white/15 bg-black/40 px-3 py-2 text-white"
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -139,8 +146,8 @@ export function ServiceReviewsPanel({ targetType, targetId, label, reviewerUserI
         </button>
       </form>
 
-      {error ? <p className="mt-3 text-sm text-rose-400">{error}</p> : null}
-      {info ? <p className="mt-2 text-sm text-emerald-400">{info}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-rose-400">{error}</p> : null}
+      {info ? <p role="status" className="mt-2 text-sm text-emerald-400">{info}</p> : null}
 
       <ul className="mt-6 space-y-4">
         {items.length === 0 ? (

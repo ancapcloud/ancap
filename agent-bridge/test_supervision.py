@@ -109,7 +109,17 @@ class SupervisionTests(unittest.TestCase):
                     workers.source_context('hermes', {'sources': [path]})
 
     def test_assigned_prompt_has_exact_sources_without_double_absolute_paths(self):
-        prompt = workers.build_prompt('hermes', 'b' * 32, False)
+        # Use a temporary worktree so the test does not depend on the operator's
+        # Windows Desktop layout (CI and other machines have no wt-hermes).
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(__file__).resolve().parent.parent
+            worktree = Path(tmp) / 'wt-hermes'
+            for rel in workers.selected_task('hermes').get('sources', []):
+                target = worktree / rel
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text((repo / rel).read_text(encoding='utf-8'), encoding='utf-8')
+            with patch.object(workers, 'WORK', Path(tmp)):
+                prompt = workers.build_prompt('hermes', 'b' * 32, False)
         self.assertIn('FILE: app/services/acp_rpc.py', prompt)
         self.assertIn('FILE: tests/test_acp_rpc_headers.py', prompt)
         self.assertNotIn('agent-bridge\\C:', prompt)
