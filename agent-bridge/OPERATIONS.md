@@ -1,3 +1,31 @@
+# 2026-11-07: inference contention and test-adapter repair
+
+Gateway and model were healthy, but OpenClaw retried timeouts while both roles and their planner/reviewer competed for one Qwen35 runner. Hermes was attempting tests/api/test_wallet_auth.py with --noconftest: four missing-client fixture errors could not be repaired by changing wallet logic.
+
+inference_lane.py now admits managed planner, actor and reviewer phases FIFO. A waiting role publishes waiting-model heartbeats; its execution deadline has not started. The actor holds the lane across its file-tool conversation, preserving prompt-cache locality. Project checks and commits run after releasing the lane, so they can overlap the other agent's model work. This lane coordinates the supervisor's two roles; manual Gateway chats still use Ollama's server queue. It does not claim simultaneous inference on the single GPU.
+
+Automatic backend selection now parses fixture requirements, local fixture dependencies, parametrization and usefixtures/autouse markers; API suites are not eligible for the standalone adapter. Integration/DB work needs an appropriate checker rather than silently bypassing conftest or editing business rules to satisfy broken infrastructure. The same preflight runs again before pytest to catch incompatible newly generated tests.
+
+Normal STOP cancels a queued model phase without quarantine or leaking the lane. Interrupted owned work retains the existing backup/stash safeguards. Previous jobs drained normally under a temporary maintenance STOP; both isolated worktrees were clean, accepted commits retained, and state snapshots saved under runtime/queue-repair-20261107-124645/. No user edits were discarded.
+
+Validation: 30 targeted tests (9 coordinator, 13 continuity, 4 lane, 4 fixture selection) passed. Two actual model JSON requests completed start/end/start/end without overlap; receipt runtime/lane-probe-result.json explicitly identifies a read-only probe, not code completion. Current eligible scopes: 286 frontend units, 15 backend units with standalone checks. Live restart verified: Gateway ready=true; ANCAPParallelAgents Running; Hermes planning and OpenClaw waiting-model with fresh heartbeat; STOP absent. These are scheduling states, not a new feature completion.
+
+# 2026-11-07: DeepSeek/Qwen Q4_K_M runtime
+
+Active model: `ancap-deepseek-qwen:9b-q4km`, from `hf.co/mradermacher/DeepSeek-V4-Pro-Qwen3.5-9B-UNCENSORED-heretic-GGUF:Q4_K_M`; text weights + bundled projector downloaded and SHA256-verified by Ollama. Old models remain installed for rollback. Native model_probe.py passed JSON, native function calling and OpenAI-compatible function calling. Gateway returned READY with actual new-model metadata; main chat reset to the configured new default without clearing history.
+
+Both OpenClaw profiles, Hermes config and planner use the new explicit model and 65536 context (Hermes requires >=64000). Hermes command line pins the configured model. No silent fallback to an old model if configuration is missing. Sample resident model used about 5.9 GB VRAM plus RAM; local inference remains serialized.
+
+Missing worktrees were recreated from their preserved branches. ensure_workspaces.py restores missing registered worktrees, backs up their metadata, recreates the shared bridge junction and per-worktree exclusions, and installs isolated frontend dependencies if missing. Startup fails safely for an existing different branch/root. Main user edits/index are preserved.
+
+Quality corrections: planner must quote exact actual production-source evidence; no financial identifier banners, automatic legal-page changes or formatting/comment churn. Python test definitions are compared by lexical scope and duplicate names rejected before pytest. Native OpenClaw read requests return full small files instead of repeated five-line pagination; no-op edits are rejected with actionable feedback. Short JSON-safe prefix edits were verified for JSX.
+
+Acceptance: OpenClaw 58a91797 (feedback live regions; Vitest + tsc), Hermes ed290871 (Accept header), controller bbd96d47 (removed three shadowing duplicate definitions; all six distinct tests passed). The initial green pytest result had missed shadowing; it is not represented as fully autonomous clean code. Controller provenance is recorded in last-result and the report. 23 coordination/continuity/workspace regressions and native hook checks passed.
+
+The main Gateway's Windows in-process restart stalled. A fresh start through the existing hidden launcher recovered it; root state quick_check was healthy and agent DB admission completed. Do not run two Gateways or edit ownership locks manually. Main-chat model reset result is in runtime/main-session-use-new-default.json; model proof in runtime/gateway-final-model-check.json. No manual Telegram messages, push, merge or deploy were performed.
+
+Backups: runtime/migration-backup-path.txt names the private migration backup; failed drafts and old in-flight state were retained. The older untracked safetensors-conversion installer was not used. Configuration and acceptance details here supersede earlier model/runtime notes below.
+
 Acceptance 2026-11-05: frontend continuous cycle committed 37494589 and automatically planned/started the next actual task without a new manual ticket. Hermes first draft failed tests, was preserved as stash 693c5a375c24, and a scoped repair is active. 19 Python coordination/continuity regressions passed. Native OpenClaw before_tool_call scope plugin passed delegation/denial checks; work-profile configuration validated. Windows ANCAPParallelAgents task is Running; reboot not performed.
 
 # Continuous development enabled — 2026-11-05
@@ -65,3 +93,12 @@ Recovery acceptance evidence (2026-11-04): OpenClaw invoked its exec tool and pa
 Continuation policy: a zero-exit response without the required cycle receipt triggers up to two continuations of the same conversation, within the 30-minute local execution budget. Hermes CLI Session IDs are parsed only from that attempt’s local log segment and resumed explicitly. Native agent.tool_use_enforcement is enabled in the local Hermes config (backup retained). A passing acceptance check does not imply a completed development commit; reports distinguish the last verified check from the live cycle.
 
 2026-11-04 execution repair: fixed a double-absolute-path prompt substitution that had produced invalid paths. Current bootstrap tasks are explicit JSON tickets with exact source context and allowed file lists. A ticket is complete only with a passing cycle receipt AND a new scoped commit; task results are stored separately. OpenClaw verification now runs Vitest plus TypeScript --noEmit. Hermes is limited to 12 turns per invocation; total cycle budget is 30 minutes to account for local inference contention. Current worker PID is reported separately from task completion.
+# 2026-11-09: commit audit and regression proof
+
+See docs/AGENT_INTEGRATION_2026-11-09.md for rejected changes and verification.
+Before ordinary green checks, planned tasks prove a new assertion fails on an
+isolated baseline whose original tests pass. Related tests are required at task
+selection. Exported baseline contains tracked source only, never local secrets.
+The new Agent Bridge CI exercises coordination, preservation and scope guards on
+Windows. Production publishing/deployment remains outside the agent roles.
+

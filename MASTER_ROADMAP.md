@@ -1767,3 +1767,9 @@ Before ending every session:
 
 
 
+2026-11-09 [x] OpenClaw/Hermes backlog reviewed against GitHub master 6c7216ef.
+Rejected unsafe/unproved local changes; preserved original history. Exact amount
+conversions and review feedback corrected; automatic fixes now need related tests
+and an isolated failing-baseline regression. Publication/CI acceptance is tracked
+in docs/AGENT_INTEGRATION_2026-11-09.md; no deployment is claimed.
+

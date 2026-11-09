@@ -15,6 +15,8 @@ foreach ($taskPair in $taskVars.GetEnumerator()) {
 }
 New-Item -ItemType Directory -Force -Path "$taskRoot\runtime" | Out-Null
 if (Test-Path "$taskRoot\runtime\STOP") { exit 0 }
+& $taskPython "$taskRoot\ensure_workspaces.py"
+if ($LASTEXITCODE -ne 0) { throw 'Isolated worktree restoration failed; user checkout preserved.' }
 try { Invoke-RestMethod 'http://127.0.0.1:11434/api/version' -TimeoutSec 3 | Out-Null }
 catch {
     Start-Process -FilePath $taskOllama -ArgumentList 'serve' -WindowStyle Hidden `

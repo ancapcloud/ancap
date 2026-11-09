@@ -437,3 +437,8 @@ Production smoke targets to keep using:
 - **Embodied AI security** — open humanoid / VLA models (e.g. UnifoLM-WLA-1.0) stay off settlement hosts; `FF_EMBODIED_ADAPTER` default false; public status `GET /v1/embodied-ai/security`; controls in `docs/EMBODIED_AI_SECURITY_CONTROLS.md`.
 - **Crypto Benchmark Library (QOBLIB-style)** — public scorecard for ACP/wACP/sACP rails vs published baselines; `GET /v1/crypto/benchmark` · `/reserves` · `docs/CRYPTO_BENCHMARK_LIBRARY.md`. Snapshot-backed reserve proof + stale/mismatch transparency on public surfaces.
 
+2026-11-09 [x] Local OpenClaw/Hermes commit audit and acceptance repair: reject
+unsupported generated changes, preserve current production behavior, require
+failing-baseline regression proof and add Windows coordination CI. Exact amount
+precision fixed. See docs/AGENT_INTEGRATION_2026-11-09.md. No deployment.
+

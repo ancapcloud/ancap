@@ -16,6 +16,7 @@ def acp_rpc_headers() -> dict[str, str]:
     headers = {
         "Content-Type": "application/json",
         "User-Agent": ACP_RPC_USER_AGENT,
+        "Accept": "application/json",
     }
     token = os.getenv("ACP_RPC_TOKEN", "").strip()
     if token:

@@ -9,6 +9,26 @@ import continuous
 
 
 class ContinuousTests(unittest.TestCase):
+    def test_duplicate_tests_cannot_mask_a_broken_test(self):
+        import ast
+        with self.assertRaisesRegex(ValueError,'Duplicate test'):
+            continuous.test_definitions(ast.parse('def test_new():\n    undefined_variable()\ndef test_new():\n    assert True\n'))
+        self.assertEqual(len(continuous.test_definitions(ast.parse('class TestA:\n    def test_ok(self): pass\nclass TestB:\n    def test_ok(self): pass\n'))),2)
+    def test_planner_requires_actual_evidence_and_rejects_token_banner_churn(self):
+        source='def normalize(value): return value.strip()'
+        proposal=dict(title='Handle blank values safely',instructions='Reject an absent input before calling value.strip()',reason='The current code assumes a string value',evidence=source)
+        continuous.validate_proposal(proposal,source)
+        with self.assertRaisesRegex(ValueError,'evidence'):
+            continuous.validate_proposal({**proposal,'evidence':'nonexistent_function()'},source)
+        with self.assertRaisesRegex(ValueError,'financial identifiers'):
+            continuous.validate_proposal({**proposal,'instructions':'Add contract address 0x'+'1'*40+' to this page'},source)
+        with self.assertRaisesRegex(ValueError,'arbitrary-precision'):
+            continuous.validate_proposal({**proposal,'title':'Fix integer overflow in Python accumulation'},source)
+
+    def test_comment_only_production_churn_is_rejected(self):
+        (self.cwd/'app/services/sample.py').write_text('# imaginary improvement\ndef value():\n    return 1\n')
+        with self.assertRaisesRegex(ValueError,'comment-only'):
+            continuous.validate(runtime,'hermes',self.task,self.baseline)
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory()
         base=Path(self.tmp.name)

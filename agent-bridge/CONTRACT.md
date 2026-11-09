@@ -1,3 +1,11 @@
+# Scheduling update — 2026-11-07
+
+Managed planner/actor/reviewer phases share a fair inference lane. Waiting has fresh heartbeat and does not consume the actor timeout. Independent tests and commits are outside that lane. Backend tasks must have fixtures supported by the standalone check adapter; project API/DB suites are excluded until a separate adapter is configured. Operator STOP releases queued requests without declaring a role failure. This supersedes any earlier description suggesting simultaneous managed inference requests.
+
+# Runtime update — 2026-11-07
+
+v5 roles/continuous loop remain active. Explicit local model is now ancap-deepseek-qwen:9b-q4km with shared 65536 context. Startup restores missing isolated workspaces and their bridge exclusions. Generated Python tests cannot duplicate or weaken existing test definitions. Planner tasks require exact source evidence and cannot add financial identifier banners or rewrite legal pages automatically. Small-file reads are expanded to avoid inference-heavy pagination; no-op edits are rejected. Controller corrections are identified separately from agent-written results. These checks reduce errors; they do not guarantee arbitrary generated code is correct. Changes remain local pending ordinary review/CI.
+
 # Continuous development contract v5 — 2026-11-05
 
 User authorization: OpenClaw and Hermes must continuously write useful ANCAP code. This explicitly replaces the old operator-only queue restriction below.
@@ -54,3 +62,14 @@ Historical v4 contract (superseded where it requires operator-only queues):
 Новые приёмочные задания реально выполнены файловыми инструментами: OpenClaw `862dae320eca`, Hermes `d6648eebe5e4`; независимые проверки прошли. После них обе роли переходят в готовность, ожидая новых ограниченных заданий.
 
 Старый cron разработки OpenClaw выключен, старый cron полной разработки Hermes `457eff6641e6` приостановлен штатной командой. Это исключает второй автоматический контур вне координатора; интерактивные пользовательские сессии не изменялись.
+# Acceptance update — 2026-11-09
+
+Automatic tasks require a related regression suite and a test change. The baseline
+suite must pass in an isolated tracked-source export; revised tests must then fail
+by assertion against that unchanged baseline before the edited code is accepted.
+Collection/import/name errors are not regression proof. An unrelated display test
+cannot verify arbitrary UI changes. Review includes complete task source and must
+question the planner's diagnosis. Historical demonstration seeds are retired.
+Rejected backlog changes and original commits are retained for provenance; agents
+resume from the reviewed integration baseline, not their stale generated code.
+
