@@ -5,7 +5,7 @@ Decimal pad remains 10^(18-8); economic ratio multiplies on top.
 """
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_DOWN
+from decimal import Decimal
 
 ACP_DECIMALS = 8
 WACP_DECIMALS = 18
@@ -20,17 +20,14 @@ _LEGACY_SCALE = _DECIMAL_PAD
 def acp_smallest_to_wacp_wei(acp_smallest: int) -> int:
     if acp_smallest < 0:
         raise ValueError("acp_smallest must be non-negative")
-    return int(Decimal(acp_smallest) * _SCALE)
+    return acp_smallest * int(_SCALE)
 
 
 def wacp_wei_to_acp_smallest_floor(wacp_wei: int) -> tuple[int, int]:
     """Return (acp_smallest_floor, remainder_wacp_wei) rounding down ACP payout."""
     if wacp_wei < 0:
         raise ValueError("wacp_wei must be non-negative")
-    base = Decimal(wacp_wei) / _SCALE
-    floored = int(base.to_integral_value(rounding=ROUND_DOWN))
-    remainder = wacp_wei - floored * int(_SCALE)
-    return floored, remainder
+    return divmod(wacp_wei, int(_SCALE))
 
 
 def wacp_wei_to_acp_smallest_ceil(wacp_wei: int) -> int:
@@ -54,6 +51,6 @@ def matches_recorded_wrap(acp_smallest: int, wacp_wei: int) -> bool:
     """True if amounts match current 10x ratio or legacy 1:1 pre-cutover mint."""
     if acp_smallest < 0 or wacp_wei < 0:
         return False
-    expected_new = int(Decimal(acp_smallest) * _SCALE)
-    expected_legacy = int(Decimal(acp_smallest) * _LEGACY_SCALE)
+    expected_new = acp_smallest * int(_SCALE)
+    expected_legacy = acp_smallest * int(_LEGACY_SCALE)
     return wacp_wei in (expected_new, expected_legacy)

@@ -1,8 +1,6 @@
 """rACP ↔ ACP amount math. Contract: 1 ACP = 10 rACP; amount % 10^11 == 0."""
 from __future__ import annotations
 
-from decimal import Decimal
-
 RACP_PER_ACP = 10
 RACP_DECIMALS = 18
 ACP_DECIMALS = 8
@@ -30,8 +28,15 @@ def acp_smallest_to_racp_wei(amount_acp_smallest: int) -> int:
 
 
 def acp_smallest_to_decimal_str(amount_acp_smallest: int) -> str:
-    return format(Decimal(int(amount_acp_smallest)) / (Decimal(10) ** ACP_DECIMALS), "f")
+    return _format_units(amount_acp_smallest, ACP_DECIMALS)
 
 
 def racp_wei_to_human(amount_racp_wei: int) -> str:
-    return format(Decimal(int(amount_racp_wei)) / (Decimal(10) ** RACP_DECIMALS), "f")
+    return _format_units(amount_racp_wei, RACP_DECIMALS)
+
+
+def _format_units(value: int, decimals: int) -> str:
+    amount = int(value)
+    whole, fraction = divmod(abs(amount), 10**decimals)
+    suffix = f"{fraction:0{decimals}d}".rstrip("0")
+    return ("-" if amount < 0 else "") + str(whole) + ("." + suffix if suffix else "")

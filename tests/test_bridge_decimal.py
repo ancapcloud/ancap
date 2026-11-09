@@ -46,3 +46,14 @@ def test_acp_usd_from_wacp():
 
 def test_display():
     assert display_acp_from_smallest(1) == Decimal("0.00000001")
+
+
+def test_uint256_scale_conversion_preserves_dust_and_integer_types():
+    wei = 2**256 - 1
+    smallest, dust = wacp_wei_to_acp_smallest_floor(wei)
+    assert type(smallest) is int and type(dust) is int
+    assert 0 <= dust < 10**11
+    assert acp_smallest_to_wacp_wei(smallest) + dust == wei
+    assert wacp_wei_to_acp_smallest_ceil(wei) == smallest + 1
+    assert matches_recorded_wrap(smallest, smallest * 10**11)
+    assert matches_recorded_wrap(smallest, smallest * 10**10)
