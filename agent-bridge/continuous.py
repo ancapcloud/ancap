@@ -151,6 +151,8 @@ def validate_proposal(proposal, source):
     if proposal['evidence'] not in source:
         raise ValueError('Planner evidence is not present in the actual source')
     text=proposal['instructions']+' '+proposal['title']
+    if re.search(r'\b(?:integer|bigint) overflow\b',text,re.I) and ('def ' in source or 'BigInt' in source):
+        raise ValueError('Unsupported arbitrary-precision integer overflow diagnosis')
     if re.search(r'0x[0-9a-fA-F]{40}',text) or re.search(r'(?:add|display|show|replace).*?(?:contract address|chain id)',text,re.I):
         raise ValueError('Automatic tasks cannot introduce financial identifiers or repetitive token banners')
 
@@ -240,7 +242,7 @@ def next_task(runtime, role):
         return None
     validate_proposal(proposal,(cwd/unit['source']).read_text(encoding='utf-8'))
     task=dict(unit=unit['source'],title=proposal['title'],sources=paths,allowed_files=paths,
-              instructions=proposal['instructions']+'\nPreserve all existing tests. Change production code, not just tests. Stop after file edits.',
+              instructions=proposal['instructions']+'\nAdd a regression assertion in the assigned test file that fails on baseline production and passes after the fix. Preserve all existing tests. Change production code, not just tests. Stop after file edits.',
               tests=unit['tests'],production_files=[unit['source']],
               planned=True,
               commit_message=('fix(frontend): ' if role=='openclaw' else 'fix(backend): ')+proposal['title'][:100])

@@ -22,6 +22,8 @@ class ContinuousTests(unittest.TestCase):
             continuous.validate_proposal({**proposal,'evidence':'nonexistent_function()'},source)
         with self.assertRaisesRegex(ValueError,'financial identifiers'):
             continuous.validate_proposal({**proposal,'instructions':'Add contract address 0x'+'1'*40+' to this page'},source)
+        with self.assertRaisesRegex(ValueError,'arbitrary-precision'):
+            continuous.validate_proposal({**proposal,'title':'Fix integer overflow in Python accumulation'},source)
 
     def test_comment_only_production_churn_is_rejected(self):
         (self.cwd/'app/services/sample.py').write_text('# imaginary improvement\ndef value():\n    return 1\n')
