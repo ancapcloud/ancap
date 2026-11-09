@@ -18,7 +18,7 @@ if [[ -z "${PUB_IP}" ]]; then
   PUB_IP="127.0.0.1"
 fi
 
-if [[ "$(id -u)" -ne 0 ]]; then
+if [[ "${1:-}" != "--smoke-only" && "$(id -u)" -ne 0 ]]; then
   if command -v sudo >/dev/null 2>&1; then
     sudo bash "$0" "$@"
     exit $?
@@ -146,6 +146,7 @@ reload_nginx() {
   echo "nginx reloaded"
 }
 
+if [[ "${1:-}" != "--smoke-only" ]]; then
 if [[ ! -d /etc/nginx/conf.d ]]; then
   echo "No /etc/nginx/conf.d — skipping (not the VPS host?)"
   exit 0
@@ -172,36 +173,61 @@ fi
 remove_conflicting_dropin
 patch_vhosts
 reload_nginx
-
-echo "== smoke (compose + host public IP ${PUB_IP})"
-printf '%s' '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' > /tmp/acp1_rpc.json
-
-code="$(curl -sS -m 10 -o /tmp/acp1_local_rpc.json -w '%{http_code}' \
-  -H 'Content-Type: application/json' \
-  -H "Host: ${DOMAIN}" \
-  --data-binary @/tmp/acp1_rpc.json \
-  http://127.0.0.1:8080/rpc || true)"
-echo "compose :8080: HTTP ${code} body=$(head -c 120 /tmp/acp1_local_rpc.json 2>/dev/null || true)"
-
-code80="$(curl -sS -m 10 -o /tmp/acp1_host_rpc.json -w '%{http_code}' \
-  -H 'Content-Type: application/json' \
-  -H "Host: ${DOMAIN}" \
-  --data-binary @/tmp/acp1_rpc.json \
-  "http://${PUB_IP}/rpc" || true)"
-echo "host :80 @ ${PUB_IP}: HTTP ${code80} body=$(head -c 120 /tmp/acp1_host_rpc.json 2>/dev/null || true)"
-
-code443="$(curl -skS -m 10 -o /tmp/acp1_host_ssl_rpc.json -w '%{http_code}' \
-  -H 'Content-Type: application/json' \
-  -H "Host: ${DOMAIN}" \
-  --data-binary @/tmp/acp1_rpc.json \
-  "https://${PUB_IP}/rpc" || true)"
-echo "host :443 @ ${PUB_IP}: HTTP ${code443} body=$(head -c 120 /tmp/acp1_host_ssl_rpc.json 2>/dev/null || true)"
-
-if [[ "$code" != "200" ]]; then
-  echo "WARN: compose proxy did not answer getblockcount on :8080" >&2
 fi
-if [[ "$code80" != "200" && "$code443" != "200" ]]; then
-  echo "host nginx did not answer getblockcount on :80/:443 for ${DOMAIN}" >&2
-  ss -lntp 2>/dev/null | grep -E ':80 |:443 ' || true
+
+# Reload is asynchronous: old workers can briefly serve the previous vhost.
+# --smoke-only also permits a rootless route diagnostic without changing nginx.
+attempts="${ACP1_SMOKE_ATTEMPTS:-10}"
+delay="${ACP1_SMOKE_DELAY:-2}"
+if [[ ! "$attempts" =~ ^[0-9]+$ || "$attempts" -lt 1 || "$attempts" -gt 30 || ! "$delay" =~ ^[0-9]+$ || "$delay" -gt 10 ]]; then
+  echo "Invalid ACP1 smoke retry settings" >&2
   exit 1
 fi
+smoke_dir="$(mktemp -d /tmp/ancap-acp1-smoke.XXXXXXXX)"
+trap 'rm -f "$smoke_dir/compose.json" "$smoke_dir/host.json"; rmdir "$smoke_dir"' EXIT
+
+probe_rpc() {
+  local label="$1" output="$2" url="$3"
+  shift 3
+  local code
+  code="$(curl -skS --noproxy '*' -m 10 -o "$output" -w '%{http_code}' \
+    -H 'Content-Type: application/json' -H "Host: ${DOMAIN}" \
+    --data-binary '{"jsonrpc":"2.0","id":1,"method":"getblockcount","params":[]}' \
+    "$@" "$url" || true)"
+  echo "$label: HTTP ${code}"
+  [[ "$code" == "200" ]] || return 1
+  python3 - "$output" <<'PY'
+import json
+import sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as stream:
+        data = json.load(stream)
+    ok = (isinstance(data, dict) and data.get("jsonrpc") == "2.0"
+          and type(data.get("id")) is int and data["id"] == 1
+          and "error" not in data and type(data.get("result")) is int
+          and data["result"] >= 0)
+except (OSError, ValueError):
+    ok = False
+raise SystemExit(0 if ok else 1)
+PY
+}
+
+for ((attempt=1; attempt<=attempts; attempt++)); do
+  echo "== RPC routing smoke attempt ${attempt}/${attempts}"
+  # Require both the actual upstream and the TLS origin used by Cloudflare.
+  # --resolve preserves domain SNI; a Host header on an IP URL alone does not.
+  compose_ok=0
+  host_ok=0
+  if probe_rpc 'compose :8080' "$smoke_dir/compose.json" 'http://127.0.0.1:8080/rpc'; then compose_ok=1; fi
+  if probe_rpc 'host :443' "$smoke_dir/host.json" "https://${DOMAIN}/rpc" \
+    --resolve "${DOMAIN}:443:${PUB_IP}"; then host_ok=1; fi
+  if [[ "$compose_ok" == 1 && "$host_ok" == 1 ]]; then
+    echo "OK compose and host TLS origin return valid getblockcount"
+    exit 0
+  fi
+  if ((attempt < attempts)); then sleep "$delay"; fi
+done
+
+echo "ACP1 RPC routing did not become ready within the bounded retry window" >&2
+ss -lntp 2>/dev/null | grep -E ':80 |:443 ' || true
+exit 1
