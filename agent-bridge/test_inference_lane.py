@@ -64,8 +64,9 @@ class LaneTests(unittest.TestCase):
     def test_exception_releases_model_for_the_other_agent(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'runtime').mkdir();runtime=Runtime(root);lane=InferenceLane()
-            with self.assertRaises(ValueError):
+            def fail_model():
                 with lane.acquire(runtime,'first'):raise ValueError('model error')
+            self.assertRaises(ValueError,fail_model)
             with lane.acquire(runtime,'second'):self.assertTrue(lane.busy)
 
 

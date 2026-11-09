@@ -65,7 +65,7 @@ def render_report():
         valid=(result.get('verified') is True and result.get('exit_code')==0 and bool(result.get('cycle_id'))
                and result.get('cycle_id')==receipt.get('cycle_id') and receipt.get('test_passed') is True)
         if valid:
-            if result.get('origin')=='controller-repair':lines.append('Исправление тестов выполнено и проверено контроллером.')
+            if result.get('origin')=='controller-repair':lines.append('Исправление выполнено и проверено контроллером.')
             lines.append('Последняя проверка: '+stamp(result['finished_at'])+' — PASS.')
             if result.get('commit'):lines.append('Локальный коммит: '+result['commit'][:12])
     return '\n'.join(lines)

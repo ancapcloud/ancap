@@ -11,6 +11,7 @@ import time
 import uuid
 from scoped_files import FilePolicy
 import continuous
+from inference_lane import StopRequested
 
 ROOT = Path(__file__).resolve().parent
 WORK = Path.home() / 'Desktop/ANCAP-agents'
@@ -203,7 +204,7 @@ def loop(role, once=False):
             else:
                 save(role+'-process',dict(agent=role,state='idle',updated_at=now(),reason='Ready; no new explicit queued task'))
                 if once:return True
-        except continuous.StopRequested:
+        except StopRequested:
             return True
         except Exception as exc:
             if task is None and continuous.config(sys.modules[__name__]).get('enabled'):

@@ -9,7 +9,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
-from inference_lane import LANE, StopRequested
+from inference_lane import LANE
 
 
 def config(runtime):
