@@ -59,9 +59,9 @@ Neither agent can push, merge or deploy automatically.
 ## Verification
 
 Exact integer regressions were demonstrated against master: original 8 tests pass;
-revised suite exposes 3 assertion failures. The corrected targeted suite passes.
-Frontend: 122 unit tests and TypeScript pass. Coordination tests, native scope
-checks, migration graph and GitHub CI results are recorded with the repair commits.
+revised suite exposes 3 assertion failures. The corrected targeted suite passes (18 tests).
+Frontend: 122 unit tests and TypeScript pass. 43 coordination checks and the native scope checks pass; the migration graph has
+one head (`106_renewal_events_rop04`). GitHub CI acceptance is tracked on the PR.
 
 The evidence covers the reviewed commit backlog and acceptance mechanism; it is
 not a claim that every possible ANCAP defect is eliminated.

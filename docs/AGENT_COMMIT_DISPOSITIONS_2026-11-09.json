@@ -8,7 +8,7 @@
       "files": [
         "frontend-app/src/components/ServiceReviewsPanel.tsx"
       ],
-      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+      "disposition": "behavior already consolidated on master; retained without duplicate edit"
     },
     {
       "role": "openclaw",
@@ -17,7 +17,7 @@
       "files": [
         "frontend-app/src/app/flows/page.tsx"
       ],
-      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+      "disposition": "behavior already consolidated on master; retained without duplicate edit"
     },
     {
       "role": "openclaw",
@@ -26,7 +26,7 @@
       "files": [
         "frontend-app/src/components/ServiceReviewsPanel.tsx"
       ],
-      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+      "disposition": "behavior already consolidated on master; retained without duplicate edit"
     },
     {
       "role": "openclaw",
@@ -80,7 +80,7 @@
       "files": [
         "frontend-app/src/components/ServiceReviewsPanel.tsx"
       ],
-      "disposition": "integrated accessible review feedback"
+      "disposition": "accessible feedback is already present on master; retained without duplicate edit"
     },
     {
       "role": "openclaw",
@@ -594,7 +594,7 @@
         "app/services/acp_rpc.py",
         "tests/test_acp_rpc_headers.py"
       ],
-      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+      "disposition": "behavior already consolidated on master; retained without duplicate edit"
     },
     {
       "role": "hermes",
