@@ -23,4 +23,13 @@ describe("wacpToken", () => {
       "http://localhost:3000/wacp-logo.png",
     );
   });
+
+  it("strips all trailing slashes from origin before appending logo path", () => {
+    expect(getWacpLogoUrl("https://ancap.cloud//")).toBe(
+      "https://ancap.cloud/wacp-logo.png",
+    );
+    expect(getWacpLogoUrl("https://ancap.cloud///")).toBe(
+      "https://ancap.cloud/wacp-logo.png",
+    );
+  });
 });
