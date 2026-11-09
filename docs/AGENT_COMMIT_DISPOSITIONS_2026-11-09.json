@@ -1,0 +1,912 @@
+{
+  "baseline": "6c7216ef",
+  "commits": [
+    {
+      "role": "openclaw",
+      "commit": "dfb91b34952550415c1c928adc493cdd11137408",
+      "title": "fix(reviews): explain operator-only AI reviews",
+      "files": [
+        "frontend-app/src/components/ServiceReviewsPanel.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "d9f667935e55fead81e32ef7f077bad3a96fa602",
+      "title": "fix(flows): show operator demos without public execution controls",
+      "files": [
+        "frontend-app/src/app/flows/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "37494589cf8b0ffc9bf8d769be597246eb2ef310",
+      "title": "fix(reviews): associate form labels with unique control ids",
+      "files": [
+        "frontend-app/src/components/ServiceReviewsPanel.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "ffdd99e916b79d1090933a0b5d4a27eb1866bdd3",
+      "title": "fix(frontend): Add rACP contract address and chain ID to Access Grants page",
+      "files": [
+        "frontend-app/src/app/access/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "56ae356d777ff9eb2c9a68d8fa43d24b01a61c5a",
+      "title": "fix(frontend): Add rACP contract address and chain ID to TokenomicsSnapshotSection",
+      "files": [
+        "frontend-app/src/app/acp-supply/TokenomicsSnapshotSection.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "b4a57ee59beb0f7fe12b6d80849527e9991bd39e",
+      "title": "fix(frontend): Add rACP contract address and chain ID to ACP Supply page",
+      "files": [
+        "frontend-app/src/app/acp-supply/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "29826db7f2123c24195f14f9a7a2b1a68b29eba9",
+      "title": "fix(frontend): Fix rACP display in ACP Layout metadata",
+      "files": [
+        "frontend-app/src/app/acp/layout.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "a7f537db39a2cb1a651ecee155ab389d14b9abe9",
+      "title": "fix(frontend): Fix ACP Transaction Page to Display Details Instead of Redirecting",
+      "files": [
+        "frontend-app/src/app/acp/tx/[txid]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "58a9179794778206912b437deeb2ee857ebcf94f",
+      "title": "fix(reviews): announce errors and review status accessibly",
+      "files": [
+        "frontend-app/src/components/ServiceReviewsPanel.tsx"
+      ],
+      "disposition": "integrated accessible review feedback"
+    },
+    {
+      "role": "openclaw",
+      "commit": "8b41e4f642918d0ca84fd36be35317c86926d195",
+      "title": "fix(frontend): Fix broken archive URL causing 404s on demo evidence links",
+      "files": [
+        "frontend-app/src/components/workflow/DemoEvidencePanel.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "899718f35a9362133b1852490c0b58602e00532b",
+      "title": "fix(frontend): Fix missing error boundary for API failure in AccessPage",
+      "files": [
+        "frontend-app/src/app/access/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "33dbdc6bcf4b2b362e0586200f776d2f0191dedf",
+      "title": "fix(frontend): Fix missing null check for snapshot.buckets_sum_acp rendering",
+      "files": [
+        "frontend-app/src/app/acp-supply/TokenomicsSnapshotSection.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "55780b5fefee56e6bf19cbc8102ed482d52cb783",
+      "title": "fix(frontend): Fix null reference in timestamp rendering",
+      "files": [
+        "frontend-app/src/app/acp/tx/[txid]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "bcafc01d5f2dfdcd4e17ef99c5fe0bca965b5826",
+      "title": "fix(frontend): Fix broken href generation for PACKS items",
+      "files": [
+        "frontend-app/src/app/agency/page.tsx"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "openclaw",
+      "commit": "537e7e6375931e9b8dd5618f0a36aa5293169616",
+      "title": "fix(frontend): Fix missing validation for empty public_key in agent creation",
+      "files": [
+        "frontend-app/src/app/agents/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "f32435b8e6593c174f4d17f50c27971b4b64e7b5",
+      "title": "fix(frontend): Fix missing error handling for 404 responses in getWorkflowTemplate",
+      "files": [
+        "frontend-app/src/app/ai/run/[template]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "6a4f6b9d178bfe297ab51b8e071b718410a5ea53",
+      "title": "fix(frontend): Fix missing alt text fallback for Image component",
+      "files": [
+        "frontend-app/src/components/aeterna/VinciLightPanel.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "646cbc19177d31992e730e2416f54a1aed05ba12",
+      "title": "fix(frontend): Fix hardcoded placeholder data in PACKS array",
+      "files": [
+        "frontend-app/src/app/agency/page.tsx"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "openclaw",
+      "commit": "9dcc3e10965f8b823c1feb59341e035c156044cb",
+      "title": "fix(frontend): Fix missing `children` rendering in AgentsLayout",
+      "files": [
+        "frontend-app/src/app/agents/layout.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "5ad522284c0330d8a60e5bf679a9fb8e052b3ded",
+      "title": "fix(frontend): Fix unhandled promise rejection in submit handler",
+      "files": [
+        "frontend-app/src/app/ai-council/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "e84643cbba07540a7a6c00cd2652631de1bfa9fd",
+      "title": "fix(frontend): Fix redundant 404 check in getWorkflowTemplate",
+      "files": [
+        "frontend-app/src/app/ai/run/[template]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "6e874f3df0afc61b8a4769cd4c35caa9e3d774a4",
+      "title": "fix(frontend): Fix missing fallback return in getWorkflowBundles",
+      "files": [
+        "frontend-app/src/app/ai/workflows/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "f7b4e19631c29d354d06ccba61315de1782944b1",
+      "title": "fix(frontend): Fix missing error handling for redirect failure",
+      "files": [
+        "frontend-app/src/app/bridge/page.tsx"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "openclaw",
+      "commit": "5d66c90e6a7bd50ae42a3125e2c4f368f6634b20",
+      "title": "fix(frontend): Fix missing error boundary for RacpEntry rendering",
+      "files": [
+        "frontend-app/src/app/buy-acp/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "ee41891cf1408185b413e5796eeab4874fd0a896",
+      "title": "fix(frontend): Fix broken MiCA readiness link",
+      "files": [
+        "frontend-app/src/app/compliance/mica/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "8416c88c76861a74ceec540bc815b38bca1b8a65",
+      "title": "fix(frontend): Fix missing validation for empty scope_ref_id in payload",
+      "files": [
+        "frontend-app/src/app/contracts/new/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "3ce1f4543fa989cd7d730faac29655621b42a4fa",
+      "title": "fix(frontend): Fix missing `children` rendering in DashboardLayout",
+      "files": [
+        "frontend-app/src/app/dashboard/layout.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "ca03883dc15d86277105df8158b297d67b40311a",
+      "title": "fix(frontend): Fix missing error handling for ApiConnection component rendering",
+      "files": [
+        "frontend-app/src/app/developers/connect/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "3f9453fee504aae4d1f6da624bf25c69182c8df5",
+      "title": "fix(frontend): Fix missing `lang` fallback in `investorDocsByLang` lookup",
+      "files": [
+        "frontend-app/src/app/docs/investors/budget-12m/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "964886ea16ac6af3bb4cd9d1de48823e1e7a0720",
+      "title": "fix(frontend): Fix broken link in step 3 of investor demo",
+      "files": [
+        "frontend-app/src/app/docs/investors/demo-5min/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "9beb58a11dfde28e1c29707ca18748921fa16170",
+      "title": "fix(frontend): Fix missing error boundary for unhandled component rendering errors",
+      "files": [
+        "frontend-app/src/app/docs/sacp/reserve/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "4e304bc0675728dabbf2d2ad09ae26838e709e57",
+      "title": "fix(frontend): Fix missing import for TokenTestArchive component",
+      "files": [
+        "frontend-app/src/app/docs/wacp/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "3d6f55e230dc011a37f89b14654584eb2fbf6724",
+      "title": "fix(frontend): Fix missing `region` dependency in `items` useMemo",
+      "files": [
+        "frontend-app/src/app/entertainment/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "ca88f36f650230b2d87bbb8a545d35e9e561e135",
+      "title": "fix(frontend): Fix race condition in cache clearing logic",
+      "files": [
+        "frontend-app/src/app/error.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "5a54a30c582d4ffc2646a78ffc999b3664424759",
+      "title": "fix(frontend): Fix missing error handling for null `data.txids` in transaction list rendering",
+      "files": [
+        "frontend-app/src/app/explorer/block/[id]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "da9372d927f22a8bbe552bd829886d175986ee41",
+      "title": "fix(frontend): Fix missing error handling for empty product list on load",
+      "files": [
+        "frontend-app/src/app/insurance/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "7b228304eb874cc5d5443c9a87844c57dacdd346",
+      "title": "fix(frontend): Fix missing error boundary for InvestorOverview component",
+      "files": [
+        "frontend-app/src/app/investors/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "e7c0d4884ba88c142dc7831aab8394c71b443a58",
+      "title": "fix(frontend): Fix missing import for React.ReactNode type",
+      "files": [
+        "frontend-app/src/app/markets/layout.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "8af14bfdeaa0c04087d198dcafa214cf1cfbb08b",
+      "title": "fix(frontend): Fix broken legacy SSE URL reference",
+      "files": [
+        "frontend-app/src/app/mcp/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "8354ad5d77e028ed411a4e4e2e858ff9603bd30a",
+      "title": "fix(frontend): Fix missing error boundary for API failure",
+      "files": [
+        "frontend-app/src/app/operations-noc/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "7d21b169f3c25754e528d0fa9c546b947b5c6170",
+      "title": "fix(frontend): Fix missing error boundary for API failure in analytics page",
+      "files": [
+        "frontend-app/src/app/ops-x7k9m2/analytics/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "dd9b6276f315e168990539a2336f73ca813c4bf8",
+      "title": "fix(frontend): Fix race condition in top-up confirmation flow",
+      "files": [
+        "frontend-app/src/app/ops-x7k9m2/finance/page.tsx"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "openclaw",
+      "commit": "2e6b5c294b2dfd52c67ebf71a584f57c013684c7",
+      "title": "fix(frontend): Fix missing error boundary in layout wrapper",
+      "files": [
+        "frontend-app/src/app/ops-x7k9m2/layout.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "29023229cd1e402b857b46f9b540bf3e9622cecb",
+      "title": "fix(frontend): Fix missing error boundary for API failure in OpsOverviewPage",
+      "files": [
+        "frontend-app/src/app/ops-x7k9m2/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "04fc1c1f8b8ced9e66c043984382ea6205342784",
+      "title": "fix(frontend): Fix missing error handling for empty response items in listUsers",
+      "files": [
+        "frontend-app/src/app/ops-x7k9m2/users/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "cd3d063031717069a600f06a287911dd2d8f62b2",
+      "title": "fix(frontend): Fix missing error handling for `rasterPreview` when `createImageBitmap` throws",
+      "files": [
+        "frontend-app/src/app/payment-scanner/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "f28e0b18d7e76f7556b994cc2df71b7cc9784879",
+      "title": "fix(frontend): Fix missing `lang` fallback causing potential undefined rendering on initial hydration",
+      "files": [
+        "frontend-app/src/app/projects/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "82f0ec532f2a090e1ef453d411a8b48e8eb41471",
+      "title": "fix(frontend): Fix unhandled promise rejection in useEffect",
+      "files": [
+        "frontend-app/src/app/public/agents/[id]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "5cd61f694dc23f326c50b736d83cfbfef6701feb",
+      "title": "fix(frontend): Fix missing null check for strategy.id rendering",
+      "files": [
+        "frontend-app/src/app/public/strategies/[id]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "e382d4c9bff006279810bff6cfddae139048201a",
+      "title": "fix(frontend): Fix missing error boundary wrapper in RacpOverview component",
+      "files": [
+        "frontend-app/src/app/reserves/page.tsx"
+      ],
+      "disposition": "rejected: JSX try/catch cannot catch descendant render failures"
+    },
+    {
+      "role": "openclaw",
+      "commit": "947b17cbacd22ab581e6f709e2a1c398496034e1",
+      "title": "fix(frontend): Fix missing error handling for API calls that may return undefined items",
+      "files": [
+        "frontend-app/src/app/runs/new/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "d679be546d961cdaa8e83ed6becddfadfc4ed0e5",
+      "title": "fix(frontend): Fix missing error handling for API calls in loadData",
+      "files": [
+        "frontend-app/src/app/runs/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "945e63e2349e9b9b033d1f2c95588718f752ee94",
+      "title": "fix(frontend): Fix missing `workflow.slug` access in JSON output",
+      "files": [
+        "frontend-app/src/app/sample-reports/[slug]/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "f6ec3e38d6dd0aa452af524598110c9c3b63d02c",
+      "title": "fix(frontend): Fix missing `id` property in ResultCard key causing React hydration/render warnings",
+      "files": [
+        "frontend-app/src/app/search/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "33a1a1f0eb26a343c76e6d5b40b5454facf4c72b",
+      "title": "fix(frontend): Fix missing error handling for empty agent list",
+      "files": [
+        "frontend-app/src/app/staking/page.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "0c6b70e736723a3ffbe47da523d036bee0175721",
+      "title": "fix(frontend): Fix missing `children` rendering in StrategiesLayout",
+      "files": [
+        "frontend-app/src/app/strategies/layout.tsx"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "dc7b0503506b4c62bb998d2c2608387706de725c",
+      "title": "fix(frontend): Fix race condition in ACCEPT_LANGUAGE_TO_LANG matching",
+      "files": [
+        "frontend-app/src/lib/language.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "42405a303326ac738b408965a344d145ce7cfea9",
+      "title": "fix(frontend): Fix chainId validation in connectMetaMaskProvider to prevent silent fallback to BSC",
+      "files": [
+        "frontend-app/src/lib/metamaskConnect.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "09bbad4fa26ef9c20daf6d9d55cb237339654073",
+      "title": "fix(frontend): Fix integer overflow vulnerability in deadline validation",
+      "files": [
+        "frontend-app/src/lib/racpAirdrop.ts"
+      ],
+      "disposition": "rejected: unsupported overflow claim; existing arbitrary-precision integers or bounded buffer arithmetic"
+    },
+    {
+      "role": "openclaw",
+      "commit": "2c0634e2c25541f98ea513d494051793aaf58df5",
+      "title": "fix(frontend): Fix integer overflow vulnerability in parseRacpHumanToWei",
+      "files": [
+        "frontend-app/src/lib/racpToken.ts"
+      ],
+      "disposition": "rejected: unsupported overflow claim; existing arbitrary-precision integers or bounded buffer arithmetic"
+    },
+    {
+      "role": "openclaw",
+      "commit": "ed016b07c6045a349645485dc7e907a8fedcee0c",
+      "title": "fix(frontend): Fix missing `captured_amount` fallback in `topWorkflowsByCurrency`",
+      "files": [
+        "frontend-app/src/lib/revenueAnalytics.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "3f06ea8e7bb44b302bd0b1b813de7c30c79982e6",
+      "title": "fix(frontend): Add input validation to prevent localStorage corruption from non-string values",
+      "files": [
+        "frontend-app/src/lib/safeStorage.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "9fd8c76c1230d6a3a24bba3b10e09c66c5e38b19",
+      "title": "fix(frontend): Fix integer overflow in digestHex() when processing large files",
+      "files": [
+        "frontend-app/src/lib/sha256Stream.ts"
+      ],
+      "disposition": "rejected: unsupported overflow claim; existing arbitrary-precision integers or bounded buffer arithmetic"
+    },
+    {
+      "role": "openclaw",
+      "commit": "d7baaec5b3ca2707ba9eb876a0ba0f5070ff0308",
+      "title": "fix(frontend): Fix missing error handling for undefined TURNSTILE_SITE_KEY in non-Node environments",
+      "files": [
+        "frontend-app/src/lib/turnstile.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "openclaw",
+      "commit": "475d57eff354c0c7eb5a6de882ac91f5edab9df1",
+      "title": "fix(frontend): Fix missing trailing slash in logo URL construction",
+      "files": [
+        "frontend-app/src/lib/wacpToken.ts"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "52948bcebc798fdb85f4991a1b229c58b51d7c1e",
+      "title": "fix(rpc): preserve empty object parameters in JSON RPC calls",
+      "files": [
+        "app/services/acp_rpc.py",
+        "tests/test_acp_rpc_headers.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "1aa63d6e23631cef99cb024e8ade2580695b1bb4",
+      "title": "fix(backend): Fix workflow_costs.py to reject estimated or missing evidence amounts",
+      "files": [
+        "app/services/workflow_costs.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "73bd8b6d502175d2c78278a8b297191df9814248",
+      "title": "fix(backend): Fix assay_gc.py to reject empty peaks list when simulate=False",
+      "files": [
+        "app/services/assay_gc.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "27cd2788e42c9d85b928d6c6a3d8f26c5f398dc4",
+      "title": "fix(backend): Add input validation for missing 'source_id' in research claim creation",
+      "files": [
+        "app/services/research_ops.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "481313178f4810d425b1ee935d7ea3622924a243",
+      "title": "fix(backend): Add explicit IPv6 ULA/Link-Local rejection to SSRF policy",
+      "files": [
+        "app/services/webhook_url_policy.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "2b9c1ab79ac5af0136c5f1fa2921a3de67a4fcd3",
+      "title": "fix(backend): Add input validation for missing 'user_id' in start_webid_session",
+      "files": [
+        "app/services/webid_kyc.py",
+        "tests/unit/test_webid_kyc.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "0cb268debc312421904d4e2c51aeaa2fcb82feb8",
+      "title": "fix(backend): Fix tokenomics snapshot to handle empty RPC responses gracefully",
+      "files": [
+        "app/services/acp_tokenomics.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "6f64a79081fcb77bc57add165d73b47a46cbc8bb",
+      "title": "fix(backend): Add input validation for missing 'target_user_id' in dating.py report_user",
+      "files": [
+        "app/services/dating.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "5f0b48f0af901f83f3f2c0e88111e27333a6bf14",
+      "title": "fix(backend): Add input validation for missing 'series_or_denomination' in numismatic_auth.py",
+      "files": [
+        "app/services/numismatic_auth.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "f4975843a58c78eaa92758bf26b19bf5a4eeab31",
+      "title": "fix(backend): Add input validation for missing 'deadline' in racp_airdrop.py typed_claim",
+      "files": [
+        "app/services/racp_airdrop.py",
+        "tests/test_racp_airdrop.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "cbd749a751e66149eb391b55894ec393b6e41cd2",
+      "title": "fix(backend): Fix rACP decimal precision drift in display formatting",
+      "files": [
+        "app/services/racp_decimal.py",
+        "tests/unit/test_racp_decimal.py"
+      ],
+      "disposition": "replaced by exact signed integer conversion with failing-baseline regressions; exclude redundant casts"
+    },
+    {
+      "role": "hermes",
+      "commit": "745a7deb252738bd9af4cb252485cfa59403a4dc",
+      "title": "fix(backend): Add currency validation to workflow_costs.py attribute_cost_evidence",
+      "files": [
+        "app/services/workflow_costs.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "ed290871dc10fd51b92b67410355d6342fce872b",
+      "title": "fix(rpc): explicitly request JSON responses",
+      "files": [
+        "app/services/acp_rpc.py",
+        "tests/test_acp_rpc_headers.py"
+      ],
+      "disposition": "integrated JSON Accept header; preserve all current-master tests"
+    },
+    {
+      "role": "hermes",
+      "commit": "7b90887b326daa17393e016043b0a519b3082807",
+      "title": "fix(backend): Fix unseal to handle empty secret boxes gracefully",
+      "files": [
+        "app/services/workflow_ops_support.py",
+        "tests/unit/test_workflow_ops_support.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "d9d6efb8449a9a54224a74917ec0be8a38ef3d5f",
+      "title": "fix(backend): Fix unseal returning empty string for valid base64 input",
+      "files": [
+        "app/services/workflow_ops_support.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "149df95b705450de6f5df06bbf02414107eaa6f8",
+      "title": "fix(backend): Fix integer overflow in _scan_address_utxo_units when summing unspent amounts",
+      "files": [
+        "app/services/acp_tokenomics.py"
+      ],
+      "disposition": "rejected: unsupported overflow claim; existing arbitrary-precision integers or bounded buffer arithmetic"
+    },
+    {
+      "role": "hermes",
+      "commit": "aa3328951461c52ab70543f0a1828360cd6bb08d",
+      "title": "fix(backend): Fix text_changes truncation logic to correctly handle long individual changes",
+      "files": [
+        "app/services/research_fetch.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "ab8c7fe7c26e66a58ea0a77f1146aa980db6c8db",
+      "title": "fix(backend): Fix unseal returning empty string for non-empty but zero-length nonce data",
+      "files": [
+        "app/services/workflow_ops_support.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "6569a00ff9ae677131b96126c718924335b3057d",
+      "title": "fix(backend): Fix text extraction truncation logic to prevent silent data loss on large text changes",
+      "files": [
+        "app/services/research_fetch.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "eefad1b72a777d97e81c9df226aba57e387d747c",
+      "title": "fix(backend): Fix integer division bug in latency calculation",
+      "files": [
+        "app/services/step_quality.py",
+        "tests/test_step_quality.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "f982326b3572696a0c35d4b017ac764335beea9b",
+      "title": "fix(backend): Fix missing fallback for paylink_id in helio_public_status when settings are empty",
+      "files": [
+        "app/services/helio_commerce.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "a32d5f03b572ab7cd996b63eff8ca7c4cc1aa018",
+      "title": "fix(backend): Add explicit 404 handling for WeVisOne OCR endpoint",
+      "files": [
+        "app/services/payment_wevisone.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "556a8913079e6d3acc9c432b3a4a1b0b830c00c4",
+      "title": "fix(backend): Fix integer overflow in acp_smallest_to_racp_wei for large ACP amounts",
+      "files": [
+        "app/services/racp_decimal.py"
+      ],
+      "disposition": "replaced by exact signed integer conversion with failing-baseline regressions; exclude redundant casts"
+    },
+    {
+      "role": "hermes",
+      "commit": "bf3e97a669e30e08fe76a7f9054a275feca2c6a7",
+      "title": "fix(backend): Fix unseal to handle truncated base64 padding correctly",
+      "files": [
+        "app/services/workflow_ops_support.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "742f5b18b76118e10e80929929687261a1ae0be4",
+      "title": "fix(backend): Fix SSRF bypass via IPv4-mapped IPv6 literal IP validation",
+      "files": [
+        "app/services/webhook_url_policy.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "a693a8ee555885f02fa282e63bc5b8a89721daee",
+      "title": "fix(backend): Add explicit 404 handling for WeVisOne OCR endpoint",
+      "files": [
+        "app/services/payment_wevisone.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "da6714a03580128f38ed45fae51ec12ebeb5b819",
+      "title": "fix(backend): Fix integer division in `reconcile_run_costs` to prevent silent precision loss on large amounts",
+      "files": [
+        "app/services/workflow_costs.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "e84352d874f9c89af95bfe26e3fc71806f94c071",
+      "title": "fix(backend): Fix unseal to handle truncated ciphertexts gracefully",
+      "files": [
+        "app/services/workflow_ops_support.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "c3ee3f32894a7ff1380d4373ac826d72a2f8d5ef",
+      "title": "fix(backend): Fix integer overflow in _scan_address_utxo_units when summing unspent amounts",
+      "files": [
+        "app/services/acp_tokenomics.py"
+      ],
+      "disposition": "rejected: unsupported overflow claim; existing arbitrary-precision integers or bounded buffer arithmetic"
+    },
+    {
+      "role": "hermes",
+      "commit": "aec063573c4f0623375ad16d0f6415d258ecc6b9",
+      "title": "fix(backend): Fix integer overflow in wacp_wei_to_acp_smallest_floor remainder calculation",
+      "files": [
+        "app/services/bridge_decimal.py"
+      ],
+      "disposition": "replaced by exact signed integer conversion with failing-baseline regressions; exclude redundant casts"
+    },
+    {
+      "role": "hermes",
+      "commit": "924ba16b582131c5be8a65aaf0de1352287fd890",
+      "title": "fix(backend): Fix floating-point precision in acp_smallest_to_decimal_str",
+      "files": [
+        "app/services/racp_decimal.py"
+      ],
+      "disposition": "replaced by exact signed integer conversion with failing-baseline regressions; exclude redundant casts"
+    },
+    {
+      "role": "hermes",
+      "commit": "a5aeab4384bd4661348676f47e717f7176ea5df0",
+      "title": "fix(backend): Fix missing validation for empty string evidence_amount in reconcile_run_costs",
+      "files": [
+        "app/services/workflow_costs.py"
+      ],
+      "disposition": "excluded: no demonstrated failing regression; preserve reviewed master behavior"
+    },
+    {
+      "role": "hermes",
+      "commit": "f0e055cfacd0cb22f321ad01cbbb110e01b8d620",
+      "title": "fix(backend): Fix SSRF bypass via IPv4-mapped IPv6 literal IP validation",
+      "files": [
+        "app/services/webhook_url_policy.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "9df3da1e7f10ef774d65ea6fca997b821171e828",
+      "title": "fix(backend): Fix missing fallback for empty HELIO_PAYLINK_ID in helio_public_status",
+      "files": [
+        "app/services/helio_commerce.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    },
+    {
+      "role": "hermes",
+      "commit": "d4676e64565c77cdf1615bca3fbf5b64cddf1989",
+      "title": "fix(backend): Fix race condition in chain_state RPC batch validation",
+      "files": [
+        "app/services/racp_airdrop.py"
+      ],
+      "disposition": "rejected: introduces invalid behavior or duplicates existing protection; see integration record"
+    }
+  ]
+}
