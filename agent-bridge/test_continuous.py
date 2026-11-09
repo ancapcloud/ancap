@@ -9,6 +9,27 @@ import continuous
 
 
 class ContinuousTests(unittest.TestCase):
+    def test_failed_probe_keeps_current_log_for_the_repair(self):
+        from types import SimpleNamespace
+        task={**self.task, 'planned':True, 'tests':['tests/test_sample.py'], 'instructions':'Fix the defect'}
+        runtime.save('hermes-process',dict(agent='hermes',cycle_id='current',task_id=task['task_id']))
+        runtime.save('hermes-evidence',dict(cycle_id='stale',output_log='missing'))
+        def reject(*args):
+            args[-1].write('FAILED test_new: expected 2, got 1\n')
+            raise ValueError('New regression must fail by assertion on baseline production code')
+        with patch('regression_probe.prove_regression',side_effect=reject),patch.object(continuous.subprocess,'Popen') as start:
+            with self.assertRaisesRegex(ValueError,'must fail by assertion'):
+                continuous.check(runtime,'hermes',task,'current')
+        start.assert_not_called()
+        evidence=runtime.load('hermes-evidence')
+        self.assertEqual(evidence['cycle_id'],'current')
+        self.assertFalse(evidence['test_passed'])
+        self.assertNotEqual(evidence['exit_code'],0)
+        (self.cwd/'app/services/sample.py').write_text('def value():\n    return 2\n')
+        runtime.quarantine('hermes',runtime.load('hermes-process'),'Probe rejected')
+        continuous.finish(runtime,'hermes',task,False)
+        self.assertIn('expected 2, got 1',runtime.load('hermes-repair')['instructions'])
+
     def test_duplicate_tests_cannot_mask_a_broken_test(self):
         import ast
         with self.assertRaisesRegex(ValueError,'Duplicate test'):
