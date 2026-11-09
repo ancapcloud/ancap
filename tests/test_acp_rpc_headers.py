@@ -67,3 +67,7 @@ def test_acp_rpc_call_preserves_explicit_empty_params(monkeypatch):
     for params in ({}, [], None):
         assert asyncio.run(acp_rpc.acp_rpc_call("getinfo", params)) == "ok"
     assert sent == [{}, [], []]
+
+
+def test_acp_rpc_headers_accept_json():
+    assert acp_rpc_headers()["Accept"] == "application/json"
