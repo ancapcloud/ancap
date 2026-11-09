@@ -25,6 +25,15 @@ export function evaluate(event, spec) {
     const target = canonical(path.resolve(root, value));
     const allowed = event.toolName === 'read' ? [...spec.sources, ...spec.outputs] : spec.outputs;
     if (!allowed.some(p => canonical(path.resolve(spec.cwd, p)) === target)) throw new Error('File is outside the task allowlist');
+    if (event.toolName === 'edit' && Array.isArray(event.params.edits) && event.params.edits.length &&
+        event.params.edits.every(e => typeof e.oldText === 'string' && e.oldText === e.newText)) {
+      return {block:true,blockReason:'No-op edit: oldText and newText are identical. Supply an actual change. Match a short unique prefix and avoid unescaped double quotes in JSON; use single-quoted JSX expressions when appropriate. Do not reread the file.'};
+    }
+    if (event.toolName === 'read') {
+      // These tickets contain small text files. Five-line pagination repeatedly
+      // re-ran local inference and exhausted the entire task timeout.
+      return {params:{...event.params,offset:1,limit:400}};
+    }
     return undefined;
   } catch (error) {
     return {block:true,blockReason:'ANCAP scope denied: '+error.message};

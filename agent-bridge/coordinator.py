@@ -15,6 +15,7 @@ import continuous
 ROOT = Path(__file__).resolve().parent
 WORK = Path.home() / 'Desktop/ANCAP-agents'
 PYTHON = Path.home() / 'AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe'
+PROJECT_PYTHON = ROOT.parent / '.venv' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
 NODE = 'C:/Program Files/nodejs/node.exe'
 CLAW = Path.home() / 'AppData/Roaming/npm/node_modules/openclaw/openclaw.mjs'
 FLAGS = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
@@ -83,6 +84,9 @@ def validate_outputs(policy, task):
 
 def execute(role, task):
     cwd = WORK / ('wt-' + role)
+    selected_model=continuous.config(sys.modules[__name__]).get('model')
+    if not isinstance(selected_model,str) or not selected_model:
+        raise ValueError('A model must be explicitly configured before starting a worker')
     baseline = git(cwd, 'rev-parse', 'HEAD')
     if task.get('repair_attempt') and task.get('baseline')!=baseline:
         raise ValueError('HEAD changed before repair; preserving external changes')
@@ -91,7 +95,7 @@ def execute(role, task):
         (ROOT/'runtime'/f'{role}-current-task.json').write_text(json.dumps(task,indent=2),encoding='utf-8')
     cycle = uuid.uuid4().hex
     state = dict(agent=role, cycle_id=cycle, task_id=task['task_id'], state='starting',
-                 started_at=now(), updated_at=now(), workdir=str(cwd), branch=git(cwd,'branch','--show-current'))
+                 started_at=now(), updated_at=now(), workdir=str(cwd), branch=git(cwd,'branch','--show-current'),model=selected_model)
     save(role + '-process', state)
     if task.get('repair_attempt') and load(role+'-repair').get('task_id')==task['task_id']:
         (ROOT/'status'/(role+'-repair.json')).unlink()
@@ -108,6 +112,9 @@ def execute(role, task):
     front = cwd / 'frontend-app'
     outputs = [str(Path(p).relative_to('frontend-app')) for p in task['allowed_files']] if role == 'openclaw' else task['allowed_files']
     prompt = ('Execute this single bounded task using file tools now. Do not answer with a future plan. '
+              'Prefer a minimal edit/patch. Do not rewrite a whole unchanged file. '
+              'All source is supplied below. Do not paginate small reads; if a read is needed request the whole file (limit 400). '
+              'Use at most one read per file, then perform the assigned edit and stop. '
               'No terminal, network, messaging, Git, or database operations are permitted. '
               'The supervisor independently runs project checks and commits the result. '
               'Do not read inboxes or choose another task. Write ONLY: '+', '.join(outputs)+'.\n'
@@ -123,11 +130,11 @@ def execute(role, task):
                '--message',prompt,'--timeout','1200','--json']
         actor_cwd = front
     else:
-        cmd = [str(PYTHON),'-u',str(ROOT/'hermes_scoped.py'),'chat','-t','file','--max-turns','6','-q',prompt]
+        cmd = [str(PYTHON),'-u',str(ROOT/'hermes_scoped.py'),'chat','--model',selected_model,'-t','file','--max-turns','6','-q',prompt]
         actor_cwd = cwd
     log = ROOT/'runtime'/f'{role}-{cycle}.log'
-    deadline = time.monotonic()+1260
-    with log.open('w',encoding='utf-8') as out:
+    with continuous.LANE.acquire(sys.modules[__name__],role), log.open('w',encoding='utf-8') as out:
+        deadline = time.monotonic()+1260
         process = subprocess.Popen(cmd,cwd=actor_cwd,env=env,stdout=out,stderr=subprocess.STDOUT,creationflags=FLAGS)
         state.update(state='running',pid=process.pid,log=str(log))
         unexpected = []
@@ -196,6 +203,8 @@ def loop(role, once=False):
             else:
                 save(role+'-process',dict(agent=role,state='idle',updated_at=now(),reason='Ready; no new explicit queued task'))
                 if once:return True
+        except continuous.StopRequested:
+            return True
         except Exception as exc:
             if task is None and continuous.config(sys.modules[__name__]).get('enabled'):
                 save(role+'-process',dict(agent=role,state='recovering',updated_at=now(),reason='Planning retry: '+str(exc)[:250]))
@@ -217,7 +226,7 @@ def main():
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             futures=[pool.submit(loop,role,'--once' in sys.argv) for role in ('openclaw','hermes')]
             while not all(f.done() for f in futures):
-                save('supervisor',dict(pid=os.getpid(),state='running',enabled=True,updated_at=now(),scheduler='continuous-scoped-v4'))
+                save('supervisor',dict(pid=os.getpid(),state='running',enabled=True,updated_at=now(),scheduler='continuous-scoped-v4',model=continuous.config(sys.modules[__name__]).get('model')))
                 time.sleep(5)
             return int(not all(f.result() for f in futures))
     finally:

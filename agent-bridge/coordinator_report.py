@@ -38,11 +38,14 @@ def render_report():
     lines=['ANCAP · OpenClaw + Hermes · '+stamp(),
            ('Координатор: работает; непрерывная разработка.' if supervisor.get('scheduler')=='continuous-scoped-v4' else 'Координатор: работает; только явные ограниченные задания.') if active else 'Координатор: остановлен или heartbeat устарел.']
     if (ROOT/'runtime/STOP').exists():lines.append('Общий STOP: новые задания остановлены оператором.')
+    if supervisor.get('model'):lines.append('Настроенная модель: '+supervisor['model'])
     for role,title in [('openclaw','OpenClaw · frontend'),('hermes','Hermes · backend')]:
         state=load(role+'-process');phase=state.get('state')
         lines.append(title)
         if active and phase=='running' and fresh(state) and alive(state.get('pid')):
             lines.append(f'Выполняет задание {state.get("task_id", "?")}; PID {state["pid"]}. Результат ещё не принят.')
+        elif active and phase=='waiting-model' and fresh(state):
+            lines.append('Ожидает очередь общей модели; heartbeat актуален, таймер задания ещё не запущен.')
         elif active and phase=='idle' and fresh(state):
             if supervisor.get('scheduler')=='continuous-scoped-v4':
                 lines.append('Готов; поиск следующей полезной задачи продолжается автоматически.')
@@ -50,7 +53,10 @@ def render_report():
                 lines.append('Готов; активной разработки нет: очередь заданий исчерпана.')
                 lines.append('Следующее задание: agent-bridge/queue/'+role+'.json с новым task_id.')
         elif active and phase in ('planning','reviewing','recovering') and fresh(state):
-            lines.append({'planning':'Автоматически планирует следующую правку кода.', 'reviewing':'Проверяет правку перед тестами.', 'recovering':'Сохраняет неудачную попытку и переходит к следующей задаче.'}[phase])
+            if phase=='recovering' and state.get('reason','').startswith('Planning retry:'):
+                lines.append('Повторяет выбор подходящей задачи; изменения кода пока не создавались.')
+            else:
+                lines.append({'planning':'Автоматически планирует следующую правку кода.', 'reviewing':'Проверяет правку перед тестами.', 'recovering':'Сохраняет неудачную попытку и переходит к следующей задаче.'}[phase])
         elif active and phase in ('starting','checking'):lines.append('Подготовка/независимая проверка задания; это ещё не завершённый результат.')
         elif phase=='blocked':lines.append('Приостановлен только этот агент: '+state.get('reason','требуется разбор'))
         elif phase=='completed':lines.append('Последнее задание завершено и проверено.')
@@ -59,6 +65,7 @@ def render_report():
         valid=(result.get('verified') is True and result.get('exit_code')==0 and bool(result.get('cycle_id'))
                and result.get('cycle_id')==receipt.get('cycle_id') and receipt.get('test_passed') is True)
         if valid:
+            if result.get('origin')=='controller-repair':lines.append('Исправление тестов выполнено и проверено контроллером.')
             lines.append('Последняя проверка: '+stamp(result['finished_at'])+' — PASS.')
             if result.get('commit'):lines.append('Локальный коммит: '+result['commit'][:12])
     return '\n'.join(lines)
