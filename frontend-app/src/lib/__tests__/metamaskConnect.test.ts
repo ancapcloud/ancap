@@ -45,4 +45,10 @@ describe("resolveEvmProvider", () => {
     expect(createEVMClient).toHaveBeenCalled();
     expect(connect).toHaveBeenCalledWith({ chainIds: ["0x1237"] });
   });
+
+  it("throws an error when chainIds is an empty array", async () => {
+    getPreferredEvmProvider.mockReturnValue(undefined);
+    const { resolveEvmProvider } = await import("../metamaskConnect");
+    await expect(resolveEvmProvider([])).rejects.toThrow("chainIds array is empty");
+  });
 });
