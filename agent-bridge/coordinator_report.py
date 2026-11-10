@@ -1,5 +1,6 @@
 """Report actual queue/worker states; idle is healthy, quarantined is role-local."""
 import ctypes
+from collections import deque
 from datetime import datetime, timezone
 import json
 import os
@@ -32,11 +33,26 @@ def stamp(value=None):
     try:return dt.astimezone(ZoneInfo('Europe/Berlin')).strftime('%d.%m %H:%M')+' (Берлин)'
     except Exception:return dt.strftime('%d.%m %H:%M UTC')
 
+def attempts_since(role, finished_at=None):
+    try:
+        cutoff=datetime.fromisoformat(finished_at) if finished_at else None
+        with (ROOT/'runtime'/(role+'-history.jsonl')).open(encoding='utf-8') as journal:
+            lines=deque(journal,maxlen=200)
+    except (OSError,ValueError):return []
+    failures=[]
+    for line in lines:
+        try:
+            item=json.loads(line)
+            if item.get('outcome')=='failed' and (cutoff is None or datetime.fromisoformat(item['at'])>cutoff):
+                failures.append(item)
+        except (ValueError,KeyError,TypeError):continue
+    return failures
+
 def render_report():
     supervisor=load('supervisor')
     active=supervisor.get('enabled') is True and fresh(supervisor) and alive(supervisor.get('pid'))
     lines=['ANCAP · OpenClaw + Hermes · '+stamp(),
-           ('Координатор: работает; непрерывная разработка.' if supervisor.get('scheduler')=='continuous-scoped-v4' else 'Координатор: работает; только явные ограниченные задания.') if active else 'Координатор: остановлен или heartbeat устарел.']
+           ('Координатор: работает; автоматический выбор задач включён.' if supervisor.get('scheduler')=='continuous-scoped-v4' else 'Координатор: работает; только явные ограниченные задания.') if active else 'Координатор: остановлен или heartbeat устарел.']
     if (ROOT/'runtime/STOP').exists():lines.append('Общий STOP: новые задания остановлены оператором.')
     if supervisor.get('model'):lines.append('Настроенная модель: '+supervisor['model'])
     for role,title in [('openclaw','OpenClaw · frontend'),('hermes','Hermes · backend')]:
@@ -68,6 +84,12 @@ def render_report():
             if result.get('origin')=='controller-repair':lines.append('Исправление выполнено и проверено контроллером.')
             lines.append('Последняя проверка: '+stamp(result['finished_at'])+' — PASS.')
             if result.get('commit'):lines.append('Локальный коммит: '+result['commit'][:12])
+        failures=attempts_since(role,result.get('finished_at') if valid else None)
+        if failures:
+            lines.append(f'После последнего принятого результата отклонено попыток: {len(failures)} (включая исправления; последние 200 записей).')
+            reason=' '.join(str(failures[-1].get('reason') or 'Причина не записана').split())[:180]
+            lines.append('Последний отказ: '+reason)
+            lines.append('Нового принятого результата после этих попыток пока нет.')
     return '\n'.join(lines)
 
 if __name__=='__main__':

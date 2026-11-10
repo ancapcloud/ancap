@@ -1773,3 +1773,7 @@ conversions and review feedback corrected; automatic fixes now need related test
 and an isolated failing-baseline regression. Publication/CI acceptance is tracked
 in docs/AGENT_INTEGRATION_2026-11-09.md; no deployment is claimed.
 
+2026-11-09 [x] recovered deployment 7f0e085: failed-job retry succeeded and public
+health/readiness/build provenance were verified. Prepared bounded, TLS-SNI-aware
+host RPC smoke with six isolated regression scenarios. See docs/DEPLOY_RECOVERY_2026-11-09.md.
+

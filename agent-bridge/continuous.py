@@ -218,7 +218,7 @@ def next_task(runtime, role):
         roadmap_parts.append(name+'\n'+'\n'.join(active)[:6000])
     roadmap_parts.append('Invariant policy: rACP is external; ACP internal. Display 1 ACP = 10 rACP equivalents. EUR service prices. Do not change ratios, contract identifiers, permissions or legal claims.')
     roadmap='\n'.join(roadmap_parts)
-    recent=json.dumps([{k:e.get(k) for k in ('unit','outcome')} for e in past[-15:]],ensure_ascii=False)
+    recent=json.dumps([{k:e.get(k) for k in ('unit','outcome','title','reason')} for e in past[-15:]],ensure_ascii=False)
     prompt=('You plan one real ANCAP code improvement. Return JSON only: '
             '{"actionable":true/false,"title":"...","instructions":"exact small edit and acceptance criteria",'
             '"reason":"specific defect visible in source","evidence":"exact existing source substring"}. '
@@ -226,6 +226,8 @@ def next_task(runtime, role):
             'Do not add token banners, contract addresses, chain IDs or financial/legal facts. '
             'Do not invent imports, symbols or requirements from absent files. Prefer a small code defect with a clear regression check. '
             'Add a regression assertion that fails on the current source and passes after the fix. '
+            'Read the existing tests before proposing a defect: do not request behavior already covered. '
+            'Give a concrete input, current incorrect output and expected output; explain why the existing code produces the incorrect output. '
             'Python integers and JavaScript BigInt do not overflow. JSX try/catch is not a React error boundary. '
             'Next.js redirect intentionally throws; never catch it. Do not invent URLs or translation keys. '
             'Prefer a concrete bug, accessible UI, input validation, error handling, or a small roadmap step. '
@@ -331,11 +333,18 @@ def check(runtime, role, task, cycle):
         commands=[([str(runtime.PROJECT_PYTHON),'-m','pytest','--noconftest',*tests,'-q'],cwd)]
     logfile=runtime.ROOT/'runtime'/f'{role}-tests-{cycle}.log'
     code=0
+    failure=None
     with logfile.open('w',encoding='utf-8') as out:
         if task.get('planned'):
             from regression_probe import prove_regression
-            prove_regression(runtime,role,task,out)
+            try:
+                prove_regression(runtime,role,task,out)
+            except Exception as exc:
+                code=1
+                failure=str(exc)
+                out.write('\nREGRESSION CHECK REJECTED: '+failure+'\n');out.flush()
         for cmd,workdir in commands:
+            if code:break
             out.write('COMMAND: '+subprocess.list2cmdline(cmd)+'\n');out.flush()
             proc=subprocess.Popen(cmd,cwd=workdir,stdout=out,stderr=subprocess.STDOUT,creationflags=runtime.FLAGS)
             deadline=time.monotonic()+300
@@ -350,6 +359,8 @@ def check(runtime, role, task, cycle):
     receipt=dict(agent=role,cycle_id=cycle,updated_at=runtime.now(),executor='supervisor',test_passed=code==0,
                  exit_code=code,command='; '.join(subprocess.list2cmdline(c) for c,_ in commands),output_log=str(logfile))
     runtime.save(role+'-evidence',receipt)
+    if failure:
+        raise ValueError(failure)
     return receipt
 
 

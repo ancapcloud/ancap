@@ -12,6 +12,33 @@ import coordinator_report as report
 from scoped_files import FilePolicy, install_guard
 
 class CoordinatorTests(unittest.TestCase):
+    def test_report_shows_failures_after_last_accepted_result(self):
+        current=report.datetime.now(report.timezone.utc).isoformat()
+        def state(name):
+            if name=='supervisor':return dict(enabled=True,pid=1,updated_at=current,scheduler='continuous-scoped-v4')
+            if name.endswith('-process'):return dict(state='planning',updated_at=current)
+            if name.endswith('-last-result'):
+                return dict(state=dict(verified=True,exit_code=0,cycle_id='accepted',finished_at=current),receipt=dict(cycle_id='accepted',test_passed=True))
+            return {}
+        with patch.object(report,'load',side_effect=state),patch.object(report,'alive',return_value=True),patch.object(report,'attempts_since',return_value=[dict(reason='regression failed')]):
+            text=report.render_report()
+        self.assertIn('Последний отказ: regression failed',text)
+        self.assertIn('отклонено попыток: 1',text)
+        self.assertNotIn('непрерывная разработка',text)
+
+    def test_history_ignores_failures_before_last_success(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.object(report,'ROOT',Path(tmp)):
+            folder=Path(tmp)/'runtime';folder.mkdir()
+            (folder/'hermes-history.jsonl').write_text('\n'.join([
+                json.dumps(dict(at='2026-11-09T10:00:00+00:00',outcome='failed')),
+                'broken json',
+                json.dumps(dict(at='2026-11-09T12:00:00+00:00',outcome='failed',reason='current failure')),
+                json.dumps(dict(at='2026-11-09T12:01:00+00:00',outcome='preserved')),
+            ]))
+            failures=report.attempts_since('hermes','2026-11-09T11:00:00+00:00')
+        self.assertEqual(len(failures),1)
+        self.assertEqual(failures[0]['reason'],'current failure')
+
     def test_ticket_acceptance_rejects_removed_tests_and_file_side_effects(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'test_rpc.py'

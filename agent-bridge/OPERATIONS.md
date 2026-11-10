@@ -1,3 +1,13 @@
+# 2026-11-09: repair feedback and truthful progress reporting
+
+Both services and Telegram delivery were live, but proposed changes repeatedly failed acceptance. Regression-probe exceptions escaped before a current-cycle evidence receipt was saved. A repair therefore received only a generic rejection, or no matching test log. The check now saves a failed receipt and its complete log before propagating the rejection; downstream checks are not run after that failure. Repair prompts receive the actual baseline/new-test diagnostic. The planner also receives recent task titles and rejection reasons and must explain a concrete failing input instead of repeating already-covered behavior.
+
+The combined report now lists rejected attempts since the last verified result and the latest rejection. A running coordinator is described as automatic task selection, not evidence of uninterrupted successful development. Existing controller receipts keep their provenance and timestamp. No quality gate was relaxed; failed drafts remain preserved by the existing recovery mechanism.
+
+Hermes Pyright attempted to execute an npm shell shim as a Windows executable (WinError 193). The local user configuration now invokes the installed language server through native node.exe; its LSP initialize handshake passed. The previous config is retained in config.yaml.bak-20261109-lsp beside the original private config.
+
+Validation: 35 targeted coordinator, continuity, baseline-regression, inference-lane and fixture-selection tests passed, including current-cycle log propagation into repair and progress-history filtering. Live worker acceptance is recorded separately; these controller changes do not constitute a new autonomous product result.
+
 # 2026-11-07: inference contention and test-adapter repair
 
 Gateway and model were healthy, but OpenClaw retried timeouts while both roles and their planner/reviewer competed for one Qwen35 runner. Hermes was attempting tests/api/test_wallet_auth.py with --noconftest: four missing-client fixture errors could not be repaired by changing wallet logic.

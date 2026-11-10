@@ -442,3 +442,7 @@ unsupported generated changes, preserve current production behavior, require
 failing-baseline regression proof and add Windows coordination CI. Exact amount
 precision fixed. See docs/AGENT_INTEGRATION_2026-11-09.md. No deployment.
 
+2026-11-09 [x] deployment 7f0e085 recovered via Actions retry after transient host
+nginx 404 immediately after reload; live health/readiness and build verified.
+Host RPC smoke hardening and regression evidence: docs/DEPLOY_RECOVERY_2026-11-09.md.
+
