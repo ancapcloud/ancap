@@ -20,7 +20,7 @@ def compute_step_quality(
     - quality = 0.6 * outcome + 0.4 * latency (so success + speed = higher quality)
     """
     outcome = 1.0 if state == "succeeded" else 0.5 if state == "skipped" else 0.0
-    latency = max(0.0, 1.0 - ((duration_ms or 0) / 10000.0))
+    latency = max(0.0, 1.0 - (max(0, duration_ms or 0) / 10000.0))
     return round(0.6 * outcome + 0.4 * latency, 4)
 
 
