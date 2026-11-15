@@ -1,3 +1,10 @@
+## Agent integration — 2026-11-15
+
+[~] Reviewed integration in PR #160: preserve current safeguards, retain verified
+agent fixes, patch dnspython alert #317 and align Expo SDK 58 dependencies.
+Local targeted checks passed; merge CI and deployment acceptance pending.
+Disposition: `docs/AGENT_INTEGRATION_2026-11-15.md`.
+
 ## Developer social-engineering protection — 2026-11-04
 
 [~] Defense-in-depth implementation: private-stdin walletd transport, scrubbed
