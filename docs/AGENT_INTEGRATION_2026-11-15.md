@@ -19,8 +19,12 @@ GitHub reported no open CodeQL alerts and one open Dependabot alert (#317, high,
 ## Verification
 
 - Frontend: 125 tests and TypeScript passed before the additional deadline cases; the added cases are checked separately.
-- Backend: step-quality and route-auth guard suites passed (10 tests).
+- Backend: 18 targeted step-quality/auth/WebID/redeem tests passed. Complete Backend CI passed on both PR and master; unit job reported 302 passed and 7 skipped.
 - Secret hygiene: 2238 tracked files scanned, no findings.
 - Mobile lockfile audit: zero reported npm vulnerabilities.
+- Mobile: security regressions, 222 application tests, SDK tests and all workspace typechecks passed. Expo doctor passed 19/19 checks and Android export succeeded after aligning the native module's expo-modules-core dependency to 58.1.0.
+- All PR checks passed. Review finding about duplicate native core was fixed in `d0b30a4a` and resolved; PR #160 merged as `403606af`. All matching master checks passed before the SSH deployment step.
+- GitHub open CodeQL, secret-scanning and Dependabot alerts: zero after merge. Duplicate dependency PR #159 closed because its exact patch is included in #160.
+- Production activation: https://github.com/ancapcloud/ancap/actions/runs/43684595369. Verify the workflow result and `/internal/frontend-build` separately from the merged-code status.
 
 This is a bounded integration/security review, not a guarantee that every repository defect has been eliminated. Merge CI and production deployment evidence are tracked on PR #160 and its resulting master commit. No signing, token issuance or reserve transfer is included.
