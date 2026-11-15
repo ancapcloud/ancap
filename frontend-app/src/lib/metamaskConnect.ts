@@ -46,6 +46,7 @@ async function getEvmClient(): Promise<EvmClient> {
  */
 export async function connectMetaMaskProvider(chainIds: string[] = [RACP_CHAIN_HEX]): Promise<Eip1193Provider> {
   if (typeof window === "undefined") throw new Error("MetaMask Connect requires a browser");
+  if (chainIds.length === 0 || chainIds.some(id => id === '' || id === '0x')) throw new Error("chainIds array is empty");
   const client = await getEvmClient();
   await client.connect({ chainIds: chainIds.length ? chainIds : [RACP_CHAIN_HEX] });
   const provider = client.getProvider();

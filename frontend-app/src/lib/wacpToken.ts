@@ -23,7 +23,7 @@ export type WatchAssetParams = {
 };
 
 export function getWacpLogoUrl(origin?: string): string {
-  const base = (origin?.trim() || WACP_TOKEN_IMAGE_ORIGIN).replace(/\/$/, "");
+  const base = (origin?.trim() || WACP_TOKEN_IMAGE_ORIGIN).replace(/\/+$/, "");
   return `${base}${WACP_LOGO_PATH}`;
 }
 

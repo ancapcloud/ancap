@@ -24,6 +24,11 @@ def test_compute_step_quality_skipped():
     assert compute_step_quality("s1", "action", "skipped", None, {}) == 0.7  # 0.6*0.5 + 0.4*1
 
 
+def test_compute_step_quality_negative_duration_clamped():
+    # negative duration_ms should be treated as 0 (clamped to 0)
+    assert compute_step_quality("s1", "action", "succeeded", -50, None) == 1.0  # 0.6*1 + 0.4*1
+
+
 @pytest.mark.asyncio
 async def test_get_step_quality_empty_url_uses_builtin():
     """When scorer_url is empty, get_step_quality returns built-in heuristic."""

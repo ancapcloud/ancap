@@ -5,6 +5,9 @@ const account = "0x0000000000000000000000000000000000001234";
 const voucher: AirdropVoucher = { chain_id: 4663, airdrop_contract: RACP_AIRDROP, token_contract: RACP_CONTRACT, recipient: account, eligibility_id: "0x"+"ab".repeat(32), deadline: 2000000000, signature: "0x"+"12".repeat(65), grant: "500" };
 
 describe("bounded rACP claim transaction", () => {
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1])("rejects invalid deadline %s", deadline => {
+    expect(() => claimTransaction({ ...voucher, deadline }, account)).toThrow("Invalid airdrop voucher");
+  });
   it("encodes a zero-value fixed-function call with the correct ABI dynamic offset", () => {
     const tx = claimTransaction(voucher, account);
     expect(tx.to).toBe(RACP_AIRDROP); expect(tx.value).toBe("0x0"); expect(tx.chainId).toBe("0x1237");
