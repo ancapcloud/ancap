@@ -16,6 +16,10 @@ lib/
 !frontend-app/src/lib/**
 !ancap-mobile/apps/acp-wallet-expo/lib/
 !ancap-mobile/apps/acp-wallet-expo/lib/**
+!frontend-app/vendor/picomatch-safe/lib/
+!frontend-app/vendor/picomatch-safe/lib/*.js
+!ancap-mobile/vendor/picomatch-safe/lib/
+!ancap-mobile/vendor/picomatch-safe/lib/*.js
 lib64/
 parts/
 sdist/
