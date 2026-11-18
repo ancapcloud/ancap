@@ -1,0 +1,17 @@
+{
+  "name": "@ancap/picomatch-safe",
+  "version": "4.0.7",
+  "private": true,
+  "description": "Local security fork of picomatch 4.0.7: bound single-branch repeated extglobs",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12"
+  },
+  "ancapUpstream": {
+    "package": "picomatch",
+    "version": "4.0.7",
+    "advisory": "GHSA-fc5q-39xc-vjpf"
+  },
+  "ancapPatch": "single-branch-repeated-extglob-1"
+}
