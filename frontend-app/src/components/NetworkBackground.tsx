@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function NetworkBackground({ embedded = false }: { embedded?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
-  const presentation = (pathname === "/" && !embedded) || pathname === "/projects" || pathname === "/investors";
+  const presentation = !pathname || (pathname === "/" && !embedded) || pathname === "/projects" || pathname === "/investors";
 
   useEffect(() => {
     if (presentation) return;

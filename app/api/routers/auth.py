@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
-from app.api.deps import DbSession, require_auth
+from app.api.deps import CommittedDbSession, DbSession, require_auth
 from app.config import get_settings
 from app.db.models import User, UserEvmWallet
 from app.schemas import (
@@ -290,7 +290,7 @@ async def wallet_link(
 
 
 @router.post("/users", response_model=UserPublic, status_code=201)
-async def create_user(body: UserCreateRequest, request: Request, response: Response, session: DbSession):
+async def create_user(body: UserCreateRequest, request: Request, response: Response, session: CommittedDbSession):
     await _enforce_auth_rate_limit(
         request,
         scope="auth_register",

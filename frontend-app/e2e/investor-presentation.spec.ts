@@ -72,7 +72,7 @@ test("People + AI and card information stay localized and usable on mobile in fi
     for (const route of ["/", "/projects", "/investors"]) {
       await page.goto(route);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      const model = page.locator("#people-ai-economy");
+      const model = page.getByRole("main").locator("#people-ai-economy:visible");
       await expect(model.getByRole("heading", { level: 2, name: c.title, exact: true })).toBeVisible();
       await expect(model.getByText(c.limits, { exact: true })).toBeVisible();
       await expect(model.getByRole("link", { name: `${c.tests} →`, exact: true })).toHaveAttribute("href", "/economy");

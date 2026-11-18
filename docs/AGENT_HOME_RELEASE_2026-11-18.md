@@ -113,3 +113,13 @@ old bracket/line-terminator behavior. Differential verification passed 47,449
 bounded cases, including 10,000 varied 80-character inputs. A long hostile input
 timed out on the original helper and completes with the new implementation;
 regressions cover the helper and scan API. No CodeQL rule or alert is suppressed.
+
+The E2E trace exposed an identity-registration transaction race: FastAPI's
+request-scoped yield cleanup committed after the 201 response. Immediate reads
+could return 404 or fail agent ownership checks even with the correct owner ID.
+User and agent creation now use function-scoped database cleanup, committing
+before credentials or IDs are sent. Streaming sessions retain their existing
+scope. Four ASGI regression cases verify response ordering and failed commits,
+including the real bearer-auth dependency and its separately scoped session.
+Browser locators target the active main surface, excluding retained hidden DOM;
+the animation also waits for a known pathname before mounting globally.

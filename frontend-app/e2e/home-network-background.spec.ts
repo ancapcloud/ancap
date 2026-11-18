@@ -12,7 +12,8 @@ for (const width of [1440, 390]) {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
     await expect(page.locator("html")).toHaveClass(new RegExp(theme));
-    const canvas = page.locator("canvas#network");
+    await expect(page.locator("canvas#network:visible")).toHaveCount(1);
+    const canvas = page.getByRole("main").locator("canvas#network");
     await expect(canvas).toBeVisible();
     await expect(canvas.locator("..")).toHaveCSS("pointer-events", "none");
     await expect.poll(() => canvas.evaluate(el => {
@@ -21,10 +22,10 @@ for (const width of [1440, 390]) {
     })).toBe(true);
     const firstFrame = await canvas.evaluate(el => (el as HTMLCanvasElement).toDataURL());
     await expect.poll(() => canvas.evaluate(el => (el as HTMLCanvasElement).toDataURL())).not.toBe(firstFrame);
-    const primary = page.locator("#product").getByRole("link", { name: "Start your first workflow" });
+    const primary = page.getByRole("main").locator("#product").getByRole("link", { name: "Start your first workflow" });
     await expect(primary).toHaveAttribute("href", "/ai/run/token-risk-report");
     await primary.click({ trial: true });
-    const hero = page.locator("#product");
+    const hero = page.getByRole("main").locator("#product");
     const visibleHero = await hero.screenshot({ animations: "disabled" });
     await canvas.evaluate(el => { el.style.visibility = "hidden"; });
     const hiddenHero = await hero.screenshot({ animations: "disabled" });
@@ -38,7 +39,8 @@ for (const width of [1440, 390]) {
 test("homepage network stays static with reduced motion and resumes when enabled", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const canvas = page.locator("canvas#network");
+  await expect(page.locator("canvas#network:visible")).toHaveCount(1);
+  const canvas = page.getByRole("main").locator("canvas#network");
   await expect(canvas).toBeVisible();
   await expect.poll(() => canvas.evaluate(el => {
     const context = (el as HTMLCanvasElement).getContext("2d")!;
