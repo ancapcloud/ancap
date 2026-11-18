@@ -4,7 +4,8 @@
 content, preserving reduced motion and theme readability. Desktop/mobile browser
 regressions cover actual visible pixels. Reviewed unchanged agent heads, recovered
 missing local worktree files and the model service; rejected drafts stay excluded.
-Patched QUIC, zlib and rustix advisories behind the failed Crypto CI audit.
+Patched QUIC, zlib and rustix advisories behind the failed Crypto CI audit;
+aligned Expo patch versions and added a tested local picomatch ReDoS mitigation.
 Evidence and remaining maintenance warnings: `docs/AGENT_HOME_RELEASE_2026-11-18.md`.
 Release activation is verified separately by matching GitHub CI/deployment and build ID.
 

@@ -78,3 +78,31 @@ the documented concurrent compiler/Next.js resource contention. All images must
 build before migrations or activation; isolated shell tests verify service order
 and that frontend/node build failures prevent activation. Use full deployment so
 the patched Rust dependencies reach the production ACP-node image as well.
+
+The first PR CI run also exposed new Expo SDK 58 patch requirements: expo 58.0.26,
+expo-dev-client 58.0.21, expo-file-system 58.0.14 and expo-router 58.0.32.
+Align the root/workspace manifests and lockfile; keep expo-doctor enabled.
+Deployment orchestration/release-gate tests passed (16 checks).
+
+The refreshed npm advisory database identifies GHSA-fc5q-39xc-vjpf in picomatch
+through 4.0.7; no patched upstream release was available. A 40-character hostile
+single-branch repeated extglob stalled the original package until a child-process
+timeout. Both JS projects now use identical, MIT-licensed private local forks of
+4.0.7. The parser routes wildcard-containing single repeated branches through
+its existing literal fallback, retaining safe character-class rewrites. Such
+patterns intentionally become literals; this is a documented compatibility
+boundary, not an upstream upgrade. Normal build patterns and alternate compile
+entry points have regression coverage, including installed consumer resolution.
+
+The local source remains at upstream version 4.0.7 for peer compatibility and is
+identified by its private package name and `ancapPatch` metadata. npm audit does
+not assess local forks: the mitigation is supported by source review and tests,
+not by relabelling a clean npm report as proof. Frontend image stages copy the
+vendor source alongside symlinked dependencies. Replace these forks only with a
+verified upstream fix. Advisory: https://github.com/advisories/GHSA-fc5q-39xc-vjpf.
+
+Fresh npm ci succeeded in both projects with no registry audit findings. All
+installed picomatch consumer-resolution checks passed; no vulnerable nested
+registry copies remain in the lockfiles. The frontend passed 4 security tests
+and 131 unit tests; mobile passed 17 security checks and 352 application/SDK
+tests. The Node security runner is kept separate from Vitest discovery.

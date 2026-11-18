@@ -25,9 +25,9 @@ for (const width of [1440, 390]) {
     await expect(primary).toHaveAttribute("href", "/ai/run/token-risk-report");
     await primary.click({ trial: true });
     const hero = page.locator("#product");
-    const visibleHero = await hero.screenshot();
+    const visibleHero = await hero.screenshot({ animations: "disabled" });
     await canvas.evaluate(el => { el.style.visibility = "hidden"; });
-    const hiddenHero = await hero.screenshot();
+    const hiddenHero = await hero.screenshot({ animations: "disabled" });
     await canvas.evaluate(el => { el.style.visibility = ""; });
     expect(visibleHero.equals(hiddenHero), "network pixels must be visible above the homepage background").toBe(false);
     await page.screenshot({ path: test.info().outputPath(`network-home-${theme}-${width}.png`) });
