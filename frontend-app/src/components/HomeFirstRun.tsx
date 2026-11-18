@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useLanguage } from "./LanguageProvider";
+import { NetworkBackground } from "./NetworkBackground";
 import { homeFirstRunByLang } from "@/locales/homeFirstRun";
 import { positioningByLang } from "@/locales/positioning";
 import { trackEvent } from "@/lib/analytics";
@@ -28,6 +29,7 @@ export function HomeFirstRun({ afterHero }: { afterHero?: ReactNode }) {
   });
 
   return <div className={h.experience}>
+    <NetworkBackground embedded />
     <section className={h.hero} id="product" aria-labelledby="homepage-title">
       <div className={h.heroCopy}>
         <p className={h.eyebrow}><span className={h.dot} /> ANCAP / {c.kicker}</p>

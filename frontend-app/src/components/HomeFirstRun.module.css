@@ -1,5 +1,5 @@
 main.homeMain { max-width: 1600px; padding-inline: 48px; }
-.experience { background: #030712; margin-inline: -48px; padding-inline: 48px; border-radius: 0 0 24px 24px; color: #f1f5f9; --muted: #a5b2c6; }
+.experience { position: relative; isolation: isolate; background: #030712; margin-inline: -48px; padding-inline: 48px; border-radius: 0 0 24px 24px; color: #f1f5f9; --muted: #a5b2c6; }
 .experience a { text-decoration: none; }
 .experience a:focus-visible { outline: 2px solid #6ee7c4; outline-offset: 6px; }
 .hero { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; align-items: center; min-height: auto; padding: 90px 0 72px; }
