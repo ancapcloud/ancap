@@ -72,6 +72,9 @@ async def require_auth(
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+# Identity creation must commit before clients receive credentials or agent IDs.
+# Keep request-scoped sessions available to streaming endpoints.
+CommittedDbSession = Annotated[AsyncSession, Depends(get_db, scope="function")]
 
 
 async def get_agent_id_from_api_key(

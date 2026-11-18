@@ -306,8 +306,12 @@ docker compose -f "$COMPOSE" config --quiet
 # Default push/recover builds only api+frontend. Full/acp-node cargo rebuilds routinely
 # overload the VPS (load 90+) and cancel mid-session — use --with-acp-node explicitly.
 if [[ "$WITH_ACP_NODE" -eq 1 ]]; then
-  echo "Building full compose stack (includes acp-node / Rust)..."
-  docker compose -f "$COMPOSE" build
+  echo "Building api, frontend and acp-node sequentially (includes Rust)..."
+  # Do not run wallet Rust, Next.js and the node compiler together on the VPS.
+  # All images must finish successfully before migrations or activation begin.
+  docker compose -f "$COMPOSE" build api
+  docker compose -f "$COMPOSE" build frontend
+  docker compose -f "$COMPOSE" build acp-node
 else
   echo "Building api + frontend only (pass --with-acp-node for Rust node rebuild)..."
   # Keep the wallet Rust compiler and Next.js build from competing for VPS RAM.

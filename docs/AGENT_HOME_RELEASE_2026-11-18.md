@@ -1,0 +1,125 @@
+# Agent review and homepage animation repair — 18 November 2026
+
+Baseline: GitHub master `c761cf23`. This is a bounded review of the available
+Hermes/OpenClaw results and the failed GitHub checks, not a blanket security certification.
+
+## Agent results and local recovery
+
+At intake, Hermes remained at `154ae971` and OpenClaw at `10caacdf`, the same heads
+reviewed on 15 November. Their useful changes are already integrated by PR #160;
+the unsafe zero-deadline airdrop relaxation and earlier rejected backlog remain
+excluded. There are no additional accepted commits to merge from these heads.
+Failed drafts/stashes are not release candidates.
+
+Both isolated working directories contained missing tracked files (41 Hermes,
+18 OpenClaw). Only absent tracked paths were restored from each directory's own
+HEAD. Existing edits and retained stashes were preserved. The local repair
+inventory is `agent-bridge/runtime/workspace-repair-20261118.json` (not public).
+Ollama was not listening on loopback port 11434; the existing local service was
+started with the documented single-runner/context settings. Its version/model
+endpoints responded and both agents resumed planning. This is service recovery,
+not evidence of a new successful autonomous product result.
+
+During review, OpenClaw attempted to replace unknown-route rejection in
+`projectPresentation` with a generic Crypto result and remove existing test
+assertions. The acceptance guard rejected that attempt. No such fallback is
+included in this release; subsequent drafts still require their normal gates.
+
+## Homepage repair
+
+The marketing redesign excluded `/` from NetworkBackground and placed an opaque
+first-run surface above the global background. Restoring only the route condition
+would draw a canvas hidden behind that surface.
+
+Mount the original network renderer inside the isolated first-run surface, above
+its background and below its content. Keep one canvas on the homepage; preserve
+the separate `/projects` and `/investors` presentation behavior, light/dark visual
+contrast, pointer transparency, reduced-motion handling and visibility cleanup.
+
+The new browser regression failed on the previous production homepage because
+the canvas was missing. The corrected tests verify painted pixels change over
+time, compare hero screenshots with the network visible/hidden to detect opaque
+covering layers, exercise desktop/mobile in both themes, and verify a static
+reduced-motion frame resumes when the preference changes. The workflow CTA
+remains reachable.
+
+## GitHub security repair
+
+Crypto CI run `43869333705` failed its dependency audit. Update the lockfile using
+Cargo, without suppressing advisories or changing the ACP protocol:
+
+- quinn-proto 0.11.18 → 0.11.19 (RUSTSEC-2026-0523 and -0524).
+- quinn-udp 0.5.14 → 0.5.16 (RUSTSEC-2026-0538).
+- libz-sys 1.1.31 → 1.1.33 (newly discovered RUSTSEC-2026-0544).
+- rustix 1.1.4 → 1.1.6 (RUSTSEC-2026-0486 unsound xattr API).
+
+Fresh cargo-audit succeeds with no vulnerability/unsound findings. Seven
+unmaintained-package warnings remain: basic-toml, bincode, chrono, paste and the
+three pqcrypto crates. Replacing serialization or cryptographic libraries requires
+a separately reviewed compatibility migration; no warning is silenced here.
+
+## Validation and acceptance
+
+- Frontend unit suite: 131 passed; TypeScript passed.
+- Animation browser suite: 5 passed, including theme, mobile and compositing checks.
+- Existing first-run responsive/language checks passed; the CTA/auth-return scenario
+  passed on a focused rerun after a local development-server startup failure.
+- Targeted backend/auth/cost/RPC suite: 30 passed.
+- ACP crypto tests passed with both default PQC and classical-only features.
+- Tracked secret scan: 2239 files, no findings; Alembic has one head.
+
+Full Linux node/FFI/wallet compatibility, GitHub CI and deployment are accepted by
+the matching PR/master workflow results. Production activation must also match
+`/internal/frontend-build`; local code edits alone do not establish deployment.
+No issuance, signing, bridge reserve operation or contract deployment is included.
+
+The full deploy path now builds API, frontend and ACP-node sequentially, avoiding
+the documented concurrent compiler/Next.js resource contention. All images must
+build before migrations or activation; isolated shell tests verify service order
+and that frontend/node build failures prevent activation. Use full deployment so
+the patched Rust dependencies reach the production ACP-node image as well.
+
+The first PR CI run also exposed new Expo SDK 58 patch requirements: expo 58.0.26,
+expo-dev-client 58.0.21, expo-file-system 58.0.14 and expo-router 58.0.32.
+Align the root/workspace manifests and lockfile; keep expo-doctor enabled.
+Deployment orchestration/release-gate tests passed (16 checks).
+
+The refreshed npm advisory database identifies GHSA-fc5q-39xc-vjpf in picomatch
+through 4.0.7; no patched upstream release was available. A 40-character hostile
+single-branch repeated extglob stalled the original package until a child-process
+timeout. Both JS projects now use identical, MIT-licensed private local forks of
+4.0.7. The parser routes wildcard-containing single repeated branches through
+its existing literal fallback, retaining safe character-class rewrites. Such
+patterns intentionally become literals; this is a documented compatibility
+boundary, not an upstream upgrade. Normal build patterns and alternate compile
+entry points have regression coverage, including installed consumer resolution.
+
+The local source remains at upstream version 4.0.7 for peer compatibility and is
+identified by its private package name and `ancapPatch` metadata. npm audit does
+not assess local forks: the mitigation is supported by source review and tests,
+not by relabelling a clean npm report as proof. Frontend image stages copy the
+vendor source alongside symlinked dependencies. Replace these forks only with a
+verified upstream fix. Advisory: https://github.com/advisories/GHSA-fc5q-39xc-vjpf.
+
+Fresh npm ci succeeded in both projects with no registry audit findings. All
+installed picomatch consumer-resolution checks passed; no vulnerable nested
+registry copies remain in the lockfiles. The frontend passed 5 security tests
+and 131 unit tests; mobile passed 18 security checks and 352 application/SDK
+tests. The Node security runner is kept separate from Vitest discovery.
+
+CodeQL #634/#635 identified another upstream quadratic regexp in unescaping
+bracket groups. Both forks replace it with two linear passes and preserve the
+old bracket/line-terminator behavior. Differential verification passed 47,449
+bounded cases, including 10,000 varied 80-character inputs. A long hostile input
+timed out on the original helper and completes with the new implementation;
+regressions cover the helper and scan API. No CodeQL rule or alert is suppressed.
+
+The E2E trace exposed an identity-registration transaction race: FastAPI's
+request-scoped yield cleanup committed after the 201 response. Immediate reads
+could return 404 or fail agent ownership checks even with the correct owner ID.
+User and agent creation now use function-scoped database cleanup, committing
+before credentials or IDs are sent. Streaming sessions retain their existing
+scope. Four ASGI regression cases verify response ordering and failed commits,
+including the real bearer-auth dependency and its separately scoped session.
+Browser locators target the active main surface, excluding retained hidden DOM;
+the animation also waits for a known pathname before mounting globally.

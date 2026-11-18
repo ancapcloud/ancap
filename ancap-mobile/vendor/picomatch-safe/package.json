@@ -1,0 +1,17 @@
+{
+  "name": "@ancap/picomatch-safe",
+  "version": "4.0.7",
+  "private": true,
+  "description": "Local security fork of picomatch 4.0.7: bounded repeated extglobs and linear unescaping",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12"
+  },
+  "ancapUpstream": {
+    "package": "picomatch",
+    "version": "4.0.7",
+    "advisory": "GHSA-fc5q-39xc-vjpf"
+  },
+  "ancapPatch": "repeated-extglob-and-linear-unescape-1"
+}

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.schemas import AgentCreateRequest, AgentPublic, Pagination
-from app.api.deps import DbSession, get_current_user_id
+from app.api.deps import CommittedDbSession, DbSession, get_current_user_id
 from app.config import get_settings
 from app.db.models import Agent, AgentStatusEnum, AgentAttestation
 from app.services.agent_graph_metrics import get_agent_graph_metrics
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/agents", tags=["Agents"])
 @router.post("", response_model=AgentPublic, status_code=201)
 async def register_agent(
     body: AgentCreateRequest,
-    session: DbSession,
+    session: CommittedDbSession,
     user_id: str | None = Depends(get_current_user_id),
 ):
     settings = get_settings()

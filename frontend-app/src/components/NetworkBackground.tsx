@@ -3,10 +3,10 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-export function NetworkBackground() {
+export function NetworkBackground({ embedded = false }: { embedded?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
-  const presentation = pathname === "/" || pathname === "/projects" || pathname === "/investors";
+  const presentation = !pathname || (pathname === "/" && !embedded) || pathname === "/projects" || pathname === "/investors";
 
   useEffect(() => {
     if (presentation) return;
@@ -200,7 +200,7 @@ export function NetworkBackground() {
   }, [presentation]);
 
   return presentation ? null : (
-    <div className="canvas-wrap" aria-hidden="true">
+    <div className="canvas-wrap" style={embedded ? { zIndex: -1 } : undefined} aria-hidden="true">
       <canvas ref={canvasRef} id="network"></canvas>
     </div>
   );
