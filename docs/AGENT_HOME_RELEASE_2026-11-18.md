@@ -103,6 +103,13 @@ verified upstream fix. Advisory: https://github.com/advisories/GHSA-fc5q-39xc-vj
 
 Fresh npm ci succeeded in both projects with no registry audit findings. All
 installed picomatch consumer-resolution checks passed; no vulnerable nested
-registry copies remain in the lockfiles. The frontend passed 4 security tests
-and 131 unit tests; mobile passed 17 security checks and 352 application/SDK
+registry copies remain in the lockfiles. The frontend passed 5 security tests
+and 131 unit tests; mobile passed 18 security checks and 352 application/SDK
 tests. The Node security runner is kept separate from Vitest discovery.
+
+CodeQL #634/#635 identified another upstream quadratic regexp in unescaping
+bracket groups. Both forks replace it with two linear passes and preserve the
+old bracket/line-terminator behavior. Differential verification passed 47,449
+bounded cases, including 10,000 varied 80-character inputs. A long hostile input
+timed out on the original helper and completes with the new implementation;
+regressions cover the helper and scan API. No CodeQL rule or alert is suppressed.

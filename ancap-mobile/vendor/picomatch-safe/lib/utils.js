@@ -3,7 +3,6 @@
 
 const {
   REGEX_BACKSLASH,
-  REGEX_REMOVE_BACKSLASH,
   REGEX_SPECIAL_CHARS,
   REGEX_SPECIAL_CHARS_GLOBAL
 } = require('./constants');
@@ -27,10 +26,38 @@ exports.isWindows = () => {
   return false;
 };
 
+const isLineTerminator = code => code === 10 || code === 13 || code === 0x2028 || code === 0x2029;
+
 exports.removeBackslashes = str => {
-  return str.replace(REGEX_REMOVE_BACKSLASH, match => {
-    return match === '\\' ? '' : match;
-  });
+  // Preserve the original bracket/line-terminator rules without restarting
+  // a lazy bracket regexp at every unmatched '[' (quadratic on hostile input).
+  const closeAt = new Int32Array(str.length);
+  let nearest = -1;
+  let second = -1;
+  let nextLine = str.length;
+  for (let i = str.length - 1; i >= 0; i--) {
+    if (str[i] === ']' && str[i - 1] !== '\\') {
+      second = nearest;
+      nearest = i;
+    }
+    if (isLineTerminator(str.charCodeAt(i))) nextLine = i;
+    if (str[i] === '[') {
+      const close = nearest === i + 1 ? second : nearest;
+      if (close >= i + 2 && nextLine >= close - 1) closeAt[i] = close;
+    }
+  }
+  const parts = [];
+  let start = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === '[' && closeAt[i] !== 0) {
+      i = closeAt[i];
+    } else if (str[i] === '\\' && i + 1 < str.length && !isLineTerminator(str.charCodeAt(i + 1))) {
+      parts.push(str.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(str.slice(start));
+  return parts.join('');
 };
 
 exports.escapeLast = (input, char, lastIdx) => {

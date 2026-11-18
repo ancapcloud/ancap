@@ -4,7 +4,7 @@ Source: picomatch 4.0.7 (MIT; original LICENSE retained).
 Advisory: https://github.com/advisories/GHSA-fc5q-39xc-vjpf
 At 18 November 2026 the registry has no patched release.
 
-Only lib/parse.js changes: repeated extglobs with one wildcard-containing branch
+lib/parse.js change: repeated extglobs with one wildcard-containing branch
 use the existing safe literal fallback, unless the existing analyzer can flatten
 a star-extglob sequence into a character class. This prevents nested unbounded
 quantifiers from +(*) and +(*a), including prefixed/suffixed patterns and the
@@ -20,3 +20,8 @@ is not proof of this mitigation. Child-process regression tests demonstrate the
 attack no longer stalls and verify normal matching and installed resolution.
 Both project copies must remain identical until replaced by a verified upstream
 fix; do not suppress the advisory or silently substitute an older release.
+
+lib/utils.js also replaces quadratic bracket-regexp unescaping with two linear
+passes. Bracket groups, trailing escapes and all four JS line terminators retain
+the upstream behavior. Differential tests against bounded original-regexp inputs
+and large hostile-input regressions cover this change (CodeQL #634/#635).

@@ -13,6 +13,10 @@ test('single-branch repeated extglobs cannot stall matching or alternate compile
     const assert = require('node:assert/strict');
     const pico = require(${JSON.stringify(fork)});
     const posix = require(${JSON.stringify(path.join(fork, 'posix.js'))});
+    const utils = require(${JSON.stringify(path.join(fork, 'lib/utils.js'))});
+    const slash = String.fromCharCode(92);
+    assert.equal(utils.removeBackslashes((slash + '[').repeat(1000000)), '['.repeat(1000000));
+    assert.equal(pico.scan((slash + '[').repeat(30000), { unescape: true }).base, '['.repeat(30000));
     const input = 'a'.repeat(40) + '!';
     for (const glob of ['+(*a)', '*(*a)', '+(*)b', 'prefix/+(*a).js']) {
       const sample = glob.startsWith('prefix/') ? 'prefix/' + input + '.js' : input;
@@ -24,7 +28,7 @@ test('single-branch repeated extglobs cannot stall matching or alternate compile
       }
     }
   `;
-  const result = spawnSync(process.execPath, ['-e', program], { timeout: 5000, encoding: 'utf8' });
+  const result = spawnSync(process.execPath, ['-e', program], { timeout: 15000, encoding: 'utf8' });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
 });
@@ -42,6 +46,32 @@ test('ordinary build globs, alternatives, options and scan API remain compatible
   assert.equal(pico('+(*(a)|*(b))')('abba'), true);
   assert.equal(pico('+(*a)')('+(*a)'), true);
   assert.equal(pico.scan('src/**/*.ts').isGlob, true);
+});
+
+test('linear unescaping preserves bracket groups, trailing escapes and line terminators', () => {
+  const utils = require(path.join(fork, 'lib/utils.js'));
+  const slash = String.fromCharCode(92);
+  const cases = [
+    ['', ''], ['abc', 'abc'],
+    ['foo' + slash + 'bar', 'foobar'],
+    [slash + '[ab]', '[ab]'],
+    ['[a' + slash + 'b]', '[a' + slash + 'b]'],
+    ['[a' + slash + ']b]', '[a' + slash + ']b]'],
+    ['[' + slash + ']', '[]'],
+    ['[]' + slash + 'q', '[]q'],
+    ['[][]' + slash + 'q', '[][]q'],
+    [slash + '[', '['],
+    ['[a' + slash, '[a' + slash],
+    [slash + slash, slash],
+    [slash + slash + 'x', 'x'],
+  ];
+  for (const code of [10, 13, 0x2028, 0x2029]) {
+    const line = String.fromCharCode(code);
+    cases.push(['a' + slash + line + 'b', 'a' + slash + line + 'b']);
+    cases.push(['[' + line + 'a' + slash + 'b]', '[' + line + 'ab]']);
+    cases.push(['[a' + line + ']' + slash + 'x', '[a' + line + ']x']);
+  }
+  for (const [input, expected] of cases) assert.equal(utils.removeBackslashes(input), expected, JSON.stringify(input));
 });
 
 test('installed build consumers resolve the local security fork', () => {
