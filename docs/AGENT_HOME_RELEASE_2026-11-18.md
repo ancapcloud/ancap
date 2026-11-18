@@ -72,3 +72,9 @@ Full Linux node/FFI/wallet compatibility, GitHub CI and deployment are accepted 
 the matching PR/master workflow results. Production activation must also match
 `/internal/frontend-build`; local code edits alone do not establish deployment.
 No issuance, signing, bridge reserve operation or contract deployment is included.
+
+The full deploy path now builds API, frontend and ACP-node sequentially, avoiding
+the documented concurrent compiler/Next.js resource contention. All images must
+build before migrations or activation; isolated shell tests verify service order
+and that frontend/node build failures prevent activation. Use full deployment so
+the patched Rust dependencies reach the production ACP-node image as well.
