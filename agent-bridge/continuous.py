@@ -153,6 +153,12 @@ def validate_proposal(proposal, source):
     text=proposal['instructions']+' '+proposal['title']
     if re.search(r'\b(?:integer|bigint) overflow\b',text,re.I) and ('def ' in source or 'BigInt' in source):
         raise ValueError('Unsupported arbitrary-precision integer overflow diagnosis')
+    if re.search(r'\b(?:division|divisible|divmod|modulo)\b',text,re.I) and 'def ' in source:
+        tree=ast.parse(source)
+        if not any(isinstance(n,(ast.Div,ast.FloorDiv,ast.Mod)) or
+                   (isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='divmod')
+                   for n in ast.walk(tree)):
+            raise ValueError('Unsupported division diagnosis: source has no division operation')
     if re.search(r'0x[0-9a-fA-F]{40}',text) or re.search(r'(?:add|display|show|replace).*?(?:contract address|chain id)',text,re.I):
         raise ValueError('Automatic tasks cannot introduce financial identifiers or repetitive token banners')
 
@@ -229,6 +235,7 @@ def next_task(runtime, role):
             'Read the existing tests before proposing a defect: do not request behavior already covered. '
             'Give a concrete input, current incorrect output and expected output; explain why the existing code produces the incorrect output. '
             'Python integers and JavaScript BigInt do not overflow. JSX try/catch is not a React error boundary. '
+            'Do not claim division bugs without an actual division operation. Tests must call behavior, not inspect source spelling. '
             'Next.js redirect intentionally throws; never catch it. Do not invent URLs or translation keys. '
             'Prefer a concrete bug, accessible UI, input validation, error handling, or a small roadmap step. '
             'Preserve public API, financial ratios, permissions and all existing tests. No dependencies, secrets, '
@@ -307,6 +314,8 @@ def validate(runtime, role, task, baseline):
                 for node in ast.walk(tree):
                     if isinstance(node,(ast.Import,ast.ImportFrom)):
                         names=[a.name for a in node.names] if isinstance(node,ast.Import) else [node.module or '']
+                        if any(n.split('.')[0]=='inspect' for n in names):
+                            raise ValueError('Generated regressions must test behavior, not source inspection')
                         if any(n.split('.')[0] in ('subprocess','os','socket','shutil','pathlib') for n in names):
                             raise ValueError('Standalone generated tests cannot access processes/files/network')
                     if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id in ('open','exec','eval','compile','__import__'):

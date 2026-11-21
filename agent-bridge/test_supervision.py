@@ -114,11 +114,12 @@ class SupervisionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(__file__).resolve().parent.parent
             worktree = Path(tmp) / 'wt-hermes'
-            for rel in workers.selected_task('hermes').get('sources', []):
+            assigned=dict(task_id='isolated-prompt-test',instructions='Check RPC headers',sources=['app/services/acp_rpc.py','tests/test_acp_rpc_headers.py'])
+            for rel in assigned['sources']:
                 target = worktree / rel
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text((repo / rel).read_text(encoding='utf-8'), encoding='utf-8')
-            with patch.object(workers, 'WORK', Path(tmp)):
+            with patch.object(workers, 'WORK', Path(tmp)), patch.object(workers, 'selected_task', return_value=assigned):
                 prompt = workers.build_prompt('hermes', 'b' * 32, False)
         self.assertIn('FILE: app/services/acp_rpc.py', prompt)
         self.assertIn('FILE: tests/test_acp_rpc_headers.py', prompt)
