@@ -45,3 +45,6 @@ class RegressionProbeTests(unittest.TestCase):
             (cwd/'tests/test_sample.py').write_text('from app.sample import value\ndef test_old(): assert value() > 0\ndef test_new():\n import re\n re.match("x", 42)\n')
             with self.assertRaisesRegex(ValueError,'must fail by assertion'):
                 prove_regression(runtime,'hermes',task,io.StringIO())
+            # Missing expected exceptions are standard assertion outcomes too.
+            (cwd/'tests/test_sample.py').write_text('import pytest\nfrom app.sample import value\ndef test_old(): assert value() > 0\ndef test_new():\n with pytest.raises(ValueError):\n  value()\n')
+            prove_regression(runtime,'hermes',task,io.StringIO())

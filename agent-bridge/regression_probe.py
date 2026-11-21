@@ -19,7 +19,8 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
     if report.failed:
-        failures.append({"phase": report.when, "assertion": bool(call.excinfo and issubclass(call.excinfo.type, AssertionError))})
+        # pytest.raises/pytest.fail use pytest's outcome type, not AssertionError.
+        failures.append({"phase": report.when, "assertion": bool(call.excinfo and issubclass(call.excinfo.type, (AssertionError, pytest.fail.Exception)))})
 def pytest_sessionfinish(session, exitstatus):
     Path(__file__).with_suffix(".json").write_text(json.dumps(failures))
 '''

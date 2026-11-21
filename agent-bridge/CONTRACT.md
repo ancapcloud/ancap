@@ -9,6 +9,9 @@ and assertions while retaining existing setup, runners and checks. Independent
 baseline-red/revised-green checks and review remain mandatory. This structural
 check is a quality gate, not proof against all possible semantic test weakening.
 TypeScript is loaded from the worker's installed frontend dependencies.
+Baseline regression proof recognizes pytest.raises/pytest.fail expectation
+failures as well as AssertionError; collection/setup/runtime errors remain
+ineligible. Actual revised project checks must still pass before acceptance.
 
 Python division diagnoses require an actual division/modulo operation in the
 source. Generated Python regressions may not import inspect to assert source
