@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "model": "ancap-deepseek-qwen:9b-q4km",
+  "model": "ancap-qwen:9b",
   "cooldown_seconds": 30,
   "seeds": {},
   "num_ctx": 65536,
-  "model_source": "mradermacher/DeepSeek-V4-Pro-Qwen3.5-9B-UNCENSORED-heretic-GGUF Q4_K_M; Ollama SHA256 verified; previous ancap-qwen:9b retained"
+  "model_source": "Installed standard Qwen3.5 9B Q4_K_M; explicit managed selection after differential native-tool regression probes on 2026-11-21; previous DeepSeek/heretic model retained for rollback"
 }

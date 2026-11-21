@@ -1,5 +1,15 @@
 # Acceptance and recovery update — 2026-11-21
 
+Managed-model correction: explicitly select installed standard `ancap-qwen:9b`
+for planner, reviewer, Hermes --model and the ancap OpenClaw profile. Keep 65536
+context, one loaded model and the existing shared inference lane. This supersedes
+the managed model selection described in the historical November 7 update.
+DeepSeek/heretic weights and original configuration backups remain available;
+there is no silent provider fallback. This follows a differential native-tool
+probe where that model failed to add a missing pytest import and standard Qwen
+passed both the import and exact-whitespace-input probes. These two small probes
+are diagnostic evidence, not a general model benchmark or correctness guarantee.
+
 Runtime follow-up: planner/reviewer use bounded JSON schemas. Actionable planner
 output includes concrete failing input, actual and expected behavior; identical
 results are rejected. Truncated model output is not a task. Planner rejections
