@@ -1,5 +1,12 @@
 ## Agent acceptance and workspace recovery — 2026-11-21
 
+[x] Runtime follow-up: structured planner/reviewer replies, concrete behavioral
+witnesses, persistent planning diagnostics and structural frontend test-preservation
+checks implemented and locally verified (62 controller tests). Live controller-assigned tasks
+passed both real runtimes; explicit standard-Qwen model pins and original-ticket
+repair review are active. Results are tracked separately
+from autonomous task selection in `docs/AGENT_RUNTIME_REPAIR_2026-11-21.md`.
+
 [x] Reviewed new Hermes commit 8b5147ff and both agents' pending drafts;
 rejected unsupported division/timeout diagnoses and source-spelling regressions.
 Added controller gates, reciprocal Git-pointer recovery and a deterministic
