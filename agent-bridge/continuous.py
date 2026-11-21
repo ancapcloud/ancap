@@ -359,7 +359,10 @@ def validate(runtime, role, task, baseline):
                                   typescript=str(cwd/'frontend-app/node_modules/typescript'))),
                                   capture_output=True,text=True,timeout=30,creationflags=runtime.FLAGS,check=True)
             if json.loads(result.stdout).get('preserved') is not True:
-                raise ValueError('Existing frontend test assertions cannot be removed')
+                diff=runtime.git(cwd,'diff',baseline,'--',p)
+                removed=[line[1:].strip() for line in diff.splitlines() if line.startswith('-') and not line.startswith('---') and 'expect(' in line]
+                hint=' Restore these existing checks before adding the new case: '+'\n'.join(removed)[:1000] if removed else ''
+                raise ValueError('Existing frontend test assertions cannot be removed.'+hint)
 
 
 def check(runtime, role, task, cycle):
