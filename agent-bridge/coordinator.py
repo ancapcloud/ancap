@@ -113,6 +113,7 @@ def execute(role, task):
     repair_owned=(task.get('continuous') and task.get('repair_attempt')==1 and
                   not (set(dirty)-set(task['allowed_files'])))
     if dirty and not repair_owned: return quarantine(role, state, 'Existing changes require review before a new task', dirty)
+    prior_diff=git(cwd,'diff','--binary',baseline,'--',*task['allowed_files']) if repair_owned else None
     policy = FilePolicy(cwd, task.get('sources', []), task['allowed_files'])
     context = '\n\n'.join('FILE: '+p+'\n'+policy.path(p).read_text(encoding='utf-8')[:12000] for p in task.get('sources', []))
     peer = 'hermes' if role == 'openclaw' else 'openclaw'
@@ -160,6 +161,8 @@ def execute(role, task):
             return quarantine(role,state,'Task timed out; no automatic retry of the same failed task')
     unexpected=sorted(set(changes(cwd,baseline))-set(task['allowed_files']))
     if unexpected: return quarantine(role,state,'Out-of-task changes preserved',unexpected)
+    if repair_owned and git(cwd,'diff','--binary',baseline,'--',*task['allowed_files'])==prior_diff:
+        return quarantine(role,state,'Repair produced no new file changes; unchanged draft is not a repaired result')
     # Framework final-rendering failures do not erase a real artifact; acceptance
     # requires the output and an independent successful check, regardless of prose.
     missing=[p for p in task['allowed_files'] if not policy.path(p).is_file() or policy.path(p).stat().st_size<100]

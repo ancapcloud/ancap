@@ -9,6 +9,22 @@ import continuous
 
 
 class ContinuousTests(unittest.TestCase):
+    def test_noop_repair_does_not_spend_another_model_review_or_test_run(self):
+        from types import SimpleNamespace
+        (self.cwd/'app/services/sample.py').write_text('def value():\n    return 2\n')
+        task={**self.task,'baseline':self.baseline,'repair_attempt':1,
+              'instructions':'Repair the preserved task output','commit_message':'fix: sample'}
+        child=SimpleNamespace(pid=123,poll=lambda:0)
+        original_start=runtime.subprocess.Popen
+        def start(command,**kwargs):
+            return original_start(command,**kwargs) if command[0]=='git' else child
+        with patch.object(continuous,'config',return_value=dict(model='test-model')), \
+             patch.object(runtime.subprocess,'Popen',side_effect=start), \
+             patch.object(continuous,'review') as review,patch.object(continuous,'check') as check:
+            self.assertFalse(runtime.execute('hermes',task))
+        self.assertIn('no new file changes',runtime.load('hermes-quarantine')['reason'])
+        review.assert_not_called();check.assert_not_called()
+
     def test_identical_actual_and_expected_is_not_a_bug(self):
         source='def run(value): return divmod(value,90)'
         proposal=dict(title='Fix division of exact multiples',instructions='Replace division result with the same output',reason='Alleged mismatch',evidence=source,failing_input='90',actual='(1, 0)',expected='(1, 0)')
