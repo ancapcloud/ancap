@@ -24,6 +24,14 @@ def test_non_backend_changes_do_not_require_a_workflow_that_will_not_run():
     assert expected_core([".github/workflows/codeql.yml"]) == {"CodeQL", "Secret Hygiene"}
 
 
+def test_agent_controller_requires_matching_coordination_ci():
+    required=expected_core(["agent-bridge/continuous.py"])
+    assert required == {"Agent Bridge CI", "Secret Hygiene"}
+    assert not ci_state([run("Secret Hygiene")],SHA,required)["ready"]
+    assert not ci_state([run("Secret Hygiene"),run("Agent Bridge CI","failure")],SHA,required)["ready"]
+    assert ci_state([run("Secret Hygiene"),run("Agent Bridge CI")],SHA,required)["ready"]
+
+
 def test_requirements_follow_the_checked_out_workflow_configuration(tmp_path):
     for filename in WORKFLOWS.values():
         shutil.copyfile(Path(".github/workflows") / filename, tmp_path / filename)

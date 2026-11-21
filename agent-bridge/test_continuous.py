@@ -9,6 +9,21 @@ import continuous
 
 
 class ContinuousTests(unittest.TestCase):
+    def test_division_diagnosis_requires_an_actual_operation(self):
+        source='def run(timeout_s=90): return client(timeout=timeout_s)'
+        proposal=dict(title='Fix integer division truncation',instructions='Fix timeout when divisible by 90',reason='Claimed division defect',evidence=source)
+        with self.assertRaisesRegex(ValueError,'no division operation'):
+            continuous.validate_proposal(proposal,source)
+        source='def run(value): return value // 90'
+        continuous.validate_proposal({**proposal,'evidence':source},source)
+
+    def test_source_inspection_is_not_behavioral_regression(self):
+        (self.cwd/'app/services/sample.py').write_text('def value():\n    return 2\n')
+        path=self.cwd/'tests/test_sample.py'
+        path.write_text(path.read_text()+'\ndef test_source():\n    import inspect as reflection\n    assert "return 2" in reflection.getsource(value)\n')
+        with self.assertRaisesRegex(ValueError,'source inspection'):
+            continuous.validate(runtime,'hermes',self.task,self.baseline)
+
     def test_failed_probe_keeps_current_log_for_the_repair(self):
         from types import SimpleNamespace
         task={**self.task, 'planned':True, 'tests':['tests/test_sample.py'], 'instructions':'Fix the defect'}

@@ -1,3 +1,22 @@
+# Acceptance and recovery update — 2026-11-21
+
+Python division diagnoses require an actual division/modulo operation in the
+source. Generated Python regressions may not import inspect to assert source
+spelling; regression evidence must exercise behavior. Existing baseline-failure,
+test-preservation and independent review gates remain required.
+
+Startup can repair a stale .git pointer only when the common Git directory has
+one reciprocal registration for the exact workspace path and expected branch.
+The original pointer and metadata are backed up first. Dirty files are preserved;
+unmatched workspaces fail closed. An unrelated or stale index is not automatically
+reset: controller review must first preserve and inspect it.
+
+Tracked agent-bridge source must be a real private directory in each worktree,
+never a junction to the live controller. Startup detaches only a verified link
+to the shared controller and restores that worktree's tracked control files.
+Shared status/runtime remain accessed through the controller's absolute ROOT.
+This supersedes earlier junction setup instructions.
+
 # Scheduling update — 2026-11-07
 
 Managed planner/actor/reviewer phases share a fair inference lane. Waiting has fresh heartbeat and does not consume the actor timeout. Independent tests and commits are outside that lane. Backend tasks must have fixtures supported by the standalone check adapter; project API/DB suites are excluded until a separate adapter is configured. Operator STOP releases queued requests without declaring a role failure. This supersedes any earlier description suggesting simultaneous managed inference requests.
