@@ -1,3 +1,12 @@
+## Agent acceptance and workspace recovery — 2026-11-21
+
+[x] Reviewed new Hermes commit 8b5147ff and both agents' pending drafts;
+rejected unsupported division/timeout diagnoses and source-spelling regressions.
+Added controller gates, reciprocal Git-pointer recovery and a deterministic
+prompt-context test. Preserved original commits, drafts and index backups;
+restored both worker branches to reviewed master. Local coordination tests pass.
+CI/deployment acceptance is tracked separately in `docs/AGENT_REVIEW_2026-11-21.md`.
+
 ## Homepage animation and agent review — 2026-11-18
 
 [x] Restored the original network animation above the homepage surface and below
