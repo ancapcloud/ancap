@@ -54,6 +54,8 @@ that test so local and CI runs test the same behavior.
 ## Validation and release
 
 50 coordination tests and OpenClaw scope-hook checks passed.
+The release gate now also requires applicable Agent Bridge CI on the exact push
+SHA; previously that workflow was absent from the gate's recognized checks.
 Targeted walletd/OCR/RPC compatibility: 45 passed, 2 skipped. Resumed worker
 health is recorded separately when available. CI and production activation must be verified
 against the merged release SHA; a local green check is not a deployment receipt.

@@ -9,11 +9,12 @@ from pathlib import Path
 
 import yaml
 
-BLOCKING = {"Backend CI", "Frontend CI", "Crypto CI", "CodeQL", "Secret Hygiene", "Docs CI"}
+BLOCKING = {"Backend CI", "Frontend CI", "Crypto CI", "CodeQL", "Secret Hygiene", "Docs CI", "Agent Bridge CI"}
 WORKFLOWS = {
     "Backend CI": "backend-ci.yml", "Frontend CI": "frontend-ci.yml",
     "Crypto CI": "crypto-ci.yml", "CodeQL": "codeql.yml",
     "Secret Hygiene": "secret-hygiene.yml", "Docs CI": "docs-ci.yml",
+    "Agent Bridge CI": "agent-bridge-ci.yml",
 }
 
 
