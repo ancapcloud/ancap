@@ -12,6 +12,12 @@ import coordinator_report as report
 from scoped_files import FilePolicy, install_guard
 
 class CoordinatorTests(unittest.TestCase):
+    def test_assigned_task_is_last_after_potentially_distracting_examples(self):
+        instructions="Test chainIds=['   '] as the failing input"
+        prompt=runtime.task_context("SOURCE EXAMPLE: chainIds=['0x1237']\nINBOX: another task",instructions)
+        self.assertGreater(prompt.index(instructions),prompt.index('INBOX: another task'))
+        self.assertIn('Do not substitute valid example inputs',prompt)
+
     def test_report_includes_planner_rejections_without_counting_no_action_scans(self):
         with tempfile.TemporaryDirectory() as tmp,patch.object(report,'ROOT',Path(tmp)):
             folder=Path(tmp)/'runtime';folder.mkdir()
