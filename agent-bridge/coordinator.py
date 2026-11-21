@@ -91,8 +91,19 @@ def task_context(context, instructions):
             '\nUse the exact failing inputs requested above. Do not substitute valid example inputs copied from existing tests. '
             'Preserve existing tests; add a separate regression case. Stop after the requested file edits.')
 
+
+def worker_command(role, model, cycle, prompt):
+    if role=='openclaw':
+        return [NODE,str(CLAW),'--profile','ancap','agent','--local','--agent','ancap-site',
+                '--model','ollama/'+model,'--session-id','scoped-'+cycle,
+                '--message',prompt,'--timeout','1200','--json']
+    if role=='hermes':
+        return [str(PYTHON),'-u',str(ROOT/'hermes_scoped.py'),'chat','--model',model,'-t','file','--max-turns','6','-q',prompt]
+    raise ValueError('Unknown managed worker role')
+
 def execute(role, task):
     cwd = WORK / ('wt-' + role)
+    task.setdefault('original_instructions',task['instructions'])
     selected_model=continuous.config(sys.modules[__name__]).get('model')
     if not isinstance(selected_model,str) or not selected_model:
         raise ValueError('A model must be explicitly configured before starting a worker')
@@ -136,13 +147,8 @@ def execute(role, task):
     env = {**os.environ, 'PYTHONIOENCODING':'utf-8', 'PYTHONUNBUFFERED':'1', 'OMP_NUM_THREADS':'4',
            'HERMES_HOME':str(Path.home()/'AppData/Local/hermes'), 'HERMES_GIT_BASH_PATH':'C:/Program Files/Git/bin/bash.exe',
            'TERMINAL_CWD':str(cwd), 'ANCAP_FILE_POLICY':json.dumps(dict(cwd=str(cwd),sources=task.get('sources',[]),outputs=task['allowed_files']))}
-    if role == 'openclaw':
-        cmd = [NODE,str(CLAW),'--profile','ancap','agent','--local','--agent','ancap-site','--session-id','scoped-'+cycle,
-               '--message',prompt,'--timeout','1200','--json']
-        actor_cwd = front
-    else:
-        cmd = [str(PYTHON),'-u',str(ROOT/'hermes_scoped.py'),'chat','--model',selected_model,'-t','file','--max-turns','6','-q',prompt]
-        actor_cwd = cwd
+    cmd=worker_command(role,selected_model,cycle,prompt)
+    actor_cwd=front if role=='openclaw' else cwd
     log = ROOT/'runtime'/f'{role}-{cycle}.log'
     with continuous.LANE.acquire(sys.modules[__name__],role), log.open('w',encoding='utf-8') as out:
         deadline = time.monotonic()+1260

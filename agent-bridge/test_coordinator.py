@@ -12,6 +12,13 @@ import coordinator_report as report
 from scoped_files import FilePolicy, install_guard
 
 class CoordinatorTests(unittest.TestCase):
+    def test_both_workers_explicitly_pin_the_selected_model(self):
+        model='ancap-qwen:9b'
+        for role,expected in [('openclaw','ollama/'+model),('hermes',model)]:
+            command=runtime.worker_command(role,model,'cycle','Fix this exact regression')
+            self.assertEqual(command[command.index('--model')+1],expected)
+        self.assertIn('--local',runtime.worker_command('openclaw',model,'cycle','task'))
+
     def test_assigned_task_is_last_after_potentially_distracting_examples(self):
         instructions="Test chainIds=['   '] as the failing input"
         prompt=runtime.task_context("SOURCE EXAMPLE: chainIds=['0x1237']\nINBOX: another task",instructions)

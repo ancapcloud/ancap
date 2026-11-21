@@ -155,6 +155,7 @@ class ContinuousTests(unittest.TestCase):
         repair=continuous.next_task(runtime,'hermes')
         self.assertEqual(repair['repair_attempt'],1)
         self.assertIn('missing argument',repair['instructions'])
+        self.assertEqual(repair['original_instructions'],'Fix the real defect')
         self.assertEqual(p.read_text(),'def value():\n    return 2\n')
         self.assertFalse(runtime.load('hermes-quarantine'))
         self.assertTrue((self.root/'runtime/repair-auto-test/changes.patch').is_file())
