@@ -43,7 +43,7 @@ def attempts_since(role, finished_at=None):
     for line in lines:
         try:
             item=json.loads(line)
-            if item.get('outcome')=='failed' and (cutoff is None or datetime.fromisoformat(item['at'])>cutoff):
+            if item.get('outcome') in ('failed','planning-rejected') and (cutoff is None or datetime.fromisoformat(item['at'])>cutoff):
                 failures.append(item)
         except (ValueError,KeyError,TypeError):continue
     return failures
@@ -86,7 +86,7 @@ def render_report():
             if result.get('commit'):lines.append('Локальный коммит: '+result['commit'][:12])
         failures=attempts_since(role,result.get('finished_at') if valid else None)
         if failures:
-            lines.append(f'После последнего принятого результата отклонено попыток: {len(failures)} (включая исправления; последние 200 записей).')
+            lines.append(f'После последнего принятого результата отклонено попыток: {len(failures)} (включая планирование и исправления; последние 200 записей).')
             reason=' '.join(str(failures[-1].get('reason') or 'Причина не записана').split())[:180]
             lines.append('Последний отказ: '+reason)
             lines.append('Нового принятого результата после этих попыток пока нет.')

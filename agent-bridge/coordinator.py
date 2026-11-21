@@ -96,7 +96,8 @@ def execute(role, task):
         (ROOT/'runtime'/f'{role}-current-task.json').write_text(json.dumps(task,indent=2),encoding='utf-8')
     cycle = uuid.uuid4().hex
     state = dict(agent=role, cycle_id=cycle, task_id=task['task_id'], state='starting',
-                 started_at=now(), updated_at=now(), workdir=str(cwd), branch=git(cwd,'branch','--show-current'),model=selected_model)
+                 started_at=now(), updated_at=now(), workdir=str(cwd), branch=git(cwd,'branch','--show-current'),model=selected_model,
+                 task_origin=task.get('origin','automatic-planner' if task.get('planned') else 'explicit-queue'))
     save(role + '-process', state)
     if task.get('repair_attempt') and load(role+'-repair').get('task_id')==task['task_id']:
         (ROOT/'status'/(role+'-repair.json')).unlink()

@@ -9,6 +9,35 @@ import continuous
 
 
 class ContinuousTests(unittest.TestCase):
+    def test_identical_actual_and_expected_is_not_a_bug(self):
+        source='def run(value): return divmod(value,90)'
+        proposal=dict(title='Fix division of exact multiples',instructions='Replace division result with the same output',reason='Alleged mismatch',evidence=source,failing_input='90',actual='(1, 0)',expected='(1, 0)')
+        with self.assertRaisesRegex(ValueError,'identical'):
+            continuous.validate_proposal(proposal,source)
+
+    def test_model_schema_is_sent_and_truncation_is_not_accepted(self):
+        from io import BytesIO
+        requests=[]
+        def reply(request,**kwargs):
+            requests.append(json.loads(request.data))
+            return BytesIO(json.dumps(dict(done_reason='length',message=dict(content='{"actionable":'))).encode())
+        with patch.object(continuous.urllib.request,'urlopen',side_effect=reply):
+            with self.assertRaisesRegex(ValueError,'truncated'):
+                continuous.infer(dict(model='test-model'),'plan',continuous.PLANNER_SCHEMA)
+        self.assertEqual(requests[0]['format'],continuous.PLANNER_SCHEMA)
+
+    def test_rejected_plans_are_kept_in_history(self):
+        (self.root/'continuous.json').write_text('{"enabled":true}')
+        for name in ['MASTER_ROADMAP.md','PRODUCTION_ROADMAP.md']:
+            (self.root.parent/name).write_text('roadmap')
+        proposal=dict(actionable=True,title='Change behavior in sample',instructions='Fix the concrete sample defect',reason='A hypothetical defect',evidence='not in source')
+        with patch.object(continuous,'units',return_value=[dict(source='app/services/sample.py',tests=['tests/test_sample.py'])]),patch.object(continuous,'pulse',return_value=proposal):
+            with self.assertRaisesRegex(ValueError,'evidence'):
+                continuous.next_task(runtime,'hermes')
+        event=continuous.history(runtime,'hermes')[-1]
+        self.assertEqual(event['outcome'],'planning-rejected')
+        self.assertIn('evidence',event['reason'])
+
     def test_division_diagnosis_requires_an_actual_operation(self):
         source='def run(timeout_s=90): return client(timeout=timeout_s)'
         proposal=dict(title='Fix integer division truncation',instructions='Fix timeout when divisible by 90',reason='Claimed division defect',evidence=source)

@@ -1,5 +1,15 @@
 # Acceptance and recovery update — 2026-11-21
 
+Runtime follow-up: planner/reviewer use bounded JSON schemas. Actionable planner
+output includes concrete failing input, actual and expected behavior; identical
+results are rejected. Truncated model output is not a task. Planner rejections
+are journaled and included in subsequent planning context and progress reports.
+Frontend test preservation compares TypeScript syntax, allowing additive cases
+and assertions while retaining existing setup, runners and checks. Independent
+baseline-red/revised-green checks and review remain mandatory. This structural
+check is a quality gate, not proof against all possible semantic test weakening.
+TypeScript is loaded from the worker's installed frontend dependencies.
+
 Python division diagnoses require an actual division/modulo operation in the
 source. Generated Python regressions may not import inspect to assert source
 spelling; regression evidence must exercise behavior. Existing baseline-failure,

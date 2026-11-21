@@ -12,6 +12,16 @@ import coordinator_report as report
 from scoped_files import FilePolicy, install_guard
 
 class CoordinatorTests(unittest.TestCase):
+    def test_report_includes_planner_rejections_without_counting_no_action_scans(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.object(report,'ROOT',Path(tmp)):
+            folder=Path(tmp)/'runtime';folder.mkdir()
+            (folder/'hermes-history.jsonl').write_text('\n'.join([
+                json.dumps(dict(at='2026-11-21T12:00:00+00:00',outcome='planning-rejected',reason='bad evidence')),
+                json.dumps(dict(at='2026-11-21T12:01:00+00:00',outcome='no-action'))]))
+            failures=report.attempts_since('hermes')
+        self.assertEqual(len(failures),1)
+        self.assertEqual(failures[0]['reason'],'bad evidence')
+
     def test_report_shows_failures_after_last_accepted_result(self):
         current=report.datetime.now(report.timezone.utc).isoformat()
         def state(name):
