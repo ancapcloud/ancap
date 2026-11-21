@@ -3,11 +3,19 @@ import shutil
 import subprocess
 import tempfile
 import unittest
-from ensure_workspaces import restore, isolate_bridge
+from ensure_workspaces import restore, isolate_bridge, recovery_backup
 import os
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_recovery_backups_are_unique_for_both_roles_and_retries(self):
+        root=Path('bridge')
+        paths=[recovery_backup(root,role) for role in ('openclaw','hermes','openclaw')]
+        self.assertEqual(len(set(paths)),3)
+        self.assertTrue(all(p.parent==root/'runtime' for p in paths))
+        self.assertIn('openclaw',paths[0].name)
+        self.assertIn('hermes',paths[1].name)
+
     def test_stale_git_pointer_preserves_dirty_work_and_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp).resolve();repo=root/'repo';repo.mkdir()

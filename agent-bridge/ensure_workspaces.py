@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import os
+import uuid
 
 
 def restore(repo, target, branch, backup):
@@ -59,12 +60,16 @@ def isolate_bridge(target, shared):
         subprocess.run(['git','-C',str(target),'restore','--worktree','--','agent-bridge'],check=True)
 
 
+def recovery_backup(root, role):
+    return root/'runtime'/('workspace-restore-'+role+'-'+datetime.now().strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex)
+
+
 def main():
     root=Path(__file__).resolve().parent
     subprocess.run(['git','-C',str(root.parent),'config','extensions.worktreeConfig','true'],check=True)
     for role in ('openclaw','hermes'):
         target=Path.home()/'Desktop/ANCAP-agents'/('wt-'+role)
-        backup=root/'runtime'/('workspace-restore-'+datetime.now().strftime('%Y%m%d-%H%M%S'))
+        backup=recovery_backup(root,role)
         restore(root.parent,target,'codex/'+role+'-parallel',backup)
         isolate_bridge(target,root)
         # Local runtime files are not development output. Tracked control source
